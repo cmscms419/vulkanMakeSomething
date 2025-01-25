@@ -1,5 +1,6 @@
 
 #include "../../include/source/Application.h"
+#include "../../include/source/Debugcallback.h"
 
 using namespace vkutil;
 
@@ -61,10 +62,6 @@ namespace vkutil {
     }
 
     void Application::initVulkan() {
-        if (glfwVulkanSupported() == GLFW_FALSE) {
-            throw std::runtime_error("Vulkan is not supported");
-        }
-
         this->createInstance();
     }
     
@@ -79,8 +76,8 @@ namespace vkutil {
         VkApplicationInfo appInfo = {};
         appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;     // 구조체 타입을 지정합니다.
         appInfo.pApplicationName = "Vulkan Test";               // 애플리케이션 이름을 지정합니다.
-        appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);  // 애플리케이션 버전을 지정합니다.
-        appInfo.pEngineName = "cms491 Engine";                      // 엔진 이름을 지정합니다.
+        appInfo.applicationVersion = VK_MAKE_VERSION(0, 0, 0);  // 애플리케이션 버전을 지정합니다.
+        appInfo.pEngineName = "cms491 Engine";                  // 엔진 이름을 지정합니다.
         appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);       // 엔진 버전을 지정합니다.
         appInfo.apiVersion = VK_API_VERSION_1_0;                // 사용할 Vulkan API 버전을 지정합니다.
 
@@ -106,11 +103,4 @@ namespace vkutil {
         }
     }
     
-    // vkutil namespace에 key_callback 함수 정의
-    void vkutil::key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
-    {
-        if (key == GLFW_KEY_1 && action == GLFW_RELEASE) {
-            printf("test\n");
-        }
-    }
 }

@@ -32,5 +32,4 @@ namespace vkutil {
         bool state = true; // 프로그램 상태
     };
 
-    void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 }

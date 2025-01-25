@@ -21,11 +21,14 @@
     <ClCompile Include="main.cpp">
       <Filter>app\main</Filter>
     </ClCompile>
-    <ClCompile Include="app\cpp\Application.cpp">
-      <Filter>app\main</Filter>
-    </ClCompile>
     <ClCompile Include="app\cpp\test.cpp">
       <Filter>app\cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="app\source\Application.cpp">
+      <Filter>app\main</Filter>
+    </ClCompile>
+    <ClCompile Include="app\source\Debugcallback.cpp">
+      <Filter>app\main</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -33,6 +36,9 @@
       <Filter>app\cpp</Filter>
     </ClInclude>
     <ClInclude Include="include\source\Application.h">
+      <Filter>app\main</Filter>
+    </ClInclude>
+    <ClInclude Include="include\source\Debugcallback.h">
       <Filter>app\main</Filter>
     </ClInclude>
   </ItemGroup>
