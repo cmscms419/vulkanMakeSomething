@@ -1,12 +1,18 @@
-﻿#pragma once
+﻿#ifndef INCLUDE_SOURCE_APPLICATION_H
+#define INCLUDE_SOURCE_APPLICATION_H
+
 #define VKUTIL_APPLICATION_H
 
 #include <cms491_common.h>
+#include "../../include/source/Application.h"
 
 constexpr int MAX_FRAMES = 4;
 
-#define shaderRootPath "shader/"
-
 namespace vkutil {
+    namespace content {
 
-}
+
+    }
+} // namespace vkutil::test
+
+#endif // INCLUDE_SOURCE_APPLICATION_H

@@ -13,13 +13,14 @@
   <ItemGroup>
     <ClCompile Include="app\cpp\test.cpp" />
     <ClCompile Include="app\source\Application.cpp" />
-    <ClCompile Include="app\source\Debugcallback.cpp" />
+    <ClCompile Include="app\source\DebugFunction.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\app\test.h" />
+    <ClInclude Include="include\common\cms491_common.h" />
     <ClInclude Include="include\source\Application.h" />
-    <ClInclude Include="include\source\Debugcallback.h" />
+    <ClInclude Include="include\source\DebugFunction.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{961CB7AD-D855-4611-8025-A94BC31029F5}</ProjectGuid>

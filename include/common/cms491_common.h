@@ -1,4 +1,5 @@
-﻿#include <algorithm>
+﻿#pragma once
+#include <algorithm>
 #include <array>
 #include <chrono>
 #include <cstdlib>
@@ -7,8 +8,9 @@
 #include <iostream>
 #include <set>
 #include <stdexcept>
-#include <thread>
 #include <vector>
+#include <map>
+
 
 #define WIDTH  800
 #define HEIGHT  600
@@ -18,3 +20,13 @@
 //#ifdef _WIN64
 //#include <vulkan/vulkan_win32.h>
 //#endif
+
+const std::vector<const char*> validationLayers = {
+    "VK_LAYER_KHRONOS_validation"
+};
+
+#ifdef DEBUG_
+const bool enableValidationLayers = true;
+#else
+const bool enableValidationLayers = false;
+#endif
