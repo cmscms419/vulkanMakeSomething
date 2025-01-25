@@ -23,9 +23,13 @@ namespace vkutil {
         virtual void initWindow();
         virtual void initVulkan();
         virtual void mainLoop();
+        void createInstance();
 
-        GLFWwindow* window;
-        bool state = true;
+        GLFWwindow* window = nullptr; // GLFW 윈도우
+        VkInstance VKinstance = {}; // Vulkan 인스턴스
+
+
+        bool state = true; // 프로그램 상태
     };
 
     void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
