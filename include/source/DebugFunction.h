@@ -1,7 +1,6 @@
 #ifndef INCLUDE_SOURCE_DEBUGFUNCTION_H
 #define INCLUDE_SOURCE_DEBUGFUNCTION_H
 
-#include <cms491_common.h>
 #include "../../include/source/Application.h"
 
 namespace vkutil {

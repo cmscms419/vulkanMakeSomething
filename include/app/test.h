@@ -3,7 +3,6 @@
 
 #define VKUTIL_APPLICATION_H
 
-#include <cms491_common.h>
 #include "../../include/source/Application.h"
 
 constexpr int MAX_FRAMES = 4;

@@ -11,7 +11,6 @@
 #include <vector>
 #include <map>
 
-
 #define WIDTH  800
 #define HEIGHT  600
 
@@ -20,6 +19,8 @@
 //#ifdef _WIN64
 //#include <vulkan/vulkan_win32.h>
 //#endif
+
+#include <glm/glm.hpp>
 
 const std::vector<const char*> validationLayers = {
     "VK_LAYER_KHRONOS_validation"
@@ -30,3 +31,11 @@ const bool enableValidationLayers = true;
 #else
 const bool enableValidationLayers = false;
 #endif
+
+struct QueueFamilyIndices {
+    std::vector<uint32_t> graphicsFamily = {};
+
+    bool isEmpty() {
+        return !graphicsFamily.empty();
+    }
+};

@@ -16,7 +16,7 @@ namespace vkutil {
             glfwPollEvents(); // GLFW 이벤트 큐 처리
             update(); // 업데이트
 #ifdef DEBUG_
-            printf("update\n");
+            //printf("update\n");
 #endif // DEBUG_
 
         }
@@ -36,7 +36,7 @@ namespace vkutil {
     }
 
     void Application::cleanup() {
-        
+
 #ifdef DEBUG_
 
         printf("cleanup\n");
@@ -73,8 +73,9 @@ namespace vkutil {
 
         this->createInstance();
         this->setupDebugCallback();
+        this->pickPhysicalDevice();
     }
-    
+
     void Application::mainLoop()
     {
 
@@ -164,10 +165,21 @@ namespace vkutil {
         }
 
         // Check if the best candidate is suitable at all
-        if (candidates.rbegin()->first > 0) {
-            this->VKphysicalDevice = candidates.rbegin()->second;
+        int Score = 0;
+
+        for (const auto& candidate : candidates) {
+            if (candidate.first > Score) {
+                Score = candidate.first;
+                this->VKphysicalDevice = candidate.second;
+#ifdef DEBUG_
+                findQueueFamilies(candidate.second);
+#endif // DEBUG_
+
+            }
         }
-        else {
+        
+        if(Score == 0) 
+        {
             throw std::runtime_error("failed to find a suitable GPU!");
         }
 
@@ -178,12 +190,141 @@ namespace vkutil {
         vkGetPhysicalDeviceProperties(this->VKphysicalDevice, &deviceProperties);
         vkGetPhysicalDeviceFeatures(this->VKphysicalDevice, &deviceFeatures);
 
-        printf("pickPhysicalDevice\n");
-        printf("Select deviceProperties.deviceType: %d\n", deviceProperties.deviceType);
-        printf("Select device Name: %s\n", deviceProperties.deviceName);
+        printf("Select Device\n");
+        printf("Select DeviceProperties.deviceType: %d\n", deviceProperties.deviceType);
+        printf("Select Device Name: %s\n", deviceProperties.deviceName);
 
 #endif // DEBUG_
 
     }
 
+    int rateDeviceSuitability(VkPhysicalDevice device)
+    {
+
+        VkPhysicalDeviceProperties deviceProperties;
+        VkPhysicalDeviceFeatures deviceFeatures;
+        vkGetPhysicalDeviceProperties(device, &deviceProperties);
+        vkGetPhysicalDeviceFeatures(device, &deviceFeatures);
+
+        int score = 0;
+
+        // Discrete GPUs have a significant performance advantage
+        if (deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU) {
+            score += 1000;
+        }
+
+        // Maximum possible size of textures affects graphics quality
+        score += deviceProperties.limits.maxImageDimension2D;
+
+        // Application can't function without geometry shaders
+        if (!deviceFeatures.geometryShader) {
+            return 0;
+        }
+
+#ifdef DEBUG_
+        printf("Device %s score: %d\n", deviceProperties.deviceName, score);
+        printf("DeviceProperties.deviceType: %d\n", deviceProperties.deviceType);
+        printf("Device Name: %s\n", deviceProperties.deviceName);
+        printf("\n");
+#endif // DEBUG_
+
+
+        return score;
+    }
+
+    std::vector<const char*> getRequiredExtensions()
+    {
+        uint32_t glfwExtensionCount = 0;
+        const char** glfwExtensions;
+        glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
+
+        std::vector<const char*> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
+
+        if (enableValidationLayers) {
+            extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+        }
+
+        return extensions;
+    }
+
+    void getPyhsicalDeviceProperties(VkPhysicalDevice device)
+    {
+        VkPhysicalDeviceProperties deviceProperties;
+        vkGetPhysicalDeviceProperties(device, &deviceProperties);
+
+        printf("Device Name: %s\n", deviceProperties.deviceName);
+        printf("DeviceProperties.deviceType: %d\n", deviceProperties.deviceType);
+    }
+
+    // 주어진 물리 장치에서 큐 패밀리 속성을 찾는 함수
+    QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device)
+    {
+        QueueFamilyIndices indices; // 큐 패밀리의 개수를 저장할 변수를 초기화
+        uint32_t queueFamilyCount = 0;
+
+        // 주어진 물리 장치에서 큐 패밀리 속성을 가져옴 (첫 번째 호출은 개수만 가져옴)
+        vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);
+        // 큐 패밀리 속성을 저장할 벡터를 초기화
+        std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
+        // 주어진 물리 장치에서 큐 패밀리 속성을 가져옴 (두 번째 호출은 실제 속성을 가져옴)
+        vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, queueFamilies.data());
+        // 모든 큐 패밀리를 순회
+        int i = 0;
+
+        getPyhsicalDeviceProperties(device);
+
+        for (const auto& queueFamily : queueFamilies) {
+            // 현재 큐 패밀리가 그래픽스 큐를 지원하는지 확인
+            // 그래픽스 큐를 지원하는 첫 번째 큐 패밀리의 인덱스를 반환
+            printf("QueueFamily %d\n", i++);
+            printf("QueueFamily queueCount: %d\n", queueFamily.queueCount);
+            printf("QueueFamily queueFlags: %d\n", queueFamily.queueFlags);
+            printf("QueueFamily timestampValidBits: %d\n", queueFamily.timestampValidBits);
+            printf("QueueFamily minImageTransferGranularity.width: %d\n", queueFamily.minImageTransferGranularity.width);
+            printf("QueueFamily minImageTransferGranularity.height: %d\n", queueFamily.minImageTransferGranularity.height);
+            printf("QueueFamily minImageTransferGranularity.depth: %d\n", queueFamily.minImageTransferGranularity.depth);
+
+            if (queueFamily.queueFlags & VkQueueFlagBits::VK_QUEUE_GRAPHICS_BIT) {
+                printf("VK_QUEUE_GRAPHICS_BIT is supported\n");
+            }
+            if (queueFamily.queueFlags & VkQueueFlagBits::VK_QUEUE_COMPUTE_BIT)
+            {
+                printf("VK_QUEUE_COMPUTE_BIT is supported\n");
+            }
+            if (queueFamily.queueFlags & VkQueueFlagBits::VK_QUEUE_TRANSFER_BIT)
+            {
+                printf("VK_QUEUE_TRANSFER_BIT is supported\n");
+            }
+            if (queueFamily.queueFlags & VkQueueFlagBits::VK_QUEUE_SPARSE_BINDING_BIT)
+            {
+                printf("VK_QUEUE_SPARSE_BINDING_BIT is supported\n");
+            }
+            if (queueFamily.queueFlags & VkQueueFlagBits::VK_QUEUE_PROTECTED_BIT)
+            {
+                printf("VK_QUEUE_PROTECTED_BIT is supported\n");
+            }
+            if (queueFamily.queueFlags & VkQueueFlagBits::VK_QUEUE_VIDEO_DECODE_BIT_KHR)
+            {
+                printf("VK_QUEUE_VIDEO_DECODE_BIT_KHR is supported\n");
+            }
+            if (queueFamily.queueFlags & VkQueueFlagBits::VK_QUEUE_VIDEO_ENCODE_BIT_KHR)
+            {
+                printf("VK_QUEUE_VIDEO_ENCODE_BIT_KHR is supported\n");
+            }
+            if (queueFamily.queueFlags & VkQueueFlagBits::VK_QUEUE_OPTICAL_FLOW_BIT_NV)
+            {
+                printf("VK_QUEUE_OPTICAL_FLOW_BIT_NV is supported\n");
+            }
+            printf("\n");
+        }
+
+        // 그래픽스 큐를 지원하는 큐 패밀리를 찾지 못한 경우 0을 반환
+        return indices;
+    }
+
+    bool isDeviceSuitable(VkPhysicalDevice device) {
+        QueueFamilyIndices indices = findQueueFamilies(device);
+
+        return indices.isEmpty();
+    }
 }
