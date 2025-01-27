@@ -33,9 +33,18 @@ const bool enableValidationLayers = false;
 #endif
 
 struct QueueFamilyIndices {
-    std::vector<uint32_t> graphicsFamily = {};
+    VkQueueFamilyProperties queueFamilyProperties = {};
+    uint32_t index = 0;
 
-    bool isEmpty() {
-        return !graphicsFamily.empty();
+    uint32_t getQueueFamilyIndex(VkQueueFlagBits bit) {
+        uint32_t target = -1;
+
+        if (queueFamilyProperties.queueFlags & bit)
+        {
+            target = index;
+        }
+
+        return target;
     }
+
 };

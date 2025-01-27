@@ -25,16 +25,19 @@ namespace vkutil {
         virtual void initWindow();
         virtual void initVulkan();
         virtual void mainLoop();
+        
         void createInstance();
         void setupDebugCallback();
         void pickPhysicalDevice();
+        void createLogicalDevice();
 
         GLFWwindow* VKwindow = nullptr;                     // GLFW 윈도우
         VkInstance VKinstance = {};                         // Vulkan 인스턴스
         VkDebugUtilsMessengerEXT VKdebugUtilsMessenger;     // 디버그 메신저
-        VkPhysicalDevice VKphysicalDevice = VK_NULL_HANDLE; // 물리 디바이스 -> GPU Handle
-
-
+        VkPhysicalDevice VKphysicalDevice = VK_NULL_HANDLE; // 물리 디바이스 -> GPU Physical Handle
+        QueueFamilyIndices VKqueueFamilyIndices = {};       // 큐 패밀리 인덱스
+        VkDevice VKdevice = VK_NULL_HANDLE;                 // 논리 디바이스 -> GPU Logical Handle
+        VkQueue VKQueue;                                    // 큐
         bool state = true; // 프로그램 상태
     };
 
@@ -42,7 +45,7 @@ namespace vkutil {
     std::vector<const char*> getRequiredExtensions();
     void getPyhsicalDeviceProperties(VkPhysicalDevice device);
 
-    QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device);
+    QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device, VkQueueFlagBits bit);
     bool isDeviceSuitable(VkPhysicalDevice device);
 }
 
