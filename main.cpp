@@ -1,17 +1,20 @@
 
 #include "include/source/Application.h"
 
-using namespace vkutil;
-
 int main(int argc, char* argv[]) {
 
-    Application app;
-    app.init();
-    
-    app.run();
+    std::unique_ptr<vkutil::Application> app;
+    app = std::make_unique<vkutil::Application>();
 
-    app.cleanup();
+    //switch (atoi(argv[1]))
+    //{
+    //default:
+    //    break;
+    //}
+
+    app->init();
+    app->run();
+    app->cleanup();
 
     return EXIT_SUCCESS;
-
 }

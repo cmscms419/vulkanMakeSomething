@@ -6,6 +6,22 @@ using namespace vkutil;
 
 namespace vkutil {
 
+    Application::Application() {
+        this->VKwindow = nullptr;
+        this->VKinstance = {};
+        this->VKdebugUtilsMessenger = VK_NULL_HANDLE;
+        this->VKphysicalDevice = VK_NULL_HANDLE;
+        this->VKqueueFamilyIndices.index = 0;
+        this->VKqueueFamilyIndices.queueFamilyProperties = {};
+        this->VKdevice = VK_NULL_HANDLE;
+        this->VKQueue = VK_NULL_HANDLE;
+        this->state = true;
+    }
+
+    Application::~Application()
+    {
+    }
+
     void Application::init() {
         initWindow();
         initVulkan();
