@@ -11,10 +11,11 @@ namespace vkutil {
         this->VKinstance = {};
         this->VKdebugUtilsMessenger = VK_NULL_HANDLE;
         this->VKphysicalDevice = VK_NULL_HANDLE;
-        this->VKqueueFamilyIndices.index = 0;
-        this->VKqueueFamilyIndices.queueFamilyProperties = {};
+        this->VKqueueFamilyIndices = {};
         this->VKdevice = VK_NULL_HANDLE;
-        this->VKQueue = VK_NULL_HANDLE;
+        this->graphicsVKQueue = VK_NULL_HANDLE;
+        this->presentVKQueue = VK_NULL_HANDLE;
+        this->VKsurface = VK_NULL_HANDLE;
         this->state = true;
     }
 
@@ -62,6 +63,7 @@ namespace vkutil {
 
 #endif // DEBUG_
         vkDestroyDevice(this->VKdevice, nullptr);
+        vkDestroySurfaceKHR(this->VKinstance, this->VKsurface, nullptr);
         vkDestroyInstance(this->VKinstance, nullptr);
         glfwDestroyWindow(VKwindow);
         glfwTerminate();
@@ -90,6 +92,7 @@ namespace vkutil {
 
         this->createInstance();
         this->setupDebugCallback();
+        this->createSurface();
         this->pickPhysicalDevice();
         this->createLogicalDevice();
     }
@@ -189,7 +192,7 @@ namespace vkutil {
             if (candidate.first > Score) {
                 Score = candidate.first;
                 this->VKphysicalDevice = candidate.second;
-                this->VKqueueFamilyIndices = findQueueFamilies(candidate.second, VkQueueFlagBits::VK_QUEUE_GRAPHICS_BIT);
+                this->VKqueueFamilyIndices = this->findQueueFamilies(candidate.second);
             }
         }
         
@@ -222,32 +225,121 @@ namespace vkutil {
         // 5. 논리 장치를 생성합니다.
         
         // 큐 생성 정보 구조체를 초기화합니다.
-        VkDeviceQueueCreateInfo queueCreateInfo{};
-        queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO; // 구조체 타입을 지정합니다.
-        queueCreateInfo.queueFamilyIndex = this->VKqueueFamilyIndices.getQueueFamilyIndex(VkQueueFlagBits::VK_QUEUE_GRAPHICS_BIT); // 그래픽스 큐 패밀리 인덱스를 설정합니다.
-        queueCreateInfo.queueCount = 1;                    // 큐의 개수를 설정합니다.
+        std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
+        std::set<uint32_t> uniqueQueueFamilies = { 
+            this->VKqueueFamilyIndices.graphicsFamily,
+            this->VKqueueFamilyIndices.presentFamily
+        };
 
         float queuePriority = 1.0f;                        // 큐의 우선순위를 설정합니다.
-        queueCreateInfo.pQueuePriorities = &queuePriority; // 큐 우선순위 포인터를 설정합니다.
+        for (uint32_t queueFamily : uniqueQueueFamilies) {
+            VkDeviceQueueCreateInfo queueCreateInfo{};
+            queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;                          // 구조체 타입을 지정합니다.
+            queueCreateInfo.queueFamilyIndex = this->VKqueueFamilyIndices.getGraphicsQueueFamilyIndex(); // 그래픽스 큐 패밀리 인덱스를 설정합니다.
+            queueCreateInfo.queueCount = 1;                                                              // 큐의 개수를 설정합니다.
+            queueCreateInfo.pQueuePriorities = &queuePriority;
+            queueCreateInfos.push_back(queueCreateInfo);
+        }
 
         // 물리 장치 기능 구조체를 초기화합니다.
         VkPhysicalDeviceFeatures deviceFeatures{};
 
         // 논리 장치 생성 정보 구조체를 초기화합니다.
         VkDeviceCreateInfo createInfo{};
-        createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;    // 구조체 타입을 지정합니다.
-        createInfo.pQueueCreateInfos = &queueCreateInfo;            // 큐 생성 정보 포인터를 설정합니다.
-        createInfo.queueCreateInfoCount = 1;                        // 큐 생성 정보의 개수를 설정합니다.
-        createInfo.pEnabledFeatures = &deviceFeatures;              // 물리 장치 기능 포인터를 설정합니다.
-        createInfo.enabledExtensionCount = 0;                       // 활성화할 확장 개수를 0으로 설정합니다.
+        createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;                          // 구조체 타입을 지정합니다.
+        createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size()); // 큐 생성 정보의 개수를 설정합니다.
+        createInfo.pQueueCreateInfos = queueCreateInfos.data();                           // 큐 생성 정보 포인터를 설정합니다.
+        createInfo.pEnabledFeatures = &deviceFeatures;                                    // 물리 장치 기능 포인터를 설정합니다.
+        createInfo.enabledExtensionCount = 0;                                             // 활성화할 확장 개수를 0으로 설정합니다.
+
+        if (enableValidationLayers) {
+            createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
+            createInfo.ppEnabledLayerNames = validationLayers.data();
+        }
+        else {
+            createInfo.enabledLayerCount = 0;
+        }
 
         // 논리 장치를 생성합니다.
         if (vkCreateDevice(this->VKphysicalDevice, &createInfo, nullptr, &this->VKdevice) != VK_SUCCESS) {
             throw std::runtime_error("failed to create logical device!"); // 논리 장치 생성 실패 시 예외를 발생시킵니다.
         }
 
-        vkGetDeviceQueue(this->VKdevice, this->VKqueueFamilyIndices.index, 0, &this->VKQueue);
+        // 논리 디바이스에서 그래픽 큐 핸들을 가져옵니다.
+        vkGetDeviceQueue(this->VKdevice, this->VKqueueFamilyIndices.graphicsFamily, 0, &this->graphicsVKQueue);
+        // 논리 디바이스에서 프레젠테이션 큐 핸들을 가져옵니다.
+        vkGetDeviceQueue(this->VKdevice, this->VKqueueFamilyIndices.presentFamily, 0, &this->presentVKQueue);
     }
+
+    void Application::createSurface()
+    {
+        if (glfwCreateWindowSurface(this->VKinstance, this->VKwindow, nullptr, &this->VKsurface) != VK_SUCCESS) {
+            throw std::runtime_error("failed to create window surface!");
+        }
+    }
+
+    // 주어진 물리 장치에서 큐 패밀리 속성을 찾는 함수
+    // PROB : 큐 패밀리가 여러개인 경우에 필요한 처리가 있는 패밀리를 먼저 찾을 경우, 그 패밀리의 인덱스만 반환함
+    // TODO ; 큐 패밀리가 여러개인 경우에 대한 처리가 필요함
+    QueueFamilyIndices Application::findQueueFamilies(VkPhysicalDevice device)
+    {
+        QueueFamilyIndices indices; // 큐 패밀리의 개수를 저장할 변수를 초기화
+        uint32_t queueFamilyCount = 0;
+
+        // 주어진 물리 장치에서 큐 패밀리 속성을 가져옴 (첫 번째 호출은 개수만 가져옴)
+        vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);
+        // 큐 패밀리 속성을 저장할 벡터를 초기화
+        std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
+        // 주어진 물리 장치에서 큐 패밀리 속성을 가져옴 (두 번째 호출은 실제 속성을 가져옴)
+        vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, queueFamilies.data());
+        // 모든 큐 패밀리를 순회
+        int i = 0;
+        getPyhsicalDeviceProperties(device);
+        for (const auto& queueFamily : queueFamilies) {
+            // 현재 큐 패밀리가 그래픽스 큐를 지원하는지 확인
+
+#ifdef DEBUG_
+            printf("QueueFamily %d\n", i);
+            printf("QueueFamily queueCount: %d\n", queueFamily.queueCount);
+            printf("QueueFamily queueFlags: %d\n", queueFamily.queueFlags);
+            printf("QueueFamily timestampValidBits: %d\n", queueFamily.timestampValidBits);
+            printf("QueueFamily minImageTransferGranularity.width: %d\n", queueFamily.minImageTransferGranularity.width);
+            printf("QueueFamily minImageTransferGranularity.height: %d\n", queueFamily.minImageTransferGranularity.height);
+            printf("QueueFamily minImageTransferGranularity.depth: %d\n", queueFamily.minImageTransferGranularity.depth);
+#endif // DEBUG_
+
+            if (queueFamily.queueFlags & VkQueueFlagBits::VK_QUEUE_GRAPHICS_BIT) {
+
+                    printf("VK_QUEUE_GRAPHICS_BIT is supported\n");
+                    indices.setGraphicsFamily(i);
+                }
+
+            if (queueFamily.queueFlags & VkQueueFlagBits::VK_QUEUE_COMPUTE_BIT)
+            {
+                VkBool32 presentSupport = false;
+                vkGetPhysicalDeviceSurfaceSupportKHR(device, i, this->VKsurface, &presentSupport);
+
+                if (presentSupport)
+                {
+                    printf("VK_QUEUE_PRESENT_BIT is supported\n");
+                    indices.setPresentFamily(i);
+                }
+
+            }
+
+            if (indices.isComplete()) {
+                indices.queueFamilyProperties = queueFamily;
+                printf("Queuefamily index: %d\n", i);
+                printf("\n");
+                break;
+            }
+
+            indices.reset();
+            i++;
+            }
+
+            return indices;
+        }
 
     int rateDeviceSuitability(VkPhysicalDevice device)
     {
@@ -306,134 +398,7 @@ namespace vkutil {
         printf("DeviceProperties.deviceType: %d\n", deviceProperties.deviceType);
     }
 
-    // 주어진 물리 장치에서 큐 패밀리 속성을 찾는 함수
-    // PROB : 큐 패밀리가 여러개인 경우에 필요한 처리가 있는 패밀리를 먼저 찾을 경우, 그 패밀리의 인덱스만 반환함
-    // TODO ; 큐 패밀리가 여러개인 경우에 대한 처리가 필요함
-    QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device, VkQueueFlagBits bit)
-    {
-        QueueFamilyIndices indices; // 큐 패밀리의 개수를 저장할 변수를 초기화
-        uint32_t queueFamilyCount = 0;
-
-        // 주어진 물리 장치에서 큐 패밀리 속성을 가져옴 (첫 번째 호출은 개수만 가져옴)
-        vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);
-        // 큐 패밀리 속성을 저장할 벡터를 초기화
-        std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
-        // 주어진 물리 장치에서 큐 패밀리 속성을 가져옴 (두 번째 호출은 실제 속성을 가져옴)
-        vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, queueFamilies.data());
-        // 모든 큐 패밀리를 순회
-        int i = 0;
-        getPyhsicalDeviceProperties(device);
-        for (const auto& queueFamily : queueFamilies) {
-            // 현재 큐 패밀리가 그래픽스 큐를 지원하는지 확인
-            // 그래픽스 큐를 지원하는 i째 큐 패밀리의 인덱스를 반환
-
-#ifdef DEBUG_
-            printf("QueueFamily %d\n", i);
-            printf("QueueFamily queueCount: %d\n", queueFamily.queueCount);
-            printf("QueueFamily queueFlags: %d\n", queueFamily.queueFlags);
-            printf("QueueFamily timestampValidBits: %d\n", queueFamily.timestampValidBits);
-            printf("QueueFamily minImageTransferGranularity.width: %d\n", queueFamily.minImageTransferGranularity.width);
-            printf("QueueFamily minImageTransferGranularity.height: %d\n", queueFamily.minImageTransferGranularity.height);
-            printf("QueueFamily minImageTransferGranularity.depth: %d\n", queueFamily.minImageTransferGranularity.depth);
-#endif // DEBUG_
-
-#if 0
-            if (queueFamily.queueFlags & VkQueueFlagBits::VK_QUEUE_GRAPHICS_BIT) {
-                printf("VK_QUEUE_GRAPHICS_BIT is supported\n");
-                indices.graphicsFamily.push_back(i);
-            }
-            if (queueFamily.queueFlags & VkQueueFlagBits::VK_QUEUE_COMPUTE_BIT)
-            {
-                printf("VK_QUEUE_COMPUTE_BIT is supported\n");
-                indices.graphicsFamily.push_back(i);
-            }
-            if (queueFamily.queueFlags & VkQueueFlagBits::VK_QUEUE_TRANSFER_BIT)
-            {
-                printf("VK_QUEUE_TRANSFER_BIT is supported\n");
-                indices.graphicsFamily.push_back(i);
-            }
-            if (queueFamily.queueFlags & VkQueueFlagBits::VK_QUEUE_SPARSE_BINDING_BIT)
-            {
-                printf("VK_QUEUE_SPARSE_BINDING_BIT is supported\n");
-                indices.graphicsFamily.push_back(i);
-            }
-            if (queueFamily.queueFlags & VkQueueFlagBits::VK_QUEUE_PROTECTED_BIT)
-            {
-                printf("VK_QUEUE_PROTECTED_BIT is supported\n");
-                indices.graphicsFamily.push_back(i);
-            }
-            if (queueFamily.queueFlags & VkQueueFlagBits::VK_QUEUE_VIDEO_DECODE_BIT_KHR)
-            {
-                printf("VK_QUEUE_VIDEO_DECODE_BIT_KHR is supported\n");
-                indices.graphicsFamily.push_back(i);
-            }
-            if (queueFamily.queueFlags & VkQueueFlagBits::VK_QUEUE_VIDEO_ENCODE_BIT_KHR)
-            {
-                printf("VK_QUEUE_VIDEO_ENCODE_BIT_KHR is supported\n");
-                indices.graphicsFamily.push_back(i);
-            }
-            if (queueFamily.queueFlags & VkQueueFlagBits::VK_QUEUE_OPTICAL_FLOW_BIT_NV)
-            {
-                printf("VK_QUEUE_OPTICAL_FLOW_BIT_NV is supported\n");
-                indices.graphicsFamily.push_back(i);
-            }
-            printf("\n");
-#endif
-
-            if (queueFamily.queueFlags & bit) {
-                switch (bit)
-                {
-                case VK_QUEUE_GRAPHICS_BIT:
-                    printf("VK_QUEUE_GRAPHICS_BIT is supported\n");
-                    break;
-                case VK_QUEUE_COMPUTE_BIT:
-                    printf("VK_QUEUE_COMPUTE_BIT is supported\n");
-                    break;
-                case VK_QUEUE_TRANSFER_BIT:
-                    printf("VK_QUEUE_TRANSFER_BIT is supported\n");
-                    break;
-                case VK_QUEUE_SPARSE_BINDING_BIT:
-                    printf("VK_QUEUE_SPARSE_BINDING_BIT is supported\n");
-                    break;
-                case VK_QUEUE_PROTECTED_BIT:
-                    printf("VK_QUEUE_PROTECTED_BIT is supported\n");
-                    break;
-                case VK_QUEUE_VIDEO_DECODE_BIT_KHR:
-                    printf("VK_QUEUE_VIDEO_DECODE_BIT_KHR is supported\n");
-                    break;
-                case VK_QUEUE_VIDEO_ENCODE_BIT_KHR:
-                    printf("VK_QUEUE_VIDEO_ENCODE_BIT_KHR is supported\n");
-                    break;
-                case VK_QUEUE_OPTICAL_FLOW_BIT_NV:
-                    printf("VK_QUEUE_OPTICAL_FLOW_BIT_NV is supported\n");
-                    break;
-                case VK_QUEUE_FLAG_BITS_MAX_ENUM:
-                    printf("VK_QUEUE_FLAG_BITS_MAX_ENUM\n");
-                    break;
-                default:
-                    break;
-                }
-
-                indices.index = i;
-                indices.queueFamilyProperties = queueFamily;
-                printf("Queuefamily index: %d\n", i);
-                printf("\n");
-                break;
-            }
-            else
-            {
-                printf("VK_QUEUE_GRAPHICS_BIT is not supported\n");
-            }
-            i++;
-        }
-
-        // 그래픽스 큐를 지원하는 큐 패밀리를 찾지 못한 경우 0을 반환
-        return indices;
-    }
-
     bool isDeviceSuitable(VkPhysicalDevice device) {
-        QueueFamilyIndices indices = findQueueFamilies(device, VkQueueFlagBits::VK_QUEUE_FLAG_BITS_MAX_ENUM);
-
         return false;
     }
 }
