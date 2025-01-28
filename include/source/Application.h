@@ -36,25 +36,35 @@ namespace vkutil {
         void pickPhysicalDevice();
         void createLogicalDevice();
         void createSurface();
+        void createSwapChain();
 
         // 도구
         QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device);
-
+        bool isDeviceSuitable(VkPhysicalDevice device);
+        bool checkDeviceExtensionSupport(VkPhysicalDevice device);
+        SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice device);
+        VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
+        VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
+        VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
+        
         GLFWwindow* VKwindow;                               // GLFW 윈도우
         VkInstance VKinstance;                              // Vulkan 인스턴스
         VkDebugUtilsMessengerEXT VKdebugUtilsMessenger;     // 디버그 메신저
         VkPhysicalDevice VKphysicalDevice;                  // 물리 디바이스 -> GPU Physical Handle
-        QueueFamilyIndices VKqueueFamilyIndices;            // 큐 패밀리 인덱스
+        QueueFamilyIndices VKqueueFamilyIndices;            // 큐 패밀리 인덱스 -> VKphysicalDevice에서 선택한 queue family index
         VkDevice VKdevice;                                  // 논리 디바이스 -> GPU Logical Handle
         VkQueue graphicsVKQueue;                            // 그래픽스 큐
         VkQueue presentVKQueue;                             // 프레젠트 큐
         VkSurfaceKHR VKsurface;                             // 서피스 -> 윈도우 시스템과 Vulkan을 연결하는 인터페이스
+        VkSwapchainKHR VKswapChain;                         // 스왑 체인
+        std::vector<VkImage> VKswapChainImages;             // 스왑 체인 이미지 -> 스왑 체인에 사용되는 이미지 Handle
+        VkFormat VKswapChainImageFormat;                    // 스왑 체인 이미지 포맷
+        VkExtent2D VKswapChainExtent;                       // 스왑 체인 이미지 해상도
         bool state;                                         // 프로그램 상태
     };
 
     int rateDeviceSuitability(VkPhysicalDevice device);
     void getPyhsicalDeviceProperties(VkPhysicalDevice device);
-    bool isDeviceSuitable(VkPhysicalDevice device);
     std::vector<const char*> getRequiredExtensions();
 }
 

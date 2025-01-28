@@ -16,6 +16,8 @@ namespace vkutil {
         this->graphicsVKQueue = VK_NULL_HANDLE;
         this->presentVKQueue = VK_NULL_HANDLE;
         this->VKsurface = VK_NULL_HANDLE;
+        this->VKswapChain = VK_NULL_HANDLE;
+        this->VKswapChainImages.clear();
         this->state = true;
     }
 
@@ -62,6 +64,7 @@ namespace vkutil {
         }
 
 #endif // DEBUG_
+        vkDestroySwapchainKHR(this->VKdevice, this->VKswapChain, nullptr);
         vkDestroyDevice(this->VKdevice, nullptr);
         vkDestroySurfaceKHR(this->VKinstance, this->VKsurface, nullptr);
         vkDestroyInstance(this->VKinstance, nullptr);
@@ -95,6 +98,7 @@ namespace vkutil {
         this->createSurface();
         this->pickPhysicalDevice();
         this->createLogicalDevice();
+        this->createSwapChain();
     }
 
     void Application::mainLoop()
@@ -249,8 +253,9 @@ namespace vkutil {
         createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;                          // 구조체 타입을 지정합니다.
         createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size()); // 큐 생성 정보의 개수를 설정합니다.
         createInfo.pQueueCreateInfos = queueCreateInfos.data();                           // 큐 생성 정보 포인터를 설정합니다.
+        createInfo.enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size());// 활성화할 확장 개수를 0으로 설정합니다.
+        createInfo.ppEnabledExtensionNames = deviceExtensions.data();                     // 활성화할 확장 목록을 설정합니다.
         createInfo.pEnabledFeatures = &deviceFeatures;                                    // 물리 장치 기능 포인터를 설정합니다.
-        createInfo.enabledExtensionCount = 0;                                             // 활성화할 확장 개수를 0으로 설정합니다.
 
         if (enableValidationLayers) {
             createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
@@ -276,6 +281,84 @@ namespace vkutil {
         if (glfwCreateWindowSurface(this->VKinstance, this->VKwindow, nullptr, &this->VKsurface) != VK_SUCCESS) {
             throw std::runtime_error("failed to create window surface!");
         }
+    }
+
+    void Application::createSwapChain()
+    {
+        SwapChainSupportDetails swapChainSupport = querySwapChainSupport(this->VKphysicalDevice);
+
+        VkSurfaceFormatKHR surfaceFormat = chooseSwapSurfaceFormat(swapChainSupport.formats);
+        VkPresentModeKHR presentMode = chooseSwapPresentMode(swapChainSupport.presentModes);
+        
+        VkExtent2D extent = chooseSwapExtent(swapChainSupport.capabilities);
+
+        uint32_t imageCount = swapChainSupport.capabilities.minImageCount + 1;
+
+        if (swapChainSupport.capabilities.maxImageCount > 0 && imageCount > swapChainSupport.capabilities.maxImageCount) {
+            imageCount = swapChainSupport.capabilities.maxImageCount;
+        }
+
+        // 스왑 체인 생성 정보 구조체를 초기화합니다.
+        VkSwapchainCreateInfoKHR createInfo{};
+        createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
+        createInfo.surface = this->VKsurface;
+
+        createInfo.minImageCount = imageCount;                          // 이미지 개수를 설정합니다.
+        createInfo.imageFormat = surfaceFormat.format;                  // 이미지 형식을 설정합니다.
+        createInfo.imageColorSpace = surfaceFormat.colorSpace;          // 이미지 색상 공간을 설정합니다.
+        createInfo.imageExtent = extent;                                // 이미지 해상도를 설정합니다.
+        createInfo.imageArrayLayers = 1;                                // 이미지 배열 레이어를 설정합니다.
+        createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;    // 이미지 사용 방법을 설정합니다.
+
+        // 큐 패밀리 인덱스를 가져옵니다.
+        uint32_t queueFamilyIndices[] = { this->VKqueueFamilyIndices.graphicsFamily, this->VKqueueFamilyIndices.presentFamily };
+
+        // 여러 큐 패밀리에 걸쳐 사용될 스왑 체인 이미지를 처리하는 방법을 지정
+        if (this->VKqueueFamilyIndices.graphicsFamily != this->VKqueueFamilyIndices.presentFamily) {
+            createInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT; // 동시 공유 모드를 설정합니다.
+            createInfo.queueFamilyIndexCount = 2;
+            createInfo.pQueueFamilyIndices = queueFamilyIndices;
+        }
+        else {
+            createInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;  // 배타적 공유 모드를 설정합니다.
+        }
+
+        createInfo.preTransform = swapChainSupport.capabilities.currentTransform; // 이미지 변환을 설정합니다.
+        createInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;            // 알파 블렌딩을 설정합니다.
+        createInfo.presentMode = presentMode;                                     // 프레젠테이션 모드를 설정합니다.
+        createInfo.clipped = VK_TRUE;                                             // 클리핑을 설정합니다. -> 다른 창이 앞에 있기 때문에 가려진 픽셀의 색상을 신경 쓰지 않는다는 의미
+        createInfo.oldSwapchain = VK_NULL_HANDLE;                                 // 이전 스왑 체인을 설정합니다. -> 나중에 설정
+
+        if (vkCreateSwapchainKHR(this->VKdevice, &createInfo, nullptr, &this->VKswapChain) != VK_SUCCESS) {
+            throw std::runtime_error("failed to create swap chain!");
+        }
+
+        vkGetSwapchainImagesKHR(this->VKdevice, this->VKswapChain, &imageCount, nullptr);
+        this->VKswapChainImages.resize(imageCount);
+        vkGetSwapchainImagesKHR(this->VKdevice, this->VKswapChain, &imageCount, this->VKswapChainImages.data());
+
+        this->VKswapChainImageFormat = surfaceFormat.format;
+        this->VKswapChainExtent = extent;
+
+#ifdef DEBUG_
+        printf("create swap chain\n");
+        printf("SwapChain imageCount: %d\n", imageCount);
+        printf("SwapChain imageFormat: %d\n", surfaceFormat.format);
+        printf("SwapChain imageColorSpace: %d\n", surfaceFormat.colorSpace);
+        printf("SwapChain imageExtent.width: %d\n", extent.width);
+        printf("SwapChain imageExtent.height: %d\n", extent.height);
+        printf("SwapChain imageArrayLayers: %d\n", 1);
+        printf("SwapChain imageUsage: %d\n", VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT);
+        printf("SwapChain imageSharingMode: %d\n", VK_SHARING_MODE_EXCLUSIVE);
+        printf("SwapChain preTransform: %d\n", swapChainSupport.capabilities.currentTransform);
+        printf("SwapChain compositeAlpha: %d\n", VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR);
+        printf("SwapChain presentMode: %d\n", presentMode);
+        printf("SwapChain clipped: %d\n", VK_TRUE);
+        printf("\n");
+       
+#endif // DEBUG_
+
+
     }
 
     // 주어진 물리 장치에서 큐 패밀리 속성을 찾는 함수
@@ -310,9 +393,9 @@ namespace vkutil {
 
             if (queueFamily.queueFlags & VkQueueFlagBits::VK_QUEUE_GRAPHICS_BIT) {
 
-                    printf("VK_QUEUE_GRAPHICS_BIT is supported\n");
-                    indices.setGraphicsFamily(i);
-                }
+                printf("VK_QUEUE_GRAPHICS_BIT is supported\n");
+                indices.setGraphicsFamily(i);
+            }
 
             if (queueFamily.queueFlags & VkQueueFlagBits::VK_QUEUE_COMPUTE_BIT)
             {
@@ -336,10 +419,131 @@ namespace vkutil {
 
             indices.reset();
             i++;
-            }
-
-            return indices;
         }
+
+        return indices;
+    }
+
+    bool Application::isDeviceSuitable(VkPhysicalDevice device)
+    {
+        QueueFamilyIndices indices = this->findQueueFamilies(device);
+
+        bool extensionsSupported = checkDeviceExtensionSupport(device);
+        bool swapChainAdequate = false;
+
+        if (extensionsSupported) {
+            SwapChainSupportDetails swapChainSupport = querySwapChainSupport(device);
+            swapChainAdequate = !swapChainSupport.formats.empty() && !swapChainSupport.presentModes.empty();
+        }
+
+        return indices.isComplete() && extensionsSupported && swapChainAdequate;
+    }
+
+    // 검증 레이어 지원 여부를 확인하는 함수
+    // 확장 기능을 열거하고 필요한 모든 확장 기능이 포함되어 있는지 확인
+    bool Application::checkDeviceExtensionSupport(VkPhysicalDevice device)
+    {
+        uint32_t extensionCount;
+        vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, nullptr);
+
+        std::vector<VkExtensionProperties> availableExtensions(extensionCount);
+        vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, availableExtensions.data());
+
+        std::set<std::string> requiredExtensions(deviceExtensions.begin(), deviceExtensions.end());
+
+        for (const auto& extension : availableExtensions) {
+            requiredExtensions.erase(extension.extensionName);
+        }
+
+        return requiredExtensions.empty();
+    }
+
+    // 스왑 체인 지원 정보를 가져오는 함수
+    // 스왑 체인 지원 정보를 저장할 구조체를 초기화
+    // 물리 장치에서 서피스의 기능을 가져옴
+    SwapChainSupportDetails Application::querySwapChainSupport(VkPhysicalDevice device)
+    {
+        SwapChainSupportDetails details;
+
+        vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, this->VKsurface, &details.capabilities);
+
+        uint32_t formatCount;
+        vkGetPhysicalDeviceSurfaceFormatsKHR(device, this->VKsurface, &formatCount, nullptr);
+
+        if (formatCount != 0) {
+            details.formats.resize(formatCount);
+            vkGetPhysicalDeviceSurfaceFormatsKHR(device, this->VKsurface, &formatCount, details.formats.data());
+        }
+
+        uint32_t presentModeCount;
+        vkGetPhysicalDeviceSurfacePresentModesKHR(device, this->VKsurface, &presentModeCount, nullptr);
+
+        if (presentModeCount != 0) {
+            details.presentModes.resize(presentModeCount);
+            vkGetPhysicalDeviceSurfacePresentModesKHR(device, this->VKsurface, &presentModeCount, details.presentModes.data());
+        }
+
+        return details;
+    }
+
+    // 서피스 포맷을 선택하는 함수
+    // SRGB 색상 공간을 지원하는 32비트 BGR 색상 구조를 선택
+    // 이러한 형식이 지원되지 않으면 첫 번째 형식을 반환
+    // 이러한 형식이 없으면 예외를 발생시킵니다.
+    VkSurfaceFormatKHR Application::chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats)
+    {
+        VkSurfaceFormatKHR targetformat = {};
+
+        for (const auto& availableFormat : availableFormats) 
+        {
+            if (availableFormat.format == VK_FORMAT_B8G8R8A8_SRGB &&            // 32비트 BGR 색상 구조를 지원하는지 확인
+                availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR // SRGB 색상 공간을 지원하는지 확인
+                ) 
+            {
+                targetformat = availableFormat;
+                break;
+            }
+        }
+
+
+        return targetformat;
+    }
+
+    // 프레젠테이션 모드를 선택하는 함수
+    // VK_PRESENT_MODE_MAILBOX_KHR 프레젠테이션 모드를 지원하는지 확인
+    // 지원되는 경우 VK_PRESENT_MODE_MAILBOX_KHR를 반환
+    VkPresentModeKHR Application::chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes) {
+        for (const auto& availablePresentMode : availablePresentModes) {
+            if (availablePresentMode == VK_PRESENT_MODE_MAILBOX_KHR) {
+                return availablePresentMode;
+            }
+        }return VK_PRESENT_MODE_FIFO_KHR;
+    }
+
+    // 스왑 체인 이미지의 해상도를 선택합니다.
+    // 현재 해상도가 유효하면 반환하고, 그렇지 않으면 GLFW 크기를 기준으로 해상도를 설정합니다.
+    // 해상도는 최소 및 최대 이미지 해상도 사이에서 클램프됩니다.
+    VkExtent2D Application::chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities) {
+        
+        if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max()) {
+            return capabilities.currentExtent;
+        }
+        else {
+            int width, height;
+            glfwGetFramebufferSize(this->VKwindow, &width, &height);
+
+            VkExtent2D actualExtent = {
+                static_cast<uint32_t>(width),
+                static_cast<uint32_t>(height)
+            };
+
+            actualExtent.width = glm::clamp(actualExtent.width, capabilities.minImageExtent.width, capabilities.maxImageExtent.width);
+            actualExtent.height = glm::clamp(actualExtent.height, capabilities.minImageExtent.height, capabilities.maxImageExtent.height);
+
+            return actualExtent;
+        }
+
+    }
 
     int rateDeviceSuitability(VkPhysicalDevice device)
     {
@@ -398,7 +602,7 @@ namespace vkutil {
         printf("DeviceProperties.deviceType: %d\n", deviceProperties.deviceType);
     }
 
-    bool isDeviceSuitable(VkPhysicalDevice device) {
-        return false;
+    bool checkDeviceExtensionSupport(VkPhysicalDevice device) {
+        return true;
     }
 }

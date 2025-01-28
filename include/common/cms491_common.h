@@ -26,6 +26,10 @@ const std::vector<const char*> validationLayers = {
     "VK_LAYER_KHRONOS_validation"
 };
 
+const std::vector<const char*> deviceExtensions = {
+    VK_KHR_SWAPCHAIN_EXTENSION_NAME
+};
+
 #ifdef DEBUG_
 const bool enableValidationLayers = true;
 #else
@@ -33,12 +37,9 @@ const bool enableValidationLayers = false;
 #endif
 
 struct QueueFamilyIndices {
-    VkQueueFamilyProperties queueFamilyProperties = {};
-
-    // optional은 값이 있을 수도 있고 없을 수도 있다.
-    // C++14에서는 사용할 수 없다.
     uint32_t graphicsFamily = 0;        // 그래픽스 큐 패밀리 인덱스 (그래픽스 명령을 처리하는 큐)
     uint32_t presentFamily = 0;         // 프레젠트 큐 패밀리 인덱스 (윈도우 시스템과 Vulkan을 연결하는 인터페이스)
+    VkQueueFamilyProperties queueFamilyProperties = {};
 
     bool graphicsFamilyHasValue = false;
     bool presentFamilyHasValue = false;
@@ -69,6 +70,7 @@ struct QueueFamilyIndices {
         }
         return target;
     }
+
     bool isComplete() {
         return this->graphicsFamilyHasValue && this->presentFamilyHasValue;
     }
@@ -79,4 +81,10 @@ struct QueueFamilyIndices {
         this->presentFamilyHasValue = false;
         this->queueFamilyProperties = {};
     }
+};
+
+struct SwapChainSupportDetails {
+    VkSurfaceCapabilitiesKHR capabilities;
+    std::vector<VkSurfaceFormatKHR> formats;
+    std::vector<VkPresentModeKHR> presentModes;
 };
