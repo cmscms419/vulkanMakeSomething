@@ -18,6 +18,9 @@ namespace vkutil {
         this->VKsurface = VK_NULL_HANDLE;
         this->VKswapChain = VK_NULL_HANDLE;
         this->VKswapChainImages.clear();
+        this->VKswapChainImageViews.clear();
+        this->VKswapChainImageFormat = VK_FORMAT_UNDEFINED;
+        this->VKswapChainExtent = { 0, 0 };
         this->state = true;
     }
 
@@ -64,6 +67,9 @@ namespace vkutil {
         }
 
 #endif // DEBUG_
+        for (auto imageView : this->VKswapChainImageViews) {
+            vkDestroyImageView(this->VKdevice, imageView, nullptr);
+        }
         vkDestroySwapchainKHR(this->VKdevice, this->VKswapChain, nullptr);
         vkDestroyDevice(this->VKdevice, nullptr);
         vkDestroySurfaceKHR(this->VKinstance, this->VKsurface, nullptr);
@@ -99,6 +105,7 @@ namespace vkutil {
         this->pickPhysicalDevice();
         this->createLogicalDevice();
         this->createSwapChain();
+        this->createImageViews();
     }
 
     void Application::mainLoop()
@@ -359,6 +366,43 @@ namespace vkutil {
 #endif // DEBUG_
 
 
+    }
+
+    void Application::createImageViews()
+    {
+        this->VKswapChainImageViews.resize(this->VKswapChainImages.size()); // 
+
+        for (int8_t i = 0; i < this->VKswapChainImages.size(); i++) {
+            VkImageViewCreateInfo createInfo{};
+
+            // 이미지 뷰 생성 정보 구조체를 초기화합니다.
+            createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+            createInfo.image = this->VKswapChainImages[i];
+            
+            // 이미지 뷰의 유형을 설정합니다.
+            createInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+            createInfo.format = this->VKswapChainImageFormat;
+
+            // 이미지의 컴포넌트 매핑을 설정합니다.
+            // 여기서는 기본적으로 R, G, B 및 A 구성 요소를 사용합니다.
+            // VK_COMPONENT_SWIZZLE_IDENTITY -> 색상 구성 요소를 변경하지 않고 원래 값을 그대로 유지하는 스와젤
+            createInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
+            createInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
+            createInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
+            createInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
+            
+            // 이미지의 사용 목적을 설정합니다.
+            // VK_IMAGE_ASPECT_COLOR_BIT -> 이미지가 색상 데이터를 포함한다는 것을 나타냅니다.
+            createInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+            createInfo.subresourceRange.baseMipLevel = 0;
+            createInfo.subresourceRange.levelCount = 1;
+            createInfo.subresourceRange.baseArrayLayer = 0;
+            createInfo.subresourceRange.layerCount = 1;
+
+            if (vkCreateImageView(this->VKdevice, &createInfo, nullptr, &this->VKswapChainImageViews[i]) != VK_SUCCESS) {
+                throw std::runtime_error("failed to create image views!");
+            }
+        }
     }
 
     // 주어진 물리 장치에서 큐 패밀리 속성을 찾는 함수

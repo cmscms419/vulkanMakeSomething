@@ -37,6 +37,7 @@ namespace vkutil {
         void createLogicalDevice();
         void createSurface();
         void createSwapChain();
+        void createImageViews();
 
         // 도구
         QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device);
@@ -58,6 +59,7 @@ namespace vkutil {
         VkSurfaceKHR VKsurface;                             // 서피스 -> 윈도우 시스템과 Vulkan을 연결하는 인터페이스
         VkSwapchainKHR VKswapChain;                         // 스왑 체인
         std::vector<VkImage> VKswapChainImages;             // 스왑 체인 이미지 -> 스왑 체인에 사용되는 이미지 Handle
+        std::vector<VkImageView> VKswapChainImageViews;       // 스왑 체인 이미지 뷰 -> 스왑 체인 이미지를 뷰로 변환
         VkFormat VKswapChainImageFormat;                    // 스왑 체인 이미지 포맷
         VkExtent2D VKswapChainExtent;                       // 스왑 체인 이미지 해상도
         bool state;                                         // 프로그램 상태
