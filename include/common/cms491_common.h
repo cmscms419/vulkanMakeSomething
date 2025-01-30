@@ -84,7 +84,24 @@ struct QueueFamilyIndices {
 };
 
 struct SwapChainSupportDetails {
-    VkSurfaceCapabilitiesKHR capabilities;
+    VkSurfaceCapabilitiesKHR capabilities = {};
     std::vector<VkSurfaceFormatKHR> formats;
     std::vector<VkPresentModeKHR> presentModes;
 };
+
+static std::vector<char> readFile(const std::string& filename) {
+    // 파일 끝으로 이동하여 파일 크기를 가져옵니다.
+    std::ifstream file(filename, std::ios::ate | std::ios::binary); 
+
+    if (!file.is_open()) {
+        throw std::runtime_error("failed to open file!");
+    }
+    
+    size_t fileSize = (size_t)file.tellg(); // 파일 크기를 이용하여 버퍼를 할당합니다.
+    std::vector<char> buffer(fileSize);     // 파일 포인터를 파일의 시작으로 이동합니다.
+    file.seekg(0);                          // 파일 포인터를 파일의 시작으로 이동합니다.
+    file.read(buffer.data(), fileSize);     // 파일 내용을 버퍼에 읽어옵니다.
+    file.close();                           // 파일을 닫습니다.
+
+    return buffer;
+}

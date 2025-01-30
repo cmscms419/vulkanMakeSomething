@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|x64">
@@ -21,6 +21,10 @@
     <ClInclude Include="include\common\cms491_common.h" />
     <ClInclude Include="include\source\Application.h" />
     <ClInclude Include="include\source\DebugFunction.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="shader\shader.frag" />
+    <None Include="shader\shader.vert" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{961CB7AD-D855-4611-8025-A94BC31029F5}</ProjectGuid>

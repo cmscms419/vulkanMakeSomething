@@ -2,8 +2,6 @@
 #include "../../include/source/Application.h"
 #include "../../include/source/DebugFunction.h"
 
-using namespace vkutil;
-
 namespace vkutil {
 
     Application::Application() {
@@ -29,7 +27,7 @@ namespace vkutil {
     }
 
     void Application::init() {
-        initWindow();
+        initWindow(); //    GLFW 윈도우 생성
         initVulkan();
     }
 
@@ -106,6 +104,7 @@ namespace vkutil {
         this->createLogicalDevice();
         this->createSwapChain();
         this->createImageViews();
+        this->createGraphicsPipeline();
     }
 
     void Application::mainLoop()
@@ -405,9 +404,33 @@ namespace vkutil {
         }
     }
 
-    // 주어진 물리 장치에서 큐 패밀리 속성을 찾는 함수
-    // PROB : 큐 패밀리가 여러개인 경우에 필요한 처리가 있는 패밀리를 먼저 찾을 경우, 그 패밀리의 인덱스만 반환함
-    // TODO ; 큐 패밀리가 여러개인 경우에 대한 처리가 필요함
+    void Application::createGraphicsPipeline()
+    {
+        auto vertShaderCode = readFile("shaders/vert.spv");
+        auto fragShaderCode = readFile("shaders/frag.spv");
+        
+        VkShaderModule baseVertshaderModule = createShaderModule(vertShaderCode);
+        VkShaderModule baseFragShaderModule = createShaderModule(fragShaderCode);
+
+        VkPipelineShaderStageCreateInfo vertShaderStageInfo{};
+        vertShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+        vertShaderStageInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
+        vertShaderStageInfo.module = baseVertshaderModule;
+        vertShaderStageInfo.pName = "main";
+
+        VkPipelineShaderStageCreateInfo fragShaderStageInfo{};
+        fragShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+        fragShaderStageInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
+        fragShaderStageInfo.module = baseFragShaderModule;
+        fragShaderStageInfo.pName = "main";
+
+        VkPipelineShaderStageCreateInfo shaderStages[] = { vertShaderStageInfo, fragShaderStageInfo };
+
+        vkDestroyShaderModule(this->VKdevice, baseVertshaderModule, nullptr);
+        vkDestroyShaderModule(this->VKdevice, baseFragShaderModule, nullptr);
+
+    }
+
     QueueFamilyIndices Application::findQueueFamilies(VkPhysicalDevice device)
     {
         QueueFamilyIndices indices; // 큐 패밀리의 개수를 저장할 변수를 초기화
@@ -483,8 +506,6 @@ namespace vkutil {
         return indices.isComplete() && extensionsSupported && swapChainAdequate;
     }
 
-    // 검증 레이어 지원 여부를 확인하는 함수
-    // 확장 기능을 열거하고 필요한 모든 확장 기능이 포함되어 있는지 확인
     bool Application::checkDeviceExtensionSupport(VkPhysicalDevice device)
     {
         uint32_t extensionCount;
@@ -502,9 +523,6 @@ namespace vkutil {
         return requiredExtensions.empty();
     }
 
-    // 스왑 체인 지원 정보를 가져오는 함수
-    // 스왑 체인 지원 정보를 저장할 구조체를 초기화
-    // 물리 장치에서 서피스의 기능을 가져옴
     SwapChainSupportDetails Application::querySwapChainSupport(VkPhysicalDevice device)
     {
         SwapChainSupportDetails details;
@@ -530,10 +548,6 @@ namespace vkutil {
         return details;
     }
 
-    // 서피스 포맷을 선택하는 함수
-    // SRGB 색상 공간을 지원하는 32비트 BGR 색상 구조를 선택
-    // 이러한 형식이 지원되지 않으면 첫 번째 형식을 반환
-    // 이러한 형식이 없으면 예외를 발생시킵니다.
     VkSurfaceFormatKHR Application::chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats)
     {
         VkSurfaceFormatKHR targetformat = {};
@@ -553,9 +567,6 @@ namespace vkutil {
         return targetformat;
     }
 
-    // 프레젠테이션 모드를 선택하는 함수
-    // VK_PRESENT_MODE_MAILBOX_KHR 프레젠테이션 모드를 지원하는지 확인
-    // 지원되는 경우 VK_PRESENT_MODE_MAILBOX_KHR를 반환
     VkPresentModeKHR Application::chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes) {
         for (const auto& availablePresentMode : availablePresentModes) {
             if (availablePresentMode == VK_PRESENT_MODE_MAILBOX_KHR) {
@@ -564,9 +575,6 @@ namespace vkutil {
         }return VK_PRESENT_MODE_FIFO_KHR;
     }
 
-    // 스왑 체인 이미지의 해상도를 선택합니다.
-    // 현재 해상도가 유효하면 반환하고, 그렇지 않으면 GLFW 크기를 기준으로 해상도를 설정합니다.
-    // 해상도는 최소 및 최대 이미지 해상도 사이에서 클램프됩니다.
     VkExtent2D Application::chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities) {
         
         if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max()) {
@@ -587,6 +595,21 @@ namespace vkutil {
             return actualExtent;
         }
 
+    }
+
+    VkShaderModule Application::createShaderModule(const std::vector<char>& code)
+    {
+        VkShaderModuleCreateInfo createInfo{};
+        createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+        createInfo.codeSize = code.size();
+        createInfo.pCode = reinterpret_cast<const uint32_t*>(code.data());
+
+        VkShaderModule shaderModule;
+        if (vkCreateShaderModule(this->VKdevice, &createInfo, nullptr, &shaderModule) != VK_SUCCESS) {
+            throw std::runtime_error("failed to create shader module!");
+        }
+
+        return shaderModule;
     }
 
     int rateDeviceSuitability(VkPhysicalDevice device)
