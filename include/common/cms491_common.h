@@ -1,4 +1,6 @@
-﻿#pragma once
+﻿#ifndef INCLUDE_CMS419_COMMON_H
+#define INCLUDE_CMS419_COMMON_H
+
 #include <algorithm>
 #include <array>
 #include <chrono>
@@ -28,6 +30,11 @@ const std::vector<const char*> validationLayers = {
 
 const std::vector<const char*> deviceExtensions = {
     VK_KHR_SWAPCHAIN_EXTENSION_NAME
+};
+
+const std::vector<VkDynamicState> dynamicStates = {
+    VK_DYNAMIC_STATE_VIEWPORT,
+    VK_DYNAMIC_STATE_SCISSOR
 };
 
 #ifdef DEBUG_
@@ -89,10 +96,13 @@ struct SwapChainSupportDetails {
     std::vector<VkPresentModeKHR> presentModes;
 };
 
+// 파일을 읽어오는 함수
 static std::vector<char> readFile(const std::string& filename) {
+
     // 파일 끝으로 이동하여 파일 크기를 가져옵니다.
     std::ifstream file(filename, std::ios::ate | std::ios::binary); 
 
+    // 파일을 열 수 없는 경우 예외를 발생시킵니다.
     if (!file.is_open()) {
         throw std::runtime_error("failed to open file!");
     }
@@ -100,8 +110,10 @@ static std::vector<char> readFile(const std::string& filename) {
     size_t fileSize = (size_t)file.tellg(); // 파일 크기를 이용하여 버퍼를 할당합니다.
     std::vector<char> buffer(fileSize);     // 파일 포인터를 파일의 시작으로 이동합니다.
     file.seekg(0);                          // 파일 포인터를 파일의 시작으로 이동합니다.
-    file.read(buffer.data(), fileSize);     // 파일 내용을 버퍼에 읽어옵니다.
+    file.read(buffer.data(), fileSize);     // 파일 내용을 버퍼에 읽어옵니다. -> 파일을 fileSize 크기만큼 한번에 읽어온다.
     file.close();                           // 파일을 닫습니다.
 
     return buffer;
 }
+
+#endif // INCLUDE_CMS419_COMMON_H

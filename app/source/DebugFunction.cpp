@@ -2,10 +2,9 @@
 #include "../../include/source/DebugFunction.h"
 
 using namespace vkutil;
-
+using vkutil::Application;
 
 namespace vkutil {
-    using vkutil::Application;
 
     static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData) {
         std::cerr << "validation layer: " << pCallbackData->pMessage << std::endl;
@@ -31,6 +30,7 @@ namespace vkutil {
         createInfo.pfnUserCallback = debugCallback;
     }
 
+    
     bool checkValidationLayerSupport() {
         uint32_t layerCount;
         vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
@@ -65,6 +65,7 @@ namespace vkutil {
             return VK_ERROR_EXTENSION_NOT_PRESENT;
         }
     }
+    
     void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger, const VkAllocationCallbacks* pAllocator) {
         auto func = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT");
         if (func != nullptr) {

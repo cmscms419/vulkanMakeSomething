@@ -47,5 +47,16 @@
     <ClInclude Include="include\common\cms491_common.h">
       <Filter>include</Filter>
     </ClInclude>
+    <ClInclude Include="app\source\object_data.h">
+      <Filter>app\main</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="shader\frag.spv">
+      <Filter>shader</Filter>
+    </None>
+    <None Include="shader\vert.spv">
+      <Filter>shader</Filter>
+    </None>
   </ItemGroup>
 </Project>

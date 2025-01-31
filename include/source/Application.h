@@ -1,8 +1,6 @@
 ﻿#ifndef INCLUDE_SOURCE_APPLICATION_H
 #define INCLUDE_SOURCE_APPLICATION_H
 
-#define VKUTIL_APPLICATION_H
-
 #include <cms491_common.h>
 
 constexpr int MAX_FRAMES = 4;
@@ -90,6 +88,7 @@ namespace vkutil {
         std::vector<VkImageView> VKswapChainImageViews;       // 스왑 체인 이미지 뷰 -> 스왑 체인 이미지를 뷰로 변환
         VkFormat VKswapChainImageFormat;                    // 스왑 체인 이미지 포맷
         VkExtent2D VKswapChainExtent;                       // 스왑 체인 이미지 해상도
+        VkPipelineLayout VKpipelineLayout;                  // 파이프라인 레이아웃
         bool state;                                         // 프로그램 상태
     };
 

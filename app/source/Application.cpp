@@ -19,6 +19,7 @@ namespace vkutil {
         this->VKswapChainImageViews.clear();
         this->VKswapChainImageFormat = VK_FORMAT_UNDEFINED;
         this->VKswapChainExtent = { 0, 0 };
+        this->VKpipelineLayout = VK_NULL_HANDLE;
         this->state = true;
     }
 
@@ -67,7 +68,8 @@ namespace vkutil {
 #endif // DEBUG_
         for (auto imageView : this->VKswapChainImageViews) {
             vkDestroyImageView(this->VKdevice, imageView, nullptr);
-        }
+        }  
+        vkDestroyPipelineLayout(this->VKdevice, this->VKpipelineLayout, nullptr);
         vkDestroySwapchainKHR(this->VKdevice, this->VKswapChain, nullptr);
         vkDestroyDevice(this->VKdevice, nullptr);
         vkDestroySurfaceKHR(this->VKinstance, this->VKsurface, nullptr);
@@ -406,8 +408,8 @@ namespace vkutil {
 
     void Application::createGraphicsPipeline()
     {
-        auto vertShaderCode = readFile("shaders/vert.spv");
-        auto fragShaderCode = readFile("shaders/frag.spv");
+        auto vertShaderCode = readFile("shader/vert.spv");
+        auto fragShaderCode = readFile("shader/frag.spv");
         
         VkShaderModule baseVertshaderModule = createShaderModule(vertShaderCode);
         VkShaderModule baseFragShaderModule = createShaderModule(fragShaderCode);
@@ -429,6 +431,118 @@ namespace vkutil {
         vkDestroyShaderModule(this->VKdevice, baseVertshaderModule, nullptr);
         vkDestroyShaderModule(this->VKdevice, baseFragShaderModule, nullptr);
 
+        // 고정 기능 상태를 설정합니다.
+        VkPipelineDynamicStateCreateInfo dynamicState{};
+        dynamicState.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
+        dynamicState.dynamicStateCount = static_cast<uint32_t>(dynamicStates.size());
+        dynamicState.pDynamicStates = dynamicStates.data();
+
+        // 그래픽 파이프라인 레이아웃을 생성합니다.
+        VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
+        vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+        vertexInputInfo.vertexBindingDescriptionCount = 0;
+        vertexInputInfo.pVertexBindingDescriptions = nullptr; // Optional
+        vertexInputInfo.vertexAttributeDescriptionCount = 0;
+        vertexInputInfo.pVertexAttributeDescriptions = nullptr; // Optional
+
+        // 입력 데이터를 어떤 형태로 조립할 것인지 결정합니다.
+        VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
+        inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
+        inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST; // 삼각형 리스트로 설정
+        inputAssembly.primitiveRestartEnable = VK_FALSE; // 프리미티브 재시작 비활성화
+
+        VkViewport viewpport{};
+        viewpport.x = 0.0f;
+        viewpport.y = 0.0f;
+        viewpport.width = (float)this->VKswapChainExtent.width;
+        viewpport.height = (float)this->VKswapChainExtent.height;
+        viewpport.minDepth = 0.0f;
+        viewpport.maxDepth = 1.0f;
+
+        VkRect2D scissor{};
+        scissor.offset = { 0, 0 };
+        scissor.extent = this->VKswapChainExtent;
+
+        // 뷰포트 설정
+        VkPipelineViewportStateCreateInfo viewportState{};
+        viewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
+        viewportState.viewportCount = 1;
+        viewportState.pViewports = &viewpport;
+        viewportState.scissorCount = 1;
+        viewportState.pScissors = &scissor;
+
+        // 래스터화 설정
+        VkPipelineRasterizationStateCreateInfo rasterizer{};
+        rasterizer.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
+        rasterizer.depthClampEnable = VK_FALSE;                 // 깊이 클램핑 비활성화
+        rasterizer.rasterizerDiscardEnable = VK_FALSE;          // 래스터화 버림 비활성화
+        rasterizer.polygonMode = VK_POLYGON_MODE_FILL;          // 다각형 모드를 채우기로 설정
+        rasterizer.lineWidth = 1.0f;                            // 라인 너비를 1.0f로 설정
+        rasterizer.cullMode = VK_CULL_MODE_BACK_BIT;            // 후면 면을 제거
+        rasterizer.frontFace = VK_FRONT_FACE_CLOCKWISE;         // 전면 면을 시계 방향으로 설정
+        
+        rasterizer.depthBiasEnable = VK_FALSE;                  // 깊이 바이어스 비활성화
+        rasterizer.depthBiasConstantFactor = 0.0f;              // 깊이 바이어스 상수 요소를 0.0f로 설정
+        rasterizer.depthBiasClamp = 0.0f;                       // 깊이 바이어스 클램프를 0.0f로 설정
+        rasterizer.depthBiasSlopeFactor = 0.0f;                 // 깊이 바이어스 슬로프 요소를 0.0f로 설정
+
+        // 다중 샘플링 설정
+        VkPipelineMultisampleStateCreateInfo multisampling{};
+        multisampling.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO; //
+        multisampling.sampleShadingEnable = VK_FALSE;               // 샘플링 쉐이딩 비활성화
+        multisampling.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT; // 래스터화 샘플 수를 1비트로 설정
+        multisampling.minSampleShading = 1.0f;                      // 최소 샘플링을 1.0f로 설정 -> option
+        multisampling.pSampleMask = nullptr;                        // 샘플 마스크를 nullptr로 설정 -> option
+        multisampling.alphaToCoverageEnable = VK_FALSE;             // 알파 커버리지 비활성화 -> option
+        multisampling.alphaToOneEnable = VK_FALSE;                  // 알파 원 비활성화 -> option
+
+        // 컬러 블렌딩 설정
+        VkPipelineColorBlendAttachmentState colorBlendAttachment{};
+        colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | 
+                                              VK_COLOR_COMPONENT_G_BIT | 
+                                              VK_COLOR_COMPONENT_B_BIT | 
+                                              VK_COLOR_COMPONENT_A_BIT;     // 컬러 쓰기 마스크를 설정
+        colorBlendAttachment.blendEnable = VK_FALSE;                        // 블렌딩을 비활성화
+        colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_ONE;     // 소스 컬러 블렌딩 팩터를 설정
+        colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO;    // 대상 컬러 블렌딩 팩터를 설정
+        colorBlendAttachment.colorBlendOp = VK_BLEND_OP_ADD;                // 컬러 블렌딩 연산을 설정
+        colorBlendAttachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;     // 소스 알파 블렌딩 팩터를 설정
+        colorBlendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;    // 대상 알파 블렌딩 팩터를 설정
+        colorBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD;                // 알파 블렌딩 연산을 설정
+        /*
+        if (blendEnable) {
+            finalColor.rgb = (srcColorBlendFactor * newColor.rgb) <colorBlendOp> (dstColorBlendFactor * oldColor.rgb);
+            finalColor.a = (srcAlphaBlendFactor * newColor.a) <alphaBlendOp> (dstAlphaBlendFactor * oldColor.a);
+        } else {
+            finalColor = newColor;
+        }
+        
+        finalColor = finalColor & colorWriteMask;
+        */
+
+        // 컬러 블렌딩 상태 생성 정보 구조체를 초기화합니다.
+        VkPipelineColorBlendStateCreateInfo colorBlending{};
+        colorBlending.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO; // 구조체 타입을 설정
+        colorBlending.logicOpEnable = VK_FALSE;                                       // 논리 연산을 비활성화
+        colorBlending.logicOp = VK_LOGIC_OP_COPY;                                     // 논리 연산을 설정
+        colorBlending.attachmentCount = 1;                                            // 컬러 블렌딩 첨부 개수를 설정
+        colorBlending.pAttachments = &colorBlendAttachment;                           // 컬러 블렌딩 첨부 포인터를 설정
+        colorBlending.blendConstants[0] = 0.0f;                                       // 블렌딩 상수를 설정
+        colorBlending.blendConstants[1] = 0.0f;                                       // 블렌딩 상수를 설정
+        colorBlending.blendConstants[2] = 0.0f;                                       // 블렌딩 상수를 설정
+        colorBlending.blendConstants[3] = 0.0f;                                       // 블렌딩 상수를 설정
+
+        // 그래픽 파이프라인 레이아웃을 생성합니다.
+        VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
+        pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO; // 구조체 타입을 설정
+        pipelineLayoutInfo.setLayoutCount = 0;                                     // 레이아웃 개수를 설정
+        pipelineLayoutInfo.pSetLayouts = nullptr;                                  // 레이아웃 포인터를 설정
+        pipelineLayoutInfo.pushConstantRangeCount = 0;                            // 푸시 상수 범위 개수를 설정
+        pipelineLayoutInfo.pPushConstantRanges = nullptr;                         // 푸시 상수 범위 포인터를 설정
+
+        if (vkCreatePipelineLayout(this->VKdevice, &pipelineLayoutInfo, nullptr, &this->VKpipelineLayout) != VK_SUCCESS) {
+            throw std::runtime_error("failed to create pipeline layout!");
+        }
     }
 
     QueueFamilyIndices Application::findQueueFamilies(VkPhysicalDevice device)
