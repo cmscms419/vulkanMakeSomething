@@ -70,6 +70,7 @@ namespace vkutil {
             vkDestroyImageView(this->VKdevice, imageView, nullptr);
         }  
         vkDestroyPipelineLayout(this->VKdevice, this->VKpipelineLayout, nullptr);
+        vkDestroyRenderPass(this->VKdevice, this->VKrenderPass, nullptr);
         vkDestroySwapchainKHR(this->VKdevice, this->VKswapChain, nullptr);
         vkDestroyDevice(this->VKdevice, nullptr);
         vkDestroySurfaceKHR(this->VKinstance, this->VKsurface, nullptr);
@@ -106,6 +107,7 @@ namespace vkutil {
         this->createLogicalDevice();
         this->createSwapChain();
         this->createImageViews();
+        this->createRenderPass();
         this->createGraphicsPipeline();
     }
 
@@ -404,6 +406,45 @@ namespace vkutil {
                 throw std::runtime_error("failed to create image views!");
             }
         }
+    }
+
+    void Application::createRenderPass()
+    {
+        // 렌더 패스 생성 정보 구조체를 초기화합니다.
+        VkAttachmentDescription colorAttachment{};
+        colorAttachment.format = this->VKswapChainImageFormat;
+        colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
+        colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+        colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+        colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+        colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+
+        // 렌더 패스 서브패스를 설정합니다.
+        VkAttachmentReference colorAttachmentRef{};
+        colorAttachmentRef.attachment = 0;
+        colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+        // 서브패스를 설정합니다.
+        VkSubpassDescription subpass{};
+        subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+        subpass.colorAttachmentCount = 1;
+        subpass.pColorAttachments = &colorAttachmentRef;
+
+        // 렌더 패스 생성 정보 구조체를 초기화합니다.
+        // 렌더 패스 생성 정보 구조체에 첨부 파일 및 서브패스를 설정합니다.
+        VkRenderPassCreateInfo renderPassInfo{};
+        renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+        renderPassInfo.attachmentCount = 1;
+        renderPassInfo.pAttachments = &colorAttachment;
+        renderPassInfo.subpassCount = 1;
+        renderPassInfo.pSubpasses = &subpass;
+
+        if (vkCreateRenderPass(this->VKdevice, &renderPassInfo, nullptr, &this->VKrenderPass) != VK_SUCCESS) {
+            throw std::runtime_error("failed to create render pass!");
+        }
+
     }
 
     void Application::createGraphicsPipeline()

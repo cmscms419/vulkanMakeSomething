@@ -36,6 +36,7 @@ namespace vkutil {
         void createSurface();
         void createSwapChain();
         void createImageViews();
+        void createRenderPass();
         void createGraphicsPipeline();
 
         // 도구
@@ -89,6 +90,7 @@ namespace vkutil {
         VkFormat VKswapChainImageFormat;                    // 스왑 체인 이미지 포맷
         VkExtent2D VKswapChainExtent;                       // 스왑 체인 이미지 해상도
         VkPipelineLayout VKpipelineLayout;                  // 파이프라인 레이아웃
+        VkRenderPass VKrenderPass;                          // 렌더 패스
         bool state;                                         // 프로그램 상태
     };
 
