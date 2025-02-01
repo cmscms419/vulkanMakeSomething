@@ -1,7 +1,7 @@
 #ifndef INCLUDE_SOURCE_DEBUGFUNCTION_H
 #define INCLUDE_SOURCE_DEBUGFUNCTION_H
 
-#include "../../include/source/Application.h"
+#include "Application.h"
 
 namespace vkutil {
 

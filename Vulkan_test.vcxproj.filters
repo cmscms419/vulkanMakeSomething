@@ -21,9 +21,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp">
-      <Filter>app\main</Filter>
-    </ClCompile>
     <ClCompile Include="app\cpp\test.cpp">
       <Filter>app\cpp</Filter>
     </ClCompile>
@@ -33,21 +30,24 @@
     <ClCompile Include="app\source\DebugFunction.cpp">
       <Filter>app\main</Filter>
     </ClCompile>
+    <ClCompile Include="app\source\main.cpp">
+      <Filter>app\main</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\app\test.h">
-      <Filter>app\cpp</Filter>
-    </ClInclude>
-    <ClInclude Include="include\source\Application.h">
-      <Filter>app\main</Filter>
-    </ClInclude>
-    <ClInclude Include="include\source\DebugFunction.h">
-      <Filter>app\main</Filter>
-    </ClInclude>
     <ClInclude Include="include\common\cms491_common.h">
       <Filter>include</Filter>
     </ClInclude>
     <ClInclude Include="app\source\object_data.h">
+      <Filter>app\main</Filter>
+    </ClInclude>
+    <ClInclude Include="app\cpp\test.h">
+      <Filter>app\cpp</Filter>
+    </ClInclude>
+    <ClInclude Include="app\source\Application.h">
+      <Filter>app\main</Filter>
+    </ClInclude>
+    <ClInclude Include="app\source\DebugFunction.h">
       <Filter>app\main</Filter>
     </ClInclude>
   </ItemGroup>

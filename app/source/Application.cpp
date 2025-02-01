@@ -1,6 +1,6 @@
 
-#include "../../include/source/Application.h"
-#include "../../include/source/DebugFunction.h"
+#include "Application.h"
+#include "DebugFunction.h"
 
 namespace vkutil {
 
@@ -69,6 +69,7 @@ namespace vkutil {
         for (auto imageView : this->VKswapChainImageViews) {
             vkDestroyImageView(this->VKdevice, imageView, nullptr);
         }  
+        vkDestroyPipeline(this->VKdevice, this->VKgraphicsPipeline, nullptr);
         vkDestroyPipelineLayout(this->VKdevice, this->VKpipelineLayout, nullptr);
         vkDestroyRenderPass(this->VKdevice, this->VKrenderPass, nullptr);
         vkDestroySwapchainKHR(this->VKdevice, this->VKswapChain, nullptr);
@@ -584,6 +585,30 @@ namespace vkutil {
         if (vkCreatePipelineLayout(this->VKdevice, &pipelineLayoutInfo, nullptr, &this->VKpipelineLayout) != VK_SUCCESS) {
             throw std::runtime_error("failed to create pipeline layout!");
         }
+
+        // 그래픽 파이프라인 생성 정보 구조체를 초기화합니다.
+        VkGraphicsPipelineCreateInfo pipelineInfo{};
+        pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+        pipelineInfo.stageCount = 2;
+        pipelineInfo.pStages = shaderStages;
+        pipelineInfo.pVertexInputState = &vertexInputInfo;
+        pipelineInfo.pInputAssemblyState = &inputAssembly;
+        pipelineInfo.pViewportState = &viewportState;
+        pipelineInfo.pRasterizationState = &rasterizer;
+        pipelineInfo.pMultisampleState = &multisampling;
+        pipelineInfo.pDepthStencilState = nullptr; // Optional
+        pipelineInfo.pColorBlendState = &colorBlending;
+        pipelineInfo.pDynamicState = &dynamicState;
+        pipelineInfo.layout = this->VKpipelineLayout;
+        pipelineInfo.renderPass = this->VKrenderPass; 
+        pipelineInfo.subpass = 0;
+        pipelineInfo.basePipelineHandle = VK_NULL_HANDLE; // Optional
+        pipelineInfo.basePipelineIndex = -1; // Optional
+
+        if (vkCreateGraphicsPipelines(this->VKdevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &this->VKgraphicsPipeline) != VK_SUCCESS) {
+            throw std::runtime_error("failed to create graphics pipeline!");
+        }
+
     }
 
     QueueFamilyIndices Application::findQueueFamilies(VkPhysicalDevice device)
