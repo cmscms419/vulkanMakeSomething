@@ -13,7 +13,7 @@ int main(int argc, char* argv[]) {
     //}
 
     app->init();
-    app->run();
+    app->mainLoop();
     app->cleanup();
 
     return EXIT_SUCCESS;

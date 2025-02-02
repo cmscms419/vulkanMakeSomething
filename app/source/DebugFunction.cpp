@@ -1,5 +1,5 @@
 
-#include "../../include/source/DebugFunction.h"
+#include "DebugFunction.h"
 
 using namespace vkutil;
 using vkutil::Application;

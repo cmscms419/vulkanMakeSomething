@@ -13,11 +13,11 @@
     <Filter Include="app\cuda">
       <UniqueIdentifier>{67f19908-9ccd-4691-9a3c-46a31bedd3ec}</UniqueIdentifier>
     </Filter>
-    <Filter Include="app\main">
-      <UniqueIdentifier>{5e6e231c-5ec9-4c8e-bff7-07f387109247}</UniqueIdentifier>
-    </Filter>
     <Filter Include="include">
       <UniqueIdentifier>{e344f3f3-48cb-492f-91d4-08f4d357e2c4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="app\source">
+      <UniqueIdentifier>{5e6e231c-5ec9-4c8e-bff7-07f387109247}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -25,13 +25,13 @@
       <Filter>app\cpp</Filter>
     </ClCompile>
     <ClCompile Include="app\source\Application.cpp">
-      <Filter>app\main</Filter>
+      <Filter>app\source</Filter>
     </ClCompile>
     <ClCompile Include="app\source\DebugFunction.cpp">
-      <Filter>app\main</Filter>
+      <Filter>app\source</Filter>
     </ClCompile>
     <ClCompile Include="app\source\main.cpp">
-      <Filter>app\main</Filter>
+      <Filter>app\source</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -39,16 +39,16 @@
       <Filter>include</Filter>
     </ClInclude>
     <ClInclude Include="app\source\object_data.h">
-      <Filter>app\main</Filter>
+      <Filter>app\source</Filter>
+    </ClInclude>
+    <ClInclude Include="app\source\Application.h">
+      <Filter>app\source</Filter>
+    </ClInclude>
+    <ClInclude Include="app\source\DebugFunction.h">
+      <Filter>app\source</Filter>
     </ClInclude>
     <ClInclude Include="app\cpp\test.h">
       <Filter>app\cpp</Filter>
-    </ClInclude>
-    <ClInclude Include="app\source\Application.h">
-      <Filter>app\main</Filter>
-    </ClInclude>
-    <ClInclude Include="app\source\DebugFunction.h">
-      <Filter>app\main</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

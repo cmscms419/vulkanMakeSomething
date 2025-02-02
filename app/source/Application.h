@@ -14,8 +14,8 @@ namespace vkutil {
         ~Application();
 
         virtual void init();
-        virtual bool run();
         virtual void update();
+        virtual bool mainLoop();
         virtual void setup();
         virtual void cleanup();
 
@@ -25,7 +25,9 @@ namespace vkutil {
         // 상속
         virtual void initWindow();
         virtual void initVulkan();
-        virtual void mainLoop();
+        virtual void drawFrame();
+        
+        virtual bool run(); // 임시
         
         // Vulkan 인스턴스 생성
         // 기본
@@ -38,6 +40,10 @@ namespace vkutil {
         void createImageViews();
         void createRenderPass();
         void createGraphicsPipeline();
+        void createFramebuffers();
+        void createCommandPool();
+        void createCommandBuffers();
+        void createSyncObjects();
 
         // 도구
 
@@ -74,6 +80,10 @@ namespace vkutil {
         
         // 코드를 읽어서 셰이더 모듈을 생성하는 함수
         VkShaderModule createShaderModule(const std::vector<char>& code);
+
+        // 커맨드 버퍼를 기록하는 함수
+        // 실행하고자 하는 명령을 명령 버퍼에 기록
+        void recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex);
         
         GLFWwindow* VKwindow;                               // GLFW 윈도우
         VkInstance VKinstance;                              // Vulkan 인스턴스
@@ -84,14 +94,22 @@ namespace vkutil {
         VkQueue graphicsVKQueue;                            // 그래픽스 큐
         VkQueue presentVKQueue;                             // 프레젠트 큐
         VkSurfaceKHR VKsurface;                             // 서피스 -> 윈도우 시스템과 Vulkan을 연결하는 인터페이스
-        VkSwapchainKHR VKswapChain;                         // 스왑 체인
-        std::vector<VkImage> VKswapChainImages;             // 스왑 체인 이미지 -> 스왑 체인에 사용되는 이미지 Handle
-        std::vector<VkImageView> VKswapChainImageViews;       // 스왑 체인 이미지 뷰 -> 스왑 체인 이미지를 뷰로 변환
+        VkSwapchainKHR VKswapChain;                         // 스왑 체인 -> 이미지를 프레임 버퍼로 전송하는 데 사용
+        std::vector<VkImage> VKswapChainImages;             // 스왑 체인 이미지 -> 스왑 체인에 사용되는 이미지 Handle 배열
+        std::vector<VkImageView> VKswapChainImageViews;     // 스왑 체인 이미지 뷰 -> 스왑 체인 이미지를 뷰로 변환 (이미지 뷰는 이미지를 읽고 쓰는 데 사용됨)
         VkFormat VKswapChainImageFormat;                    // 스왑 체인 이미지 포맷
         VkExtent2D VKswapChainExtent;                       // 스왑 체인 이미지 해상도
         VkPipelineLayout VKpipelineLayout;                  // 파이프라인 레이아웃
         VkRenderPass VKrenderPass;                          // 렌더 패스
-        VkPipeline VKgraphicsPipeline;                        // 그래픽스 파이프라인
+        VkPipeline VKgraphicsPipeline;                      // 그래픽스 파이프라인
+        std::vector<VkFramebuffer> VKswapChainFramebuffers; // 스왑 체인 프레임 버퍼
+        VkCommandPool VKcommandPool;                        // 커맨드 풀
+        VkCommandBuffer VKcommandBuffer;                    // 커맨드 버퍼
+        VkSemaphore VkimageavailableSemaphore;              // 이미지 사용 가능 세마포어
+        VkSemaphore VkrenderFinishedSemaphore;              // 렌더링 완료 세마포어
+        VkFence VkinFlightFences;                           // 플라이트 펜스
+
+        size_t currentFrame = 0;                            // 현재 프레임
         bool state;                                         // 프로그램 상태
     };
 
