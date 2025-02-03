@@ -1,10 +1,9 @@
 
 #include "Application.h"
-#include "DebugFunction.h"
 
 namespace vkutil {
 
-    Application::Application() {
+    Application::Application(std::string root_path) {
         this->VKwindow = nullptr;
         this->VKinstance = {};
         this->VKdebugUtilsMessenger = VK_NULL_HANDLE;
@@ -24,10 +23,11 @@ namespace vkutil {
         this->VKgraphicsPipeline = VK_NULL_HANDLE;
         this->VKswapChainFramebuffers.clear();
         this->VKcommandPool = VK_NULL_HANDLE;
-        this->VKcommandBuffer = VK_NULL_HANDLE;
-        this->VkimageavailableSemaphore = VK_NULL_HANDLE;
-        this->VkrenderFinishedSemaphore = VK_NULL_HANDLE;
-        this->VkinFlightFences = VK_NULL_HANDLE;
+        this->VKcommandBuffers.clear();
+        this->VkimageavailableSemaphore.clear();
+        this->VkrenderFinishedSemaphore.clear();
+        this->VkinFlightFences.clear();
+        this->RootPath = root_path;
         this->state = true;
     }
 
@@ -75,9 +75,13 @@ namespace vkutil {
 
 #endif // DEBUG_
 
-        vkDestroySemaphore(this->VKdevice, this->VkrenderFinishedSemaphore, nullptr);
-        vkDestroySemaphore(this->VKdevice, this->VkimageavailableSemaphore, nullptr);
-        vkDestroyFence(this->VKdevice, this->VkinFlightFences, nullptr);
+        for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+        {
+            vkDestroySemaphore(this->VKdevice, this->VkrenderFinishedSemaphore[i], nullptr);
+            vkDestroySemaphore(this->VKdevice, this->VkimageavailableSemaphore[i], nullptr);
+            vkDestroyFence(this->VKdevice, this->VkinFlightFences[i], nullptr);
+        }
+
         vkDestroyCommandPool(this->VKdevice, this->VKcommandPool, nullptr);
         for (auto framebuffer : this->VKswapChainFramebuffers)
         {
@@ -139,22 +143,23 @@ namespace vkutil {
     void Application::drawFrame()
     {
         // 렌더링을 시작하기 전에 프레임을 렌더링할 준비가 되었는지 확인합니다.
-        vkWaitForFences(this->VKdevice, 1, &this->VkinFlightFences, VK_TRUE, UINT64_MAX);
+        vkWaitForFences(this->VKdevice, 1, &this->VkinFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
+        vkResetFences(this->VKdevice, 1, &this->VkinFlightFences[currentFrame]); // 플래그를 재설정합니다. -> 렌더링이 끝나면 플래그를 재설정합니다.
 
-        // 이미지를 가져오기 위해 스왑 체인에서 이미지 인덱스를 가져옵니다.
         uint32_t imageIndex;
-        vkAcquireNextImageKHR(this->VKdevice, this->VKswapChain, UINT64_MAX, this->VkimageavailableSemaphore, VK_NULL_HANDLE, &imageIndex);
+        // 이미지를 가져오기 위해 스왑 체인에서 이미지 인덱스를 가져옵니다.
+        vkAcquireNextImageKHR(this->VKdevice, this->VKswapChain, UINT64_MAX, this->VkimageavailableSemaphore[currentFrame], VK_NULL_HANDLE, &imageIndex);
 
         // 렌더링을 시작하기 전에 이미지를 렌더링할 준비가 되었는지 확인합니다.
-        vkResetCommandBuffer(this->VKcommandBuffer, 0);
-        this->recordCommandBuffer(this->VKcommandBuffer, imageIndex);
+        vkResetCommandBuffer(this->VKcommandBuffers[currentFrame], 0);
+        this->recordCommandBuffer(this->VKcommandBuffers[currentFrame], imageIndex);
 
         // 렌더링을 시작하기 전에 렌더링할 준비가 되었는지 확인합니다.
         VkSubmitInfo submitInfo{};
         submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
         // 렌더링을 시작하기 전에 세마포어를 설정합니다.
-        VkSemaphore waitSemaphores[] = { this->VkimageavailableSemaphore };
+        VkSemaphore waitSemaphores[] = { this->VkimageavailableSemaphore[currentFrame] };
         VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
         submitInfo.waitSemaphoreCount = 1;
         submitInfo.pWaitSemaphores = waitSemaphores;
@@ -162,16 +167,17 @@ namespace vkutil {
 
         // 렌더링을 시작하기 전에 커맨드 버퍼를 설정합니다.
         submitInfo.commandBufferCount = 1;
-        submitInfo.pCommandBuffers = &this->VKcommandBuffer;
+        submitInfo.pCommandBuffers = &this->VKcommandBuffers[currentFrame];
 
         // 렌더링을 시작하기 전에 세마포어를 설정합니다.
-        VkSemaphore signalSemaphores[] = { this->VkrenderFinishedSemaphore };
+        VkSemaphore signalSemaphores[] = { this->VkrenderFinishedSemaphore[currentFrame] };
         submitInfo.signalSemaphoreCount = 1;
         submitInfo.pSignalSemaphores = signalSemaphores;
 
-        vkResetFences(this->VKdevice, 1, &this->VkinFlightFences);
+        vkResetFences(this->VKdevice, 1, &this->VkinFlightFences[currentFrame]); // 플래그를 재설정합니다. -> 렌더링이 끝나면 플래그를 재설정합니다.
 
-        if (vkQueueSubmit(this->graphicsVKQueue, 1 ,&submitInfo, this->VkinFlightFences) != VK_SUCCESS) {
+        // 렌더링을 시작합니다.
+        if (vkQueueSubmit(this->graphicsVKQueue, 1 ,&submitInfo, this->VkinFlightFences[currentFrame]) != VK_SUCCESS) {
             throw std::runtime_error("failed to submit draw command buffer!");
         }
         
@@ -189,7 +195,8 @@ namespace vkutil {
 
         presentInfo.pImageIndices = &imageIndex;
 
-        vkQueuePresentKHR(this->presentVKQueue, &presentInfo);
+        vkQueuePresentKHR(this->presentVKQueue, &presentInfo); // 프레젠테이션 큐에 이미지를 제출합니다.
+        this->currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 
     }
 
@@ -557,8 +564,8 @@ namespace vkutil {
 
     void Application::createGraphicsPipeline()
     {
-        auto vertShaderCode = readFile("shader/vert.spv");
-        auto fragShaderCode = readFile("shader/frag.spv");
+        auto vertShaderCode = readFile(this->RootPath + "/../../../../shader/vert.spv");
+        auto fragShaderCode = readFile(this->RootPath + "/../../../../shader/frag.spv");
         
         VkShaderModule baseVertshaderModule = createShaderModule(vertShaderCode);
         VkShaderModule baseFragShaderModule = createShaderModule(fragShaderCode);
@@ -761,13 +768,15 @@ namespace vkutil {
 
     void Application::createCommandBuffers()
     {
+        this->VKcommandBuffers.resize(MAX_FRAMES_IN_FLIGHT);
+
         VkCommandBufferAllocateInfo allocInfo{};
         allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
         allocInfo.commandPool = this->VKcommandPool;
         allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-        allocInfo.commandBufferCount = 1; // 커맨드 버퍼 개수를 설정
+        allocInfo.commandBufferCount = static_cast<uint32_t>(this->VKcommandBuffers.size()); // 커맨드 버퍼 개수를 설정
 
-        if (vkAllocateCommandBuffers(this->VKdevice, &allocInfo, &this->VKcommandBuffer) != VK_SUCCESS) {
+        if (vkAllocateCommandBuffers(this->VKdevice, &allocInfo, this->VKcommandBuffers.data()) != VK_SUCCESS) {
             throw std::runtime_error("failed to allocate command buffers!");
         }
 
@@ -775,6 +784,10 @@ namespace vkutil {
 
     void Application::createSyncObjects()
     {
+        this->VkimageavailableSemaphore.resize(MAX_FRAMES_IN_FLIGHT);
+        this->VkrenderFinishedSemaphore.resize(MAX_FRAMES_IN_FLIGHT);
+        this->VkinFlightFences.resize(MAX_FRAMES_IN_FLIGHT);
+
         VkSemaphoreCreateInfo semaphoreInfo{};
         semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
@@ -782,12 +795,16 @@ namespace vkutil {
         fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
         fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
-        if (vkCreateSemaphore(this->VKdevice, &semaphoreInfo, nullptr, &this->VkimageavailableSemaphore) != VK_SUCCESS ||
-            vkCreateSemaphore(this->VKdevice, &semaphoreInfo, nullptr, &this->VkrenderFinishedSemaphore) != VK_SUCCESS ||
-            vkCreateFence(this->VKdevice, &fenceInfo, nullptr, &this->VkinFlightFences) != VK_SUCCESS)
+        for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
         {
-            throw std::runtime_error("failed to create semaphores!");
+            if (vkCreateSemaphore(this->VKdevice, &semaphoreInfo, nullptr, &this->VkimageavailableSemaphore[i]) != VK_SUCCESS ||
+                vkCreateSemaphore(this->VKdevice, &semaphoreInfo, nullptr, &this->VkrenderFinishedSemaphore[i]) != VK_SUCCESS ||
+                vkCreateFence(this->VKdevice, &fenceInfo, nullptr, &this->VkinFlightFences[i]) != VK_SUCCESS)
+            {
+                throw std::runtime_error("failed to create semaphores!");
+            }
         }
+
 
 
     }

@@ -19,17 +19,37 @@
 #define GLFW_EXPOSE_NATIVE_WIN32
 #include <GLFW/glfw3native.h>
 
+//#ifdef _WIN32
+//#include <windows.h>
+//#elif __linux__
+//#include <unistd.h>
+//#include <limits.h>
+//#endif
+
 #include <glm/glm.hpp>
 
 #define WIDTH  800
 #define HEIGHT  600
+
+const int MAX_FRAMES_IN_FLIGHT = 2;
+
+
+//#ifdef _WIN32
+//
+//#elif __linux__
+//
+//#else
+//#error "Unsupported platform"
+//
+//#endif
 
 const std::vector<const char*> validationLayers = {
     "VK_LAYER_KHRONOS_validation"
 };
 
 const std::vector<const char*> deviceExtensions = {
-    VK_KHR_SWAPCHAIN_EXTENSION_NAME
+    VK_KHR_SWAPCHAIN_EXTENSION_NAME,
+    VK_KHR_SHADER_NON_SEMANTIC_INFO_EXTENSION_NAME
 };
 
 const std::vector<VkDynamicState> dynamicStates = {

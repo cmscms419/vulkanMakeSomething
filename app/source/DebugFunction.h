@@ -1,7 +1,7 @@
 #ifndef INCLUDE_SOURCE_DEBUGFUNCTION_H
 #define INCLUDE_SOURCE_DEBUGFUNCTION_H
 
-#include "Application.h"
+#include "cms491_common.h"
 
 namespace vkutil {
 
@@ -14,6 +14,7 @@ namespace vkutil {
     VkResult CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugMessenger);
     
     void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger, const VkAllocationCallbacks* pAllocator);
+
 }
 
 #endif // INCLUDE_SOURCE_DEBUGFUNCTION_H

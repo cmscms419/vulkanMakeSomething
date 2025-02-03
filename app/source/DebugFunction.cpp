@@ -1,5 +1,6 @@
 
 #include "DebugFunction.h"
+#include "Application.h"
 
 using namespace vkutil;
 using vkutil::Application;
