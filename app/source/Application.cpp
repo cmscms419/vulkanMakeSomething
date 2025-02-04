@@ -2,6 +2,10 @@
 #include "Application.h"
 
 namespace vkutil {
+    static void framebufferResizeCallback(GLFWwindow* window, int width, int height) {
+        auto app = reinterpret_cast<Application*>(glfwGetWindowUserPointer(window));
+        app->framebufferResized = true;
+    }
 
     Application::Application(std::string root_path) {
         this->VKwindow = nullptr;
@@ -66,15 +70,13 @@ namespace vkutil {
 
     void Application::cleanup() {
 
-#ifdef DEBUG_
+        this->cleanupSwapChain();
 
-        printf("cleanup\n");
-        if (enableValidationLayers) {
-            DestroyDebugUtilsMessengerEXT(this->VKinstance, this->VKdebugUtilsMessenger, nullptr);
-        }
-
-#endif // DEBUG_
-
+        vkDestroyPipeline(this->VKdevice, this->VKgraphicsPipeline, nullptr);
+        vkDestroyPipelineLayout(this->VKdevice, this->VKpipelineLayout, nullptr);
+        
+        vkDestroyRenderPass(this->VKdevice, this->VKrenderPass, nullptr);
+        
         for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
         {
             vkDestroySemaphore(this->VKdevice, this->VkrenderFinishedSemaphore[i], nullptr);
@@ -83,24 +85,23 @@ namespace vkutil {
         }
 
         vkDestroyCommandPool(this->VKdevice, this->VKcommandPool, nullptr);
-        for (auto framebuffer : this->VKswapChainFramebuffers)
-        {
-            vkDestroyFramebuffer(this->VKdevice, framebuffer, nullptr);
+
+        vkDestroyDevice(this->VKdevice, nullptr);
+
+#ifdef DEBUG_
+        printf("cleanup\n");
+#endif // DEBUG_
+
+        if (enableValidationLayers) {
+            DestroyDebugUtilsMessengerEXT(this->VKinstance, this->VKdebugUtilsMessenger, nullptr);
         }
 
-        vkDestroyPipeline(this->VKdevice, this->VKgraphicsPipeline, nullptr);
-        vkDestroyPipelineLayout(this->VKdevice, this->VKpipelineLayout, nullptr);
-        vkDestroyRenderPass(this->VKdevice, this->VKrenderPass, nullptr);
-        
-        for (auto imageView : this->VKswapChainImageViews) {
-            vkDestroyImageView(this->VKdevice, imageView, nullptr);
-        }  
-        
-        vkDestroySwapchainKHR(this->VKdevice, this->VKswapChain, nullptr);
-        vkDestroyDevice(this->VKdevice, nullptr);
+
         vkDestroySurfaceKHR(this->VKinstance, this->VKsurface, nullptr);
         vkDestroyInstance(this->VKinstance, nullptr);
+        
         glfwDestroyWindow(VKwindow);
+        
         glfwTerminate();
     }
 
@@ -116,6 +117,7 @@ namespace vkutil {
         this->VKwindow = glfwCreateWindow(WIDTH_, HEIGHT_, "Vulkan Test", nullptr, nullptr);
 
         glfwSetWindowUserPointer(this->VKwindow, this);
+        glfwSetFramebufferSizeCallback(this->VKwindow, framebufferResizeCallback);
         glfwSetKeyCallback(this->VKwindow, vkutil::key_callback);  // 키 입력 콜백 설정
     }
 
@@ -144,11 +146,23 @@ namespace vkutil {
     {
         // 렌더링을 시작하기 전에 프레임을 렌더링할 준비가 되었는지 확인합니다.
         vkWaitForFences(this->VKdevice, 1, &this->VkinFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
-        vkResetFences(this->VKdevice, 1, &this->VkinFlightFences[currentFrame]); // 플래그를 재설정합니다. -> 렌더링이 끝나면 플래그를 재설정합니다.
 
         uint32_t imageIndex;
+
         // 이미지를 가져오기 위해 스왑 체인에서 이미지 인덱스를 가져옵니다.
-        vkAcquireNextImageKHR(this->VKdevice, this->VKswapChain, UINT64_MAX, this->VkimageavailableSemaphore[currentFrame], VK_NULL_HANDLE, &imageIndex);
+        // 주어진 스왑체인에서 다음 이미지를 획득하고, 
+        // 선택적으로 세마포어와 펜스를 사용하여 동기화를 관리하는 Vulkan API의 함수입니다.
+        VkResult result = vkAcquireNextImageKHR(this->VKdevice, this->VKswapChain, UINT64_MAX, this->VkimageavailableSemaphore[this->currentFrame], VK_NULL_HANDLE, &imageIndex);
+
+        if (result == VK_ERROR_OUT_OF_DATE_KHR) {
+            this->recreateSwapChain(); // 스왑 체인을 다시 생성합니다.
+            return;
+        }
+        else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
+            throw std::runtime_error("failed to acquire swap chain image!");
+        }
+
+        vkResetFences(this->VKdevice, 1, &this->VkinFlightFences[currentFrame]); // 플래그를 재설정합니다. -> 렌더링이 끝나면 플래그를 재설정합니다.
 
         // 렌더링을 시작하기 전에 이미지를 렌더링할 준비가 되었는지 확인합니다.
         vkResetCommandBuffer(this->VKcommandBuffers[currentFrame], 0);
@@ -195,9 +209,17 @@ namespace vkutil {
 
         presentInfo.pImageIndices = &imageIndex;
 
-        vkQueuePresentKHR(this->presentVKQueue, &presentInfo); // 프레젠테이션 큐에 이미지를 제출합니다.
-        this->currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
+        result = vkQueuePresentKHR(this->presentVKQueue, &presentInfo); // 프레젠테이션 큐에 이미지를 제출합니다.
 
+        if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || framebufferResized) {
+            this->framebufferResized = false;
+            this->recreateSwapChain();
+        }
+        else if (result != VK_SUCCESS) {
+            throw std::runtime_error("failed to present swap chain image!");
+        }
+
+        this->currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
     }
 
     bool Application::mainLoop()
@@ -807,6 +829,39 @@ namespace vkutil {
 
 
 
+    }
+
+    void Application::cleanupSwapChain()
+    {
+        for (auto framebuffer : VKswapChainFramebuffers)
+        {
+            vkDestroyFramebuffer(this->VKdevice, framebuffer, nullptr); // 프레임 버퍼를 제거합니다.
+        }
+
+        for (auto swapChainView : this->VKswapChainImageViews) {
+            vkDestroyImageView(this->VKdevice, swapChainView, nullptr); // 이미지 뷰를 제거합니다.
+        }
+
+        vkDestroySwapchainKHR(this->VKdevice, this->VKswapChain, nullptr); // 그래픽 파이프라인을 제거합니다.
+    }
+
+    void Application::recreateSwapChain()
+    {
+        int width = 0, height = 0;
+        glfwGetFramebufferSize(this->VKwindow, &width, &height);
+
+        while (width == 0 || height == 0) {
+            glfwGetFramebufferSize(this->VKwindow, &width, &height);
+            glfwWaitEvents();
+        }
+
+        vkDeviceWaitIdle(this->VKdevice);
+
+        this->cleanupSwapChain(); // 스왑 체인을 정리합니다.
+
+        this->createSwapChain();  // 스왑 체인을 생성합니다.
+        this->createImageViews(); // 이미지 뷰를 생성합니다.
+        this->createRenderPass(); // 렌더 패스를 생성합니다.
     }
 
     QueueFamilyIndices Application::findQueueFamilies(VkPhysicalDevice device)

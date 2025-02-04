@@ -19,6 +19,7 @@ namespace vkutil {
         virtual void setup();
         virtual void cleanup();
 
+        bool framebufferResized = false;                    // 프레임 버퍼 크기 조정 여부
     private:
 
         // GLFW 윈도우 생성
@@ -44,6 +45,7 @@ namespace vkutil {
         void createCommandBuffers();
         void createSyncObjects();
         void cleanupSwapChain();
+        void recreateSwapChain();
 
         // 도구
 
