@@ -24,8 +24,8 @@
     <ClInclude Include="include\common\cms491_common.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="shader\frag.spv" />
-    <None Include="shader\vert.spv" />
+    <None Include="shader\shader.frag" />
+    <None Include="shader\shader.vert" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{961CB7AD-D855-4611-8025-A94BC31029F5}</ProjectGuid>

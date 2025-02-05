@@ -19,6 +19,8 @@
 #define GLFW_EXPOSE_NATIVE_WIN32
 #include <GLFW/glfw3native.h>
 
+#define CREATESURFACE_VKWIN32SURFACECREATEINFOKHR 1
+
 //#ifdef _WIN32
 //#include <windows.h>
 //#elif __linux__
@@ -116,6 +118,41 @@ struct SwapChainSupportDetails {
     std::vector<VkPresentModeKHR> presentModes;
 };
 
+struct Vertex {
+    glm::vec2 pos;
+    glm::vec3 color;
+
+    // 바인딩 설명을 반환하는 함수
+    // 이 구조체의 멤버 변수가 어떻게 바인딩되는지 설명합니다.
+    static VkVertexInputBindingDescription getBindingDescription() {
+        VkVertexInputBindingDescription bindingDescription{};
+
+        bindingDescription.binding = 0;
+        bindingDescription.stride = sizeof(Vertex);
+        bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+
+        return bindingDescription;
+    }
+
+    // 어트리뷰트 설명을 반환하는 함수
+    // 위치와 색상을 나타내는 두 개의 어트리뷰트가 있습니다.
+    static std::array<VkVertexInputAttributeDescription, 2> getAttributeDescriptions() {
+        std::array<VkVertexInputAttributeDescription, 2> attributeDescriptions{};
+
+        attributeDescriptions[0].binding = 0;
+        attributeDescriptions[0].location = 0;
+        attributeDescriptions[0].format = VK_FORMAT_R32G32_SFLOAT;
+        attributeDescriptions[0].offset = offsetof(Vertex, pos);
+
+        attributeDescriptions[1].binding = 0;
+        attributeDescriptions[1].location = 1;
+        attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
+        attributeDescriptions[1].offset = offsetof(Vertex, color);
+
+        return attributeDescriptions;
+    }
+};
+
 // 파일을 읽어오는 함수
 static std::vector<char> readFile(const std::string& filename) {
 
@@ -135,5 +172,13 @@ static std::vector<char> readFile(const std::string& filename) {
 
     return buffer;
 }
+
+
+const std::vector<Vertex> testVectex = {
+    {{0.0f, -0.5f}, {1.0f, 0.0f, 0.0f}},
+    {{0.5f, 0.5f}, {0.0f, 1.0f, 0.0f}},
+    {{-0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}}
+};
+
 
 #endif // INCLUDE_CMS419_COMMON_H

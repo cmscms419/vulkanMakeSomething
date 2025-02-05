@@ -52,10 +52,10 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="shader\frag.spv">
+    <None Include="shader\shader.frag">
       <Filter>shader</Filter>
     </None>
-    <None Include="shader\vert.spv">
+    <None Include="shader\shader.vert">
       <Filter>shader</Filter>
     </None>
   </ItemGroup>

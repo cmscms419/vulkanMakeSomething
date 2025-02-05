@@ -170,7 +170,9 @@ namespace vkutil {
 
         // 렌더링을 시작하기 전에 렌더링할 준비가 되었는지 확인합니다.
         VkSubmitInfo submitInfo{};
-        submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+
+        // VkSubmitInfo 구조체는 큐에 제출할 명령 버퍼를 지정합니다.
+        submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO; // 구조체 타입을 지정합니다.
 
         // 렌더링을 시작하기 전에 세마포어를 설정합니다.
         VkSemaphore waitSemaphores[] = { this->VkimageavailableSemaphore[currentFrame] };
@@ -197,7 +199,9 @@ namespace vkutil {
         
         // 렌더링을 시작하기 전에 세마포어를 설정합니다.
         VkPresentInfoKHR presentInfo{};
-        presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+
+        // VkPresentInfoKHR 구조체는 스왑 체인 이미지의 프레젠테이션을 위한 정보를 제공합니다.
+        presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR; // 구조체 타입을 지정합니다.
 
         presentInfo.waitSemaphoreCount = 1;
         presentInfo.pWaitSemaphores = signalSemaphores;
@@ -287,7 +291,6 @@ namespace vkutil {
         {
             printf("create instance\n");
         }
-
     }
 
     void Application::setupDebugCallback()
@@ -318,8 +321,11 @@ namespace vkutil {
         std::multimap<int, VkPhysicalDevice> candidates;
 
         for (const auto& device : devices) {
-            int score = rateDeviceSuitability(device);
-            candidates.insert(std::make_pair(score, device));
+            if (isDeviceSuitable(device))
+            {
+                int score = rateDeviceSuitability(device);
+                candidates.insert(std::make_pair(score, device));
+            }
         }
 
         // Check if the best candidate is suitable at all
@@ -368,7 +374,7 @@ namespace vkutil {
             this->VKqueueFamilyIndices.presentFamily
         };
 
-        float queuePriority = 1.0f;                        // 큐의 우선순위를 설정합니다.
+        float queuePriority = 1.0f;                                                                      // 큐의 우선순위를 설정합니다.
         for (uint32_t queueFamily : uniqueQueueFamilies) {
             VkDeviceQueueCreateInfo queueCreateInfo{};
             queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;                          // 구조체 타입을 지정합니다.
@@ -411,9 +417,20 @@ namespace vkutil {
 
     void Application::createSurface()
     {
+#if CREATESURFACE_VKWIN32SURFACECREATEINFOKHR
+        VkWin32SurfaceCreateInfoKHR createInfo{};
+        createInfo.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;
+        createInfo.hwnd = glfwGetWin32Window(this->VKwindow);
+        createInfo.hinstance = GetModuleHandle(nullptr);
+
+        if (vkCreateWin32SurfaceKHR(this->VKinstance, &createInfo, nullptr, &this->VKsurface) != VK_SUCCESS) {
+            throw std::runtime_error("failed to create window surface!");
+        }
+#else
         if (glfwCreateWindowSurface(this->VKinstance, this->VKwindow, nullptr, &this->VKsurface) != VK_SUCCESS) {
             throw std::runtime_error("failed to create window surface!");
         }
+#endif
     }
 
     void Application::createSwapChain()
@@ -606,15 +623,17 @@ namespace vkutil {
 
         VkPipelineShaderStageCreateInfo shaderStages[] = { vertShaderStageInfo, fragShaderStageInfo };
 
-
+        // vertex input
+        auto bindingDescription = Vertex::getBindingDescription();
+        auto attributeDescriptions = Vertex::getAttributeDescriptions();
 
         // 그래픽 파이프라인 레이아웃을 생성합니다.
         VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
         vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-        vertexInputInfo.vertexBindingDescriptionCount = 0;
-        vertexInputInfo.pVertexBindingDescriptions = nullptr; // Optional
-        vertexInputInfo.vertexAttributeDescriptionCount = 0;
-        vertexInputInfo.pVertexAttributeDescriptions = nullptr; // Optional
+        vertexInputInfo.vertexBindingDescriptionCount = 1;
+        vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
+        vertexInputInfo.pVertexBindingDescriptions = &bindingDescription;
+        vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
 
         // 입력 데이터를 어떤 형태로 조립할 것인지 결정합니다.
         VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
@@ -950,6 +969,11 @@ namespace vkutil {
         std::set<std::string> requiredExtensions(deviceExtensions.begin(), deviceExtensions.end());
 
         for (const auto& extension : availableExtensions) {
+
+#ifdef DEBUG_
+            std::cout << '\t' << extension.extensionName << '\n';
+#endif // DEBUG
+
             requiredExtensions.erase(extension.extensionName);
         }
 
@@ -1151,9 +1175,5 @@ namespace vkutil {
 
         printf("Device Name: %s\n", deviceProperties.deviceName);
         printf("DeviceProperties.deviceType: %d\n", deviceProperties.deviceType);
-    }
-
-    bool checkDeviceExtensionSupport(VkPhysicalDevice device) {
-        return true;
     }
 }

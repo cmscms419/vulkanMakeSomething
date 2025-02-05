@@ -56,6 +56,7 @@ namespace vkutil {
         
         bool isDeviceSuitable(VkPhysicalDevice device);
         
+        // 물리 디바이스의 확장 기능을 지원하는지 확인하는 함수
         // 검증 레이어 지원 여부를 확인하는 함수
         // 확장 기능을 열거하고 필요한 모든 확장 기능이 포함되어 있는지 확인
         bool checkDeviceExtensionSupport(VkPhysicalDevice device);
@@ -70,6 +71,7 @@ namespace vkutil {
         // 이러한 형식이 지원되지 않으면 첫 번째 형식을 반환
         // 이러한 형식이 없으면 예외를 발생시킵니다.
         VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
+
         // 프레젠테이션 모드를 선택하는 함수
         // VK_PRESENT_MODE_MAILBOX_KHR 프레젠테이션 모드를 지원하는지 확인
         // 지원되는 경우 VK_PRESENT_MODE_MAILBOX_KHR를 반환
@@ -104,8 +106,8 @@ namespace vkutil {
         VkPipelineLayout VKpipelineLayout;                  // 파이프라인 레이아웃 -> 파이프라인에 사용되는 레이아웃
         VkRenderPass VKrenderPass;                          // 렌더 패스 -> 렌더링 작업을 정의하는 데 사용
         VkPipeline VKgraphicsPipeline;                      // 그래픽스 파이프라인 -> 그래픽스 파이프라인을 생성
-        std::vector<VkFramebuffer> VKswapChainFramebuffers; // 스왑 체인 프레임 버퍼 -> 스왑 체인 이미지를 렌더링할 때 사용
-        VkCommandPool VKcommandPool;                        // 커맨드 풀 -> 커맨드 버퍼를 생성하는 데 사용
+        std::vector<VkFramebuffer> VKswapChainFramebuffers; // 스왑 체인 프레임 버퍼 -> 스왑 체인 이미지를 렌더링할 때 사용 (프레임 버퍼는 이미지를 렌더링하는 데 사용)
+        VkCommandPool VKcommandPool;                        // 커맨드 풀 -> 커맨드 버퍼를 생성하는 데 사용 (커맨드 풀은 커맨드 버퍼를 생성하는 데 사용)
         std::vector<VkCommandBuffer> VKcommandBuffers;      // 커맨드 버퍼 -> 렌더링 명령을 저장하는 데 사용
         std::vector<VkSemaphore> VkimageavailableSemaphore; // 이미지 사용 가능 세마포어 -> 이미지를 가져오기 위해 사용
         std::vector<VkSemaphore> VkrenderFinishedSemaphore; // 렌더링 완료 세마포어 -> 렌더링이 완료되었음을 알리는 데 사용
