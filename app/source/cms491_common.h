@@ -158,10 +158,22 @@ namespace vkutil
     {
         // 파일을 읽어오는 함수
         std::vector<char> readFile(const std::string& filename);
-        uint32_t findMemoryType(
-            uint32_t typeFilter,
-            VkMemoryPropertyFlags properties,
-            VkPhysicalDevice VKphysicalDevice);
+        
+        // 물리 디바이스의 확장 기능을 지원하는지 확인하는 함수
+        uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties, VkPhysicalDevice VKphysicalDevice);
+        
+        // 버퍼를 생성하는 함수
+        // 버퍼를 생성하고 메모리를 할당합니다.
+        void createBuffer(VkDevice device, 
+            VkPhysicalDevice physicalDevice, 
+            VkDeviceSize size, 
+            VkBufferUsageFlags usage, 
+            VkMemoryPropertyFlags properties, 
+            VkBuffer& buffer, 
+            VkDeviceMemory& bufferMemory);
+
+        // 버퍼를 복사하는 함수
+        void copyBuffer(VkDevice& VKdevice, VkCommandPool& VKcommandPool, VkQueue& graphicsVKQueue,VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
     }
 }
 

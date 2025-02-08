@@ -890,36 +890,39 @@ namespace vkutil {
 
     void Application::createVertexBuffer()
     {
-        VkBufferCreateInfo bufferInfo{};
-        bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-        bufferInfo.size = sizeof(testVectex[0]) * testVectex.size();
-        bufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+        VkDeviceSize bufferSize = sizeof(testVectex[0]) * testVectex.size();
+
+        helper::createBuffer(
+            this->VKdevice,
+            this->VKphysicalDevice,
+            bufferSize,
+            VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
+            VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+            this->VKstagingBuffer,
+            this->VKstagingBufferMemory);
         
-        bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-
-        if (vkCreateBuffer(this->VKdevice, &bufferInfo, nullptr, &this->VKvertexBuffer) != VK_SUCCESS) {
-            throw std::runtime_error("failed to create vertex buffer!");
+        {
+            void* data;
+            vkMapMemory(this->VKdevice, this->VKstagingBufferMemory, 0, bufferSize, 0, &data);
+            memcpy(data, testVectex.data(), (size_t)bufferSize);
+            vkUnmapMemory(this->VKdevice, this->VKstagingBufferMemory);
         }
+        
+        helper::createBuffer(
+            this->VKdevice,
+            this->VKphysicalDevice,
+            bufferSize,
+            VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+            this->VKvertexBuffer,
+            this->VKvertexBufferMemory);
+        
+        helper::copyBuffer(this->VKdevice, this->VKcommandPool, this->graphicsVKQueue, this->VKstagingBuffer, this->VKvertexBuffer, bufferSize);
 
-        VkMemoryRequirements memRequirements;
-        vkGetBufferMemoryRequirements(this->VKdevice, this->VKvertexBuffer, &memRequirements);
-
-        VkMemoryAllocateInfo allocInfo{};
-        allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-        allocInfo.allocationSize = memRequirements.size;
-        allocInfo.memoryTypeIndex = helper::findMemoryType(memRequirements.memoryTypeBits,
-            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-            this->VKphysicalDevice); // 메모리 타입을 찾습니다. -> 호스트 가시성 비트 및 호스트 일관성 비트
-
-        if (vkAllocateMemory(this->VKdevice, &allocInfo, nullptr, &this->VKvertexBufferMemory) != VK_SUCCESS) {
-            throw std::runtime_error("failed to allocate vertex buffer memory!");
-        }
-        vkBindBufferMemory(this->VKdevice, this->VKvertexBuffer, this->VKvertexBufferMemory, 0);
-
-        void* data;
-        vkMapMemory(this->VKdevice, this->VKvertexBufferMemory, 0, bufferInfo.size, 0, &data);
-        memcpy(data, testVectex.data(), (size_t)bufferInfo.size);
-        vkUnmapMemory(this->VKdevice, this->VKvertexBufferMemory);
+        // 스테이징 버퍼에서 디바이스 버퍼로 데이터를 복사한 후에는 이를 정리해야 합니다:
+        vkDestroyBuffer(this->VKdevice, this->VKstagingBuffer, nullptr);
+        vkFreeMemory(this->VKdevice, this->VKstagingBufferMemory, nullptr);
     }
 
     const QueueFamilyIndices Application::findQueueFamilies(VkPhysicalDevice device)
