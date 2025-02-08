@@ -76,6 +76,9 @@ namespace vkutil {
         vkDestroyBuffer(this->VKdevice, this->VKvertexBuffer, nullptr);
         vkFreeMemory(this->VKdevice, this->VKvertexBufferMemory, nullptr);
 
+        vkDestroyBuffer(this->VKdevice, this->VKindexBuffer, nullptr);
+        vkFreeMemory(this->VKdevice, this->VKindexBufferMemory, nullptr);
+
         vkDestroyPipeline(this->VKdevice, this->VKgraphicsPipeline, nullptr);
         vkDestroyPipelineLayout(this->VKdevice, this->VKpipelineLayout, nullptr);
         
@@ -143,8 +146,10 @@ namespace vkutil {
         this->createFramebuffers();
         this->createCommandPool();
         this->createVertexBuffer();
+        this->createIndexBuffer();
         this->createCommandBuffers();
         this->createSyncObjects();
+
     }
 
     void Application::drawFrame()
@@ -925,6 +930,52 @@ namespace vkutil {
         vkFreeMemory(this->VKdevice, this->VKstagingBufferMemory, nullptr);
     }
 
+    void Application::createIndexBuffer()
+    {
+        VkDeviceSize bufferSize = sizeof(testindices[0]) * testindices.size();
+
+        VkBuffer stagingBuffer;
+        VkDeviceMemory stagingBufferMemory;
+
+        helper::createBuffer(
+            this->VKdevice,
+            this->VKphysicalDevice,
+            bufferSize,
+            VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
+            VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+            stagingBuffer,
+            stagingBufferMemory);
+
+        {
+            void* data;
+            vkMapMemory(this->VKdevice, stagingBufferMemory, 0, bufferSize, 0, &data);
+            memcpy(data, testindices.data(), (size_t)bufferSize);
+            vkUnmapMemory(this->VKdevice, stagingBufferMemory);
+        }
+
+        helper::createBuffer(
+            this->VKdevice,
+            this->VKphysicalDevice,
+            bufferSize,
+            VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
+            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+            this->VKindexBuffer,
+            this->VKindexBufferMemory);
+
+        helper::copyBuffer(
+            this->VKdevice,
+            this->VKcommandPool,
+            this->graphicsVKQueue,
+            stagingBuffer,
+            this->VKindexBuffer,
+            bufferSize);
+
+        vkDestroyBuffer(this->VKdevice, stagingBuffer, nullptr);
+        vkFreeMemory(this->VKdevice, stagingBufferMemory, nullptr);
+
+    }
+
     const QueueFamilyIndices Application::findQueueFamilies(VkPhysicalDevice device)
     {
         QueueFamilyIndices indices; // 큐 패밀리의 개수를 저장할 변수를 초기화
@@ -1143,6 +1194,8 @@ namespace vkutil {
         VkBuffer vertexBuffers[] = { this->VKvertexBuffer };
         VkDeviceSize offsets[] = { 0 };
         vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
+        // 인덱스 버퍼를 바인딩합니다.
+        vkCmdBindIndexBuffer(commandBuffer, this->VKindexBuffer, 0, VK_INDEX_TYPE_UINT16);
 
         VkViewport viewport{};
         viewport.x = 0.0f;
@@ -1159,7 +1212,7 @@ namespace vkutil {
         vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
         // 렌더 패스를 종료합니다.
-        vkCmdDraw(commandBuffer, static_cast<uint32_t>(testVectex.size()), 1, 0, 0);
+        vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(testindices.size()), 1, 0, 0, 0);
         vkCmdEndRenderPass(commandBuffer);
 
         // 커맨드 버퍼 기록을 종료합니다.

@@ -45,7 +45,7 @@ namespace vkutil {
         void cleanupSwapChain();
         void recreateSwapChain();
         void createVertexBuffer();
-
+        void createIndexBuffer();
 
         // 도구
 
@@ -116,7 +116,8 @@ namespace vkutil {
         VkDeviceMemory VKvertexBufferMemory;                // 버텍스 버퍼 메모리 -> 버텍스 데이터를 저장하는 데 사용
         VkBuffer VKstagingBuffer;                           // 스테이징 버퍼 -> 버퍼를 복사하는 데 사용
         VkDeviceMemory VKstagingBufferMemory;               // 스테이징 버퍼 메모리 -> 버퍼를 복사하는 데 사용
-
+        VkBuffer VKindexBuffer;                             // 인덱스 버퍼 -> 인덱스 데이터를 저장하는 데 사용
+        VkDeviceMemory VKindexBufferMemory;                 // 인덱스 버퍼 메모리 -> 인덱스 데이터를 저장하는 데 사용
 
         std::string RootPath = "";                          // 루트 경로
         size_t currentFrame = 0;                            // 현재 프레임 인덱스
