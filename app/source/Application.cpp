@@ -30,6 +30,7 @@ namespace vkutil {
         this->VKcommandBuffers.clear();
         this->VkimageavailableSemaphore.clear();
         this->VkrenderFinishedSemaphore.clear();
+        this->VKvertexBuffer = VK_NULL_HANDLE;
         this->VkinFlightFences.clear();
         this->RootPath = root_path;
         this->state = true;
@@ -71,6 +72,9 @@ namespace vkutil {
     void Application::cleanup() {
 
         this->cleanupSwapChain();
+
+        vkDestroyBuffer(this->VKdevice, this->VKvertexBuffer, nullptr);
+        vkFreeMemory(this->VKdevice, this->VKvertexBufferMemory, nullptr);
 
         vkDestroyPipeline(this->VKdevice, this->VKgraphicsPipeline, nullptr);
         vkDestroyPipelineLayout(this->VKdevice, this->VKpipelineLayout, nullptr);
@@ -137,7 +141,8 @@ namespace vkutil {
         this->createRenderPass();
         this->createGraphicsPipeline();
         this->createFramebuffers();
-        this->createCommandPool();  
+        this->createCommandPool();
+        this->createVertexBuffer();
         this->createCommandBuffers();
         this->createSyncObjects();
     }
@@ -603,8 +608,8 @@ namespace vkutil {
 
     void Application::createGraphicsPipeline()
     {
-        auto vertShaderCode = readFile(this->RootPath + "/../../../../shader/vert.spv");
-        auto fragShaderCode = readFile(this->RootPath + "/../../../../shader/frag.spv");
+        auto vertShaderCode = helper::readFile(this->RootPath + "/../../../../shader/vert.spv");
+        auto fragShaderCode = helper::readFile(this->RootPath + "/../../../../shader/frag.spv");
         
         VkShaderModule baseVertshaderModule = createShaderModule(vertShaderCode);
         VkShaderModule baseFragShaderModule = createShaderModule(fragShaderCode);
@@ -883,7 +888,41 @@ namespace vkutil {
         this->createRenderPass(); // 렌더 패스를 생성합니다.
     }
 
-    QueueFamilyIndices Application::findQueueFamilies(VkPhysicalDevice device)
+    void Application::createVertexBuffer()
+    {
+        VkBufferCreateInfo bufferInfo{};
+        bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+        bufferInfo.size = sizeof(testVectex[0]) * testVectex.size();
+        bufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+        
+        bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+        if (vkCreateBuffer(this->VKdevice, &bufferInfo, nullptr, &this->VKvertexBuffer) != VK_SUCCESS) {
+            throw std::runtime_error("failed to create vertex buffer!");
+        }
+
+        VkMemoryRequirements memRequirements;
+        vkGetBufferMemoryRequirements(this->VKdevice, this->VKvertexBuffer, &memRequirements);
+
+        VkMemoryAllocateInfo allocInfo{};
+        allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+        allocInfo.allocationSize = memRequirements.size;
+        allocInfo.memoryTypeIndex = helper::findMemoryType(memRequirements.memoryTypeBits,
+            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+            this->VKphysicalDevice); // 메모리 타입을 찾습니다. -> 호스트 가시성 비트 및 호스트 일관성 비트
+
+        if (vkAllocateMemory(this->VKdevice, &allocInfo, nullptr, &this->VKvertexBufferMemory) != VK_SUCCESS) {
+            throw std::runtime_error("failed to allocate vertex buffer memory!");
+        }
+        vkBindBufferMemory(this->VKdevice, this->VKvertexBuffer, this->VKvertexBufferMemory, 0);
+
+        void* data;
+        vkMapMemory(this->VKdevice, this->VKvertexBufferMemory, 0, bufferInfo.size, 0, &data);
+        memcpy(data, testVectex.data(), (size_t)bufferInfo.size);
+        vkUnmapMemory(this->VKdevice, this->VKvertexBufferMemory);
+    }
+
+    const QueueFamilyIndices Application::findQueueFamilies(VkPhysicalDevice device)
     {
         QueueFamilyIndices indices; // 큐 패밀리의 개수를 저장할 변수를 초기화
         uint32_t queueFamilyCount = 0;
@@ -980,7 +1019,7 @@ namespace vkutil {
         return requiredExtensions.empty();
     }
 
-    SwapChainSupportDetails Application::querySwapChainSupport(VkPhysicalDevice device)
+    const  SwapChainSupportDetails Application::querySwapChainSupport(VkPhysicalDevice device)
     {
         SwapChainSupportDetails details;
 
@@ -1054,7 +1093,7 @@ namespace vkutil {
 
     }
 
-    VkShaderModule Application::createShaderModule(const std::vector<char>& code)
+    const VkShaderModule Application::createShaderModule(const std::vector<char>& code)
     {
         VkShaderModuleCreateInfo createInfo{};
         createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
@@ -1096,6 +1135,12 @@ namespace vkutil {
         vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
         // 그래픽 파이프라인을 바인딩합니다.
         vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->VKgraphicsPipeline);
+
+        // 버텍스 버퍼를 바인딩합니다.
+        VkBuffer vertexBuffers[] = { this->VKvertexBuffer };
+        VkDeviceSize offsets[] = { 0 };
+        vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
+
         VkViewport viewport{};
         viewport.x = 0.0f;
         viewport.y = 0.0f;
@@ -1111,7 +1156,7 @@ namespace vkutil {
         vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
         // 렌더 패스를 종료합니다.
-        vkCmdDraw(commandBuffer, 3, 1, 0, 0);
+        vkCmdDraw(commandBuffer, static_cast<uint32_t>(testVectex.size()), 1, 0, 0);
         vkCmdEndRenderPass(commandBuffer);
 
         // 커맨드 버퍼 기록을 종료합니다.

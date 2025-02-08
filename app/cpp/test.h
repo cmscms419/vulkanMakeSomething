@@ -5,8 +5,6 @@
 
 #include "../source/Application.h"
 
-constexpr int MAX_FRAMES = 4;
-
 namespace vkutil {
     namespace content {
 

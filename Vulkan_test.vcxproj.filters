@@ -13,9 +13,6 @@
     <Filter Include="app\cuda">
       <UniqueIdentifier>{67f19908-9ccd-4691-9a3c-46a31bedd3ec}</UniqueIdentifier>
     </Filter>
-    <Filter Include="include">
-      <UniqueIdentifier>{e344f3f3-48cb-492f-91d4-08f4d357e2c4}</UniqueIdentifier>
-    </Filter>
     <Filter Include="app\source">
       <UniqueIdentifier>{5e6e231c-5ec9-4c8e-bff7-07f387109247}</UniqueIdentifier>
     </Filter>
@@ -33,11 +30,11 @@
     <ClCompile Include="app\source\main.cpp">
       <Filter>app\source</Filter>
     </ClCompile>
+    <ClCompile Include="app\source\cms491_common.cpp">
+      <Filter>app\source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\common\cms491_common.h">
-      <Filter>include</Filter>
-    </ClInclude>
     <ClInclude Include="app\source\object_data.h">
       <Filter>app\source</Filter>
     </ClInclude>
@@ -49,6 +46,9 @@
     </ClInclude>
     <ClInclude Include="app\cpp\test.h">
       <Filter>app\cpp</Filter>
+    </ClInclude>
+    <ClInclude Include="app\source\cms491_common.h">
+      <Filter>app\source</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -4,8 +4,6 @@
 #include "cms491_common.h"
 #include "DebugFunction.h"
 
-constexpr int MAX_FRAMES = 4;
-
 namespace vkutil {
 
     class Application {
@@ -46,13 +44,15 @@ namespace vkutil {
         void createSyncObjects();
         void cleanupSwapChain();
         void recreateSwapChain();
+        void createVertexBuffer();
+
 
         // 도구
 
         // 주어진 물리 장치에서 큐 패밀리 속성을 찾는 함수
         // PROB : 큐 패밀리가 여러개인 경우에 필요한 처리가 있는 패밀리를 먼저 찾을 경우, 그 패밀리의 인덱스만 반환함
         // TODO ; 큐 패밀리가 여러개인 경우에 대한 처리가 필요함
-        QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device);
+        const QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device);
         
         bool isDeviceSuitable(VkPhysicalDevice device);
         
@@ -64,7 +64,7 @@ namespace vkutil {
         // 스왑 체인 지원 정보를 가져오는 함수
         // 스왑 체인 지원 정보를 저장할 구조체를 초기화
         // 물리 장치에서 서피스의 기능을 가져옴
-        SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice device);
+        const SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice device);
         
         // 서피스 포맷을 선택하는 함수
         // SRGB 색상 공간을 지원하는 32비트 BGR 색상 구조를 선택
@@ -83,7 +83,7 @@ namespace vkutil {
         VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
         
         // 코드를 읽어서 셰이더 모듈을 생성하는 함수
-        VkShaderModule createShaderModule(const std::vector<char>& code);
+        const VkShaderModule createShaderModule(const std::vector<char>& code);
 
         // 커맨드 버퍼를 기록하는 함수
         // 실행하고자 하는 명령을 명령 버퍼에 기록
@@ -112,6 +112,8 @@ namespace vkutil {
         std::vector<VkSemaphore> VkimageavailableSemaphore; // 이미지 사용 가능 세마포어 -> 이미지를 가져오기 위해 사용
         std::vector<VkSemaphore> VkrenderFinishedSemaphore; // 렌더링 완료 세마포어 -> 렌더링이 완료되었음을 알리는 데 사용
         std::vector<VkFence> VkinFlightFences;              // 플라이트 펜스 -> 프레임이 완료되었음을 알리는 데 사용
+        VkBuffer VKvertexBuffer;                            // 버텍스 버퍼 -> 버텍스 데이터를 저장하는 데 사용
+        VkDeviceMemory VKvertexBufferMemory;                // 버텍스 버퍼 메모리 -> 버텍스 데이터를 저장하는 데 사용
 
         std::string RootPath = "";                          // 루트 경로
         size_t currentFrame = 0;                            // 현재 프레임 인덱스

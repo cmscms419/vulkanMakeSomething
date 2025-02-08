@@ -13,15 +13,16 @@
   <ItemGroup>
     <ClCompile Include="app\cpp\test.cpp" />
     <ClCompile Include="app\source\Application.cpp" />
+    <ClCompile Include="app\source\cms491_common.cpp" />
     <ClCompile Include="app\source\DebugFunction.cpp" />
     <ClCompile Include="app\source\main.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="app\cpp\test.h" />
     <ClInclude Include="app\source\Application.h" />
+    <ClInclude Include="app\source\cms491_common.h" />
     <ClInclude Include="app\source\DebugFunction.h" />
     <ClInclude Include="app\source\object_data.h" />
-    <ClInclude Include="include\common\cms491_common.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="shader\shader.frag" />

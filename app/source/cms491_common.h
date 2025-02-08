@@ -19,7 +19,6 @@
 #define GLFW_EXPOSE_NATIVE_WIN32
 #include <GLFW/glfw3native.h>
 
-#define CREATESURFACE_VKWIN32SURFACECREATEINFOKHR 1
 
 //#ifdef _WIN32
 //#include <windows.h>
@@ -30,11 +29,11 @@
 
 #include <glm/glm.hpp>
 
-#define WIDTH  800
-#define HEIGHT  600
-
-const int MAX_FRAMES_IN_FLIGHT = 2;
-
+constexpr int WIDTH = 800;
+constexpr int HEIGHT = 600;
+constexpr int MAX_FRAMES = 4;
+constexpr int MAX_FRAMES_IN_FLIGHT = 2;
+constexpr int CREATESURFACE_VKWIN32SURFACECREATEINFOKHR = 1;
 
 //#ifdef _WIN32
 //
@@ -81,7 +80,7 @@ struct QueueFamilyIndices {
         presentFamily = index;
         presentFamilyHasValue = true;
     }
-    uint32_t getGraphicsQueueFamilyIndex() {
+    const uint32_t getGraphicsQueueFamilyIndex() {
         uint32_t target = -1;
 
         if (queueFamilyProperties.queueFlags & VkQueueFlagBits::VK_QUEUE_GRAPHICS_BIT)
@@ -91,7 +90,7 @@ struct QueueFamilyIndices {
 
         return target;
     }
-    uint32_t getPresentQueueFamilyIndex() {
+    const uint32_t getPresentQueueFamilyIndex() {
         uint32_t target = -1;
         if (queueFamilyProperties.queueFlags & VkQueueFlagBits::VK_QUEUE_GRAPHICS_BIT)
         {
@@ -100,7 +99,7 @@ struct QueueFamilyIndices {
         return target;
     }
 
-    bool isComplete() {
+    const bool isComplete() {
         return this->graphicsFamilyHasValue && this->presentFamilyHasValue;
     }
     void reset() {
@@ -153,29 +152,21 @@ struct Vertex {
     }
 };
 
-// 파일을 읽어오는 함수
-static std::vector<char> readFile(const std::string& filename) {
-
-    // 파일 끝으로 이동하여 파일 크기를 가져옵니다.
-    std::ifstream file(filename, std::ios::ate | std::ios::binary); 
-
-    // 파일을 열 수 없는 경우 예외를 발생시킵니다.
-    if (!file.is_open()) {
-        throw std::runtime_error("failed to open file!");
+namespace vkutil
+{
+    namespace helper
+    {
+        // 파일을 읽어오는 함수
+        std::vector<char> readFile(const std::string& filename);
+        uint32_t findMemoryType(
+            uint32_t typeFilter,
+            VkMemoryPropertyFlags properties,
+            VkPhysicalDevice VKphysicalDevice);
     }
-    
-    size_t fileSize = (size_t)file.tellg(); // 파일 크기를 이용하여 버퍼를 할당합니다.
-    std::vector<char> buffer(fileSize);     // 파일 포인터를 파일의 시작으로 이동합니다.
-    file.seekg(0);                          // 파일 포인터를 파일의 시작으로 이동합니다.
-    file.read(buffer.data(), fileSize);     // 파일 내용을 버퍼에 읽어옵니다. -> 파일을 fileSize 크기만큼 한번에 읽어온다.
-    file.close();                           // 파일을 닫습니다.
-
-    return buffer;
 }
 
-
 const std::vector<Vertex> testVectex = {
-    {{0.0f, -0.5f}, {1.0f, 0.0f, 0.0f}},
+    {{0.0f, -0.5f}, {1.0f, 1.0f, 1.0f}},
     {{0.5f, 0.5f}, {0.0f, 1.0f, 0.0f}},
     {{-0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}}
 };
