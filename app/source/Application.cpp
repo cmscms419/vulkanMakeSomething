@@ -31,9 +31,25 @@ namespace vkutil {
         this->VkimageavailableSemaphore.clear();
         this->VkrenderFinishedSemaphore.clear();
         this->VKvertexBuffer = VK_NULL_HANDLE;
+        this->VKvertexBufferMemory = VK_NULL_HANDLE;
+        this->VKstagingBufferMemory = VK_NULL_HANDLE;
+        this->VKindexBufferMemory = VK_NULL_HANDLE;
         this->VkinFlightFences.clear();
+        this->VKuniformBuffers.clear();
+        this->VKuniformBuffersMemory.clear();
+        this->VKuniformBuffersMapped.clear();
+        this->VKdescriptorPool = VK_NULL_HANDLE;
+        this->VKdescriptorSetLayout = VK_NULL_HANDLE;
+        this->VKdescriptorSets.clear();
+        this->VKstagingBuffer = VK_NULL_HANDLE;
+        this->VKindexBuffer = VK_NULL_HANDLE;
         this->RootPath = root_path;
+        this->currentFrame = 0;
         this->state = true;
+        this->camera = vkutil::object::Camera();
+
+        this->camera.setProjection(45.0f, (float)WIDTH / (float)HEIGHT, 0.1f, 100.0f);
+        this->camera.setView(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
     }
 
     Application::~Application()
@@ -70,8 +86,25 @@ namespace vkutil {
     }
 
     void Application::cleanup() {
+#ifdef DEBUG_
+        printf("cleanup\n");
+#endif // DEBUG_
 
         this->cleanupSwapChain();
+
+        vkDestroyPipeline(this->VKdevice, this->VKgraphicsPipeline, nullptr);
+        vkDestroyPipelineLayout(this->VKdevice, this->VKpipelineLayout, nullptr);
+        vkDestroyRenderPass(this->VKdevice, this->VKrenderPass, nullptr);
+
+        for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+        {
+            vkDestroyBuffer(this->VKdevice, this->VKuniformBuffers[i], nullptr);
+            vkFreeMemory(this->VKdevice, this->VKuniformBuffersMemory[i], nullptr);
+        }
+
+        vkDestroyDescriptorPool(this->VKdevice, this->VKdescriptorPool, nullptr);
+
+        vkDestroyDescriptorSetLayout(this->VKdevice, this->VKdescriptorSetLayout, nullptr);
 
         vkDestroyBuffer(this->VKdevice, this->VKvertexBuffer, nullptr);
         vkFreeMemory(this->VKdevice, this->VKvertexBufferMemory, nullptr);
@@ -79,11 +112,6 @@ namespace vkutil {
         vkDestroyBuffer(this->VKdevice, this->VKindexBuffer, nullptr);
         vkFreeMemory(this->VKdevice, this->VKindexBufferMemory, nullptr);
 
-        vkDestroyPipeline(this->VKdevice, this->VKgraphicsPipeline, nullptr);
-        vkDestroyPipelineLayout(this->VKdevice, this->VKpipelineLayout, nullptr);
-        
-        vkDestroyRenderPass(this->VKdevice, this->VKrenderPass, nullptr);
-        
         for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
         {
             vkDestroySemaphore(this->VKdevice, this->VkrenderFinishedSemaphore[i], nullptr);
@@ -95,20 +123,16 @@ namespace vkutil {
 
         vkDestroyDevice(this->VKdevice, nullptr);
 
-#ifdef DEBUG_
-        printf("cleanup\n");
-#endif // DEBUG_
 
         if (enableValidationLayers) {
             DestroyDebugUtilsMessengerEXT(this->VKinstance, this->VKdebugUtilsMessenger, nullptr);
         }
 
-
         vkDestroySurfaceKHR(this->VKinstance, this->VKsurface, nullptr);
         vkDestroyInstance(this->VKinstance, nullptr);
-        
+
         glfwDestroyWindow(VKwindow);
-        
+
         glfwTerminate();
     }
 
@@ -142,11 +166,15 @@ namespace vkutil {
         this->createSwapChain();
         this->createImageViews();
         this->createRenderPass();
+        this->createDescriptorSetLayout();
         this->createGraphicsPipeline();
         this->createFramebuffers();
         this->createCommandPool();
         this->createVertexBuffer();
         this->createIndexBuffer();
+        this->createUniformBuffers();
+        this->createDescriptorPool();
+        this->createDescriptorSets();
         this->createCommandBuffers();
         this->createSyncObjects();
 
@@ -171,6 +199,9 @@ namespace vkutil {
         else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
             throw std::runtime_error("failed to acquire swap chain image!");
         }
+
+        // uniform 버퍼를 업데이트합니다.
+        this->updateUniformBuffer(currentFrame);
 
         vkResetFences(this->VKdevice, 1, &this->VkinFlightFences[currentFrame]); // 플래그를 재설정합니다. -> 렌더링이 끝나면 플래그를 재설정합니다.
 
@@ -203,10 +234,10 @@ namespace vkutil {
         vkResetFences(this->VKdevice, 1, &this->VkinFlightFences[currentFrame]); // 플래그를 재설정합니다. -> 렌더링이 끝나면 플래그를 재설정합니다.
 
         // 렌더링을 시작합니다.
-        if (vkQueueSubmit(this->graphicsVKQueue, 1 ,&submitInfo, this->VkinFlightFences[currentFrame]) != VK_SUCCESS) {
+        if (vkQueueSubmit(this->graphicsVKQueue, 1, &submitInfo, this->VkinFlightFences[currentFrame]) != VK_SUCCESS) {
             throw std::runtime_error("failed to submit draw command buffer!");
         }
-        
+
         // 렌더링을 시작하기 전에 세마포어를 설정합니다.
         VkPresentInfoKHR presentInfo{};
 
@@ -348,8 +379,8 @@ namespace vkutil {
                 this->VKqueueFamilyIndices = this->findQueueFamilies(candidate.second);
             }
         }
-        
-        if(Score == 0) 
+
+        if (Score == 0)
         {
             throw std::runtime_error("failed to find a suitable GPU!");
         }
@@ -376,10 +407,10 @@ namespace vkutil {
         // 3. 물리 장치 기능 구조체를 초기화합니다.
         // 4. 논리 장치 생성 정보 구조체를 초기화합니다.
         // 5. 논리 장치를 생성합니다.
-        
+
         // 큐 생성 정보 구조체를 초기화합니다.
         std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
-        std::set<uint32_t> uniqueQueueFamilies = { 
+        std::set<uint32_t> uniqueQueueFamilies = {
             this->VKqueueFamilyIndices.graphicsFamily,
             this->VKqueueFamilyIndices.presentFamily
         };
@@ -449,7 +480,7 @@ namespace vkutil {
 
         VkSurfaceFormatKHR surfaceFormat = chooseSwapSurfaceFormat(swapChainSupport.formats);
         VkPresentModeKHR presentMode = chooseSwapPresentMode(swapChainSupport.presentModes);
-        
+
         VkExtent2D extent = chooseSwapExtent(swapChainSupport.capabilities);
 
         uint32_t imageCount = swapChainSupport.capabilities.minImageCount + 1;
@@ -515,7 +546,7 @@ namespace vkutil {
         printf("SwapChain presentMode: %d\n", presentMode);
         printf("SwapChain clipped: %d\n", VK_TRUE);
         printf("\n");
-       
+
 #endif // DEBUG_
 
 
@@ -531,7 +562,7 @@ namespace vkutil {
             // 이미지 뷰 생성 정보 구조체를 초기화합니다.
             createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
             createInfo.image = this->VKswapChainImages[i];
-            
+
             // 이미지 뷰의 유형을 설정합니다.
             createInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
             createInfo.format = this->VKswapChainImageFormat;
@@ -543,7 +574,7 @@ namespace vkutil {
             createInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
             createInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
             createInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
-            
+
             // 이미지의 사용 목적을 설정합니다.
             // VK_IMAGE_ASPECT_COLOR_BIT -> 이미지가 색상 데이터를 포함한다는 것을 나타냅니다.
             createInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
@@ -615,7 +646,7 @@ namespace vkutil {
     {
         auto vertShaderCode = helper::readFile(this->RootPath + "/../../../../shader/vert.spv");
         auto fragShaderCode = helper::readFile(this->RootPath + "/../../../../shader/frag.spv");
-        
+
         VkShaderModule baseVertshaderModule = createShaderModule(vertShaderCode);
         VkShaderModule baseFragShaderModule = createShaderModule(fragShaderCode);
 
@@ -679,12 +710,11 @@ namespace vkutil {
         rasterizer.polygonMode = VK_POLYGON_MODE_FILL;          // 다각형 모드를 채우기로 설정
         rasterizer.lineWidth = 1.0f;                            // 라인 너비를 1.0f로 설정
         rasterizer.cullMode = VK_CULL_MODE_BACK_BIT;            // 후면 면을 제거
-        rasterizer.frontFace = VK_FRONT_FACE_CLOCKWISE;         // 전면 면을 시계 방향으로 설정
-        
+        rasterizer.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE; // 전면 면을 반시계 방향으로 설정
         rasterizer.depthBiasEnable = VK_FALSE;                  // 깊이 바이어스 비활성화
-        rasterizer.depthBiasConstantFactor = 0.0f;              // 깊이 바이어스 상수 요소를 0.0f로 설정
-        rasterizer.depthBiasClamp = 0.0f;                       // 깊이 바이어스 클램프를 0.0f로 설정
-        rasterizer.depthBiasSlopeFactor = 0.0f;                 // 깊이 바이어스 슬로프 요소를 0.0f로 설정
+        //rasterizer.depthBiasConstantFactor = 0.0f;              // 깊이 바이어스 상수 요소를 0.0f로 설정
+        //rasterizer.depthBiasClamp = 0.0f;                       // 깊이 바이어스 클램프를 0.0f로 설정
+        //rasterizer.depthBiasSlopeFactor = 0.0f;                 // 깊이 바이어스 슬로프 요소를 0.0f로 설정
 
         // 다중 샘플링 설정
         VkPipelineMultisampleStateCreateInfo multisampling{};
@@ -698,10 +728,10 @@ namespace vkutil {
 
         // 컬러 블렌딩 설정
         VkPipelineColorBlendAttachmentState colorBlendAttachment{};
-        colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | 
-                                              VK_COLOR_COMPONENT_G_BIT | 
-                                              VK_COLOR_COMPONENT_B_BIT | 
-                                              VK_COLOR_COMPONENT_A_BIT;     // 컬러 쓰기 마스크를 설정
+        colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT |
+            VK_COLOR_COMPONENT_G_BIT |
+            VK_COLOR_COMPONENT_B_BIT |
+            VK_COLOR_COMPONENT_A_BIT;     // 컬러 쓰기 마스크를 설정
         colorBlendAttachment.blendEnable = VK_FALSE;                        // 블렌딩을 비활성화
         colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_ONE;     // 소스 컬러 블렌딩 팩터를 설정
         colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO;    // 대상 컬러 블렌딩 팩터를 설정
@@ -716,7 +746,7 @@ namespace vkutil {
         } else {
             finalColor = newColor;
         }
-        
+
         finalColor = finalColor & colorWriteMask;
         */
 
@@ -741,8 +771,8 @@ namespace vkutil {
         // 그래픽 파이프라인 레이아웃을 생성합니다.
         VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
         pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO; // 구조체 타입을 설정
-        pipelineLayoutInfo.setLayoutCount = 0;                                     // 레이아웃 개수를 설정
-        pipelineLayoutInfo.pSetLayouts = nullptr;                                  // 레이아웃 포인터를 설정
+        pipelineLayoutInfo.setLayoutCount = 1;                                    // 레이아웃 개수를 설정
+        pipelineLayoutInfo.pSetLayouts = &this->VKdescriptorSetLayout;            // 레이아웃 포인터를 설정
         pipelineLayoutInfo.pushConstantRangeCount = 0;                            // 푸시 상수 범위 개수를 설정
         pipelineLayoutInfo.pPushConstantRanges = nullptr;                         // 푸시 상수 범위 포인터를 설정
 
@@ -765,7 +795,7 @@ namespace vkutil {
         pipelineInfo.pColorBlendState = &colorBlending;
         pipelineInfo.pDynamicState = &dynamicState; // Optional
         pipelineInfo.layout = this->VKpipelineLayout;
-        pipelineInfo.renderPass = this->VKrenderPass; 
+        pipelineInfo.renderPass = this->VKrenderPass;
         pipelineInfo.subpass = 0;
         pipelineInfo.basePipelineHandle = VK_NULL_HANDLE; // Optional
         pipelineInfo.basePipelineIndex = -1; // Optional
@@ -807,7 +837,7 @@ namespace vkutil {
     {
         QueueFamilyIndices queueFamilyIndices = this->VKqueueFamilyIndices;
         VkCommandPoolCreateInfo poolInfo{};
-        
+
         // 커맨드 풀 생성 정보 구조체를 초기화합니다.
         poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;        // 구조체 타입을 설정
         poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;   // 커맨드 버퍼를 재설정하는 플래그를 설정
@@ -906,14 +936,14 @@ namespace vkutil {
             VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
             this->VKstagingBuffer,
             this->VKstagingBufferMemory);
-        
+
         {
             void* data;
             vkMapMemory(this->VKdevice, this->VKstagingBufferMemory, 0, bufferSize, 0, &data);
             memcpy(data, testVectex.data(), (size_t)bufferSize);
             vkUnmapMemory(this->VKdevice, this->VKstagingBufferMemory);
         }
-        
+
         helper::createBuffer(
             this->VKdevice,
             this->VKphysicalDevice,
@@ -922,7 +952,7 @@ namespace vkutil {
             VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
             this->VKvertexBuffer,
             this->VKvertexBufferMemory);
-        
+
         helper::copyBuffer(this->VKdevice, this->VKcommandPool, this->graphicsVKQueue, this->VKstagingBuffer, this->VKvertexBuffer, bufferSize);
 
         // 스테이징 버퍼에서 디바이스 버퍼로 데이터를 복사한 후에는 이를 정리해야 합니다:
@@ -974,6 +1004,112 @@ namespace vkutil {
         vkDestroyBuffer(this->VKdevice, stagingBuffer, nullptr);
         vkFreeMemory(this->VKdevice, stagingBufferMemory, nullptr);
 
+    }
+
+    void Application::createDescriptorSetLayout()
+    {
+        VkDescriptorSetLayoutBinding uboLayoutBinding{};
+        uboLayoutBinding.binding = 0;
+        uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+        uboLayoutBinding.descriptorCount = 1;
+        uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+        uboLayoutBinding.pImmutableSamplers = nullptr; // Optional
+
+        VkDescriptorSetLayoutCreateInfo layoutInfo{};
+        layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+        layoutInfo.bindingCount = 1;
+        layoutInfo.pBindings = &uboLayoutBinding;
+
+        if (vkCreateDescriptorSetLayout(this->VKdevice, &layoutInfo, nullptr, &this->VKdescriptorSetLayout) != VK_SUCCESS) {
+            throw std::runtime_error("failed to create descriptor set layout!");
+        }
+
+    }
+
+    void Application::createUniformBuffers()
+    {
+        VkDeviceSize bufferSize = sizeof(object::UniformBufferObject);
+
+        this->VKuniformBuffers.resize(MAX_FRAMES_IN_FLIGHT);
+        this->VKuniformBuffersMemory.resize(MAX_FRAMES_IN_FLIGHT);
+        this->VKuniformBuffersMapped.resize(MAX_FRAMES_IN_FLIGHT);
+
+        for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+            helper::createBuffer(
+                this->VKdevice,
+                this->VKphysicalDevice,
+                bufferSize,
+                VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
+                VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+                this->VKuniformBuffers[i],
+                this->VKuniformBuffersMemory[i]);
+
+            vkMapMemory(this->VKdevice, this->VKuniformBuffersMemory[i], 0, bufferSize, 0, &this->VKuniformBuffersMapped[i]);
+        }
+    }
+
+    void Application::createDescriptorPool()
+    {
+        // 디스크립터 풀 크기를 설정합니다.
+        VkDescriptorPoolSize poolSize{};
+        poolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+        poolSize.descriptorCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
+
+        // 디스크립터 풀 생성 정보 구조체를 초기화합니다.
+        VkDescriptorPoolCreateInfo poolInfo{};
+        poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+        poolInfo.poolSizeCount = 1;
+        poolInfo.pPoolSizes = &poolSize;
+        poolInfo.maxSets = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
+
+        if (vkCreateDescriptorPool(this->VKdevice, &poolInfo, nullptr, &this->VKdescriptorPool) != VK_SUCCESS) {
+            throw std::runtime_error("failed to create descriptor pool!");
+        }
+    }
+
+    void Application::createDescriptorSets()
+    {
+        // 디스크립터 세트 레이아웃을 설정합니다.
+        std::vector<VkDescriptorSetLayout> layouts(MAX_FRAMES_IN_FLIGHT, this->VKdescriptorSetLayout);
+
+        // 디스크립터 세트 할당 정보 구조체를 초기화합니다.
+        VkDescriptorSetAllocateInfo allocInfo{};
+
+        // 디스크립터 세트 할당 정보 구조체에 디스크립터 풀과 디스크립터 세트 개수를 설정합니다.
+        allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+        allocInfo.descriptorPool = this->VKdescriptorPool;
+        allocInfo.descriptorSetCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
+        allocInfo.pSetLayouts = layouts.data();
+
+        // 디스크립터 세트를 생성합니다.
+        this->VKdescriptorSets.resize(MAX_FRAMES_IN_FLIGHT);
+
+        // 디스크립터 세트를 할당합니다.
+        if (vkAllocateDescriptorSets(this->VKdevice, &allocInfo, this->VKdescriptorSets.data()) != VK_SUCCESS) {
+            throw std::runtime_error("failed to allocate descriptor sets!");
+        }
+
+        // 디스크립터 세트를 설정합니다.
+        for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+            VkDescriptorBufferInfo bufferInfo{};
+            bufferInfo.buffer = this->VKuniformBuffers[i];
+            bufferInfo.offset = 0;
+            bufferInfo.range = sizeof(object::UniformBufferObject);
+
+            VkWriteDescriptorSet descriptorWrite{};
+            descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+            descriptorWrite.dstSet = this->VKdescriptorSets[i];
+            descriptorWrite.dstBinding = 0;
+            descriptorWrite.dstArrayElement = 0;
+            descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+            descriptorWrite.descriptorCount = 1;
+            descriptorWrite.pBufferInfo = &bufferInfo;
+            descriptorWrite.pImageInfo = nullptr; // Optional
+            descriptorWrite.pTexelBufferView = nullptr; // Optional
+
+            vkUpdateDescriptorSets(this->VKdevice, 1, &descriptorWrite, 0, nullptr);
+        }
     }
 
     const QueueFamilyIndices Application::findQueueFamilies(VkPhysicalDevice device)
@@ -1102,11 +1238,11 @@ namespace vkutil {
     {
         VkSurfaceFormatKHR targetformat = {};
 
-        for (const auto& availableFormat : availableFormats) 
+        for (const auto& availableFormat : availableFormats)
         {
             if (availableFormat.format == VK_FORMAT_B8G8R8A8_SRGB &&            // 32비트 BGR 색상 구조를 지원하는지 확인
                 availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR // SRGB 색상 공간을 지원하는지 확인
-                ) 
+                )
             {
                 targetformat = availableFormat;
                 break;
@@ -1126,7 +1262,7 @@ namespace vkutil {
     }
 
     VkExtent2D Application::chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities) {
-        
+
         if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max()) {
             return capabilities.currentExtent;
         }
@@ -1187,38 +1323,61 @@ namespace vkutil {
 
         // 렌더 패스를 시작합니다.
         vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-        // 그래픽 파이프라인을 바인딩합니다.
-        vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->VKgraphicsPipeline);
+        {
+            // 그래픽 파이프라인을 바인딩합니다.
+            vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->VKgraphicsPipeline);
 
-        // 버텍스 버퍼를 바인딩합니다.
-        VkBuffer vertexBuffers[] = { this->VKvertexBuffer };
-        VkDeviceSize offsets[] = { 0 };
-        vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
-        // 인덱스 버퍼를 바인딩합니다.
-        vkCmdBindIndexBuffer(commandBuffer, this->VKindexBuffer, 0, VK_INDEX_TYPE_UINT16);
+            VkViewport viewport{};
+            viewport.x = 0.0f;
+            viewport.y = 0.0f;
+            viewport.width = static_cast<float>(this->VKswapChainExtent.width);
+            viewport.height = static_cast<float>(this->VKswapChainExtent.height);
+            viewport.minDepth = 0.0f;
+            viewport.maxDepth = 1.0f;
+            vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
 
-        VkViewport viewport{};
-        viewport.x = 0.0f;
-        viewport.y = 0.0f;
-        viewport.width = static_cast<float>(this->VKswapChainExtent.width);
-        viewport.height = static_cast<float>(this->VKswapChainExtent.height);
-        viewport.minDepth = 0.0f;
-        viewport.maxDepth = 1.0f;
-        vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
+            VkRect2D scissor{};
+            scissor.offset = { 0, 0 };
+            scissor.extent = this->VKswapChainExtent;
+            vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
-        VkRect2D scissor{};
-        scissor.offset = { 0, 0 };
-        scissor.extent = this->VKswapChainExtent;
-        vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
+            // 버텍스 버퍼를 바인딩합니다.
+            VkBuffer vertexBuffers[] = { this->VKvertexBuffer };
+            VkDeviceSize offsets[] = { 0 };
+            vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
+            
+            // 인덱스 버퍼를 바인딩합니다.
+            vkCmdBindIndexBuffer(commandBuffer, this->VKindexBuffer, 0, VK_INDEX_TYPE_UINT16);
 
-        // 렌더 패스를 종료합니다.
-        vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(testindices.size()), 1, 0, 0, 0);
+            // 디스크립터 세트를 바인딩합니다.
+            vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->VKpipelineLayout, 0, 1, &this->VKdescriptorSets[currentFrame], 0, nullptr);
+            // 렌더 패스를 종료합니다.
+            vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(testindices.size()), 1, 0, 0, 0);
+        }
+
         vkCmdEndRenderPass(commandBuffer);
 
         // 커맨드 버퍼 기록을 종료합니다.
         if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS) {
             throw std::runtime_error("failed to record command buffer!");
         }
+    }
+
+    void Application::updateUniformBuffer(uint32_t currentImage)
+    {
+        static auto startTime = std::chrono::high_resolution_clock::now();
+        auto currentTime = std::chrono::high_resolution_clock::now();
+        float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
+
+        object::UniformBufferObject ubo{};
+
+        ubo.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+        //ubo.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+        ubo.view = this->camera.getViewMatrix();
+        //ubo.proj = glm::perspective(glm::radians(45.0f), this->VKswapChainExtent.width / (float)this->VKswapChainExtent.height, 0.1f, 10.0f);
+        ubo.proj = this->camera.getProjectionMatrix();
+
+        memcpy(this->VKuniformBuffersMapped[currentImage], &ubo, sizeof(ubo));
     }
 
     int rateDeviceSuitability(VkPhysicalDevice device)

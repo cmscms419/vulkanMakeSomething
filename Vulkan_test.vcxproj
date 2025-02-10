@@ -13,6 +13,7 @@
   <ItemGroup>
     <ClCompile Include="app\cpp\test.cpp" />
     <ClCompile Include="app\source\Application.cpp" />
+    <ClCompile Include="app\source\Camera.cpp" />
     <ClCompile Include="app\source\cms491_common.cpp" />
     <ClCompile Include="app\source\DebugFunction.cpp" />
     <ClCompile Include="app\source\main.cpp" />
@@ -20,11 +21,13 @@
   <ItemGroup>
     <ClInclude Include="app\cpp\test.h" />
     <ClInclude Include="app\source\Application.h" />
+    <ClInclude Include="app\source\Camera.h" />
     <ClInclude Include="app\source\cms491_common.h" />
     <ClInclude Include="app\source\DebugFunction.h" />
     <ClInclude Include="app\source\object_data.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="cpp.hint" />
     <None Include="shader\shader.frag" />
     <None Include="shader\shader.vert" />
   </ItemGroup>

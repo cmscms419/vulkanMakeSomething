@@ -2,7 +2,9 @@
 #define INCLUDE_SOURCE_APPLICATION_H
 
 #include "cms491_common.h"
+
 #include "DebugFunction.h"
+#include "Camera.h"
 
 namespace vkutil {
 
@@ -46,7 +48,10 @@ namespace vkutil {
         void recreateSwapChain();
         void createVertexBuffer();
         void createIndexBuffer();
-
+        void createDescriptorSetLayout();
+        void createUniformBuffers();
+        void createDescriptorPool();
+        void createDescriptorSets();
         // 도구
 
         // 주어진 물리 장치에서 큐 패밀리 속성을 찾는 함수
@@ -54,6 +59,8 @@ namespace vkutil {
         // TODO ; 큐 패밀리가 여러개인 경우에 대한 처리가 필요함
         const QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device);
         
+        // 물리 디바이스가 요구 사항을 충족하는지 확인하는 함수
+        // 물리 디바이스가 요구 사항을 충족하는지 확인
         bool isDeviceSuitable(VkPhysicalDevice device);
         
         // 물리 디바이스의 확장 기능을 지원하는지 확인하는 함수
@@ -88,6 +95,10 @@ namespace vkutil {
         // 커맨드 버퍼를 기록하는 함수
         // 실행하고자 하는 명령을 명령 버퍼에 기록
         void recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex);
+
+        // uniform 버퍼를 업데이트하는 함수
+        // uniform 버퍼를 업데이트하고 셰이더에 전달
+        void updateUniformBuffer(uint32_t currentImage);
         
         GLFWwindow* VKwindow;                               // GLFW 윈도우 핸들 -> GLFW 윈도우 핸들을 저장
         VkInstance VKinstance;                              // Vulkan 인스턴스 -> Vulkan API를 사용하기 위한 인스턴스
@@ -103,6 +114,7 @@ namespace vkutil {
         std::vector<VkImageView> VKswapChainImageViews;     // 스왑 체인 이미지 뷰 -> 스왑 체인 이미지를 뷰로 변환 (이미지 뷰는 이미지를 읽고 쓰는 데 사용됨)
         VkFormat VKswapChainImageFormat;                    // 스왑 체인 이미지 포맷 -> 스왑 체인 이미지의 픽셀 형식
         VkExtent2D VKswapChainExtent;                       // 스왑 체인 이미지 해상도 -> 스왑 체인 이미지의 너비와 높이
+        VkDescriptorSetLayout VKdescriptorSetLayout;        // 디스크립터 세트 레이아웃 -> 디스크립터 세트를 생성하는 데 사용
         VkPipelineLayout VKpipelineLayout;                  // 파이프라인 레이아웃 -> 파이프라인에 사용되는 레이아웃
         VkRenderPass VKrenderPass;                          // 렌더 패스 -> 렌더링 작업을 정의하는 데 사용
         VkPipeline VKgraphicsPipeline;                      // 그래픽스 파이프라인 -> 그래픽스 파이프라인을 생성
@@ -119,6 +131,15 @@ namespace vkutil {
         VkBuffer VKindexBuffer;                             // 인덱스 버퍼 -> 인덱스 데이터를 저장하는 데 사용
         VkDeviceMemory VKindexBufferMemory;                 // 인덱스 버퍼 메모리 -> 인덱스 데이터를 저장하는 데 사용
 
+        std::vector<VkBuffer> VKuniformBuffers;             // 유니폼 버퍼 -> 유니폼 데이터를 저장하는 데 사용
+        std::vector<VkDeviceMemory> VKuniformBuffersMemory; // 유니폼 버퍼 메모리 -> 유니폼 데이터를 저장하는 데 사용
+        std::vector<void*> VKuniformBuffersMapped;          // 유니폼 버퍼 매핑 -> 유니폼 데이터를 매핑하는 데 사용
+
+        VkDescriptorPool VKdescriptorPool;                  // 디스크립터 풀 -> 디스크립터를 생성하는 데 사용
+        std::vector<VkDescriptorSet> VKdescriptorSets;      // 디스크립터 세트 -> 디스크립터를 생성하는 데 사용
+
+        vkutil::object::Camera camera;                      // 카메라 -> 카메라 객체
+
         std::string RootPath = "";                          // 루트 경로
         size_t currentFrame = 0;                            // 현재 프레임 인덱스
         bool state;                                         // 프로그램 상태 
@@ -127,6 +148,7 @@ namespace vkutil {
     int rateDeviceSuitability(VkPhysicalDevice device);
     void getPyhsicalDeviceProperties(VkPhysicalDevice device);
     std::vector<const char*> getRequiredExtensions();
+
 }
 
 #endif // INCLUDE_SOURCE_APPLICATION_H
