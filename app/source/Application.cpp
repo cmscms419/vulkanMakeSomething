@@ -1,5 +1,9 @@
-
 #include "Application.h"
+
+#ifndef STB_IMAGE_IMPLEMENTATION
+#define STB_IMAGE_IMPLEMENTATION
+#include "include/common/stb_image.h"
+#endif
 
 namespace vkutil {
     static void framebufferResizeCallback(GLFWwindow* window, int width, int height) {
@@ -46,8 +50,11 @@ namespace vkutil {
         this->RootPath = root_path;
         this->currentFrame = 0;
         this->state = true;
+        this->framebufferResized = false;
+        this->VKtextureImage = VK_NULL_HANDLE;
+        this->VKtextureImageMemory = VK_NULL_HANDLE;
+        
         this->camera = vkutil::object::Camera();
-
         this->camera.setProjection(45.0f, (float)WIDTH / (float)HEIGHT, 0.1f, 100.0f);
         this->camera.setView(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
     }
@@ -91,6 +98,12 @@ namespace vkutil {
 #endif // DEBUG_
 
         this->cleanupSwapChain();
+
+        vkDestroySampler(this->VKdevice, this->VKtextureSampler, nullptr);
+        vkDestroyImageView(this->VKdevice, this->VKtextureImageView, nullptr);
+
+        vkDestroyImage(this->VKdevice, this->VKtextureImage, nullptr);
+        vkFreeMemory(this->VKdevice, this->VKtextureImageMemory, nullptr);
 
         vkDestroyPipeline(this->VKdevice, this->VKgraphicsPipeline, nullptr);
         vkDestroyPipelineLayout(this->VKdevice, this->VKpipelineLayout, nullptr);
@@ -170,6 +183,9 @@ namespace vkutil {
         this->createGraphicsPipeline();
         this->createFramebuffers();
         this->createCommandPool();
+        this->createTextureImage();
+        this->createTextureImageView();
+        this->createTextureSampler();
         this->createVertexBuffer();
         this->createIndexBuffer();
         this->createUniformBuffers();
@@ -427,6 +443,7 @@ namespace vkutil {
 
         // 물리 장치 기능 구조체를 초기화합니다.
         VkPhysicalDeviceFeatures deviceFeatures{};
+        deviceFeatures.samplerAnisotropy = VK_TRUE; // 샘플러를 사용하여 텍스처를 보간합니다.
 
         // 논리 장치 생성 정보 구조체를 초기화합니다.
         VkDeviceCreateInfo createInfo{};
@@ -557,35 +574,7 @@ namespace vkutil {
         this->VKswapChainImageViews.resize(this->VKswapChainImages.size()); // 
 
         for (int8_t i = 0; i < this->VKswapChainImages.size(); i++) {
-            VkImageViewCreateInfo createInfo{};
-
-            // 이미지 뷰 생성 정보 구조체를 초기화합니다.
-            createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-            createInfo.image = this->VKswapChainImages[i];
-
-            // 이미지 뷰의 유형을 설정합니다.
-            createInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-            createInfo.format = this->VKswapChainImageFormat;
-
-            // 이미지의 컴포넌트 매핑을 설정합니다.
-            // 여기서는 기본적으로 R, G, B 및 A 구성 요소를 사용합니다.
-            // VK_COMPONENT_SWIZZLE_IDENTITY -> 색상 구성 요소를 변경하지 않고 원래 값을 그대로 유지하는 스와젤
-            createInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
-            createInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
-            createInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
-            createInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
-
-            // 이미지의 사용 목적을 설정합니다.
-            // VK_IMAGE_ASPECT_COLOR_BIT -> 이미지가 색상 데이터를 포함한다는 것을 나타냅니다.
-            createInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-            createInfo.subresourceRange.baseMipLevel = 0;
-            createInfo.subresourceRange.levelCount = 1;
-            createInfo.subresourceRange.baseArrayLayer = 0;
-            createInfo.subresourceRange.layerCount = 1;
-
-            if (vkCreateImageView(this->VKdevice, &createInfo, nullptr, &this->VKswapChainImageViews[i]) != VK_SUCCESS) {
-                throw std::runtime_error("failed to create image views!");
-            }
+            VKswapChainImageViews[i] = helper::createImageView(this->VKdevice, this->VKswapChainImages[i], this->VKswapChainImageFormat);
         }
     }
 
@@ -1112,6 +1101,115 @@ namespace vkutil {
         }
     }
 
+    void Application::createTextureImage()
+    {
+        int texWidth, texHeight, texChannels;
+        stbi_uc* pixels = stbi_load((this->RootPath + "/../../../../source/image.jpg").c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
+        VkDeviceSize imageSize = texWidth * texHeight * 4;
+
+        if (!pixels) {
+            throw std::runtime_error("failed to load texture image!");
+        }
+
+        VkBuffer stagingBuffer;
+        VkDeviceMemory stagingBufferMemory;
+
+        helper::createBuffer(
+            this->VKdevice,
+            this->VKphysicalDevice,
+            imageSize,
+            VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
+            VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+            stagingBuffer,
+            stagingBufferMemory);
+        
+        void* data;
+        vkMapMemory(this->VKdevice, stagingBufferMemory, 0, imageSize, 0, &data);
+            memcpy(data, pixels, static_cast<size_t>(imageSize));
+        vkUnmapMemory(this->VKdevice, stagingBufferMemory);
+
+        stbi_image_free(pixels);
+
+        helper::createImage(
+            this->VKdevice,
+            this->VKphysicalDevice,
+            texWidth,
+            texHeight,
+            VK_FORMAT_R8G8B8A8_SRGB,
+            VK_IMAGE_TILING_OPTIMAL,
+            VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+            this->VKtextureImage,
+            this->VKtextureImageMemory);
+        helper::transitionImageLayout(
+            this->VKdevice,
+            this->VKcommandPool,
+            this->graphicsVKQueue,
+            this->VKtextureImage,
+            VK_FORMAT_R8G8B8A8_SRGB,
+            VK_IMAGE_LAYOUT_UNDEFINED,
+            VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+        helper::copyBufferToImage(
+            this->VKdevice,
+            this->VKcommandPool,
+            this->graphicsVKQueue,
+            stagingBuffer,
+            this->VKtextureImage,
+            static_cast<uint32_t>(texWidth),
+            static_cast<uint32_t>(texHeight));
+        helper::transitionImageLayout(
+            this->VKdevice,
+            this->VKcommandPool,
+            this->graphicsVKQueue,
+            this->VKtextureImage,
+            VK_FORMAT_R8G8B8A8_SRGB, 
+            VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 
+            VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+
+        vkDestroyBuffer(this->VKdevice, stagingBuffer, nullptr);
+        vkFreeMemory(this->VKdevice, stagingBufferMemory, nullptr);
+    }
+
+    void Application::createTextureImageView()
+    {
+        // 이미지 뷰 생성 정보 구조체를 초기화합니다.
+        this->VKtextureImageView = 
+            helper::createImageView(
+            this->VKdevice,
+            this->VKtextureImage,
+            VK_FORMAT_R8G8B8A8_SRGB);
+    }
+
+    void Application::createTextureSampler()
+    {
+        VkPhysicalDeviceProperties properties{};
+        vkGetPhysicalDeviceProperties(this->VKphysicalDevice, &properties);
+
+        VkSamplerCreateInfo samplerInfo{};
+        samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+        samplerInfo.magFilter = VK_FILTER_LINEAR;
+        samplerInfo.minFilter = VK_FILTER_LINEAR;
+        samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+        samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+        samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+        samplerInfo.anisotropyEnable = VK_TRUE;
+        samplerInfo.maxAnisotropy = properties.limits.maxSamplerAnisotropy;
+        samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
+        samplerInfo.unnormalizedCoordinates = VK_FALSE;
+        samplerInfo.compareEnable = VK_FALSE;
+        samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
+        samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+        samplerInfo.mipLodBias = 0.0f;
+        samplerInfo.minLod = 0.0f;
+        samplerInfo.maxLod = 0.0f;
+
+        if (vkCreateSampler(this->VKdevice, &samplerInfo, nullptr, &this->VKtextureSampler) != VK_SUCCESS)
+        {
+            throw std::runtime_error("failed to create texture sampler!");
+        }
+    }
+
     const QueueFamilyIndices Application::findQueueFamilies(VkPhysicalDevice device)
     {
         QueueFamilyIndices indices; // 큐 패밀리의 개수를 저장할 변수를 초기화
@@ -1184,7 +1282,10 @@ namespace vkutil {
             swapChainAdequate = !swapChainSupport.formats.empty() && !swapChainSupport.presentModes.empty();
         }
 
-        return indices.isComplete() && extensionsSupported && swapChainAdequate;
+        VkPhysicalDeviceFeatures supportedFeatures;
+        vkGetPhysicalDeviceFeatures(device, &supportedFeatures);
+
+        return indices.isComplete() && extensionsSupported && swapChainAdequate && supportedFeatures.samplerAnisotropy;
     }
 
     bool Application::checkDeviceExtensionSupport(VkPhysicalDevice device)

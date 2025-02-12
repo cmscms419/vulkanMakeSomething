@@ -52,6 +52,10 @@ namespace vkutil {
         void createUniformBuffers();
         void createDescriptorPool();
         void createDescriptorSets();
+        void createTextureImage();
+        void createTextureImageView();
+        void createTextureSampler();
+
         // 도구
 
         // 주어진 물리 장치에서 큐 패밀리 속성을 찾는 함수
@@ -137,6 +141,13 @@ namespace vkutil {
 
         VkDescriptorPool VKdescriptorPool;                  // 디스크립터 풀 -> 디스크립터를 생성하는 데 사용
         std::vector<VkDescriptorSet> VKdescriptorSets;      // 디스크립터 세트 -> 디스크립터를 생성하는 데 사용
+
+        VkImage VKtextureImage;                            // 텍스처 이미지 -> 텍스처 이미지를 저장하는 데 사용
+        VkDeviceMemory VKtextureImageMemory;               // 텍스처 이미지 메모리 -> 텍스처 이미지를 저장하는 데 사용
+
+        VkImageView VKtextureImageView;                    // 텍스처 이미지 뷰 -> 텍스처 이미지를 뷰로 변환 (이미지 뷰는 이미지를 읽고 쓰는 데 사용)
+        VkSampler VKtextureSampler;                        // 텍스처 샘플러 -> 텍스처 이미지를 샘플링하는 데 사용
+
 
         vkutil::object::Camera camera;                      // 카메라 -> 카메라 객체
 

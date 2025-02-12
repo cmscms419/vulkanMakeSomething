@@ -30,7 +30,6 @@
 #define GLM_FORCE_RADIANS
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-#include <chrono>
 
 constexpr int WIDTH = 800;
 constexpr int HEIGHT = 600;
@@ -176,7 +175,62 @@ namespace vkutil
             VkDeviceMemory& bufferMemory);
 
         // 버퍼를 복사하는 함수
-        void copyBuffer(VkDevice& VKdevice, VkCommandPool& VKcommandPool, VkQueue& graphicsVKQueue,VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
+        void copyBuffer(
+            VkDevice& VKdevice,
+            VkCommandPool& VKcommandPool,
+            VkQueue& graphicsVKQueue,
+            VkBuffer srcBuffer,
+            VkBuffer dstBuffer,
+            VkDeviceSize size);
+        
+        // 이미지를 생성하는 함수
+        void createImage(
+            VkDevice& VKdevice,
+            VkPhysicalDevice& VKphysicalDevice,
+            uint32_t width,
+            uint32_t height,
+            VkFormat format,
+            VkImageTiling tiling,
+            VkImageUsageFlags usage,
+            VkMemoryPropertyFlags properties,
+            VkImage& image,
+            VkDeviceMemory& imageMemory);
+
+        //  시작하려는 명령버퍼를 생성하는 함수
+        VkCommandBuffer beginSingleTimeCommands(VkDevice& device, VkCommandPool& commandPool);
+    
+        // 명령버퍼를 종료하는 함수
+        void endSingleTimeCommands(VkDevice& device, VkCommandPool& commandPool, VkQueue& graphicsQueue, VkCommandBuffer& commandBuffer);
+
+        // 이미지 레이아웃을 전환하는 함수
+        void transitionImageLayout(
+            VkDevice& device,
+            VkCommandPool& commandPool,
+            VkQueue& graphicsQueue,
+            VkImage image,
+            VkFormat format,
+            VkImageLayout oldLayout,
+            VkImageLayout newLayout);
+
+
+        // 이미지를 복사하는 함수
+        void copyBufferToImage(
+            VkDevice& device,
+            VkCommandPool& commandPool,
+            VkQueue& graphicsQueue,
+            VkBuffer buffer,
+            VkImage image,
+            uint32_t width,
+            uint32_t height);
+
+        VkImageView createImageView(
+            VkDevice& device,
+            VkImage image,
+            VkFormat format);
+
+        // setupCommandBuffer 나중에 추가
+        // flushSetupCommands 나중에 추가
+            
     }
 }
 

@@ -11,6 +11,7 @@ namespace vkutil {
             glm::mat4 view;
             glm::mat4 proj;
         };
+
         class Camera {
 
 

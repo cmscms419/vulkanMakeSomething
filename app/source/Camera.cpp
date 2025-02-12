@@ -46,7 +46,6 @@ namespace vkutil {
 
             this->projection = glm::perspective(this->fov, this->aspect, this->nearP, this->farP);
             this->projection[1][1] *= -1;
-
         }
 
         void Camera::setView(glm::vec3 pos, glm::vec3 target, glm::vec3 up) {
@@ -54,7 +53,6 @@ namespace vkutil {
             this->pos = pos;
             this->front = target;
             this->up = up;
-
             this->view = glm::lookAt(this->pos, this->front, this->up);
         }
 
