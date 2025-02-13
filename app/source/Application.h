@@ -19,7 +19,7 @@ namespace vkutil {
         virtual void setup();
         virtual void cleanup();
 
-        bool framebufferResized = false;                    // 프레임 버퍼 크기 조정 여부
+        bool framebufferResized = false;        // 프레임 버퍼 크기 조정 여부
     private:
 
         // GLFW 윈도우 생성

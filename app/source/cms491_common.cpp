@@ -90,8 +90,8 @@ namespace vkutil {
             imageInfo.tiling = tiling;
             imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
             imageInfo.usage = usage;
-            imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
             imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+            imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
             imageInfo.flags = 0; // Optional
 
             if (vkCreateImage(VKdevice, &imageInfo, nullptr, &image) != VK_SUCCESS) {
@@ -151,9 +151,7 @@ namespace vkutil {
 
         void transitionImageLayout(VkDevice& device, VkCommandPool& commandPool, VkQueue& graphicsQueue, VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout)
         {
-            VkCommandBuffer commandBuffer = helper::beginSingleTimeCommands(device, commandPool);
-
-            helper::endSingleTimeCommands(device, commandPool, graphicsQueue, commandBuffer);
+            VkCommandBuffer commandBuffer = beginSingleTimeCommands(device, commandPool);
 
             VkImageMemoryBarrier barrier{};
             barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
@@ -168,9 +166,6 @@ namespace vkutil {
             barrier.subresourceRange.levelCount = 1;
             barrier.subresourceRange.baseArrayLayer = 0;
             barrier.subresourceRange.layerCount = 1;
-
-            barrier.srcAccessMask = 0; // TODO
-            barrier.dstAccessMask = 0; // TODO
 
             VkPipelineStageFlags sourceStage;
             VkPipelineStageFlags destinationStage;
@@ -201,13 +196,13 @@ namespace vkutil {
                 0, nullptr,
                 1, &barrier
             );
+            endSingleTimeCommands(device, commandPool, graphicsQueue, commandBuffer);
+
         }
 
         void copyBufferToImage(VkDevice& device, VkCommandPool& commandPool, VkQueue& graphicsQueue, VkBuffer buffer, VkImage image, uint32_t width, uint32_t height)
         {
-            VkCommandBuffer commandBuffer = helper::beginSingleTimeCommands(device, commandPool);
-
-            helper::endSingleTimeCommands(device, commandPool, graphicsQueue, commandBuffer); 
+            VkCommandBuffer commandBuffer = beginSingleTimeCommands(device, commandPool);
 
             VkBufferImageCopy region{};
             region.bufferOffset = 0;
@@ -221,8 +216,10 @@ namespace vkutil {
 
             region.imageOffset = { 0, 0, 0 };
             region.imageExtent = { width, height, 1 };
+            
             vkCmdCopyBufferToImage(commandBuffer, buffer, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
-            helper::endSingleTimeCommands(device, commandPool, graphicsQueue, commandBuffer);
+            
+            endSingleTimeCommands(device, commandPool, graphicsQueue, commandBuffer);
         }
 
         VkImageView createImageView(VkDevice& device, VkImage image, VkFormat format)
