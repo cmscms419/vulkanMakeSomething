@@ -36,7 +36,6 @@ namespace vkutil {
         this->VkrenderFinishedSemaphore.clear();
         this->VKvertexBuffer = VK_NULL_HANDLE;
         this->VKvertexBufferMemory = VK_NULL_HANDLE;
-        this->VKstagingBufferMemory = VK_NULL_HANDLE;
         this->VKindexBufferMemory = VK_NULL_HANDLE;
         this->VkinFlightFences.clear();
         this->VKuniformBuffers.clear();
@@ -45,7 +44,6 @@ namespace vkutil {
         this->VKdescriptorPool = VK_NULL_HANDLE;
         this->VKdescriptorSetLayout = VK_NULL_HANDLE;
         this->VKdescriptorSets.clear();
-        this->VKstagingBuffer = VK_NULL_HANDLE;
         this->VKindexBuffer = VK_NULL_HANDLE;
         this->RootPath = root_path;
         this->currentFrame = 0;
@@ -915,6 +913,9 @@ namespace vkutil {
     void Application::createVertexBuffer()
     {
         VkDeviceSize bufferSize = sizeof(testVectex[0]) * testVectex.size();
+        
+        VkBuffer stagingBuffer;
+        VkDeviceMemory stagingBufferMemory;
 
         helper::createBuffer(
             this->VKdevice,
@@ -923,15 +924,13 @@ namespace vkutil {
             VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
             VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
             VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-            this->VKstagingBuffer,
-            this->VKstagingBufferMemory);
+            stagingBuffer,
+            stagingBufferMemory);
 
-        {
-            void* data;
-            vkMapMemory(this->VKdevice, this->VKstagingBufferMemory, 0, bufferSize, 0, &data);
+        void* data;
+        vkMapMemory(this->VKdevice, stagingBufferMemory, 0, bufferSize, 0, &data);
             memcpy(data, testVectex.data(), (size_t)bufferSize);
-            vkUnmapMemory(this->VKdevice, this->VKstagingBufferMemory);
-        }
+        vkUnmapMemory(this->VKdevice, stagingBufferMemory);
 
         helper::createBuffer(
             this->VKdevice,
@@ -942,11 +941,17 @@ namespace vkutil {
             this->VKvertexBuffer,
             this->VKvertexBufferMemory);
 
-        helper::copyBuffer(this->VKdevice, this->VKcommandPool, this->graphicsVKQueue, this->VKstagingBuffer, this->VKvertexBuffer, bufferSize);
+        helper::copyBuffer(
+            this->VKdevice, 
+            this->VKcommandPool, 
+            this->graphicsVKQueue, 
+            stagingBuffer, 
+            this->VKvertexBuffer, 
+            bufferSize);
 
         // 스테이징 버퍼에서 디바이스 버퍼로 데이터를 복사한 후에는 이를 정리해야 합니다:
-        vkDestroyBuffer(this->VKdevice, this->VKstagingBuffer, nullptr);
-        vkFreeMemory(this->VKdevice, this->VKstagingBufferMemory, nullptr);
+        vkDestroyBuffer(this->VKdevice, stagingBuffer, nullptr);
+        vkFreeMemory(this->VKdevice, stagingBufferMemory, nullptr);
     }
 
     void Application::createIndexBuffer()
@@ -966,13 +971,12 @@ namespace vkutil {
             stagingBuffer,
             stagingBufferMemory);
 
-        {
-            void* data;
-            vkMapMemory(this->VKdevice, stagingBufferMemory, 0, bufferSize, 0, &data);
+        
+        void* data;
+        vkMapMemory(this->VKdevice, stagingBufferMemory, 0, bufferSize, 0, &data);
             memcpy(data, testindices.data(), (size_t)bufferSize);
-            vkUnmapMemory(this->VKdevice, stagingBufferMemory);
-        }
-
+        vkUnmapMemory(this->VKdevice, stagingBufferMemory);
+        
         helper::createBuffer(
             this->VKdevice,
             this->VKphysicalDevice,
@@ -1113,8 +1117,6 @@ namespace vkutil {
             throw std::runtime_error("failed to allocate descriptor sets!");
         }
         
-        std::array<VkWriteDescriptorSet, 2> descriptorWrites{};
-
         // 디스크립터 세트를 설정합니다.
         for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
             
