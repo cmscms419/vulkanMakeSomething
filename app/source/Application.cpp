@@ -179,8 +179,9 @@ namespace vkutil {
         this->createRenderPass();
         this->createDescriptorSetLayout();
         this->createGraphicsPipeline();
-        this->createFramebuffers();
         this->createCommandPool();
+        this->createDepthResources();
+        this->createFramebuffers();
         this->createTextureImage();
         this->createTextureImageView();
         this->createTextureSampler();
@@ -572,7 +573,7 @@ namespace vkutil {
         this->VKswapChainImageViews.resize(this->VKswapChainImages.size()); // 
 
         for (int8_t i = 0; i < this->VKswapChainImages.size(); i++) {
-            VKswapChainImageViews[i] = helper::createImageView(this->VKdevice, this->VKswapChainImages[i], this->VKswapChainImageFormat);
+            VKswapChainImageViews[i] = helper::createImageView(this->VKdevice, this->VKswapChainImages[i], this->VKswapChainImageFormat, VK_IMAGE_ASPECT_COLOR_BIT);
         }
     }
 
@@ -589,16 +590,33 @@ namespace vkutil {
         colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
         colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
+        // 깊이 첨부 파일을 설정합니다.
+        VkAttachmentDescription depthAttachment{};
+        depthAttachment.format = helper::findDepthFormat(this->VKphysicalDevice);
+        depthAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
+        depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+        depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        depthAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+        depthAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        depthAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        depthAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
         // 렌더 패스 서브패스를 설정합니다.
         VkAttachmentReference colorAttachmentRef{};
         colorAttachmentRef.attachment = 0;
         colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+        // 깊이 첨부 파일 참조를 설정합니다.
+        VkAttachmentReference depthAttachmentRef{};
+        depthAttachmentRef.attachment = 1;
+        depthAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
         // 서브패스를 설정합니다.
         VkSubpassDescription subpass{};
         subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
         subpass.colorAttachmentCount = 1;
         subpass.pColorAttachments = &colorAttachmentRef;
+        subpass.pDepthStencilAttachment = &depthAttachmentRef;
 
         // 서브패스 종속성을 설정합니다.
         // 외부 서브패스와 대상 서브패스를 설정합니다.
@@ -606,17 +624,20 @@ namespace vkutil {
         VkSubpassDependency dependency{};
         dependency.srcSubpass = VK_SUBPASS_EXTERNAL; // 외부 서브패스
         dependency.dstSubpass = 0;                   // 대상 서브패스
-        dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT; // 소스 스테이지 마스크 -> 색상 첨부 출력 비트
-        dependency.srcAccessMask = 0;                                            // 소스 액세스 마스크 -> 0
-        dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT; // 대상 스테이지 마스크 -> 색상 첨부 출력 비트
-        dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;         // 대상 액세스 마스크 -> 색상 첨부 쓰기 비트
+        dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;   // 소스 스테이지 마스크 -> 색상 첨부 출력 비트
+        dependency.srcAccessMask = 0;                                                                                           // 소스 액세스 마스크 -> 0
+        dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;   // 대상 스테이지 마스크 -> 색상 첨부 출력 비트
+        dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;         // 대상 액세스 마스크 -> 색상 첨부 쓰기 비트
 
+        // 첨부 파일을 설정합니다.
+        std::array<VkAttachmentDescription, 2> attachments = { colorAttachment, depthAttachment };
+        
         // 렌더 패스 생성 정보 구조체를 초기화합니다.
         // 렌더 패스 생성 정보 구조체에 첨부 파일 및 서브패스를 설정합니다.
         VkRenderPassCreateInfo renderPassInfo{};
         renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-        renderPassInfo.attachmentCount = 1;
-        renderPassInfo.pAttachments = &colorAttachment;
+        renderPassInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
+        renderPassInfo.pAttachments = attachments.data();
         renderPassInfo.subpassCount = 1;
         renderPassInfo.pSubpasses = &subpass;
         renderPassInfo.dependencyCount = 1;
@@ -713,6 +734,20 @@ namespace vkutil {
         multisampling.alphaToCoverageEnable = VK_FALSE;             // 알파 커버리지 비활성화 -> option
         multisampling.alphaToOneEnable = VK_FALSE;                  // 알파 원 비활성화 -> option
 
+        // 깊이 스텐실 테스트 설정
+        VkPipelineDepthStencilStateCreateInfo depthStencil{};
+        depthStencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+        depthStencil.depthTestEnable = VK_TRUE;
+        depthStencil.depthWriteEnable = VK_TRUE;
+        depthStencil.depthCompareOp = VK_COMPARE_OP_LESS;
+        depthStencil.depthBoundsTestEnable = VK_FALSE;
+        depthStencil.stencilTestEnable = VK_FALSE;
+        depthStencil.minDepthBounds = 0.0f; // Optional
+        depthStencil.maxDepthBounds = 1.0f; // Optional
+        depthStencil.stencilTestEnable = VK_FALSE;
+        depthStencil.front = {}; // Optional
+        depthStencil.back = {}; // Optional
+
         // 컬러 블렌딩 설정
         VkPipelineColorBlendAttachmentState colorBlendAttachment{};
         colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT |
@@ -778,7 +813,7 @@ namespace vkutil {
         pipelineInfo.pViewportState = &viewportState;
         pipelineInfo.pRasterizationState = &rasterizer;
         pipelineInfo.pMultisampleState = &multisampling;
-        pipelineInfo.pDepthStencilState = nullptr; // Optional
+        pipelineInfo.pDepthStencilState = &depthStencil; // Optional
         pipelineInfo.pColorBlendState = &colorBlending;
         pipelineInfo.pDynamicState = &dynamicState; // Optional
         pipelineInfo.layout = this->VKpipelineLayout;
@@ -801,14 +836,15 @@ namespace vkutil {
         this->VKswapChainFramebuffers.resize(this->VKswapChainImageViews.size());
 
         for (size_t i = 0; i < this->VKswapChainImageViews.size(); i++) {
-            VkImageView attachments[] = {
-                this->VKswapChainImageViews[i]
+            std::array<VkImageView, 2> attachments = {
+                this->VKswapChainImageViews[i],
+                this->VKdepthImageView
             };
             VkFramebufferCreateInfo framebufferInfo{};
             framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
             framebufferInfo.renderPass = this->VKrenderPass;
-            framebufferInfo.attachmentCount = 1;
-            framebufferInfo.pAttachments = attachments;
+            framebufferInfo.attachmentCount = static_cast<uint32_t>(attachments.size());;
+            framebufferInfo.pAttachments = attachments.data();;
             framebufferInfo.width = this->VKswapChainExtent.width;
             framebufferInfo.height = this->VKswapChainExtent.height;
             framebufferInfo.layers = 1;
@@ -879,6 +915,10 @@ namespace vkutil {
 
     void Application::cleanupSwapChain()
     {
+        vkDestroyImageView(this->VKdevice, this->VKdepthImageView, nullptr); // 깊이 이미지 뷰를 제거합니다.
+        vkDestroyImage(this->VKdevice, this->VKdepthImage, nullptr); // 깊이 이미지를 제거합니다.
+        vkFreeMemory(this->VKdevice, this->VKdepthImageMemory, nullptr); // 깊이 이미지 메모리를 제거합니다.
+
         for (auto framebuffer : VKswapChainFramebuffers)
         {
             vkDestroyFramebuffer(this->VKdevice, framebuffer, nullptr); // 프레임 버퍼를 제거합니다.
@@ -907,6 +947,7 @@ namespace vkutil {
 
         this->createSwapChain();  // 스왑 체인을 생성합니다.
         this->createImageViews(); // 이미지 뷰를 생성합니다.
+        this->createDepthResources(); // 깊이 리소스를 생성합니다.
         this->createRenderPass(); // 렌더 패스를 생성합니다.
     }
 
@@ -1231,7 +1272,8 @@ namespace vkutil {
             helper::createImageView(
             this->VKdevice,
             this->VKtextureImage,
-            VK_FORMAT_R8G8B8A8_SRGB);
+            VK_FORMAT_R8G8B8A8_SRGB,
+            VK_IMAGE_ASPECT_COLOR_BIT);
     }
 
     void Application::createTextureSampler()
@@ -1261,6 +1303,38 @@ namespace vkutil {
         {
             throw std::runtime_error("failed to create texture sampler!");
         }
+    }
+
+    void Application::createDepthResources()
+    {
+        // 깊이 이미지를 생성합니다.
+        VkFormat depthFormat = helper::findDepthFormat(this->VKphysicalDevice);
+
+        // 이미지 생성 정보 구조체를 초기화합니다.
+        helper::createImage(
+            this->VKdevice,
+            this->VKphysicalDevice,
+            this->VKswapChainExtent.width,
+            this->VKswapChainExtent.height,
+            depthFormat,
+            VK_IMAGE_TILING_OPTIMAL,
+            VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
+            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+            this->VKdepthImage,
+            this->VKdepthImageMemory);
+        
+        // 이미지 뷰를 생성합니다.
+        this->VKdepthImageView = helper::createImageView(this->VKdevice, this->VKdepthImage, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
+
+        // 깊이 이미지 레이아웃을 설정합니다.
+        helper::transitionImageLayout(
+            this->VKdevice,
+            this->VKcommandPool,
+            this->graphicsVKQueue,
+            this->VKdepthImage,
+            depthFormat,
+            VK_IMAGE_LAYOUT_UNDEFINED,
+            VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
     }
 
     const QueueFamilyIndices Application::findQueueFamilies(VkPhysicalDevice device)
@@ -1471,9 +1545,14 @@ namespace vkutil {
         renderPassInfo.framebuffer = this->VKswapChainFramebuffers[imageIndex];
         renderPassInfo.renderArea.offset = { 0, 0 };
         renderPassInfo.renderArea.extent = this->VKswapChainExtent;
-        VkClearValue clearColor = { {{0.0f, 0.0f, 0.0f, 1.0f}} };
-        renderPassInfo.clearValueCount = 1;
-        renderPassInfo.pClearValues = &clearColor;
+
+        // 렌더 패스를 시작하기 위한 클리어 값 설정
+        std::array<VkClearValue, 2> clearValues{};
+        clearValues[0].color = { {0.2f, 0.2f, 0.2f, 1.0f} };
+        clearValues[1].depthStencil = { 1.0f, 0 };
+
+        renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());;
+        renderPassInfo.pClearValues = clearValues.data();
 
         // 렌더 패스를 시작합니다.
         vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);

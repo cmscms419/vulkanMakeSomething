@@ -28,6 +28,8 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="cpp.hint" />
+    <None Include="shader\compile.bat" />
+    <None Include="shader\compile_debug.bat" />
     <None Include="shader\shader.frag" />
     <None Include="shader\shader.vert" />
   </ItemGroup>

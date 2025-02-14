@@ -65,5 +65,11 @@
       <Filter>shader</Filter>
     </None>
     <None Include="cpp.hint" />
+    <None Include="shader\compile_debug.bat">
+      <Filter>shader</Filter>
+    </None>
+    <None Include="shader\compile.bat">
+      <Filter>shader</Filter>
+    </None>
   </ItemGroup>
 </Project>

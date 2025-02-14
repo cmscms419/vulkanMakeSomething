@@ -28,6 +28,7 @@
 //#endif
 
 #define GLM_FORCE_RADIANS
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -36,6 +37,9 @@ constexpr int HEIGHT = 600;
 constexpr int MAX_FRAMES = 4;
 constexpr int MAX_FRAMES_IN_FLIGHT = 2;
 constexpr int CREATESURFACE_VKWIN32SURFACECREATEINFOKHR = 1;
+
+const std::string MODEL_PATH = "/../../../../source/viking_room.obj";
+const std::string TEXTURE_PATH = "/../../../../source/viking_room.png";
 
 //#ifdef _WIN32
 //
@@ -120,7 +124,7 @@ struct SwapChainSupportDetails {
 };
 
 struct Vertex {
-    glm::vec2 pos;
+    glm::vec3 pos;
     glm::vec3 color;
     glm::vec2 texCoord;
 
@@ -143,7 +147,7 @@ struct Vertex {
 
         attributeDescriptions[0].binding = 0;
         attributeDescriptions[0].location = 0;
-        attributeDescriptions[0].format = VK_FORMAT_R32G32_SFLOAT;
+        attributeDescriptions[0].format = VK_FORMAT_R32G32B32_SFLOAT;
         attributeDescriptions[0].offset = offsetof(Vertex, pos);
 
         attributeDescriptions[1].binding = 0;
@@ -216,8 +220,8 @@ namespace vkutil
             VkImage image,
             VkFormat format,
             VkImageLayout oldLayout,
-            VkImageLayout newLayout);
-
+            VkImageLayout newLayout
+        );
 
         // 이미지를 복사하는 함수
         void copyBufferToImage(
@@ -232,7 +236,21 @@ namespace vkutil
         VkImageView createImageView(
             VkDevice& device,
             VkImage image,
-            VkFormat format);
+            VkFormat format, 
+            VkImageAspectFlags aspectFlags
+        );
+
+        // Format을 지원하는지 확인하는 함수
+        VkFormat findSupportedFormat(
+            VkPhysicalDevice physicalDevice,
+            const std::vector<VkFormat>& candidates,
+            VkImageTiling tiling,
+            VkFormatFeatureFlags features);
+
+        // 깊이 형식을 찾는 함수
+        VkFormat findDepthFormat(VkPhysicalDevice physicalDevice);
+
+        bool hasStencilComponent(VkFormat format);
 
         // setupCommandBuffer 나중에 추가
         // flushSetupCommands 나중에 추가
@@ -241,14 +259,20 @@ namespace vkutil
 }
 
 const std::vector<Vertex> testVectex = {
-    {  {-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}  },
-    {  {0.5f, -0.5f},  {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}  },
-    {  {0.5f, 0.5f},   {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}  },
-    {  {-0.5f, 0.5f},  {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}  }
+    {{-0.5f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
+    {{0.5f, -0.5f, 0.0f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}},
+    {{0.5f, 0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},
+    {{-0.5f, 0.5f, 0.0f}, {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}},
+
+    {{-0.5f, -0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
+    {{0.5f, -0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}},
+    {{0.5f, 0.5f, -0.5f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},
+    {{-0.5f, 0.5f, -0.5f}, {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}}
 };
 
 const std::vector<uint16_t> testindices = {
-    0, 1, 2, 2, 3, 0
+        0, 1, 2, 2, 3, 0,
+        4, 5, 6, 6, 7, 4
 };
 
 #endif // INCLUDE_CMS419_COMMON_H

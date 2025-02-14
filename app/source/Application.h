@@ -55,6 +55,7 @@ namespace vkutil {
         void createTextureImage();
         void createTextureImageView();
         void createTextureSampler();
+        void createDepthResources();
 
         // 도구
 
@@ -145,6 +146,10 @@ namespace vkutil {
 
         VkImageView VKtextureImageView;                    // 텍스처 이미지 뷰 -> 텍스처 이미지를 뷰로 변환 (이미지 뷰는 이미지를 읽고 쓰는 데 사용)
         VkSampler VKtextureSampler;                        // 텍스처 샘플러 -> 텍스처 이미지를 샘플링하는 데 사용
+
+        VkImage VKdepthImage;                              // 깊이 이미지 -> 깊이 이미지를 저장하는 데 사용
+        VkDeviceMemory VKdepthImageMemory;                 // 깊이 이미지 메모리 -> 깊이 이미지를 저장하는 데 사용
+        VkImageView VKdepthImageView;                      // 깊이 이미지 뷰 -> 깊이 이미지를 뷰로 변환 (이미지 뷰는 이미지를 읽고 쓰는 데 사용)
 
 
         vkutil::object::Camera camera;                      // 카메라 -> 카메라 객체
