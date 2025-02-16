@@ -12,12 +12,15 @@
 #include <stdexcept>
 #include <vector>
 #include <map>
+#include <unordered_map>
 
 #define VK_USE_PLATFORM_WIN32_KHR
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 #define GLFW_EXPOSE_NATIVE_WIN32
 #include <GLFW/glfw3native.h>
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/hash.hpp>
 
 
 //#ifdef _WIN32
@@ -38,9 +41,6 @@ constexpr int MAX_FRAMES = 4;
 constexpr int MAX_FRAMES_IN_FLIGHT = 2;
 constexpr int CREATESURFACE_VKWIN32SURFACECREATEINFOKHR = 1;
 
-const std::string MODEL_PATH = "/../../../../source/viking_room.obj";
-const std::string TEXTURE_PATH = "/../../../../source/viking_room.png";
-
 //#ifdef _WIN32
 //
 //#elif __linux__
@@ -49,6 +49,9 @@ const std::string TEXTURE_PATH = "/../../../../source/viking_room.png";
 //#error "Unsupported platform"
 //
 //#endif
+
+#define UNIQUE_VERTEXTYPE 1
+
 
 const std::vector<const char*> validationLayers = {
     "VK_LAYER_KHRONOS_validation"
@@ -162,6 +165,11 @@ struct Vertex {
 
         return attributeDescriptions;
     }
+
+    bool operator==(const Vertex& other) const {
+        return pos == other.pos && color == other.color && texCoord == other.texCoord;
+    }
+
 };
 
 namespace vkutil
@@ -199,6 +207,7 @@ namespace vkutil
             VkPhysicalDevice& VKphysicalDevice,
             uint32_t width,
             uint32_t height,
+            uint32_t mipLevels,
             VkFormat format,
             VkImageTiling tiling,
             VkImageUsageFlags usage,
@@ -220,7 +229,8 @@ namespace vkutil
             VkImage image,
             VkFormat format,
             VkImageLayout oldLayout,
-            VkImageLayout newLayout
+            VkImageLayout newLayout,
+            uint32_t mipLevels
         );
 
         // 이미지를 복사하는 함수
@@ -233,11 +243,13 @@ namespace vkutil
             uint32_t width,
             uint32_t height);
 
+        // 이미지 뷰를 생성하는 함수
         VkImageView createImageView(
             VkDevice& device,
             VkImage image,
             VkFormat format, 
-            VkImageAspectFlags aspectFlags
+            VkImageAspectFlags aspectFlags,
+            uint32_t mipLevels
         );
 
         // Format을 지원하는지 확인하는 함수
@@ -250,7 +262,20 @@ namespace vkutil
         // 깊이 형식을 찾는 함수
         VkFormat findDepthFormat(VkPhysicalDevice physicalDevice);
 
+        // 스텐실 컴포넌트를 가지고 있는지 확인하는 함수
         bool hasStencilComponent(VkFormat format);
+
+        // Mipmaps을 생성하는 함수
+        void generateMipmaps(
+            VkPhysicalDevice physicalDevice,
+            VkDevice device,
+            VkCommandPool commandPool,
+            VkQueue graphicsQueue,
+            VkImage image,
+            VkFormat imageFormat,
+            int32_t texWidth,
+            int32_t texHeight,
+            uint32_t mipLevels);
 
         // setupCommandBuffer 나중에 추가
         // flushSetupCommands 나중에 추가
@@ -274,5 +299,16 @@ const std::vector<uint16_t> testindices = {
         0, 1, 2, 2, 3, 0,
         4, 5, 6, 6, 7, 4
 };
+
+namespace std {
+    template<> struct hash<Vertex> {
+        size_t operator()(Vertex const& vertex) const {
+            return ((hash<glm::vec3>()(vertex.pos) ^
+                    (hash<glm::vec3>()(vertex.color) << 1)) >> 1) ^
+                    (hash<glm::vec2>()(vertex.texCoord) << 1);
+        }
+    };
+}
+
 
 #endif // INCLUDE_CMS419_COMMON_H

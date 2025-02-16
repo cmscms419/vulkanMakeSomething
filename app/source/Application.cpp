@@ -5,6 +5,12 @@
 #include "include/common/stb_image.h"
 #endif
 
+#define TINYOBJLOADER_IMPLEMENTATION
+#include "tiny_obj_loader.h"
+
+const std::string MODEL_PATH = "/../../../../source/viking_room.obj";
+const std::string TEXTURE_PATH = "/../../../../source/viking_room.png";
+
 namespace vkutil {
     static void framebufferResizeCallback(GLFWwindow* window, int width, int height) {
         auto app = reinterpret_cast<Application*>(glfwGetWindowUserPointer(window));
@@ -185,6 +191,7 @@ namespace vkutil {
         this->createTextureImage();
         this->createTextureImageView();
         this->createTextureSampler();
+        this->loadModel();
         this->createVertexBuffer();
         this->createIndexBuffer();
         this->createUniformBuffers();
@@ -573,7 +580,7 @@ namespace vkutil {
         this->VKswapChainImageViews.resize(this->VKswapChainImages.size()); // 
 
         for (int8_t i = 0; i < this->VKswapChainImages.size(); i++) {
-            VKswapChainImageViews[i] = helper::createImageView(this->VKdevice, this->VKswapChainImages[i], this->VKswapChainImageFormat, VK_IMAGE_ASPECT_COLOR_BIT);
+            VKswapChainImageViews[i] = helper::createImageView(this->VKdevice, this->VKswapChainImages[i], this->VKswapChainImageFormat, VK_IMAGE_ASPECT_COLOR_BIT, 1);
         }
     }
 
@@ -953,7 +960,7 @@ namespace vkutil {
 
     void Application::createVertexBuffer()
     {
-        VkDeviceSize bufferSize = sizeof(testVectex[0]) * testVectex.size();
+        VkDeviceSize bufferSize = sizeof(this->VKvertices[0]) * this->VKvertices.size();
         
         VkBuffer stagingBuffer;
         VkDeviceMemory stagingBufferMemory;
@@ -970,7 +977,7 @@ namespace vkutil {
 
         void* data;
         vkMapMemory(this->VKdevice, stagingBufferMemory, 0, bufferSize, 0, &data);
-            memcpy(data, testVectex.data(), (size_t)bufferSize);
+            memcpy(data, this->VKvertices.data(), (size_t)bufferSize);
         vkUnmapMemory(this->VKdevice, stagingBufferMemory);
 
         helper::createBuffer(
@@ -997,7 +1004,7 @@ namespace vkutil {
 
     void Application::createIndexBuffer()
     {
-        VkDeviceSize bufferSize = sizeof(testindices[0]) * testindices.size();
+        VkDeviceSize bufferSize = sizeof(this->VKindices[0]) * this->VKindices.size();
 
         VkBuffer stagingBuffer;
         VkDeviceMemory stagingBufferMemory;
@@ -1015,7 +1022,7 @@ namespace vkutil {
         
         void* data;
         vkMapMemory(this->VKdevice, stagingBufferMemory, 0, bufferSize, 0, &data);
-            memcpy(data, testindices.data(), (size_t)bufferSize);
+            memcpy(data, this->VKindices.data(), (size_t)bufferSize);
         vkUnmapMemory(this->VKdevice, stagingBufferMemory);
         
         helper::createBuffer(
@@ -1198,12 +1205,17 @@ namespace vkutil {
     void Application::createTextureImage()
     {
         int texWidth, texHeight, texChannels;
-        stbi_uc* pixels = stbi_load((this->RootPath + "/../../../../source/image.jpg").c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
+        //stbi_uc* pixels = stbi_load((this->RootPath + "/../../../../source/image.jpg").c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
+        std::string objtex = this->RootPath + TEXTURE_PATH;
+
+        stbi_uc* pixels = stbi_load(objtex.c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
         VkDeviceSize imageSize = texWidth * texHeight * 4;
 
         if (!pixels) {
             throw std::runtime_error("failed to load texture image!");
         }
+
+        this->VKmipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(texWidth, texHeight)))) + 1;
 
         VkBuffer stagingBuffer;
         VkDeviceMemory stagingBufferMemory;
@@ -1230,9 +1242,10 @@ namespace vkutil {
             this->VKphysicalDevice,
             texWidth,
             texHeight,
+            this->VKmipLevels,
             VK_FORMAT_R8G8B8A8_SRGB,
             VK_IMAGE_TILING_OPTIMAL,
-            VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+            VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
             VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
             this->VKtextureImage,
             this->VKtextureImageMemory);
@@ -1243,7 +1256,8 @@ namespace vkutil {
             this->VKtextureImage,
             VK_FORMAT_R8G8B8A8_SRGB,
             VK_IMAGE_LAYOUT_UNDEFINED,
-            VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+            VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+            this->VKmipLevels);
         helper::copyBufferToImage(
             this->VKdevice,
             this->VKcommandPool,
@@ -1252,17 +1266,23 @@ namespace vkutil {
             this->VKtextureImage,
             static_cast<uint32_t>(texWidth),
             static_cast<uint32_t>(texHeight));
-        helper::transitionImageLayout(
+        // 밉맵을 생성하는 동안 VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL로 전환되었습니다.
+        // VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL로 전환되면 이미지가 셰이더에서 읽을 수 있습니다.
+        // 그래서 아래의 코드는 제거
+
+        vkDestroyBuffer(this->VKdevice, stagingBuffer, nullptr);
+        vkFreeMemory(this->VKdevice, stagingBufferMemory, nullptr);
+
+        helper::generateMipmaps(
+            this->VKphysicalDevice,
             this->VKdevice,
             this->VKcommandPool,
             this->graphicsVKQueue,
             this->VKtextureImage,
-            VK_FORMAT_R8G8B8A8_SRGB, 
-            VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 
-            VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-
-        vkDestroyBuffer(this->VKdevice, stagingBuffer, nullptr);
-        vkFreeMemory(this->VKdevice, stagingBufferMemory, nullptr);
+            VK_FORMAT_R8G8B8A8_SRGB,
+            texWidth,
+            texHeight,
+            this->VKmipLevels);
     }
 
     void Application::createTextureImageView()
@@ -1273,7 +1293,8 @@ namespace vkutil {
             this->VKdevice,
             this->VKtextureImage,
             VK_FORMAT_R8G8B8A8_SRGB,
-            VK_IMAGE_ASPECT_COLOR_BIT);
+            VK_IMAGE_ASPECT_COLOR_BIT,
+            this->VKmipLevels);
     }
 
     void Application::createTextureSampler()
@@ -1295,9 +1316,9 @@ namespace vkutil {
         samplerInfo.compareEnable = VK_FALSE;
         samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
         samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
-        samplerInfo.mipLodBias = 0.0f;
-        samplerInfo.minLod = 0.0f;
-        samplerInfo.maxLod = 0.0f;
+        samplerInfo.minLod = 0.0f; // Optional
+        samplerInfo.maxLod = static_cast<float>(this->VKmipLevels);
+        samplerInfo.mipLodBias = 0.0f; // Optional
 
         if (vkCreateSampler(this->VKdevice, &samplerInfo, nullptr, &this->VKtextureSampler) != VK_SUCCESS)
         {
@@ -1316,6 +1337,7 @@ namespace vkutil {
             this->VKphysicalDevice,
             this->VKswapChainExtent.width,
             this->VKswapChainExtent.height,
+            1,
             depthFormat,
             VK_IMAGE_TILING_OPTIMAL,
             VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
@@ -1324,7 +1346,7 @@ namespace vkutil {
             this->VKdepthImageMemory);
         
         // 이미지 뷰를 생성합니다.
-        this->VKdepthImageView = helper::createImageView(this->VKdevice, this->VKdepthImage, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
+        this->VKdepthImageView = helper::createImageView(this->VKdevice, this->VKdepthImage, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT, 1);
 
         // 깊이 이미지 레이아웃을 설정합니다.
         helper::transitionImageLayout(
@@ -1334,7 +1356,55 @@ namespace vkutil {
             this->VKdepthImage,
             depthFormat,
             VK_IMAGE_LAYOUT_UNDEFINED,
-            VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+            VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+            1);
+    }
+
+    void Application::loadModel()
+    {
+        tinyobj::attrib_t attrib;
+        std::vector<tinyobj::shape_t> shapes;
+        std::vector<tinyobj::material_t> materials;
+        std::string warn, err;
+
+        std::string obj = this->RootPath + MODEL_PATH;
+
+        if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, obj.c_str())) {
+            throw std::runtime_error(warn + err);
+        }
+
+        std::unordered_map<Vertex, uint32_t> uniqueVertices{};
+
+        for (const auto& shape : shapes) {
+            for (const auto& index : shape.mesh.indices) {
+                Vertex vertex{};
+                vertex.pos = {
+                    attrib.vertices[3 * index.vertex_index + 0],
+                    attrib.vertices[3 * index.vertex_index + 1],
+                    attrib.vertices[3 * index.vertex_index + 2]
+                };
+                                                                
+
+                vertex.texCoord = {
+                    attrib.texcoords[2 * index.texcoord_index + 0],
+                    1.0f - attrib.texcoords[2 * index.texcoord_index + 1]
+                };
+
+                vertex.color = { 1.0f, 1.0f, 1.0f };
+#if UNIQUE_VERTEXTYPE
+
+                if (uniqueVertices.count(vertex) == 0) {
+                    uniqueVertices[vertex] = static_cast<uint32_t>(this->VKvertices.size());
+                    this->VKvertices.push_back(vertex);
+                }
+                this->VKindices.push_back(uniqueVertices[vertex]);
+#else
+                
+                this->VKvertices.push_back(vertex);
+                this->VKindices.push_back(this->VKindices.size());
+#endif
+            }
+        }
     }
 
     const QueueFamilyIndices Application::findQueueFamilies(VkPhysicalDevice device)
@@ -1548,7 +1618,8 @@ namespace vkutil {
 
         // 렌더 패스를 시작하기 위한 클리어 값 설정
         std::array<VkClearValue, 2> clearValues{};
-        clearValues[0].color = { {0.2f, 0.2f, 0.2f, 1.0f} };
+        //clearValues[0].color = { {0.2f, 0.2f, 0.2f, 1.0f} };
+        clearValues[0].color = { {0.0f, 0.0f, 0.0f, 1.0f} };
         clearValues[1].depthStencil = { 1.0f, 0 };
 
         renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());;
@@ -1580,12 +1651,12 @@ namespace vkutil {
             vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
             
             // 인덱스 버퍼를 바인딩합니다.
-            vkCmdBindIndexBuffer(commandBuffer, this->VKindexBuffer, 0, VK_INDEX_TYPE_UINT16);
+            vkCmdBindIndexBuffer(commandBuffer, this->VKindexBuffer, 0, VK_INDEX_TYPE_UINT32);
 
             // 디스크립터 세트를 바인딩합니다.
             vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->VKpipelineLayout, 0, 1, &this->VKdescriptorSets[currentFrame], 0, nullptr);
             // 렌더 패스를 종료합니다.
-            vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(testindices.size()), 1, 0, 0, 0);
+            vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(this->VKindices.size()), 1, 0, 0, 0);
         }
 
         vkCmdEndRenderPass(commandBuffer);

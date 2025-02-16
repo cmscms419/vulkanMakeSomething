@@ -16,6 +16,9 @@
     <Filter Include="app\source">
       <UniqueIdentifier>{5e6e231c-5ec9-4c8e-bff7-07f387109247}</UniqueIdentifier>
     </Filter>
+    <Filter Include="resource">
+      <UniqueIdentifier>{0beb9b76-d315-4778-91e3-db48ab1a5a4a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="app\cpp\test.cpp">
@@ -71,5 +74,13 @@
     <None Include="shader\compile.bat">
       <Filter>shader</Filter>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="source\image.jpg">
+      <Filter>resource</Filter>
+    </Image>
+    <Image Include="source\viking_room.png">
+      <Filter>resource</Filter>
+    </Image>
   </ItemGroup>
 </Project>

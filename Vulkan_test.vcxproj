@@ -33,6 +33,10 @@
     <None Include="shader\shader.frag" />
     <None Include="shader\shader.vert" />
   </ItemGroup>
+  <ItemGroup>
+    <Image Include="source\image.jpg" />
+    <Image Include="source\viking_room.png" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{961CB7AD-D855-4611-8025-A94BC31029F5}</ProjectGuid>
     <RootNamespace>Vulkan_test</RootNamespace>
