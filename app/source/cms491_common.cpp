@@ -75,8 +75,7 @@ namespace vkutil {
             helper::endSingleTimeCommands(VKdevice, VKcommandPool, graphicsVKQueue, commandBuffer);
         }
 
-        void createImage(VkDevice& VKdevice, VkPhysicalDevice& VKphysicalDevice, uint32_t width, uint32_t height, uint32_t mipLevels, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory)
-
+        void createImage(VkDevice& VKdevice, VkPhysicalDevice& VKphysicalDevice, uint32_t width, uint32_t height, uint32_t mipLevels, VkSampleCountFlagBits numSamples, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory)
         {
             VkImageCreateInfo imageInfo{};
 
@@ -91,7 +90,7 @@ namespace vkutil {
             imageInfo.tiling = tiling;
             imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
             imageInfo.usage = usage;
-            imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+            imageInfo.samples = numSamples;
             imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
             imageInfo.flags = 0; // Optional
 
@@ -399,6 +398,44 @@ namespace vkutil {
                 1, &barrier);
 
             endSingleTimeCommands(device, commandPool, graphicsQueue, commandBuffer);
+        }
+
+        VkSampleCountFlagBits getMaxUsableSampleCount(VkPhysicalDevice physicalDevice)
+        {
+            VkSampleCountFlagBits value = VK_SAMPLE_COUNT_1_BIT;
+
+            VkPhysicalDeviceProperties physicalDeviceProperties;
+            vkGetPhysicalDeviceProperties(physicalDevice, &physicalDeviceProperties);
+
+            VkSampleCountFlags counts = physicalDeviceProperties.limits.framebufferColorSampleCounts & physicalDeviceProperties.limits.framebufferDepthSampleCounts;
+
+            if (counts & VK_SAMPLE_COUNT_64_BIT)
+            {
+                value = VK_SAMPLE_COUNT_64_BIT;
+            }
+            if (counts & VK_SAMPLE_COUNT_32_BIT)
+            {
+                value = VK_SAMPLE_COUNT_32_BIT;
+            }
+            if (counts & VK_SAMPLE_COUNT_16_BIT)
+            {
+                value = VK_SAMPLE_COUNT_16_BIT;
+            }
+            if (counts & VK_SAMPLE_COUNT_8_BIT)
+            {
+                value = VK_SAMPLE_COUNT_8_BIT;
+            }
+            if (counts & VK_SAMPLE_COUNT_4_BIT)
+            {
+                value = VK_SAMPLE_COUNT_4_BIT;
+            }
+            if (counts & VK_SAMPLE_COUNT_2_BIT)
+            {
+                value = VK_SAMPLE_COUNT_2_BIT;
+            }
+
+            return value;
+
         }
 
     }

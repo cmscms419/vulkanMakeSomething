@@ -67,6 +67,9 @@ const std::vector<VkDynamicState> dynamicStates = {
     VK_DYNAMIC_STATE_SCISSOR
 };
 
+const std::string MODEL_PATH = "/../../../../source/viking_room.obj";
+const std::string TEXTURE_PATH = "/../../../../source/viking_room.png";
+
 #ifdef DEBUG_
 const bool enableValidationLayers = true;
 #else
@@ -208,6 +211,7 @@ namespace vkutil
             uint32_t width,
             uint32_t height,
             uint32_t mipLevels,
+            VkSampleCountFlagBits numSamples,
             VkFormat format,
             VkImageTiling tiling,
             VkImageUsageFlags usage,
@@ -276,6 +280,9 @@ namespace vkutil
             int32_t texWidth,
             int32_t texHeight,
             uint32_t mipLevels);
+
+        // 최대 사용 가능한 샘플링 수를 반환하는 함수
+        VkSampleCountFlagBits getMaxUsableSampleCount(VkPhysicalDevice physicalDevice);
 
         // setupCommandBuffer 나중에 추가
         // flushSetupCommands 나중에 추가

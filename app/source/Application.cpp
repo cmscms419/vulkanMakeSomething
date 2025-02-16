@@ -8,9 +8,6 @@
 #define TINYOBJLOADER_IMPLEMENTATION
 #include "tiny_obj_loader.h"
 
-const std::string MODEL_PATH = "/../../../../source/viking_room.obj";
-const std::string TEXTURE_PATH = "/../../../../source/viking_room.png";
-
 namespace vkutil {
     static void framebufferResizeCallback(GLFWwindow* window, int width, int height) {
         auto app = reinterpret_cast<Application*>(glfwGetWindowUserPointer(window));
@@ -186,6 +183,7 @@ namespace vkutil {
         this->createDescriptorSetLayout();
         this->createGraphicsPipeline();
         this->createCommandPool();
+        this->createColorResources();
         this->createDepthResources();
         this->createFramebuffers();
         this->createTextureImage();
@@ -402,6 +400,8 @@ namespace vkutil {
             }
         }
 
+        this->VKmsaaSamples = helper::getMaxUsableSampleCount(this->VKphysicalDevice);
+
         if (Score == 0)
         {
             throw std::runtime_error("failed to find a suitable GPU!");
@@ -450,6 +450,8 @@ namespace vkutil {
         // 물리 장치 기능 구조체를 초기화합니다.
         VkPhysicalDeviceFeatures deviceFeatures{};
         deviceFeatures.samplerAnisotropy = VK_TRUE; // 샘플러를 사용하여 텍스처를 보간합니다.
+        deviceFeatures.sampleRateShading = VK_TRUE; // 샘플 레이트 쉐이딩을 사용하여 픽셀을 그립니다.
+
 
         // 논리 장치 생성 정보 구조체를 초기화합니다.
         VkDeviceCreateInfo createInfo{};
@@ -589,18 +591,29 @@ namespace vkutil {
         // 렌더 패스 생성 정보 구조체를 초기화합니다.
         VkAttachmentDescription colorAttachment{};
         colorAttachment.format = this->VKswapChainImageFormat;
-        colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
+        colorAttachment.samples = this->VKmsaaSamples;
         colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
         colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
         colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
         colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
         colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-        colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+        colorAttachment.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+        // 색상 첨부 파일을 설정합니다.
+        VkAttachmentDescription colorAttachmentResolve{};
+        colorAttachmentResolve.format = this->VKswapChainImageFormat;
+        colorAttachmentResolve.samples = VK_SAMPLE_COUNT_1_BIT;
+        colorAttachmentResolve.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+        colorAttachmentResolve.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+        colorAttachmentResolve.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+        colorAttachmentResolve.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        colorAttachmentResolve.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        colorAttachmentResolve.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
         // 깊이 첨부 파일을 설정합니다.
         VkAttachmentDescription depthAttachment{};
         depthAttachment.format = helper::findDepthFormat(this->VKphysicalDevice);
-        depthAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
+        depthAttachment.samples = this->VKmsaaSamples;
         depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
         depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
         depthAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
@@ -613,6 +626,11 @@ namespace vkutil {
         colorAttachmentRef.attachment = 0;
         colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
+        // 색상 첨부 파일 참조를 설정합니다.
+        VkAttachmentReference colorAttachmentResolveRef{};
+        colorAttachmentResolveRef.attachment = 2;
+        colorAttachmentResolveRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
         // 깊이 첨부 파일 참조를 설정합니다.
         VkAttachmentReference depthAttachmentRef{};
         depthAttachmentRef.attachment = 1;
@@ -623,6 +641,7 @@ namespace vkutil {
         subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
         subpass.colorAttachmentCount = 1;
         subpass.pColorAttachments = &colorAttachmentRef;
+        subpass.pResolveAttachments = &colorAttachmentResolveRef;
         subpass.pDepthStencilAttachment = &depthAttachmentRef;
 
         // 서브패스 종속성을 설정합니다.
@@ -637,7 +656,7 @@ namespace vkutil {
         dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;         // 대상 액세스 마스크 -> 색상 첨부 쓰기 비트
 
         // 첨부 파일을 설정합니다.
-        std::array<VkAttachmentDescription, 2> attachments = { colorAttachment, depthAttachment };
+        std::array<VkAttachmentDescription, 3> attachments = { colorAttachment, depthAttachment, colorAttachmentResolve };
         
         // 렌더 패스 생성 정보 구조체를 초기화합니다.
         // 렌더 패스 생성 정보 구조체에 첨부 파일 및 서브패스를 설정합니다.
@@ -734,9 +753,9 @@ namespace vkutil {
         // 다중 샘플링 설정
         VkPipelineMultisampleStateCreateInfo multisampling{};
         multisampling.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO; //
-        multisampling.sampleShadingEnable = VK_FALSE;               // 샘플링 쉐이딩 비활성화
-        multisampling.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT; // 래스터화 샘플 수를 1비트로 설정
-        multisampling.minSampleShading = 1.0f;                      // 최소 샘플링을 1.0f로 설정 -> option
+        multisampling.sampleShadingEnable = VK_TRUE;               // 샘플링 쉐이딩 비활성화
+        multisampling.rasterizationSamples = this->VKmsaaSamples; // 래스터화 샘플 수를 1비트로 설정
+        multisampling.minSampleShading = 0.2f;                      // 최소 샘플링을 0.2f로 설정
         multisampling.pSampleMask = nullptr;                        // 샘플 마스크를 nullptr로 설정 -> option
         multisampling.alphaToCoverageEnable = VK_FALSE;             // 알파 커버리지 비활성화 -> option
         multisampling.alphaToOneEnable = VK_FALSE;                  // 알파 원 비활성화 -> option
@@ -843,9 +862,10 @@ namespace vkutil {
         this->VKswapChainFramebuffers.resize(this->VKswapChainImageViews.size());
 
         for (size_t i = 0; i < this->VKswapChainImageViews.size(); i++) {
-            std::array<VkImageView, 2> attachments = {
-                this->VKswapChainImageViews[i],
-                this->VKdepthImageView
+            std::array<VkImageView, 3> attachments = {
+                this->VKcolorImageView,
+                this->VKdepthImageView,
+                this->VKswapChainImageViews[i]
             };
             VkFramebufferCreateInfo framebufferInfo{};
             framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
@@ -922,6 +942,10 @@ namespace vkutil {
 
     void Application::cleanupSwapChain()
     {
+        vkDestroyImageView(this->VKdevice, this->VKcolorImageView, nullptr); // 컬러 이미지 뷰를 제거합니다.
+        vkDestroyImage(this->VKdevice, this->VKcolorImage, nullptr); // 컬러 이미지를 제거합니다.
+        vkFreeMemory(this->VKdevice, this->VKcolorImageMemory, nullptr); // 컬러 이미지 메모리를 제거합니다.
+
         vkDestroyImageView(this->VKdevice, this->VKdepthImageView, nullptr); // 깊이 이미지 뷰를 제거합니다.
         vkDestroyImage(this->VKdevice, this->VKdepthImage, nullptr); // 깊이 이미지를 제거합니다.
         vkFreeMemory(this->VKdevice, this->VKdepthImageMemory, nullptr); // 깊이 이미지 메모리를 제거합니다.
@@ -954,6 +978,7 @@ namespace vkutil {
 
         this->createSwapChain();  // 스왑 체인을 생성합니다.
         this->createImageViews(); // 이미지 뷰를 생성합니다.
+        this->createColorResources(); // 컬러 리소스를 생성합니다.
         this->createDepthResources(); // 깊이 리소스를 생성합니다.
         this->createRenderPass(); // 렌더 패스를 생성합니다.
     }
@@ -1243,6 +1268,7 @@ namespace vkutil {
             texWidth,
             texHeight,
             this->VKmipLevels,
+            VK_SAMPLE_COUNT_1_BIT,
             VK_FORMAT_R8G8B8A8_SRGB,
             VK_IMAGE_TILING_OPTIMAL,
             VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
@@ -1338,6 +1364,7 @@ namespace vkutil {
             this->VKswapChainExtent.width,
             this->VKswapChainExtent.height,
             1,
+            this->VKmsaaSamples,
             depthFormat,
             VK_IMAGE_TILING_OPTIMAL,
             VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
@@ -1346,7 +1373,12 @@ namespace vkutil {
             this->VKdepthImageMemory);
         
         // 이미지 뷰를 생성합니다.
-        this->VKdepthImageView = helper::createImageView(this->VKdevice, this->VKdepthImage, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT, 1);
+        this->VKdepthImageView = helper::createImageView(
+            this->VKdevice,
+            this->VKdepthImage,
+            depthFormat,
+            VK_IMAGE_ASPECT_DEPTH_BIT,
+            1);
 
         // 깊이 이미지 레이아웃을 설정합니다.
         helper::transitionImageLayout(
@@ -1405,6 +1437,27 @@ namespace vkutil {
 #endif
             }
         }
+    }
+
+    void Application::createColorResources()
+    {
+        VkFormat colorFormat = this->VKswapChainImageFormat;
+
+        helper::createImage(
+            this->VKdevice,
+            this->VKphysicalDevice,
+            this->VKswapChainExtent.width,
+            this->VKswapChainExtent.height,
+            1,
+            this->VKmsaaSamples,
+            colorFormat,
+            VK_IMAGE_TILING_OPTIMAL, 
+            VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, 
+            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, 
+            this->VKcolorImage, 
+            this->VKcolorImageMemory);
+
+        this->VKcolorImageView = helper::createImageView(this->VKdevice, this->VKcolorImage, colorFormat, VK_IMAGE_ASPECT_COLOR_BIT, 1);
     }
 
     const QueueFamilyIndices Application::findQueueFamilies(VkPhysicalDevice device)
