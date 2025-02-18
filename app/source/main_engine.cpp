@@ -12,7 +12,7 @@ int main(int argc, char* argv[]) {
         std::cerr << "경로를 가져오는 데 실패했습니다." << std::endl;
     }
 
-    vkcms::VulkanEngine engine;
+    vkengine::VulkanEngine engine;
 
     engine.init();
 

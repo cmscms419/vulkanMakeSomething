@@ -55,4 +55,24 @@
       <Filter>app\common</Filter>
     </ClInclude>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\shader\compile.bat">
+      <Filter>shader</Filter>
+    </None>
+    <None Include="..\..\shader\compile_debug.bat">
+      <Filter>shader</Filter>
+    </None>
+    <None Include="..\..\shader\frag.spv">
+      <Filter>shader</Filter>
+    </None>
+    <None Include="..\..\shader\shader.frag">
+      <Filter>shader</Filter>
+    </None>
+    <None Include="..\..\shader\shader.vert">
+      <Filter>shader</Filter>
+    </None>
+    <None Include="..\..\shader\vert.spv">
+      <Filter>shader</Filter>
+    </None>
+  </ItemGroup>
 </Project>

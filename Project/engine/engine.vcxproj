@@ -42,8 +42,8 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <OutDir>$(SolutionDir)../exe\$(SolutionName)\$(Platform)\$(Configuration)\</OutDir>
-    <IntDir>$(SolutionDir)../build\$(SolutionName)\$(Platform)\$(Configuration)\</IntDir>
+    <OutDir>$(SolutionDir)../exe\$(ProjectName)\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)../build\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
     <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(VULKAN_SDK)\Include</IncludePath>
     <LibraryPath>$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(VULKAN_SDK)\Lib</LibraryPath>
   </PropertyGroup>
@@ -57,7 +57,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;WIN64;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>DEBUG_;WIN32;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>./;$(CudaToolkitDir)/include;$(VULKAN_SDK)/include</AdditionalIncludeDirectories>
       <SDLCheck>true</SDLCheck>
     </ClCompile>
@@ -94,6 +94,8 @@
     </CudaCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\app\source\engine\Debug.cpp" />
+    <ClCompile Include="..\..\app\source\engine\helper.cpp" />
     <ClCompile Include="..\..\app\source\engine\VKdevice.cpp" />
     <ClCompile Include="..\..\app\source\engine\VKengine.cpp" />
     <ClCompile Include="..\..\app\source\engine\VKkey.cpp" />
@@ -103,6 +105,8 @@
     <ClCompile Include="..\..\app\source\_common.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\app\source\engine\Debug.h" />
+    <ClInclude Include="..\..\app\source\engine\helper.h" />
     <ClInclude Include="..\..\app\source\engine\VKdevice.h" />
     <ClInclude Include="..\..\app\source\engine\VKengine.h" />
     <ClInclude Include="..\..\app\source\engine\VKkey.h" />

@@ -11,7 +11,7 @@
 #include "../../include/common/tiny_obj_loader.h"
 
 using vkutil::object::Camera;
-using namespace vkutil::helper_;
+using namespace vkutil::helper;
 
 namespace vkutil {
     static void framebufferResizeCallback(GLFWwindow* window, int width, int height) {
@@ -405,7 +405,7 @@ namespace vkutil {
             }
         }
 
-        this->VKmsaaSamples = helper_::getMaxUsableSampleCount(this->VKphysicalDevice);
+        this->VKmsaaSamples = helper::getMaxUsableSampleCount(this->VKphysicalDevice);
 
         if (Score == 0)
         {
@@ -413,6 +413,7 @@ namespace vkutil {
         }
 
 #ifdef DEBUG_
+
         VkPhysicalDeviceProperties deviceProperties;
         VkPhysicalDeviceFeatures deviceFeatures;
         vkGetPhysicalDeviceProperties(this->VKphysicalDevice, &deviceProperties);
@@ -437,7 +438,7 @@ namespace vkutil {
         // 큐 생성 정보 구조체를 초기화합니다.
         std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
         std::set<uint32_t> uniqueQueueFamilies = {
-            this->VKqueueFamilyIndices.graphicsAndComputeFamily,
+            this->VKqueueFamilyIndices.graphicsFamily,
             this->VKqueueFamilyIndices.presentFamily
         };
 
@@ -480,7 +481,7 @@ namespace vkutil {
         }
 
         // 논리 디바이스에서 그래픽 큐 핸들을 가져옵니다.
-        vkGetDeviceQueue(this->VKdevice, this->VKqueueFamilyIndices.graphicsAndComputeFamily, 0, &this->graphicsVKQueue);
+        vkGetDeviceQueue(this->VKdevice, this->VKqueueFamilyIndices.graphicsFamily, 0, &this->graphicsVKQueue);
         // 논리 디바이스에서 프레젠테이션 큐 핸들을 가져옵니다.
         vkGetDeviceQueue(this->VKdevice, this->VKqueueFamilyIndices.presentFamily, 0, &this->presentVKQueue);
     }
@@ -531,10 +532,10 @@ namespace vkutil {
         createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;    // 이미지 사용 방법을 설정합니다.
 
         // 큐 패밀리 인덱스를 가져옵니다.
-        uint32_t queueFamilyIndices[] = { this->VKqueueFamilyIndices.graphicsAndComputeFamily, this->VKqueueFamilyIndices.presentFamily };
+        uint32_t queueFamilyIndices[] = { this->VKqueueFamilyIndices.graphicsFamily, this->VKqueueFamilyIndices.presentFamily };
 
         // 여러 큐 패밀리에 걸쳐 사용될 스왑 체인 이미지를 처리하는 방법을 지정
-        if (this->VKqueueFamilyIndices.graphicsAndComputeFamily != this->VKqueueFamilyIndices.presentFamily) {
+        if (this->VKqueueFamilyIndices.graphicsFamily != this->VKqueueFamilyIndices.presentFamily) {
             createInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT; // 동시 공유 모드를 설정합니다.
             createInfo.queueFamilyIndexCount = 2;
             createInfo.pQueueFamilyIndices = queueFamilyIndices;
@@ -586,7 +587,7 @@ namespace vkutil {
         this->VKswapChainImageViews.resize(this->VKswapChainImages.size()); // 
 
         for (int8_t i = 0; i < this->VKswapChainImages.size(); i++) {
-            VKswapChainImageViews[i] = helper_::createImageView(this->VKdevice, this->VKswapChainImages[i], this->VKswapChainImageFormat, VK_IMAGE_ASPECT_COLOR_BIT, 1);
+            VKswapChainImageViews[i] = helper::createImageView(this->VKdevice, this->VKswapChainImages[i], this->VKswapChainImageFormat, VK_IMAGE_ASPECT_COLOR_BIT, 1);
         }
     }
 
@@ -616,7 +617,7 @@ namespace vkutil {
 
         // 깊이 첨부 파일을 설정합니다.
         VkAttachmentDescription depthAttachment{};
-        depthAttachment.format = helper_::findDepthFormat(this->VKphysicalDevice);
+        depthAttachment.format = helper::findDepthFormat(this->VKphysicalDevice);
         depthAttachment.samples = this->VKmsaaSamples;
         depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
         depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
@@ -682,8 +683,8 @@ namespace vkutil {
 
     void Application::createGraphicsPipeline()
     {
-        auto vertShaderCode = helper_::readFile(this->RootPath + "../../../../../../shader/vert.spv");
-        auto fragShaderCode = helper_::readFile(this->RootPath + "../../../../../../shader/frag.spv");
+        auto vertShaderCode = helper::readFile(this->RootPath + "../../../../../../shader/vert.spv");
+        auto fragShaderCode = helper::readFile(this->RootPath + "../../../../../../shader/frag.spv");
 
         VkShaderModule baseVertshaderModule = createShaderModule(vertShaderCode);
         VkShaderModule baseFragShaderModule = createShaderModule(fragShaderCode);
@@ -895,7 +896,7 @@ namespace vkutil {
         // 커맨드 풀 생성 정보 구조체를 초기화합니다.
         poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;        // 구조체 타입을 설정
         poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;   // 커맨드 버퍼를 재설정하는 플래그를 설정
-        poolInfo.queueFamilyIndex = queueFamilyIndices.graphicsAndComputeFamily; // 큐 패밀리 인덱스를 설정
+        poolInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily; // 큐 패밀리 인덱스를 설정
         if (vkCreateCommandPool(this->VKdevice, &poolInfo, nullptr, &this->VKcommandPool) != VK_SUCCESS) {
             throw std::runtime_error("failed to create command pool!");
         }
@@ -994,7 +995,7 @@ namespace vkutil {
         VkBuffer stagingBuffer;
         VkDeviceMemory stagingBufferMemory;
 
-        helper_::createBuffer(
+        helper::createBuffer(
             this->VKdevice,
             this->VKphysicalDevice,
             bufferSize,
@@ -1009,7 +1010,7 @@ namespace vkutil {
             memcpy(data, this->VKvertices.data(), (size_t)bufferSize);
         vkUnmapMemory(this->VKdevice, stagingBufferMemory);
 
-        helper_::createBuffer(
+        helper::createBuffer(
             this->VKdevice,
             this->VKphysicalDevice,
             bufferSize,
@@ -1018,7 +1019,7 @@ namespace vkutil {
             this->VKvertexBuffer,
             this->VKvertexBufferMemory);
 
-        helper_::copyBuffer(
+        helper::copyBuffer(
             this->VKdevice, 
             this->VKcommandPool, 
             this->graphicsVKQueue, 
@@ -1038,7 +1039,7 @@ namespace vkutil {
         VkBuffer stagingBuffer;
         VkDeviceMemory stagingBufferMemory;
 
-        helper_::createBuffer(
+        helper::createBuffer(
             this->VKdevice,
             this->VKphysicalDevice,
             bufferSize,
@@ -1054,7 +1055,7 @@ namespace vkutil {
             memcpy(data, this->VKindices.data(), (size_t)bufferSize);
         vkUnmapMemory(this->VKdevice, stagingBufferMemory);
         
-        helper_::createBuffer(
+        helper::createBuffer(
             this->VKdevice,
             this->VKphysicalDevice,
             bufferSize,
@@ -1063,7 +1064,7 @@ namespace vkutil {
             this->VKindexBuffer,
             this->VKindexBufferMemory);
 
-        helper_::copyBuffer(
+        helper::copyBuffer(
             this->VKdevice,
             this->VKcommandPool,
             this->graphicsVKQueue,
@@ -1123,7 +1124,7 @@ namespace vkutil {
         this->VKuniformBuffersMapped.resize(MAX_FRAMES_IN_FLIGHT);
 
         for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-            helper_::createBuffer(
+            helper::createBuffer(
                 this->VKdevice,
                 this->VKphysicalDevice,
                 bufferSize,
@@ -1249,7 +1250,7 @@ namespace vkutil {
         VkBuffer stagingBuffer;
         VkDeviceMemory stagingBufferMemory;
 
-        helper_::createBuffer(
+        helper::createBuffer(
             this->VKdevice,
             this->VKphysicalDevice,
             imageSize,
@@ -1266,7 +1267,7 @@ namespace vkutil {
 
         stbi_image_free(pixels);
 
-        helper_::createImage(
+        helper::createImage(
             this->VKdevice,
             this->VKphysicalDevice,
             texWidth,
@@ -1279,7 +1280,7 @@ namespace vkutil {
             VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
             this->VKtextureImage,
             this->VKtextureImageMemory);
-        helper_::transitionImageLayout(
+        helper::transitionImageLayout(
             this->VKdevice,
             this->VKcommandPool,
             this->graphicsVKQueue,
@@ -1288,7 +1289,7 @@ namespace vkutil {
             VK_IMAGE_LAYOUT_UNDEFINED,
             VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
             this->VKmipLevels);
-        helper_::copyBufferToImage(
+        helper::copyBufferToImage(
             this->VKdevice,
             this->VKcommandPool,
             this->graphicsVKQueue,
@@ -1303,7 +1304,7 @@ namespace vkutil {
         vkDestroyBuffer(this->VKdevice, stagingBuffer, nullptr);
         vkFreeMemory(this->VKdevice, stagingBufferMemory, nullptr);
 
-        helper_::generateMipmaps(
+        helper::generateMipmaps(
             this->VKphysicalDevice,
             this->VKdevice,
             this->VKcommandPool,
@@ -1319,7 +1320,7 @@ namespace vkutil {
     {
         // 이미지 뷰 생성 정보 구조체를 초기화합니다.
         this->VKtextureImageView = 
-            helper_::createImageView(
+            helper::createImageView(
             this->VKdevice,
             this->VKtextureImage,
             VK_FORMAT_R8G8B8A8_SRGB,
@@ -1359,10 +1360,10 @@ namespace vkutil {
     void Application::createDepthResources()
     {
         // 깊이 이미지를 생성합니다.
-        VkFormat depthFormat = helper_::findDepthFormat(this->VKphysicalDevice);
+        VkFormat depthFormat = helper::findDepthFormat(this->VKphysicalDevice);
 
         // 이미지 생성 정보 구조체를 초기화합니다.
-        helper_::createImage(
+        helper::createImage(
             this->VKdevice,
             this->VKphysicalDevice,
             this->VKswapChainExtent.width,
@@ -1377,7 +1378,7 @@ namespace vkutil {
             this->VKdepthImageMemory);
         
         // 이미지 뷰를 생성합니다.
-        this->VKdepthImageView = helper_::createImageView(
+        this->VKdepthImageView = helper::createImageView(
             this->VKdevice,
             this->VKdepthImage,
             depthFormat,
@@ -1385,7 +1386,7 @@ namespace vkutil {
             1);
 
         // 깊이 이미지 레이아웃을 설정합니다.
-        helper_::transitionImageLayout(
+        helper::transitionImageLayout(
             this->VKdevice,
             this->VKcommandPool,
             this->graphicsVKQueue,
@@ -1447,7 +1448,7 @@ namespace vkutil {
     {
         VkFormat colorFormat = this->VKswapChainImageFormat;
 
-        helper_::createImage(
+        helper::createImage(
             this->VKdevice,
             this->VKphysicalDevice,
             this->VKswapChainExtent.width,
@@ -1461,7 +1462,7 @@ namespace vkutil {
             this->VKcolorImage, 
             this->VKcolorImageMemory);
 
-        this->VKcolorImageView = helper_::createImageView(this->VKdevice, this->VKcolorImage, colorFormat, VK_IMAGE_ASPECT_COLOR_BIT, 1);
+        this->VKcolorImageView = helper::createImageView(this->VKdevice, this->VKcolorImage, colorFormat, VK_IMAGE_ASPECT_COLOR_BIT, 1);
     }
 
     const QueueFamilyIndices Application::findQueueFamilies(VkPhysicalDevice device)
@@ -1494,7 +1495,7 @@ namespace vkutil {
             if (queueFamily.queueFlags & VkQueueFlagBits::VK_QUEUE_GRAPHICS_BIT) {
 
                 printf("VK_QUEUE_GRAPHICS_BIT is supported\n");
-                indices.setgraphicsAndComputeFamily(i);
+                indices.setGraphicsFamily(i);
             }
 
             if (queueFamily.queueFlags & VkQueueFlagBits::VK_QUEUE_COMPUTE_BIT)
@@ -1745,7 +1746,6 @@ namespace vkutil {
     {
         VkPhysicalDeviceProperties deviceProperties;
         VkPhysicalDeviceFeatures deviceFeatures;
-
         vkGetPhysicalDeviceProperties(device, &deviceProperties);
         vkGetPhysicalDeviceFeatures(device, &deviceFeatures);
 
@@ -1770,6 +1770,7 @@ namespace vkutil {
         printf("Device Name: %s\n", deviceProperties.deviceName);
         printf("\n");
 #endif // DEBUG_
+
 
         return score;
     }

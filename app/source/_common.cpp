@@ -1,7 +1,7 @@
 #include "_common.h"
 
 namespace vkutil {
-    namespace helper
+    namespace helper_
     {
         std::vector<char> readFile(const std::string& filename) {
 
@@ -66,13 +66,13 @@ namespace vkutil {
         
         void copyBuffer(VkDevice& VKdevice, VkCommandPool& VKcommandPool, VkQueue& graphicsVKQueue, VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size)
         {
-            VkCommandBuffer commandBuffer = helper::beginSingleTimeCommands(VKdevice, VKcommandPool);
+            VkCommandBuffer commandBuffer = helper_::beginSingleTimeCommands(VKdevice, VKcommandPool);
 
             VkBufferCopy copyRegion{};
             copyRegion.size = size;
             vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
 
-            helper::endSingleTimeCommands(VKdevice, VKcommandPool, graphicsVKQueue, commandBuffer);
+            helper_::endSingleTimeCommands(VKdevice, VKcommandPool, graphicsVKQueue, commandBuffer);
         }
 
         void createImage(VkDevice& VKdevice, VkPhysicalDevice& VKphysicalDevice, uint32_t width, uint32_t height, uint32_t mipLevels, VkSampleCountFlagBits numSamples, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory)
@@ -104,7 +104,7 @@ namespace vkutil {
             VkMemoryAllocateInfo allocInfo{};
             allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
             allocInfo.allocationSize = memRequirements.size;
-            allocInfo.memoryTypeIndex = helper::findMemoryType(memRequirements.memoryTypeBits, properties, VKphysicalDevice);
+            allocInfo.memoryTypeIndex = helper_::findMemoryType(memRequirements.memoryTypeBits, properties, VKphysicalDevice);
 
             if (vkAllocateMemory(VKdevice, &allocInfo, nullptr, &imageMemory) != VK_SUCCESS) {
                 throw std::runtime_error("failed to allocate image memory!");

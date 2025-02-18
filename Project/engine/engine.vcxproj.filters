@@ -31,6 +31,12 @@
     <ClCompile Include="..\..\app\source\_common.cpp">
       <Filter>app\common</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\app\source\engine\Debug.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\source\engine\helper.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\app\source\engine\vk_initializers.h">
@@ -50,6 +56,12 @@
     </ClInclude>
     <ClInclude Include="..\..\app\source\_common.h">
       <Filter>app\common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\app\source\engine\Debug.h">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\app\source\engine\helper.h">
+      <Filter>source</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

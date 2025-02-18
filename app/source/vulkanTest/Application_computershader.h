@@ -1,5 +1,5 @@
-﻿#ifndef INCLUDE_SOURCE_APPLICATION_H
-#define INCLUDE_SOURCE_APPLICATION_H
+﻿#ifndef INCLUDE_SOURCE_APPLICATIONCCOMPUTERSHADER_H_
+#define INCLUDE_SOURCE_APPLICATIONCCOMPUTERSHADER_H_
 
 #include "../_common.h"
 
@@ -69,6 +69,7 @@ namespace vkutil {
         const QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device);
         
         // 물리 디바이스가 요구 사항을 충족하는지 확인하는 함수
+        // 물리 디바이스가 요구 사항을 충족하는지 확인
         bool isDeviceSuitable(VkPhysicalDevice device);
         
         // 물리 디바이스의 확장 기능을 지원하는지 확인하는 함수
@@ -169,6 +170,19 @@ namespace vkutil {
         VkImageView VKcolorImageView;                      // 컬러 이미지 뷰 -> 컬러 이미지를 뷰로 변환 (이미지 뷰는 이미지를 읽고 쓰는 데 사용)
 
 
+        // computer shader 관련 변수
+        std::vector<VkBuffer> VKcomputeBuffer;             // 컴퓨트 버퍼 -> 컴퓨트 데이터를 저장하는 데 사용
+        std::vector<VkDeviceMemory> VKcomputeBufferMemory; // 컴퓨트 버퍼 메모리 -> 컴퓨트 데이터를 저장하는 데 사용
+        VkDescriptorSetLayout VKcomputeDescriptorSetLayout;// 컴퓨트 디스크립터 세트 레이아웃 -> 컴퓨트 디스크립터 세트를 생성하는 데 사용
+        VkPipelineLayout VKcomputePipelineLayout;          // 컴퓨트 파이프라인 레이아웃 -> 컴퓨트 파이프라인에 사용되는 레이아웃
+        VkPipeline VKcomputePipeline;                      // 컴퓨트 파이프라인 -> 컴퓨트 파이프라인을 생성
+        VkCommandPool VKcomputeCommandPool;                // 컴퓨트 커맨드 풀 -> 컴퓨트 커맨드 버퍼를 생성하는 데 사용 (커맨드 풀은 커맨드 버퍼를 생성하는 데 사용)
+        VkCommandBuffer VKcomputeCommandBuffer;            // 컴퓨트 커맨드 버퍼 -> 컴퓨트 명령을 저장하는 데 사용
+        VkDescriptorPool VKcomputeDescriptorPool;          // 컴퓨트 디스크립터 풀 -> 컴퓨트 디스크립터를 생성하는 데 사용
+        VkDescriptorSet VKcomputeDescriptorSet;            // 컴퓨트 디스크립터 세트 -> 컴퓨트 디스크립터를 생성하는 데 사용
+
+
+
         std::shared_ptr<vkutil::object::Camera> camera;                      // 카메라 -> 카메라 객체
 
         std::string RootPath = "";                          // 루트 경로
@@ -182,4 +196,4 @@ namespace vkutil {
 
 }
 
-#endif // INCLUDE_SOURCE_APPLICATION_H
+#endif // INCLUDE_SOURCE_APPLICATIONCCOMPUTERSHADER_H_

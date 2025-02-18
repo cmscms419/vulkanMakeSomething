@@ -77,16 +77,17 @@ const bool enableValidationLayers = false;
 #endif
 
 struct QueueFamilyIndices {
-    uint32_t graphicsFamily = 0;        // 그래픽스 큐 패밀리 인덱스 (그래픽스 명령을 처리하는 큐)
+    uint32_t graphicsAndComputeFamily = 0;        // 그래픽스 큐 패밀리 인덱스 (그래픽스 명령을 처리하는 큐)
     uint32_t presentFamily = 0;         // 프레젠트 큐 패밀리 인덱스 (윈도우 시스템과 Vulkan을 연결하는 인터페이스)
+    
     VkQueueFamilyProperties queueFamilyProperties = {};
 
-    bool graphicsFamilyHasValue = false;
+    bool graphicsAndComputeFamilyHasValue = false;
     bool presentFamilyHasValue = false;
 
-    void setGraphicsFamily(uint32_t index) {
-        graphicsFamily = index;
-        graphicsFamilyHasValue = true;
+    void setgraphicsAndComputeFamily(uint32_t index) {
+        graphicsAndComputeFamily = index;
+        graphicsAndComputeFamilyHasValue = true;
     }
     void setPresentFamily(uint32_t index) {
         presentFamily = index;
@@ -97,7 +98,7 @@ struct QueueFamilyIndices {
 
         if (queueFamilyProperties.queueFlags & VkQueueFlagBits::VK_QUEUE_GRAPHICS_BIT)
         {
-            target = graphicsFamily;
+            target = graphicsAndComputeFamily;
         }
 
         return target;
@@ -111,13 +112,22 @@ struct QueueFamilyIndices {
         return target;
     }
 
+    const uint32_t getComputeQueueFamilyIndex() {
+        uint32_t target = -1;
+        if (queueFamilyProperties.queueFlags & VkQueueFlagBits::VK_QUEUE_COMPUTE_BIT)
+        {
+            target = graphicsAndComputeFamily;
+        }
+        return target;
+    }
+
     const bool isComplete() {
-        return this->graphicsFamilyHasValue && this->presentFamilyHasValue;
+        return this->graphicsAndComputeFamilyHasValue && this->presentFamilyHasValue;
     }
     void reset() {
-        this->graphicsFamily = 0;
+        this->graphicsAndComputeFamily = 0;
         this->presentFamily = 0;
-        this->graphicsFamilyHasValue = false;
+        this->graphicsAndComputeFamilyHasValue = false;
         this->presentFamilyHasValue = false;
         this->queueFamilyProperties = {};
     }
@@ -175,9 +185,44 @@ struct Vertex {
 
 };
 
+struct Particle {
+    glm::vec2 position;
+    glm::vec2 velocity;
+    glm::vec4 color;
+
+    static VkVertexInputBindingDescription getBindingDescription() {
+        VkVertexInputBindingDescription bindingDescription{};
+        bindingDescription.binding = 0;
+        bindingDescription.stride = sizeof(Particle);
+        bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+
+        return bindingDescription;
+    }
+
+    static std::array<VkVertexInputAttributeDescription, 2> getAttributeDescriptions() {
+        std::array<VkVertexInputAttributeDescription, 2> attributeDescriptions{};
+
+        attributeDescriptions[0].binding = 0;
+        attributeDescriptions[0].location = 0;
+        attributeDescriptions[0].format = VK_FORMAT_R32G32_SFLOAT;
+        attributeDescriptions[0].offset = offsetof(Particle, position);
+
+        attributeDescriptions[1].binding = 0;
+        attributeDescriptions[1].location = 1;
+        attributeDescriptions[1].format = VK_FORMAT_R32G32B32A32_SFLOAT;
+        attributeDescriptions[1].offset = offsetof(Particle, color);
+
+        return attributeDescriptions;
+    }
+};
+
+struct UniformBufferTime {
+    float deltaTime = 1.0f;
+};
+
 namespace vkutil
 {
-    namespace helper
+    namespace helper_
     {
         // 파일을 읽어오는 함수
         std::vector<char> readFile(const std::string& filename);

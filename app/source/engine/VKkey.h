@@ -3,7 +3,7 @@
 
 #include "../_common.h"
 
-namespace vkcms {
+namespace vkengine {
     namespace input {
         void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
     }
