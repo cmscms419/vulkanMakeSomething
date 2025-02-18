@@ -1,5 +1,5 @@
-﻿#ifndef INCLUDE_CMS419_COMMON_H
-#define INCLUDE_CMS419_COMMON_H
+﻿#ifndef INCLUDE_COMMON_H
+#define INCLUDE_COMMON_H
 
 #include <algorithm>
 #include <array>
@@ -67,8 +67,8 @@ const std::vector<VkDynamicState> dynamicStates = {
     VK_DYNAMIC_STATE_SCISSOR
 };
 
-const std::string MODEL_PATH = "/../../../../source/viking_room.obj";
-const std::string TEXTURE_PATH = "/../../../../source/viking_room.png";
+const std::string MODEL_PATH = "../../../../../../source/viking_room.obj";
+const std::string TEXTURE_PATH = "../../../../../../source/viking_room.png";
 
 #ifdef DEBUG_
 const bool enableValidationLayers = true;
@@ -318,4 +318,4 @@ namespace std {
 }
 
 
-#endif // INCLUDE_CMS419_COMMON_H
+#endif // INCLUDE_COMMON_H

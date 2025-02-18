@@ -1,7 +1,7 @@
 ﻿#ifndef INCLUDE_CAMERA_H_
 #define INCLUDE_CAMERA_H_
 
-#include "cms491_common.h"
+#include "../_common.h"
 
 namespace vkutil {
     namespace object {

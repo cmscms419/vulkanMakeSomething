@@ -1,12 +1,17 @@
 #include "Application.h"
+#include "DebugFunction.h"
+#include "Camera.h"
 
 #ifndef STB_IMAGE_IMPLEMENTATION
 #define STB_IMAGE_IMPLEMENTATION
-#include "include/common/stb_image.h"
+#include "../../include/common/stb_image.h"
 #endif
 
 #define TINYOBJLOADER_IMPLEMENTATION
-#include "tiny_obj_loader.h"
+#include "../../include/common/tiny_obj_loader.h"
+
+using vkutil::object::Camera;
+using namespace vkutil::helper;
 
 namespace vkutil {
     static void framebufferResizeCallback(GLFWwindow* window, int width, int height) {
@@ -55,9 +60,9 @@ namespace vkutil {
         this->VKtextureImage = VK_NULL_HANDLE;
         this->VKtextureImageMemory = VK_NULL_HANDLE;
         
-        this->camera = vkutil::object::Camera();
-        this->camera.setProjection(45.0f, (float)WIDTH / (float)HEIGHT, 0.1f, 100.0f);
-        this->camera.setView(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+        this->camera = std::make_shared<vkutil::object::Camera>();
+        this->camera->setProjection(45.0f, (float)WIDTH / (float)HEIGHT, 0.1f, 100.0f);
+        this->camera->setView(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
     }
 
     Application::~Application()
@@ -678,8 +683,8 @@ namespace vkutil {
 
     void Application::createGraphicsPipeline()
     {
-        auto vertShaderCode = helper::readFile(this->RootPath + "/../../../../shader/vert.spv");
-        auto fragShaderCode = helper::readFile(this->RootPath + "/../../../../shader/frag.spv");
+        auto vertShaderCode = helper::readFile(this->RootPath + "../../../../../../shader/vert.spv");
+        auto fragShaderCode = helper::readFile(this->RootPath + "../../../../../../shader/frag.spv");
 
         VkShaderModule baseVertshaderModule = createShaderModule(vertShaderCode);
         VkShaderModule baseFragShaderModule = createShaderModule(fragShaderCode);
@@ -1730,9 +1735,9 @@ namespace vkutil {
 
         ubo.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
         //ubo.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-        ubo.view = this->camera.getViewMatrix();
+        ubo.view = this->camera->getViewMatrix();
         //ubo.proj = glm::perspective(glm::radians(45.0f), this->VKswapChainExtent.width / (float)this->VKswapChainExtent.height, 0.1f, 10.0f);
-        ubo.proj = this->camera.getProjectionMatrix();
+        ubo.proj = this->camera->getProjectionMatrix();
 
         memcpy(this->VKuniformBuffersMapped[currentImage], &ubo, sizeof(ubo));
     }

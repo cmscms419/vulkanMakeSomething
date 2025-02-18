@@ -1,12 +1,13 @@
 ﻿#ifndef INCLUDE_SOURCE_APPLICATION_H
 #define INCLUDE_SOURCE_APPLICATION_H
 
-#include "cms491_common.h"
-
-#include "DebugFunction.h"
-#include "Camera.h"
+#include "../_common.h"
 
 namespace vkutil {
+
+    namespace object {
+        class Camera;
+    }
 
     class Application {
     public:
@@ -111,11 +112,14 @@ namespace vkutil {
         GLFWwindow* VKwindow;                               // GLFW 윈도우 핸들 -> GLFW 윈도우 핸들을 저장
         VkInstance VKinstance;                              // Vulkan 인스턴스 -> Vulkan API를 사용하기 위한 인스턴스
         VkDebugUtilsMessengerEXT VKdebugUtilsMessenger;     // 디버그 메신저 -> 디버깅을 위한 메신저
+        
         VkPhysicalDevice VKphysicalDevice;                  // 물리 디바이스 -> GPU Physical Handle
         QueueFamilyIndices VKqueueFamilyIndices;            // 큐 패밀리 인덱스 -> VKphysicalDevice에서 선택한 queue family index
         VkDevice VKdevice;                                  // 논리 디바이스 -> GPU Logical Handle
+        
         VkQueue graphicsVKQueue;                            // 그래픽스 큐 -> 그래픽스 명령을 처리하는 큐
         VkQueue presentVKQueue;                             // 프레젠트 큐 -> 윈도우 시스템과 Vulkan을 연결하는 인터페이스
+        
         VkSurfaceKHR VKsurface;                             // 서피스 -> 윈도우 시스템과 Vulkan을 연결하는 인터페이스
         VkSwapchainKHR VKswapChain;                         // 스왑 체인 -> 이미지를 프레임 버퍼로 전송하는 데 사용
         std::vector<VkImage> VKswapChainImages;             // 스왑 체인 이미지 -> 스왑 체인에 사용되는 이미지 Handle 배열
@@ -166,7 +170,7 @@ namespace vkutil {
         VkImageView VKcolorImageView;                      // 컬러 이미지 뷰 -> 컬러 이미지를 뷰로 변환 (이미지 뷰는 이미지를 읽고 쓰는 데 사용)
 
 
-        vkutil::object::Camera camera;                      // 카메라 -> 카메라 객체
+        std::shared_ptr<vkutil::object::Camera> camera;                      // 카메라 -> 카메라 객체
 
         std::string RootPath = "";                          // 루트 경로
         size_t currentFrame = 0;                            // 현재 프레임 인덱스

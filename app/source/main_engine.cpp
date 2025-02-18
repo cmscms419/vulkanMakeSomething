@@ -1,5 +1,4 @@
-
-#include "Application.h"
+#include "engine/VKengine.h"
 
 int main(int argc, char* argv[]) {
 
@@ -13,18 +12,13 @@ int main(int argc, char* argv[]) {
         std::cerr << "경로를 가져오는 데 실패했습니다." << std::endl;
     }
 
-    std::unique_ptr<vkutil::Application> app;
-    app = std::make_unique<vkutil::Application>(root_path);
+    vkcms::VulkanEngine engine;
 
-    //switch (atoi(argv[1]))
-    //{
-    //default:
-    //    break;
-    //}
+    engine.init();
 
-    app->init();
-    app->mainLoop();
-    app->cleanup();
+    engine.mainLoop();
+
+    engine.cleanup();
 
     return EXIT_SUCCESS;
 }

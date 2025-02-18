@@ -11,31 +11,18 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="app\cpp\test.cpp" />
-    <ClCompile Include="app\source\Application.cpp" />
-    <ClCompile Include="app\source\Camera.cpp" />
-    <ClCompile Include="app\source\cms491_common.cpp" />
-    <ClCompile Include="app\source\DebugFunction.cpp" />
-    <ClCompile Include="app\source\main.cpp" />
+    <ClCompile Include="..\..\app\source\main_vulkanTest.cpp" />
+    <ClCompile Include="..\..\app\source\vulkanTest\Application.cpp" />
+    <ClCompile Include="..\..\app\source\vulkanTest\Camera.cpp" />
+    <ClCompile Include="..\..\app\source\vulkanTest\DebugFunction.cpp" />
+    <ClCompile Include="..\..\app\source\_common.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="app\cpp\test.h" />
-    <ClInclude Include="app\source\Application.h" />
-    <ClInclude Include="app\source\Camera.h" />
-    <ClInclude Include="app\source\cms491_common.h" />
-    <ClInclude Include="app\source\DebugFunction.h" />
-    <ClInclude Include="app\source\object_data.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="cpp.hint" />
-    <None Include="shader\compile.bat" />
-    <None Include="shader\compile_debug.bat" />
-    <None Include="shader\shader.frag" />
-    <None Include="shader\shader.vert" />
-  </ItemGroup>
-  <ItemGroup>
-    <Image Include="source\image.jpg" />
-    <Image Include="source\viking_room.png" />
+    <ClInclude Include="..\..\app\source\object_data.h" />
+    <ClInclude Include="..\..\app\source\vulkanTest\Application.h" />
+    <ClInclude Include="..\..\app\source\vulkanTest\Camera.h" />
+    <ClInclude Include="..\..\app\source\vulkanTest\DebugFunction.h" />
+    <ClInclude Include="..\..\app\source\_common.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{961CB7AD-D855-4611-8025-A94BC31029F5}</ProjectGuid>
@@ -71,21 +58,21 @@
     <LinkIncremental>true</LinkIncremental>
     <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(VULKAN_SDK)\Include</IncludePath>
     <LibraryPath>$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(VULKAN_SDK)\Lib</LibraryPath>
-    <OutDir>$(SolutionDir)exe\$(Platform)\$(Configuration)\</OutDir>
-    <IntDir>$(SolutionDir)build\$(Platform)\$(Configuration)\</IntDir>
+    <OutDir>$(SolutionDir)../exe\$(SolutionName)\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)../build\$(SolutionName)\$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(VULKAN_SDK)\Include</IncludePath>
     <LibraryPath>$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(VULKAN_SDK)\Lib</LibraryPath>
-    <OutDir>$(SolutionDir)exe\$(Platform)\$(Configuration)\</OutDir>
-    <IntDir>$(SolutionDir)build\$(Platform)\$(Configuration)\</IntDir>
+    <OutDir>$(SolutionDir)../exe\$(SolutionName)\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)../build\$(SolutionName)\$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>DEBUG_;WIN32;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>./;$(CudaToolkitDir)/include;include/common;$(VULKAN_SDK)/include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>./;$(CudaToolkitDir)/include;$(VULKAN_SDK)/include</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <SDLCheck>true</SDLCheck>
     </ClCompile>
@@ -94,7 +81,7 @@
       <SubSystem>Console</SubSystem>
       <AdditionalDependencies>vulkan-1.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(CudaToolkitLibDir);</AdditionalLibraryDirectories>
-      <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
+      <LinkTimeCodeGeneration>Default</LinkTimeCodeGeneration>
     </Link>
     <CudaCompile>
       <TargetMachinePlatform>64</TargetMachinePlatform>
@@ -110,7 +97,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>./;$(CudaToolkitDir)/include;include/common;$(VULKAN_SDK)/include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>./;$(CudaToolkitDir)/include;$(VULKAN_SDK)/include</AdditionalIncludeDirectories>
       <SDLCheck>true</SDLCheck>
     </ClCompile>
     <Link>
@@ -120,7 +107,7 @@
       <SubSystem>Console</SubSystem>
       <AdditionalDependencies>vulkan-1.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(CudaToolkitLibDir);</AdditionalLibraryDirectories>
-      <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
+      <LinkTimeCodeGeneration>Default</LinkTimeCodeGeneration>
     </Link>
     <CudaCompile>
       <TargetMachinePlatform>64</TargetMachinePlatform>
