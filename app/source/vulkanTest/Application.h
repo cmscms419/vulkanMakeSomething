@@ -27,8 +27,7 @@ namespace vkutil {
         // 상속
         virtual void initWindow();
         virtual void initVulkan();
-        virtual void drawFrame();
-        virtual bool run(); // 임시
+        virtual void drawFrame(); 
         
         // 기본
         // Vulkan 인스턴스 생성

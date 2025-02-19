@@ -2,15 +2,16 @@
 #define INCLUDE_VULKANENGINE_H_
 
 #include "../_common.h"
+
 #include "VKdevice.h"
+#include "VKswapchain.h"
 
 namespace vkengine {
-    struct VKDevice_;                                  // 디바이스 -> GPU Logical,Physical struct Handle
 
     class VulkanEngine {
     public:
         VulkanEngine() = default;
-        ~VulkanEngine() = default;
+        ~VulkanEngine();
 
         bool _isInitialized{ false };
         bool stop_rendering{ false };
@@ -75,13 +76,13 @@ namespace vkengine {
 
         GLFWwindow* VKwindow;                               // GLFW 윈도우 핸들 -> GLFW 윈도우 핸들을 저장
         VkInstance VKinstance;                              // Vulkan 인스턴스 -> Vulkan API를 사용하기 위한 인스턴스
-        VkSwapchainKHR VKswapChain;                         // 스왑 체인 -> 이미지를 프레임 버퍼로 전송하는 데 사용
         VkDebugUtilsMessengerEXT VKdebugUtilsMessenger;     // 디버그 메신저 -> 디버깅을 위한 메신저
-        VKDevice_* VKdevice;                                // 디바이스 -> GPU Logical,Physical struct Handle
         VkSurfaceKHR VKsurface;                             // 서피스 -> 윈도우 시스템과 Vulkan을 연결하는 인터페이스
+        
+        depthStencill VKdepthStencill;                      // 깊이 스텐실 -> 깊이 스텐실 이미지와 메모리
 
-        std::vector<VkImage> VKswapChainImages;             // 스왑 체인 이미지 -> 스왑 체인에 사용되는 이미지 Handle 배열
-        std::vector<VkImageView> VKswapChainImageViews;     // 스왑 체인 이미지 뷰 -> 스왑 체인 이미지를 뷰로 변환 (이미지 뷰는 이미지를 읽고 쓰는 데 사용됨)
+        VKSwapChain* VKswapChain;                            // 스왑 체인 -> 스왑 체인 클래스
+        VKDevice_* VKdevice;                                // 디바이스 -> GPU Logical,Physical struct Handle
 
         std::string RootPath = "";                          // 루트 경로
         size_t currentFrame = 0;                            // 현재 프레임 인덱스

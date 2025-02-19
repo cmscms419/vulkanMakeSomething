@@ -74,20 +74,20 @@ namespace vkutil {
         initVulkan();
     }
 
-    bool Application::run() {
-        while (!glfwWindowShouldClose(VKwindow)) {
-            glfwPollEvents(); // GLFW 이벤트 큐 처리
-            update(); // 업데이트
-#ifdef DEBUG_
-            //printf("update\n");
-#endif // DEBUG_
-
-        }
-
-        state = false;
-
-        return state;
-    }
+//    bool Application::run() {
+//        while (!glfwWindowShouldClose(VKwindow)) {
+//            glfwPollEvents(); // GLFW 이벤트 큐 처리
+//            update(); // 업데이트
+//#ifdef DEBUG_
+//            //printf("update\n");
+//#endif // DEBUG_
+//
+//        }
+//
+//        state = false;
+//
+//        return state;
+//    }
 
     void Application::update() {
         // 만든것을 업데이트
@@ -436,6 +436,7 @@ namespace vkutil {
 
         // 큐 생성 정보 구조체를 초기화합니다.
         std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
+        
         std::set<uint32_t> uniqueQueueFamilies = {
             this->VKqueueFamilyIndices.graphicsAndComputeFamily,
             this->VKqueueFamilyIndices.presentFamily
@@ -445,7 +446,7 @@ namespace vkutil {
         for (uint32_t queueFamily : uniqueQueueFamilies) {
             VkDeviceQueueCreateInfo queueCreateInfo{};
             queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;                          // 구조체 타입을 지정합니다.
-            queueCreateInfo.queueFamilyIndex = this->VKqueueFamilyIndices.getGraphicsQueueFamilyIndex(); // 그래픽스 큐 패밀리 인덱스를 설정합니다.
+            queueCreateInfo.queueFamilyIndex = queueFamily;                                              // 그래픽스 큐 패밀리 인덱스를 설정합니다.
             queueCreateInfo.queueCount = 1;                                                              // 큐의 개수를 설정합니다.
             queueCreateInfo.pQueuePriorities = &queuePriority;
             queueCreateInfos.push_back(queueCreateInfo);
@@ -487,7 +488,7 @@ namespace vkutil {
 
     void Application::createSurface()
     {
-#if CREATESURFACE_VKWIN32SURFACECREATEINFOKHR
+#if CREATESURFACE_VKWIN32SURFACECREATEINFOKHR == 0
         VkWin32SurfaceCreateInfoKHR createInfo{};
         createInfo.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;
         createInfo.hwnd = glfwGetWin32Window(this->VKwindow);
@@ -575,10 +576,7 @@ namespace vkutil {
         printf("SwapChain presentMode: %d\n", presentMode);
         printf("SwapChain clipped: %d\n", VK_TRUE);
         printf("\n");
-
 #endif // DEBUG_
-
-
     }
 
     void Application::createImageViews()
@@ -586,7 +584,12 @@ namespace vkutil {
         this->VKswapChainImageViews.resize(this->VKswapChainImages.size()); // 
 
         for (int8_t i = 0; i < this->VKswapChainImages.size(); i++) {
-            VKswapChainImageViews[i] = helper_::createImageView(this->VKdevice, this->VKswapChainImages[i], this->VKswapChainImageFormat, VK_IMAGE_ASPECT_COLOR_BIT, 1);
+            VKswapChainImageViews[i] = helper_::createImageView(
+                this->VKdevice,
+                this->VKswapChainImages[i],
+                this->VKswapChainImageFormat,
+                VK_IMAGE_ASPECT_COLOR_BIT,
+                1);
         }
     }
 
@@ -893,9 +896,10 @@ namespace vkutil {
         VkCommandPoolCreateInfo poolInfo{};
 
         // 커맨드 풀 생성 정보 구조체를 초기화합니다.
-        poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;        // 구조체 타입을 설정
-        poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;   // 커맨드 버퍼를 재설정하는 플래그를 설정
+        poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;             // 구조체 타입을 설정
+        poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;        // 커맨드 버퍼를 재설정하는 플래그를 설정
         poolInfo.queueFamilyIndex = queueFamilyIndices.graphicsAndComputeFamily; // 큐 패밀리 인덱스를 설정
+        
         if (vkCreateCommandPool(this->VKdevice, &poolInfo, nullptr, &this->VKcommandPool) != VK_SUCCESS) {
             throw std::runtime_error("failed to create command pool!");
         }
@@ -1613,7 +1617,8 @@ namespace vkutil {
             if (availablePresentMode == VK_PRESENT_MODE_MAILBOX_KHR) {
                 return availablePresentMode;
             }
-        }return VK_PRESENT_MODE_FIFO_KHR;
+        }
+        return VK_PRESENT_MODE_FIFO_KHR;
     }
 
     VkExtent2D Application::chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities) {

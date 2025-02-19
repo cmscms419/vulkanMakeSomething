@@ -32,6 +32,20 @@ namespace vkengine {
 
         // 깊이 형식을 찾는 함수
         VkFormat findDepthFormat(VkPhysicalDevice physicalDevice);
+
+        // Format을 지원하는지 확인하는 함수
+        VkFormat findSupportedFormat(
+            VkPhysicalDevice physicalDevice,
+            const std::vector<VkFormat>& candidates,
+            VkImageTiling tiling,
+            VkFormatFeatureFlags features);
+
+        VkImageView createImageView(
+            VkDevice& device,
+            VkImage image,
+            VkFormat format,
+            VkImageAspectFlags aspectFlags,
+            uint32_t mipLevels);
         
         // 스텐실 컴포넌트를 가지고 있는지 확인하는 함수
         bool hasStencilComponent(VkFormat format);
@@ -47,6 +61,7 @@ namespace vkengine {
             int32_t texWidth,
             int32_t texHeight,
             uint32_t mipLevels);
+
         // 최대 사용 가능한 샘플링 수를 반환하는 함수
         
         VkSampleCountFlagBits getMaxUsableSampleCount(VkPhysicalDevice physicalDevice);

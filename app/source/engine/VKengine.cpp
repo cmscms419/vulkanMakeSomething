@@ -4,8 +4,10 @@
 #include "helper.h"
 
 using vkengine::input::key_callback;
-using namespace vkengine::debug;
 using vkengine::VKDevice_;
+using vkengine::VKSwapChain;
+
+using namespace vkengine::debug;
 
 namespace vkengine
 {
@@ -17,6 +19,11 @@ namespace vkengine
         app->framebufferResized = true;
     }
 
+    VulkanEngine::~VulkanEngine()
+    {
+        this->cleanup();
+    }
+
     VulkanEngine& VulkanEngine::Get() { return *loadedEngine; }
 
     void VulkanEngine::init()
@@ -25,13 +32,17 @@ namespace vkengine
         loadedEngine = this;
 
         this->initWindow();
+
         this->init_vulkan();
+
+        this->init_swapchain();
     }
 
     void VulkanEngine::cleanup()
     {
         if (this->_isInitialized)
         {
+            this->VKswapChain->~VKSwapChain();
 
             vkDestroyDevice(this->VKdevice->VKdevice, nullptr);
             
@@ -101,6 +112,7 @@ namespace vkengine
         {
             this->setupDebugCallback();
         }
+
         this->createSurface();
         this->createDevice();
 
@@ -108,6 +120,8 @@ namespace vkengine
 
     void VulkanEngine::init_swapchain()
     {
+        this->VKswapChain = new VKSwapChain(this->VKdevice->VKphysicalDevice, this->VKdevice->VKdevice, this->VKsurface, &this->VKinstance);
+        this->VKswapChain->createSwapChain(&this->VKdevice->queueFamilyIndices);
     }
 
     void VulkanEngine::init_commands()
@@ -167,8 +181,6 @@ namespace vkengine
         {
             printf("create instance\n");
         }
-
-
     }
 
     void VulkanEngine::setupDebugCallback()
@@ -183,7 +195,7 @@ namespace vkengine
 
     void VulkanEngine::createSurface()
     {
-#if CREATESURFACE_VKWIN32SURFACECREATEINFOKHR
+#if CREATESURFACE_VKWIN32SURFACECREATEINFOKHR == 0
         VkWin32SurfaceCreateInfoKHR createInfo{};
         createInfo.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;
         createInfo.hwnd = glfwGetWin32Window(this->VKwindow);
@@ -197,6 +209,7 @@ namespace vkengine
             throw std::runtime_error("failed to create window surface!");
         }
 #endif
+        //this->VKswapChain = new vkengine::VKSwapChain(this->VKdevice->VKphysicalDevice, this->VKdevice->VKdevice, this->VKsurface, &this->VKinstance);
     }
 
     void VulkanEngine::createDevice()
@@ -255,20 +268,25 @@ namespace vkengine
         // 파생된 예제는 물리적 장치에서 읽은 지원되는 확장 목록에 따라 확장 기능을 활성화할 수 있습니다.
         // 필요할 때 코드 생성
 
+        // 물리 장치 기능 구조체를 초기화합니다.
+        this->VKdevice->features.samplerAnisotropy = VK_TRUE; // 샘플러를 사용하여 텍스처를 보간합니다.
+        this->VKdevice->features.sampleRateShading = VK_TRUE; // 샘플 레이트 쉐이딩을 사용하여 픽셀을 그립니다.
 
         // 논리 디바이스를 생성합니다.
-        VkResult result = this->VKdevice->createLogicalDevice(enableValidationLayers, deviceExtensions);
+        VkResult result = this->VKdevice->createLogicalDevice();
+
+        // depth format을 가져옵니다.
+        this->VKdepthStencill.depthFormat = helper::findDepthFormat(this->VKdevice->VKphysicalDevice);
     }
 
     void VulkanEngine::cleanupSwapChain()
     {
-
-        for (auto swapChainView : this->VKswapChainImageViews)
-        {
-            vkDestroyImageView(this->VKdevice->VKdevice, swapChainView, nullptr);
-        }
-
-        vkDestroySwapchainKHR(this->VKdevice->VKdevice, this->VKswapChain, nullptr);
+        //for (auto swapChainView : this->VKswapChainImageViews)
+        //{
+        //    vkDestroyImageView(this->VKdevice->VKdevice, swapChainView, nullptr);
+        //}
+        //
+        //vkDestroySwapchainKHR(this->VKdevice->VKdevice, this->VKswapChain, nullptr);
     }
 
     bool VulkanEngine::checkValidationLayerSupport()

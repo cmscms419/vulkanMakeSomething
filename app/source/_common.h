@@ -35,11 +35,11 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-constexpr int WIDTH = 800;
-constexpr int HEIGHT = 600;
+constexpr int WIDTH = 1280;
+constexpr int HEIGHT = 720;
 constexpr int MAX_FRAMES = 4;
 constexpr int MAX_FRAMES_IN_FLIGHT = 2;
-constexpr int CREATESURFACE_VKWIN32SURFACECREATEINFOKHR = 1;
+constexpr int CREATESURFACE_VKWIN32SURFACECREATEINFOKHR = 0;
 
 //#ifdef _WIN32
 //
@@ -77,8 +77,8 @@ const bool enableValidationLayers = false;
 #endif
 
 struct QueueFamilyIndices {
-    uint32_t graphicsAndComputeFamily = 0;        // 그래픽스 큐 패밀리 인덱스 (그래픽스 명령을 처리하는 큐)
-    uint32_t presentFamily = 0;         // 프레젠트 큐 패밀리 인덱스 (윈도우 시스템과 Vulkan을 연결하는 인터페이스)
+    uint32_t graphicsAndComputeFamily = 0;  // 그래픽스/컴퓨팅 큐 패밀리 인덱스 (그래픽스/컴퓨팅 명령을 처리하는 큐)
+    uint32_t presentFamily = 0;             // 프레젠트 큐 패밀리 인덱스 (윈도우 시스템과 Vulkan을 연결하는 인터페이스)
     
     VkQueueFamilyProperties queueFamilyProperties = {};
 
@@ -218,6 +218,18 @@ struct Particle {
 
 struct UniformBufferTime {
     float deltaTime = 1.0f;
+};
+
+struct depthStencill {
+    VkFormat depthFormat{};
+    VkImage depthImage{};
+    VkDeviceMemory depthImageMemory{};
+    VkImageView depthImageView{};
+};
+
+struct FrameData {
+    VkCommandPool commandPool;
+    VkCommandBuffer mainCommandBuffer;
 };
 
 namespace vkutil

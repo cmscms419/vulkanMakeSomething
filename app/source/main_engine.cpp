@@ -18,7 +18,5 @@ int main(int argc, char* argv[]) {
 
     engine.mainLoop();
 
-    engine.cleanup();
-
     return EXIT_SUCCESS;
 }

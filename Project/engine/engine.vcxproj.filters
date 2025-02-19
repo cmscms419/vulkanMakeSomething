@@ -13,12 +13,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\app\source\main_engine.cpp" />
-    <ClCompile Include="..\..\app\source\engine\vk_initializers.cpp">
-      <Filter>source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\app\source\engine\vk_pipelines.cpp">
-      <Filter>source</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\app\source\engine\VKdevice.cpp">
       <Filter>source</Filter>
     </ClCompile>
@@ -37,14 +31,11 @@
     <ClCompile Include="..\..\app\source\engine\helper.cpp">
       <Filter>source</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\app\source\engine\VKswapchain.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\app\source\engine\vk_initializers.h">
-      <Filter>source</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\app\source\engine\vk_pipelines.h">
-      <Filter>source</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\app\source\engine\VKdevice.h">
       <Filter>source</Filter>
     </ClInclude>
@@ -61,6 +52,9 @@
       <Filter>source</Filter>
     </ClInclude>
     <ClInclude Include="..\..\app\source\engine\helper.h">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\app\source\engine\VKswapchain.h">
       <Filter>source</Filter>
     </ClInclude>
   </ItemGroup>
