@@ -36,13 +36,13 @@ namespace vkengine {
         printf("Select Device Name: %s\n", properties.deviceName);
 #endif // DEBUG_
 
-        helper::getDeviceExtensionSupport(physicalDevice, &supportedExtensions);
+        helper::getDeviceExtensionSupport(physicalDevice, &this->supportedExtensions);
     }
 
     VkResult VKDevice_::createLogicalDevice()
     {
-        // 1. 물리 장치에서 큐 패밀리 인덱스를 찾습니다.
-        // 2. 큐 생성 정보 구조체를 초기화합니다.
+        // 1. 물리 장치에서 큐 패밀리 인덱스를 찾습니다. -> 전 단계에서 이미 찾았습니다.
+        // 2. 큐 생성 정보 구조체를 초기화합니다. -> 이미 찾았습니다.
         // 3. 물리 장치 기능 구조체를 초기화합니다.
         // 4. 논리 장치 생성 정보 구조체를 초기화합니다.
         // 5. 논리 장치를 생성합니다.
@@ -88,7 +88,7 @@ namespace vkengine {
         result = vkCreateDevice(this->VKphysicalDevice, &createInfo, nullptr, &this->VKdevice);
 
         if (result != VK_SUCCESS) {
-            throw std::runtime_error("failed to create logical device!"); // 논리 장치 생성 실패 시 예외를 발생시킵니다.
+            return result;
         }
 
         // 논리 디바이스에서 그래픽 큐 핸들을 가져옵니다.
@@ -100,7 +100,47 @@ namespace vkengine {
         return result;
     }
 
+    void VKDevice_::createimageview(uint32_t width, uint32_t height, uint32_t mipLevels, VkSampleCountFlagBits numSamples, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory)
+    {
+        VkImageCreateInfo imageInfo{};
+
+        imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+        imageInfo.imageType = VK_IMAGE_TYPE_2D;
+        imageInfo.extent.width = width;
+        imageInfo.extent.height = height;
+        imageInfo.extent.depth = 1;
+        imageInfo.mipLevels = mipLevels;
+        imageInfo.arrayLayers = 1;
+        imageInfo.format = format;
+        imageInfo.tiling = tiling;
+        imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        imageInfo.usage = usage;
+        imageInfo.samples = numSamples;
+        imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+        imageInfo.flags = 0; // Optional
+
+        if (vkCreateImage(VKdevice, &imageInfo, nullptr, &image) != VK_SUCCESS) {
+            throw std::runtime_error("failed to create image!");
+        }
+
+        VkMemoryRequirements memRequirements;
+        vkGetImageMemoryRequirements(VKdevice, image, &memRequirements);
+
+        VkMemoryAllocateInfo allocInfo{};
+        allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+        allocInfo.allocationSize = memRequirements.size;
+        allocInfo.memoryTypeIndex = helper::findMemoryType(VKphysicalDevice, memRequirements.memoryTypeBits, properties);
+
+        if (vkAllocateMemory(VKdevice, &allocInfo, nullptr, &imageMemory) != VK_SUCCESS) {
+            throw std::runtime_error("failed to allocate image memory!");
+        }
+
+        vkBindImageMemory(VKdevice, image, imageMemory, 0);
+    }
+
     VKDevice_::~VKDevice_()
     {
     }
+
+
 }

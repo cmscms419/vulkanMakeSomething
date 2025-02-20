@@ -39,13 +39,15 @@ namespace vkengine {
         void init_vulkan();
         void init_swapchain();
         void init_commands();
-        void init_sync_structures();
+        bool init_sync_structures();
 
         // 엔진 초기화
         void createInstance();                             // 인스턴스 생성
         void setupDebugCallback();                         // 디버그 메신저 생성
         void createSurface();                              // 서피스 생성
         void createDevice();                               // 디바이스(logical, pysical) 생성
+
+        void createDepthStencilResources();                          // 깊이 스텐실 생성
 
         void createSwapChain();
         void createImageViews();
@@ -78,11 +80,14 @@ namespace vkengine {
         VkInstance VKinstance;                              // Vulkan 인스턴스 -> Vulkan API를 사용하기 위한 인스턴스
         VkDebugUtilsMessengerEXT VKdebugUtilsMessenger;     // 디버그 메신저 -> 디버깅을 위한 메신저
         VkSurfaceKHR VKsurface;                             // 서피스 -> 윈도우 시스템과 Vulkan을 연결하는 인터페이스
+
+        FrameData VKframeData[MAX_FRAMES_IN_FLIGHT];                              // 프레임 데이터 -> 프레임 데이터 구조체
         
         depthStencill VKdepthStencill;                      // 깊이 스텐실 -> 깊이 스텐실 이미지와 메모리
 
         VKSwapChain* VKswapChain;                            // 스왑 체인 -> 스왑 체인 클래스
         VKDevice_* VKdevice;                                // 디바이스 -> GPU Logical,Physical struct Handle
+        VkSampleCountFlagBits VKmsaaSamples = VK_SAMPLE_COUNT_1_BIT; // MSAA 샘플 -> MSAA 샘플 수
 
         std::string RootPath = "";                          // 루트 경로
         size_t currentFrame = 0;                            // 현재 프레임 인덱스

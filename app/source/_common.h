@@ -230,6 +230,9 @@ struct depthStencill {
 struct FrameData {
     VkCommandPool commandPool;
     VkCommandBuffer mainCommandBuffer;
+    VkSemaphore VkimageavailableSemaphore;
+    VkSemaphore VkrenderFinishedSemaphore;
+    VkFence VkinFlightFences;
 };
 
 namespace vkutil

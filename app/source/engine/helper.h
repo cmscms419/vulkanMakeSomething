@@ -40,6 +40,11 @@ namespace vkengine {
             VkImageTiling tiling,
             VkFormatFeatureFlags features);
 
+        uint32_t findMemoryType(
+            VkPhysicalDevice physicalDevice,
+            uint32_t typeFilter,
+            VkMemoryPropertyFlags properties);
+
         VkImageView createImageView(
             VkDevice& device,
             VkImage image,
@@ -72,6 +77,34 @@ namespace vkengine {
         // pyhsicalDeviceProperties를 가져오는 함수
         void getPyhsicalDeviceProperties(VkPhysicalDevice device);
 
+        // commandPood에 대한 information을 생성하는 함수
+        VkCommandPoolCreateInfo commandPoolCreateInfo(uint32_t queueFamilyIndex, VkCommandPoolCreateFlags flags = 0);
+
+        // commandBuffer에 대한 information을 생성하는 함수
+        VkCommandBufferAllocateInfo commandBufferAllocateInfo(VkCommandPool pool, uint32_t count = 1, VkCommandBufferLevel level = VK_COMMAND_BUFFER_LEVEL_PRIMARY);
+
+        // Fencee에 대한 information을 생성하는 함수
+        VkFenceCreateInfo fenceCreateInfo(VkFenceCreateFlags flags = 0);
+
+        // Semaphore에 대한 information을 생성하는 함수
+        VkSemaphoreCreateInfo semaphoreCreateInfo(VkSemaphoreCreateFlags flags = 0);
+
+        //  시작하려는 명령버퍼를 생성하는 함수
+        VkCommandBuffer beginSingleTimeCommands(VkDevice& device, VkCommandPool& commandPool);
+
+        // 명령버퍼를 종료하는 함수
+        void endSingleTimeCommands(VkDevice& device, VkCommandPool& commandPool, VkQueue& graphicsQueue, VkCommandBuffer& commandBuffer);
+
+        // 이미지 레이아웃을 전환하는 함수
+        void transitionImageLayout(
+            VkDevice device,
+            VkCommandPool commandPool,
+            VkQueue graphicsQueue,
+            VkImage image,
+            VkFormat format,
+            VkImageLayout oldLayout,
+            VkImageLayout newLayout,
+            uint32_t mipLevels);
     }
 }
 

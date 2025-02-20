@@ -135,8 +135,8 @@ namespace vkutil {
         std::vector<VkSemaphore> VkrenderFinishedSemaphore; // 렌더링 완료 세마포어 -> 렌더링이 완료되었음을 알리는 데 사용
         std::vector<VkFence> VkinFlightFences;              // 플라이트 펜스 -> 프레임이 완료되었음을 알리는 데 사용
 
-        std::vector<Vertex> VKvertices;                       // 버텍스 -> 버텍스 데이터를 저장하는 데 사용
-        std::vector<uint32_t> VKindices;                      // 인덱스 -> 인덱스 데이터를 저장하는 데 사용
+        std::vector<Vertex> VKvertices;                     // 버텍스 -> 버텍스 데이터를 저장하는 데 사용
+        std::vector<uint32_t> VKindices;                    // 인덱스 -> 인덱스 데이터를 저장하는 데 사용
 
         VkBuffer VKvertexBuffer;                            // 버텍스 버퍼 -> 버텍스 데이터를 저장하는 데 사용
         VkDeviceMemory VKvertexBufferMemory;                // 버텍스 버퍼 메모리 -> 버텍스 데이터를 저장하는 데 사용
@@ -150,7 +150,7 @@ namespace vkutil {
         VkDescriptorPool VKdescriptorPool;                  // 디스크립터 풀 -> 디스크립터를 생성하는 데 사용
         std::vector<VkDescriptorSet> VKdescriptorSets;      // 디스크립터 세트 -> 디스크립터를 생성하는 데 사용
 
-        uint32_t VKmipLevels;                                 // 미입 레벨 -> 이미지의 미입 레벨
+        uint32_t VKmipLevels;                               // 밉 레벨 -> 이미지의 미입 레벨
 
         VkImage VKtextureImage;                            // 텍스처 이미지 -> 텍스처 이미지를 저장하는 데 사용
         VkDeviceMemory VKtextureImageMemory;               // 텍스처 이미지 메모리 -> 텍스처 이미지를 저장하는 데 사용

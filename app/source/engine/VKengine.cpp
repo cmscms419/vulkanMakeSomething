@@ -32,10 +32,8 @@ namespace vkengine
         loadedEngine = this;
 
         this->initWindow();
-
         this->init_vulkan();
 
-        this->init_swapchain();
     }
 
     void VulkanEngine::cleanup()
@@ -43,8 +41,14 @@ namespace vkengine
         if (this->_isInitialized)
         {
             this->VKswapChain->~VKSwapChain();
+            
+            for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+            {
+                vkDestroyCommandPool(this->VKdevice->VKdevice, this->VKframeData[i].commandPool, nullptr);
+            }
 
             vkDestroyDevice(this->VKdevice->VKdevice, nullptr);
+
             
             if (enableValidationLayers) {
                 DestroyDebugUtilsMessengerEXT(this->VKinstance, this->VKdebugUtilsMessenger, nullptr);
@@ -115,7 +119,9 @@ namespace vkengine
 
         this->createSurface();
         this->createDevice();
-
+        this->init_swapchain();
+        this->init_commands();
+        this->init_sync_structures();
     }
 
     void VulkanEngine::init_swapchain()
@@ -126,11 +132,46 @@ namespace vkengine
 
     void VulkanEngine::init_commands()
     {
+        // command pool create and command buffer create
+        QueueFamilyIndices queueFamilyIndices = this->VKdevice->queueFamilyIndices;
+        
+        // 커맨드 풀 생성 정보 구조체를 초기화합니다.
+        VkCommandPoolCreateInfo poolInfo = helper::commandPoolCreateInfo(queueFamilyIndices.graphicsAndComputeFamily, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
+
+        for (auto& framedata : this->VKframeData)
+        {
+            VkResult result = vkCreateCommandPool(this->VKdevice->VKdevice, &poolInfo, nullptr, &framedata.commandPool);
+            
+            if (result != VK_SUCCESS) {
+                return;
+            }
+
+            VkCommandBufferAllocateInfo allocInfo = helper::commandBufferAllocateInfo(framedata.commandPool, 1, VK_COMMAND_BUFFER_LEVEL_PRIMARY);
+
+            result = vkAllocateCommandBuffers(this->VKdevice->VKdevice, &allocInfo, &framedata.mainCommandBuffer);
+            
+            if (result != VK_SUCCESS) {
+                return;
+            }
+
+        }
     }
 
-    void VulkanEngine::init_sync_structures()
+    bool VulkanEngine::init_sync_structures()
     {
+        VkSemaphoreCreateInfo semaphoreInfo = helper::semaphoreCreateInfo(0);
+        VkFenceCreateInfo fenceInfo = helper::fenceCreateInfo(VK_FENCE_CREATE_SIGNALED_BIT);
 
+        for (auto frameData : this->VKframeData)
+        {
+            VkResult result0 = vkCreateSemaphore(this->VKdevice->VKdevice, &semaphoreInfo, nullptr, &frameData.VkimageavailableSemaphore);
+            VkResult result1 = vkCreateSemaphore(this->VKdevice->VKdevice, &semaphoreInfo, nullptr, &frameData.VkrenderFinishedSemaphore);
+            VkResult result2 = vkCreateFence(this->VKdevice->VKdevice, &fenceInfo, nullptr, &frameData.VkinFlightFences);
+
+            if (result0 != VK_SUCCESS || result1 != VK_SUCCESS || result2 != VK_SUCCESS) {
+                return false;
+            }
+        }
     }
 
     void VulkanEngine::createInstance()
@@ -242,7 +283,6 @@ namespace vkengine
         }
 
         int Score = 0;
-        selectQueueFamilyIndeices = 0;
         VkPhysicalDevice pdevice = VK_NULL_HANDLE;
         
         int i = 0;
@@ -277,6 +317,44 @@ namespace vkengine
 
         // depth format을 가져옵니다.
         this->VKdepthStencill.depthFormat = helper::findDepthFormat(this->VKdevice->VKphysicalDevice);
+    }
+
+    void VulkanEngine::createDepthStencilResources()
+    {
+        // 깊이 이미지 생성 정보 구조체를 초기화합니다.
+        this->VKdevice->createimageview(
+            this->VKswapChain->getSwapChainExtent().width,
+            this->VKswapChain->getSwapChainExtent().height,
+            1,
+            this->VKmsaaSamples,
+            this->VKdepthStencill.depthFormat,
+            VK_IMAGE_TILING_OPTIMAL,
+            VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
+            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+            this->VKdepthStencill.depthImage,
+            this->VKdepthStencill.depthImageMemory
+        );
+
+        // 깊이 이미지 뷰를 생성합니다.
+        this->VKdepthStencill.depthImageView = helper::createImageView(
+            this->VKdevice->VKdevice,
+            this->VKdepthStencill.depthImage,
+            this->VKdepthStencill.depthFormat,
+            VK_IMAGE_ASPECT_DEPTH_BIT,
+            1
+        );
+
+        // 깊이 이미지 레이아웃을 설정합니다.
+        helper::transitionImageLayout(
+            this->VKdevice->VKdevice,
+            this->VKdevice->VKcommandPool,
+            this->VKdevice->graphicsVKQueue,
+            this->VKdepthStencill.depthImage,
+            this->VKdepthStencill.depthFormat,
+            VK_IMAGE_LAYOUT_UNDEFINED,
+            VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+            1
+        );
     }
 
     void VulkanEngine::cleanupSwapChain()

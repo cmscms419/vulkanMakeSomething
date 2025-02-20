@@ -74,21 +74,6 @@ namespace vkutil {
         initVulkan();
     }
 
-//    bool Application::run() {
-//        while (!glfwWindowShouldClose(VKwindow)) {
-//            glfwPollEvents(); // GLFW 이벤트 큐 처리
-//            update(); // 업데이트
-//#ifdef DEBUG_
-//            //printf("update\n");
-//#endif // DEBUG_
-//
-//        }
-//
-//        state = false;
-//
-//        return state;
-//    }
-
     void Application::update() {
         // 만든것을 업데이트
     }

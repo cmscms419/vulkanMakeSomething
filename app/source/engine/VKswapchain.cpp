@@ -99,6 +99,7 @@ namespace vkengine
         for (auto imageView : this->VKswapChainImageViews) {
             vkDestroyImageView(this->VKdevice, imageView, nullptr);
         }
+
         vkDestroySwapchainKHR(this->VKdevice, this->VKswapChain, nullptr);
     }
 
@@ -115,15 +116,6 @@ namespace vkengine
                 VK_IMAGE_ASPECT_COLOR_BIT,
                 1);
         }
-    }
-
-    void VKSwapChain::cleanupSwapChain()
-    {
-        for (auto imageView : this->VKswapChainImageViews) {
-            vkDestroyImageView(this->VKdevice, imageView, nullptr);
-        }
-
-        vkDestroySwapchainKHR(this->VKdevice, this->VKswapChain, nullptr);
     }
 
     // 서피스 포맷을 선택하는 함수

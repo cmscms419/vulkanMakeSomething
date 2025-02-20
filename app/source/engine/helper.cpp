@@ -25,6 +25,7 @@ namespace vkengine {
         const QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device, VkSurfaceKHR VKsurface)
         {
             QueueFamilyIndices indices; // 큐 패밀리의 개수를 저장할 변수를 초기화
+            QueueFamilyIndices target; // 큐 패밀리의 개수를 저장할 변수를 초기화
 
             // 주어진 물리 장치에서 큐 패밀리 속성을 가져옴 (첫 번째 호출은 개수만 가져옴)
             uint32_t queueFamilyCount = 0;
@@ -35,6 +36,7 @@ namespace vkengine {
             vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, queueFamilies.data());
             
             int i = 0;
+            bool selected = false;
 
             getPyhsicalDeviceProperties(device);
 
@@ -56,7 +58,10 @@ namespace vkengine {
                     printf("VK_QUEUE_GRAPHICS_BIT is supported\n");
                     printf("VK_QUEUE_COMPUTE_BIT is supported\n");
 #endif // DEBUG_
-                    indices.setgraphicsAndComputeFamily(i);
+                    if (!selected)
+                    {
+                        indices.setgraphicsAndComputeFamily(i);
+                    }
                 }
                 
                 VkBool32 presentSupport = false;
@@ -67,24 +72,30 @@ namespace vkengine {
 #ifdef DEBUG_
                     printf("VK_QUEUE_PRESENT_BIT is supported\n");
 #endif // DEBUG
-                    indices.setPresentFamily(i);
+                    if (!selected)
+                    {
+                        indices.setPresentFamily(i);
+                    }
                 }
 
                 if (indices.isComplete()) {
-                    indices.queueFamilyProperties = queueFamily;
+                    
+                    if (!selected)
+                    {
+                        indices.queueFamilyProperties = queueFamily;
+                        target = indices;
 #ifdef DEBUG_
-                    printf("Queuefamily index: %d\n", i);
-                    printf("\n");
+                        printf("------------------ select Queuefamily index: %d ------------------\n", i);
 #endif // DEBUG
-
-                    break;
+                        selected = true;
+                    }
                 }
 
                 indices.reset();
                 i++;
             }
 
-            return indices;
+            return target;
         }
 
         bool checkDeviceExtensionSupport(VkPhysicalDevice device)
@@ -209,6 +220,22 @@ namespace vkengine {
             throw std::runtime_error("failed to find supported format!");
         }
 
+        uint32_t findMemoryType(VkPhysicalDevice physicalDevice, uint32_t typeFilter, VkMemoryPropertyFlags properties)
+        {
+            VkPhysicalDeviceMemoryProperties memProperties;
+            vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memProperties);
+
+            for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++)
+            {
+                if ((typeFilter & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties)
+                {
+                    return i;
+                }
+            }
+
+            return 0;
+        }
+
         VkImageView createImageView(VkDevice& device, VkImage image, VkFormat format, VkImageAspectFlags aspectFlags, uint32_t mipLevels)
         {
             VkImageViewCreateInfo viewInfo{};
@@ -239,6 +266,98 @@ namespace vkengine {
             printf("DeviceProperties.deviceType: %d\n", deviceProperties.deviceType);
 #endif // DEBUG_
 
+        }
+        VkCommandPoolCreateInfo commandPoolCreateInfo(uint32_t queueFamilyIndex, VkCommandPoolCreateFlags flags)
+        {
+            VkCommandPoolCreateInfo info = {};
+            info.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+            info.pNext = nullptr;
+            info.queueFamilyIndex = queueFamilyIndex;
+            info.flags = flags;
+            return info;
+        }
+        VkCommandBufferAllocateInfo commandBufferAllocateInfo(VkCommandPool pool, uint32_t count, VkCommandBufferLevel level)
+        {
+            VkCommandBufferAllocateInfo info = {};
+            info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+            info.pNext = nullptr;
+            info.commandPool = pool;
+            info.commandBufferCount = count;
+            info.level = level;
+            
+            return info;
+        }
+        VkFenceCreateInfo fenceCreateInfo(VkFenceCreateFlags flags)
+        {
+            VkFenceCreateInfo info = {};
+            info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+            info.pNext = nullptr;
+
+            info.flags = flags;
+
+            return info;
+        }
+
+        VkSemaphoreCreateInfo semaphoreCreateInfo(VkSemaphoreCreateFlags flags)
+        {
+            VkSemaphoreCreateInfo info = {};
+            info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+            info.pNext = nullptr;
+            info.flags = flags;
+            return info;
+        }
+
+        VkCommandBuffer beginSingleTimeCommands(VkDevice& device, VkCommandPool& commandPool)
+        {
+            VkCommandBufferAllocateInfo allocInfo{};
+            allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO; // 구조체 타입을 설정합니다.
+            // 커맨드 버퍼 레벨을 설정합니다.
+            // VK_COMMAND_BUFFER_LEVEL_PRIMARY: 기본 커맨드 버퍼
+            // VK_COMMAND_BUFFER_LEVEL_SECONDARY: 보조 커맨드 버퍼
+            allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+            allocInfo.commandPool = commandPool;                              // 커맨드 풀을 설정합니다.
+            allocInfo.commandBufferCount = 1;                                 // 커맨드 버퍼 개수를 설정합니다.
+
+            VkCommandBuffer commandBuffer;
+            vkAllocateCommandBuffers(device, &allocInfo, &commandBuffer);
+
+            VkCommandBufferBeginInfo beginInfo{};
+            // VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO : 명령 버퍼의 시작 정보를 설정합니다.
+            beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+            
+            // VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT : 커맨드 버퍼를 한 번만 사용하려는 경우 사용합니다.
+            beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+
+            // 커맨드 버퍼를 시작합니다.
+            vkBeginCommandBuffer(commandBuffer, &beginInfo);
+
+            return commandBuffer;
+
+        }
+        void endSingleTimeCommands(VkDevice& device, VkCommandPool& commandPool, VkQueue& graphicsQueue, VkCommandBuffer& commandBuffer)
+        {   
+            // 커맨드 버퍼를 종료합니다.
+            vkEndCommandBuffer(commandBuffer);
+            
+            VkSubmitInfo submitInfo{};
+            submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+            submitInfo.commandBufferCount = 1; // 커맨드 버퍼 개수를 설정합니다.
+            submitInfo.pCommandBuffers = &commandBuffer; // 커맨드 버퍼를 설정합니다.
+            
+            // 큐에 커맨드 버퍼를 제출합니다.
+            vkQueueSubmit(graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
+            
+            // 큐가 모든 작업을 완료할 때까지 대기합니다.
+            vkQueueWaitIdle(graphicsQueue);
+            
+            // 커맨드 버퍼를 해제합니다.
+            vkFreeCommandBuffers(device, commandPool, 1, &commandBuffer);
+        }
+        void transitionImageLayout(VkDevice device, VkCommandPool commandPool, VkQueue graphicsQueue, VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout, uint32_t mipLevels)
+        {
+            VkCommandBuffer commandBuffer = beginSingleTimeCommands(device, commandPool);
+
+            VkImageMemoryBarrier barrier{};
         }
     }
 }

@@ -7,6 +7,8 @@ namespace vkengine {
 
     struct VKDevice_
     {
+    public:
+        ~VKDevice_();
         VkPhysicalDevice VKphysicalDevice;                  // 물리 디바이스 -> GPU Physical Handle
         VkDevice VKdevice;                                  // 논리 디바이스 -> GPU Logical Handle
         VkPhysicalDeviceProperties properties;              // 물리 디바이스 속성
@@ -20,7 +22,17 @@ namespace vkengine {
 
         explicit VKDevice_(VkPhysicalDevice physicalDevice, QueueFamilyIndices indice);
         VkResult createLogicalDevice();
-        ~VKDevice_();
+        void createimageview(
+            uint32_t width, 
+            uint32_t height, 
+            uint32_t mipLevels, 
+            VkSampleCountFlagBits numSamples, 
+            VkFormat format, 
+            VkImageTiling tiling, 
+            VkImageUsageFlags usage, 
+            VkMemoryPropertyFlags properties, 
+            VkImage& image, 
+            VkDeviceMemory& imageMemory);
     };
 }
 
