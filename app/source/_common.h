@@ -235,6 +235,12 @@ struct depthStencill {
     VkImage depthImage{};
     VkDeviceMemory depthImageMemory{};
     VkImageView depthImageView{};
+
+    void cleanup(VkDevice device) {
+        vkDestroyImageView(device, depthImageView, nullptr);
+        vkDestroyImage(device, depthImage, nullptr);
+        vkFreeMemory(device, depthImageMemory, nullptr);
+    }
 };
 
 struct FrameData {

@@ -139,6 +139,7 @@ namespace vkengine {
     }
     void VKDevice_::cleanup()
     {
-
+        vkDestroyCommandPool(VKdevice, VKcommandPool, nullptr);
+        vkDestroyDevice(VKdevice, nullptr);
     }
 }

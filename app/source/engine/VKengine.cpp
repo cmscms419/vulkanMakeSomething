@@ -48,15 +48,16 @@ namespace vkengine
         this->initWindow();
         this->init_vulkan();
         this->prepare();
+
+        this->_isInitialized = true;
+
     }
 
     void VulkanEngine::cleanup()
     {
         if (this->_isInitialized)
         {
-            vkDestroyImageView(this->VKdevice->VKdevice, this->VKdepthStencill.depthImageView, nullptr);
-            vkDestroyImage(this->VKdevice->VKdevice, this->VKdepthStencill.depthImage, nullptr);
-            vkFreeMemory(this->VKdevice->VKdevice, this->VKdepthStencill.depthImageMemory, nullptr);
+            this->VKdepthStencill.cleanup(this->VKdevice->VKdevice);
 
             for (auto framebuffers : this->VKswapChainFramebuffers)
             {
@@ -73,11 +74,10 @@ namespace vkengine
                 vkDestroySemaphore(this->VKdevice->VKdevice, this->VKframeData[i].VkrenderFinishedSemaphore, nullptr);
                 vkDestroyFence(this->VKdevice->VKdevice, this->VKframeData[i].VkinFlightFences, nullptr);
             }
-            
-            //this->VKdevice->cleanup();
 
-            vkDestroyCommandPool(this->VKdevice->VKdevice, this->VKdevice->VKcommandPool, nullptr);
-            vkDestroyDevice(this->VKdevice->VKdevice, nullptr);
+            vkDestroyPipelineCache(this->VKdevice->VKdevice, this->VKpipelineCache, nullptr);
+            
+            this->VKdevice->cleanup();
 
             if (enableValidationLayers) {
                 DestroyDebugUtilsMessengerEXT(this->VKinstance, this->VKdebugUtilsMessenger, nullptr);
@@ -113,17 +113,13 @@ namespace vkengine
     void VulkanEngine::drawFrame()
     {
         // 렌더링을 시작하기 전에 프레임을 렌더링할 준비가 되었는지 확인합니다.
-        VkResult result = vkWaitForFences(this->VKdevice->VKdevice, 1, &this->getCurrnetFrameData().VkinFlightFences, VK_TRUE, UINT64_MAX);
-        
-        if (result != VK_SUCCESS) {
-            return;
-        }
+        VK_CHECK_RESULT(vkWaitForFences(this->VKdevice->VKdevice, 1, &this->getCurrnetFrameData().VkinFlightFences, VK_TRUE, UINT64_MAX));
 
         // 이미지를 가져오기 위해 스왑 체인에서 이미지 인덱스를 가져옵니다.
         // 주어진 스왑체인에서 다음 이미지를 획득하고, 
         // 선택적으로 세마포어와 펜스를 사용하여 동기화를 관리하는 Vulkan API의 함수입니다.
         uint32_t imageIndex;
-        result = this->VKswapChain->acquireNextImage(this->getCurrnetFrameData().VkimageavailableSemaphore, imageIndex);
+        VkResult result = this->VKswapChain->acquireNextImage(this->getCurrnetFrameData().VkimageavailableSemaphore, imageIndex);
 
         if (result == VK_ERROR_OUT_OF_DATE_KHR) {
             this->recreateSwapChain(); // 스왑 체인을 다시 생성합니다.
@@ -141,6 +137,7 @@ namespace vkengine
         // 렌더링을 시작하기 전에 이미지를 렌더링할 준비가 되었는지 확인합니다.
         // 지정된 명령 버퍼를 초기화하고, 선택적으로 플래그를 사용하여 초기화 동작을 제어
         vkResetCommandBuffer(this->VKframeData[currentFrame].mainCommandBuffer, 0);
+        // 렌더링을 시작하기 전에 커맨드 버퍼를 재설정합니다.
         this->recordCommandBuffer(&this->VKframeData[currentFrame], imageIndex);
 
         // 렌더링을 시작하기 전에 렌더링할 준비가 되었는지 확인합니다.
@@ -177,13 +174,15 @@ namespace vkengine
 
         // VkPresentInfoKHR 구조체는 스왑 체인 이미지의 프레젠테이션을 위한 정보를 제공합니다.
         presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR; // 구조체 타입을 지정합니다.
+        presentInfo.pNext = nullptr;
 
         presentInfo.waitSemaphoreCount = 1;
-        presentInfo.pWaitSemaphores = signalSemaphores;
+        presentInfo.pWaitSemaphores = signalSemaphores; 
 
         VkSwapchainKHR swapChains[] = { this->VKswapChain->getSwapChain() };
         presentInfo.swapchainCount = 1;
         presentInfo.pSwapchains = swapChains;
+        
         presentInfo.pResults = nullptr;
 
         presentInfo.pImageIndices = &imageIndex;
@@ -217,18 +216,23 @@ namespace vkengine
         glfwSetFramebufferSizeCallback(this->VKwindow, framebufferResizeCallback);
         glfwSetKeyCallback(this->VKwindow, vkengine::input::key_callback);  // 키 입력 콜백 설정
 
-        this->_isInitialized = true;
     }
 
     bool VulkanEngine::prepare()
     {
-        this->init_commands();
         this->init_swapchain();
-        this->init_sync_structures();
+
+        this->init_commands();
+        
         this->createDepthStencilResources();
+        
         this->createRenderPass();
-        //this->createPipelineCache();
+        
         this->createFramebuffers();
+        
+        this->init_sync_structures();
+        
+        this->createPipelineCache();
 
         return true;
     }
@@ -493,8 +497,8 @@ namespace vkengine
         colorAttachment.samples = this->VKmsaaSamples;
         colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR; // Render Pass 시작 시 클리어
         colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE; // Render Pass 종료 시 저장
-        colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-        colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE; // 사용하지 않음
+        colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE; // 사용하지 않음
         colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED; // 시작 레이아웃은 중요하지 않음.
         colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR; // 프레젠테이션에 사용
 
@@ -578,9 +582,7 @@ namespace vkengine
         VkPipelineCacheCreateInfo pipelineCacheCreateInfo{};
         pipelineCacheCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO;
 
-        if (vkCreatePipelineCache(this->VKdevice->VKdevice, &pipelineCacheCreateInfo, nullptr, &this->VKpipelineCache) != VK_SUCCESS) {
-            throw std::runtime_error("failed to create pipeline cache!");
-        }
+        VK_CHECK_RESULT(vkCreatePipelineCache(this->VKdevice->VKdevice, &pipelineCacheCreateInfo, nullptr, &this->VKpipelineCache));
     }
 
     void VulkanEngine::createFramebuffers()
@@ -596,6 +598,7 @@ namespace vkengine
             };
             VkFramebufferCreateInfo framebufferInfo{};
             framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+            framebufferInfo.pNext = nullptr;
             framebufferInfo.renderPass = this->VKrenderPass;
             framebufferInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
             framebufferInfo.pAttachments = attachments.data();
@@ -631,9 +634,7 @@ namespace vkengine
         // 커맨드 버퍼 기록을 시작합니다.
         VkCommandBufferBeginInfo beginInfo = framedata->commandBufferBeginInfo(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
         
-        if (vkBeginCommandBuffer(framedata->mainCommandBuffer, &beginInfo) != VK_SUCCESS) {
-            return;
-        }
+        VK_CHECK_RESULT(vkBeginCommandBuffer(framedata->mainCommandBuffer, &beginInfo));
         
         // 렌더 패스를 시작하기 위한 클리어 값 설정
         std::array<VkClearValue, 2> clearValues{};
@@ -652,7 +653,6 @@ namespace vkengine
 
         // 렌더 패스를 시작합니다.
         vkCmdBeginRenderPass(framedata->mainCommandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-        
         {
             // 그래픽 파이프라인을 바인딩합니다.
             //vkCmdBindPipeline(framedata->mainCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->VKgraphicsPipeline);
@@ -670,19 +670,6 @@ namespace vkengine
             scissor.offset = { 0, 0 };
             scissor.extent = this->VKswapChain->getSwapChainExtent();
             vkCmdSetScissor(framedata->mainCommandBuffer, 0, 1, &scissor);
-
-            // 버텍스 버퍼를 바인딩합니다.
-            //VkBuffer vertexBuffers[] = { this->VKvertexBuffer };
-            //VkDeviceSize offsets[] = { 0 };
-            //vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
-
-            // 인덱스 버퍼를 바인딩합니다.
-            //vkCmdBindIndexBuffer(commandBuffer, this->VKindexBuffer, 0, VK_INDEX_TYPE_UINT32);
-
-            // 디스크립터 세트를 바인딩합니다.
-            //vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->VKpipelineLayout, 0, 1, &this->VKdescriptorSets[currentFrame], 0, nullptr);
-            // 렌더 패스를 종료합니다.
-            //vkCmdDrawIndexed(framedata->mainCommandBuffer, static_cast<uint32_t>(this->VKindices.size()), 1, 0, 0, 0);
         }
 
         vkCmdEndRenderPass(framedata->mainCommandBuffer);
