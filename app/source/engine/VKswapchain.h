@@ -19,6 +19,7 @@ namespace vkengine {
 
         std::vector<VkImage> getSwapChainImages() { return this->VKswapChainImages; }
         std::vector<VkImageView> getSwapChainImageViews() { return this->VKswapChainImageViews; }
+        VkResult acquireNextImage(VkSemaphore presentCompleteSemaphore, uint32_t& imageIndex);
 
     private:
         void cleanupSwapChain();

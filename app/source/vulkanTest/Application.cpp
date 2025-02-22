@@ -107,7 +107,6 @@ namespace vkutil {
         }
 
         vkDestroyDescriptorPool(this->VKdevice, this->VKdescriptorPool, nullptr);
-
         vkDestroyDescriptorSetLayout(this->VKdevice, this->VKdescriptorSetLayout, nullptr);
 
         vkDestroyBuffer(this->VKdevice, this->VKvertexBuffer, nullptr);

@@ -52,6 +52,16 @@ constexpr int CREATESURFACE_VKWIN32SURFACECREATEINFOKHR = 0;
 
 #define UNIQUE_VERTEXTYPE 1
 
+#define VK_CHECK_RESULT(f)                                               \
+  {                                                                      \
+    VkResult res = (f);                                                  \
+    if (res != VK_SUCCESS) {                                             \
+      printf("Fatal : VkResult is %d in %s at line %d\n", res, __FILE__, \
+             __LINE__);                                                  \
+      assert(res == VK_SUCCESS);                                         \
+    }                                                                    \
+  }
+
 
 const std::vector<const char*> validationLayers = {
     "VK_LAYER_KHRONOS_validation"
@@ -228,11 +238,13 @@ struct depthStencill {
 };
 
 struct FrameData {
-    VkCommandPool commandPool;
+public: 
     VkCommandBuffer mainCommandBuffer;
     VkSemaphore VkimageavailableSemaphore;
     VkSemaphore VkrenderFinishedSemaphore;
     VkFence VkinFlightFences;
+
+    VkCommandBufferBeginInfo commandBufferBeginInfo(VkCommandBufferUsageFlags flags = 0);
 };
 
 namespace vkutil

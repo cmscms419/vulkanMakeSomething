@@ -16,6 +16,7 @@ namespace vkengine {
         VkPhysicalDeviceMemoryProperties memoryProperties;  // 메모리 속성
         QueueFamilyIndices queueFamilyIndices;              // 큐 패밀리 인덱스
         std::set<std::string> supportedExtensions;          // 지원되는 Extensions 기능
+        VkCommandPool VKcommandPool{ VK_NULL_HANDLE };      // 커맨드 풀 -> 커맨드 버퍼를 생성하는 데 사용
 
         VkQueue graphicsVKQueue;                            // 그래픽스 큐 -> 그래픽스 명령을 처리하는 큐
         VkQueue presentVKQueue;                             // 프레젠트 큐 -> 윈도우 시스템과 Vulkan을 연결하는 인터페이스

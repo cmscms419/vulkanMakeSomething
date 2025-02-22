@@ -93,6 +93,11 @@ namespace vkengine
 
     }
 
+    VkResult VKSwapChain::acquireNextImage(VkSemaphore presentCompleteSemaphore, uint32_t& imageIndex)
+    {
+        return vkAcquireNextImageKHR(this->VKdevice, this->VKswapChain, UINT64_MAX, presentCompleteSemaphore, (VkFence)nullptr, &imageIndex);
+    }
+
     void VKSwapChain::cleanupSwapChain()
     {
 

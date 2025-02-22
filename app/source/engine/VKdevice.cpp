@@ -140,6 +140,8 @@ namespace vkengine {
 
     VKDevice_::~VKDevice_()
     {
+        vkDestroyCommandPool(VKdevice, VKcommandPool, nullptr);
+        vkDestroyDevice(VKdevice, nullptr);
     }
 
 

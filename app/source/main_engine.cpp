@@ -12,11 +12,11 @@ int main(int argc, char* argv[]) {
         std::cerr << "경로를 가져오는 데 실패했습니다." << std::endl;
     }
 
-    vkengine::VulkanEngine engine;
+    std::unique_ptr<vkengine::VulkanEngine> engine = std::make_unique<vkengine::VulkanEngine>(root_path);
 
-    engine.init();
+    engine->init();
 
-    engine.mainLoop();
+    engine->mainLoop();
 
     return EXIT_SUCCESS;
 }

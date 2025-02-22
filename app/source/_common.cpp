@@ -1,6 +1,7 @@
 #include "_common.h"
 
 namespace vkutil {
+
     namespace helper_
     {
         std::vector<char> readFile(const std::string& filename) {
@@ -215,8 +216,8 @@ namespace vkutil {
                 0, nullptr,
                 1, &barrier
             );
-            endSingleTimeCommands(device, commandPool, graphicsQueue, commandBuffer);
 
+            endSingleTimeCommands(device, commandPool, graphicsQueue, commandBuffer);
         }
 
         void copyBufferToImage(VkDevice& device, VkCommandPool& commandPool, VkQueue& graphicsQueue, VkBuffer buffer, VkImage image, uint32_t width, uint32_t height)
@@ -439,4 +440,14 @@ namespace vkutil {
         }
 
     }
+}
+
+VkCommandBufferBeginInfo FrameData::commandBufferBeginInfo(VkCommandBufferUsageFlags flags)
+{
+    VkCommandBufferBeginInfo info = {};
+    info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+    info.pNext = nullptr;
+    info.flags = flags;
+    info.pInheritanceInfo = nullptr;
+    return info;
 }

@@ -19,9 +19,20 @@ namespace vkengine
         app->framebufferResized = true;
     }
 
+    VulkanEngine::VulkanEngine(std::string root_path) {
+      this->RootPath = root_path;
+    }
+
     VulkanEngine::~VulkanEngine()
     {
         this->cleanup();
+    }
+
+    FrameData& VulkanEngine::getCurrnetFrameData()
+    {
+        // TODO: 여기에 return 문을 삽입합니다.
+        int index = (currentFrame) % MAX_FRAMES_IN_FLIGHT;
+        return this->VKframeData[index];
     }
 
     VulkanEngine& VulkanEngine::Get() { return *loadedEngine; }
@@ -33,22 +44,21 @@ namespace vkengine
 
         this->initWindow();
         this->init_vulkan();
-
+        this->prepare();
     }
 
     void VulkanEngine::cleanup()
     {
         if (this->_isInitialized)
         {
-            this->VKswapChain->~VKSwapChain();
+            //this->VKswapChain->~VKSwapChain();
             
             for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
             {
-                vkDestroyCommandPool(this->VKdevice->VKdevice, this->VKframeData[i].commandPool, nullptr);
+                vkDestroySemaphore(this->VKdevice->VKdevice, this->VKframeData[i].VkimageavailableSemaphore, nullptr);
+                vkDestroySemaphore(this->VKdevice->VKdevice, this->VKframeData[i].VkrenderFinishedSemaphore, nullptr);
+                vkDestroyFence(this->VKdevice->VKdevice, this->VKframeData[i].VkinFlightFences, nullptr);
             }
-
-            vkDestroyDevice(this->VKdevice->VKdevice, nullptr);
-
             
             if (enableValidationLayers) {
                 DestroyDebugUtilsMessengerEXT(this->VKinstance, this->VKdebugUtilsMessenger, nullptr);
@@ -83,6 +93,39 @@ namespace vkengine
 
     void VulkanEngine::drawFrame()
     {
+        // 렌더링을 시작하기 전에 프레임을 렌더링할 준비가 되었는지 확인합니다.
+        VkResult result = vkWaitForFences(this->VKdevice->VKdevice, 1, &this->getCurrnetFrameData().VkinFlightFences, VK_TRUE, UINT64_MAX);
+        
+        if (result != VK_SUCCESS) {
+            return;
+        }
+
+        // 이미지를 가져오기 위해 스왑 체인에서 이미지 인덱스를 가져옵니다.
+        // 주어진 스왑체인에서 다음 이미지를 획득하고, 
+        // 선택적으로 세마포어와 펜스를 사용하여 동기화를 관리하는 Vulkan API의 함수입니다.
+        uint32_t imageIndex;
+        result = this->VKswapChain->acquireNextImage(this->getCurrnetFrameData().VkimageavailableSemaphore, imageIndex);
+
+        if (result == VK_ERROR_OUT_OF_DATE_KHR) {
+            //this->recreateSwapChain(); // 스왑 체인을 다시 생성합니다.
+            return;
+        }
+        else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
+            throw std::runtime_error("failed to acquire swap chain image!");
+        }
+
+        // 여기서 update를 된, 데이터를 적용시킨다. -> 예) uniform 버퍼를 업데이트합니다.
+        //this->updateUniformBuffer(this->currentFrame);
+
+        vkResetFences(this->VKdevice->VKdevice, 1, &this->getCurrnetFrameData().VkinFlightFences); // 플래그를 재설정합니다. -> 렌더링이 끝나면 플래그를 재설정합니다.
+
+        // 렌더링을 시작하기 전에 이미지를 렌더링할 준비가 되었는지 확인합니다.
+        // 지정된 명령 버퍼를 초기화하고, 선택적으로 플래그를 사용하여 초기화 동작을 제어
+        vkResetCommandBuffer(this->VKframeData[currentFrame].mainCommandBuffer, 0);
+        
+        this->recordCommandBuffer(&this->VKframeData[currentFrame], imageIndex);
+
+        this->currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
     }
 
     void VulkanEngine::initWindow()
@@ -95,7 +138,7 @@ namespace vkengine
         int WIDTH_ = WIDTH;
         int HEIGHT_ = HEIGHT;
 
-        this->VKwindow = glfwCreateWindow(WIDTH_, HEIGHT_, "Vulkan Test", nullptr, nullptr);
+        this->VKwindow = glfwCreateWindow(WIDTH_, HEIGHT_, "vulkan game engine 000", nullptr, nullptr);
 
         glfwSetWindowUserPointer(this->VKwindow, this);
         glfwSetFramebufferSizeCallback(this->VKwindow, framebufferResizeCallback);
@@ -104,7 +147,20 @@ namespace vkengine
         this->_isInitialized = true;
     }
 
-    void VulkanEngine::init_vulkan()
+    bool VulkanEngine::prepare()
+    {
+        this->init_commands();
+        this->init_swapchain();
+        this->init_sync_structures();
+        this->createDepthStencilResources();
+        this->createRenderPass();
+        this->createPipelineCache();
+        this->createFramebuffers();
+
+        return true;
+    }
+
+    bool VulkanEngine::init_vulkan()
     {
         if (glfwVulkanSupported() == GLFW_FALSE) {
             throw std::runtime_error("Vulkan is not supported");
@@ -119,18 +175,20 @@ namespace vkengine
 
         this->createSurface();
         this->createDevice();
-        this->init_swapchain();
-        this->init_commands();
-        this->init_sync_structures();
+
+        return true;
     }
 
-    void VulkanEngine::init_swapchain()
+    bool VulkanEngine::init_swapchain()
     {
         this->VKswapChain = new VKSwapChain(this->VKdevice->VKphysicalDevice, this->VKdevice->VKdevice, this->VKsurface, &this->VKinstance);
         this->VKswapChain->createSwapChain(&this->VKdevice->queueFamilyIndices);
+        this->VKswapChain->createImageViews();
+        
+        return true;
     }
 
-    void VulkanEngine::init_commands()
+    bool VulkanEngine::init_commands()
     {
         // command pool create and command buffer create
         QueueFamilyIndices queueFamilyIndices = this->VKdevice->queueFamilyIndices;
@@ -140,21 +198,22 @@ namespace vkengine
 
         for (auto& framedata : this->VKframeData)
         {
-            VkResult result = vkCreateCommandPool(this->VKdevice->VKdevice, &poolInfo, nullptr, &framedata.commandPool);
+            VkResult result = vkCreateCommandPool(this->VKdevice->VKdevice, &poolInfo, nullptr, &this->VKdevice->VKcommandPool);
             
             if (result != VK_SUCCESS) {
-                return;
+                return false;
             }
 
-            VkCommandBufferAllocateInfo allocInfo = helper::commandBufferAllocateInfo(framedata.commandPool, 1, VK_COMMAND_BUFFER_LEVEL_PRIMARY);
+            VkCommandBufferAllocateInfo allocInfo = helper::commandBufferAllocateInfo(this->VKdevice->VKcommandPool, 1, VK_COMMAND_BUFFER_LEVEL_PRIMARY);
 
             result = vkAllocateCommandBuffers(this->VKdevice->VKdevice, &allocInfo, &framedata.mainCommandBuffer);
             
             if (result != VK_SUCCESS) {
-                return;
+                return false;
             }
 
         }
+        return true;
     }
 
     bool VulkanEngine::init_sync_structures()
@@ -162,7 +221,7 @@ namespace vkengine
         VkSemaphoreCreateInfo semaphoreInfo = helper::semaphoreCreateInfo(0);
         VkFenceCreateInfo fenceInfo = helper::fenceCreateInfo(VK_FENCE_CREATE_SIGNALED_BIT);
 
-        for (auto frameData : this->VKframeData)
+        for (auto& frameData : this->VKframeData)
         {
             VkResult result0 = vkCreateSemaphore(this->VKdevice->VKdevice, &semaphoreInfo, nullptr, &frameData.VkimageavailableSemaphore);
             VkResult result1 = vkCreateSemaphore(this->VKdevice->VKdevice, &semaphoreInfo, nullptr, &frameData.VkrenderFinishedSemaphore);
@@ -172,6 +231,8 @@ namespace vkengine
                 return false;
             }
         }
+
+        return true;
     }
 
     void VulkanEngine::createInstance()
@@ -229,9 +290,7 @@ namespace vkengine
         VkDebugUtilsMessengerCreateInfoEXT createInfo;
         populateDebugMessengerCreateInfo(createInfo);
 
-        if (CreateDebugUtilsMessengerEXT(this->VKinstance, &createInfo, nullptr, &this->VKdebugUtilsMessenger) != VK_SUCCESS) {
-            throw std::runtime_error("failed to set up debug messenger!");
-        }
+        VK_CHECK_RESULT(CreateDebugUtilsMessengerEXT(this->VKinstance, &createInfo, nullptr, &this->VKdebugUtilsMessenger));
     }
 
     void VulkanEngine::createSurface()
@@ -345,16 +404,206 @@ namespace vkengine
         );
 
         // 깊이 이미지 레이아웃을 설정합니다.
-        helper::transitionImageLayout(
-            this->VKdevice->VKdevice,
-            this->VKdevice->VKcommandPool,
-            this->VKdevice->graphicsVKQueue,
-            this->VKdepthStencill.depthImage,
-            this->VKdepthStencill.depthFormat,
-            VK_IMAGE_LAYOUT_UNDEFINED,
-            VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
-            1
-        );
+        // 예제에서는 아직 사용하지 않음
+        //helper::transitionImageLayout(
+        //    this->VKdevice->VKdevice,
+        //    this->VKcommandPool,
+        //    this->VKdevice->graphicsVKQueue,
+        //    this->VKdepthStencill.depthImage,
+        //    this->VKdepthStencill.depthFormat,
+        //    VK_IMAGE_LAYOUT_UNDEFINED,
+        //    VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+        //    1
+        //);
+    }
+
+    void VulkanEngine::createRenderPass()
+    {
+        // 렌더 패스 생성 정보 구조체를 초기화합니다.
+        VkAttachmentDescription colorAttachment{};
+        colorAttachment.format = this->VKswapChain->getSwapChainImageFormat();
+        colorAttachment.samples = this->VKmsaaSamples;
+        colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+        colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+        colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+        colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        colorAttachment.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+        //// 색상 첨부 파일을 설정합니다.
+        //VkAttachmentDescription colorAttachmentResolve{};
+        //colorAttachmentResolve.format = this->VKswapChain->getSwapChainImageFormat();;
+        //colorAttachmentResolve.samples = VK_SAMPLE_COUNT_1_BIT;
+        //colorAttachmentResolve.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+        //colorAttachmentResolve.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+        //colorAttachmentResolve.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+        //colorAttachmentResolve.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        //colorAttachmentResolve.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        //colorAttachmentResolve.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+
+        // 깊이 첨부 파일을 설정합니다.
+        VkAttachmentDescription depthAttachment{};
+        depthAttachment.format = this->VKdepthStencill.depthFormat;
+        depthAttachment.samples = this->VKmsaaSamples;
+        depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+        depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        depthAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+        depthAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        depthAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        depthAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
+        // 렌더 패스 서브패스를 설정합니다.
+        VkAttachmentReference colorAttachmentRef{};
+        colorAttachmentRef.attachment = 0;
+        colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+        // 색상 첨부 파일 참조를 설정합니다.
+        //VkAttachmentReference colorAttachmentResolveRef{};
+        //colorAttachmentResolveRef.attachment = 2;
+        //colorAttachmentResolveRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+        // 깊이 첨부 파일 참조를 설정합니다.
+        VkAttachmentReference depthAttachmentRef{};
+        depthAttachmentRef.attachment = 1;
+        depthAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
+        // 서브패스를 설정합니다.
+        VkSubpassDescription subpass{};
+        subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+        subpass.colorAttachmentCount = 1;
+        subpass.pColorAttachments = &colorAttachmentRef;
+        subpass.pResolveAttachments = nullptr;
+        subpass.pDepthStencilAttachment = &depthAttachmentRef;
+
+        // 서브패스 종속성을 설정합니다.
+        // 외부 서브패스와 대상 서브패스를 설정합니다.
+        // 소스 스테이지 마스크와 대상 스테이지 마스크를 설정합니다.
+        VkSubpassDependency dependency{};
+        dependency.srcSubpass = VK_SUBPASS_EXTERNAL; // 외부 서브패스
+        dependency.dstSubpass = 0;                   // 대상 서브패스
+        dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;   // 소스 스테이지 마스크 -> 색상 첨부 출력 비트
+        dependency.srcAccessMask = 0;                                                                                           // 소스 액세스 마스크 -> 0
+        dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;   // 대상 스테이지 마스크 -> 색상 첨부 출력 비트
+        dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;         // 대상 액세스 마스크 -> 색상 첨부 쓰기 비트
+
+        // 첨부 파일을 설정합니다.
+        std::array<VkAttachmentDescription, 2> dependencies = { colorAttachment, depthAttachment };
+
+        // 렌더 패스 생성 정보 구조체를 초기화합니다.
+        // 렌더 패스 생성 정보 구조체에 첨부 파일 및 서브패스를 설정합니다.
+        VkRenderPassCreateInfo renderPassInfo{};
+        renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+        renderPassInfo.attachmentCount = static_cast<uint32_t>(dependencies.size());
+        renderPassInfo.pAttachments = dependencies.data();
+        renderPassInfo.subpassCount = 1;
+        renderPassInfo.pSubpasses = &subpass;
+        renderPassInfo.dependencyCount = 1;
+        renderPassInfo.pDependencies = &dependency;
+
+        if (vkCreateRenderPass(this->VKdevice->VKdevice, &renderPassInfo, nullptr, &this->VKrenderPass) != VK_SUCCESS) {
+            throw std::runtime_error("failed to create render pass!");
+        }
+    }
+
+    void VulkanEngine::createPipelineCache()
+    {
+        VkPipelineCacheCreateInfo pipelineCacheCreateInfo{};
+        pipelineCacheCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO;
+
+        if (vkCreatePipelineCache(this->VKdevice->VKdevice, &pipelineCacheCreateInfo, nullptr, &this->VKpipelineCache) != VK_SUCCESS) {
+            throw std::runtime_error("failed to create pipeline cache!");
+        }
+    }
+
+    void VulkanEngine::createFramebuffers()
+    {
+        this->VKswapChainFramebuffers.resize(this->VKswapChain->getSwapChainImages().size());
+
+        for (size_t i = 0; i < this->VKswapChainFramebuffers.size(); i++)
+        {
+            std::array<VkImageView, 2> attachments = {
+              this->VKswapChain->getSwapChainImageViews()[i],
+              this->VKdepthStencill.depthImageView,
+              // color attachment is resolved to this image
+            };
+            VkFramebufferCreateInfo framebufferInfo{};
+            framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+            framebufferInfo.renderPass = this->VKrenderPass;
+            framebufferInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
+            framebufferInfo.pAttachments = attachments.data();
+            framebufferInfo.width = this->VKswapChain->getSwapChainExtent().width;
+            framebufferInfo.height = this->VKswapChain->getSwapChainExtent().height;
+            framebufferInfo.layers = 1;
+            if (vkCreateFramebuffer(this->VKdevice->VKdevice, &framebufferInfo, nullptr, &this->VKswapChainFramebuffers[i]) != VK_SUCCESS) {
+                throw std::runtime_error("failed to create framebuffer!");
+            }
+        }
+    }
+
+    void VulkanEngine::recordCommandBuffer(FrameData *framedata, uint32_t imageIndex)
+    {
+        // 커맨드 버퍼 기록을 시작합니다.
+        VkCommandBufferBeginInfo beginInfo = framedata->commandBufferBeginInfo(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
+        
+        if (vkBeginCommandBuffer(framedata->mainCommandBuffer, &beginInfo) != VK_SUCCESS) {
+            return;
+        }
+        
+        // 렌더 패스를 시작하기 위한 클리어 값 설정
+        std::array<VkClearValue, 2> clearValues{};
+        clearValues[0].color = { {0.2f, 0.2f, 0.2f, 1.0f} };
+        clearValues[1].depthStencil = { 1.0f, 0 };
+
+        // 렌더 패스 시작 정보 구조체를 초기화합니다.
+        VkRenderPassBeginInfo renderPassInfo{};
+        renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+        renderPassInfo.renderPass = this->VKrenderPass;
+        renderPassInfo.framebuffer = this->VKswapChainFramebuffers[imageIndex];
+        renderPassInfo.renderArea.offset = { 0, 0 };
+        renderPassInfo.renderArea.extent = this->VKswapChain->getSwapChainExtent();
+        renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());;
+        renderPassInfo.pClearValues = clearValues.data();
+
+        // 렌더 패스를 시작합니다.
+        vkCmdBeginRenderPass(framedata->mainCommandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+        {
+            // 그래픽 파이프라인을 바인딩합니다.
+        //    vkCmdBindPipeline(framedata->mainCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->VKgraphicsPipeline);
+
+        //    VkViewport viewport{};
+        //    viewport.x = 0.0f;
+        //    viewport.y = 0.0f;
+        //    viewport.width = static_cast<float>(this->VKswapChainExtent.width);
+        //    viewport.height = static_cast<float>(this->VKswapChainExtent.height);
+        //    viewport.minDepth = 0.0f;
+        //    viewport.maxDepth = 1.0f;
+        //    vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
+
+        //    VkRect2D scissor{};
+        //    scissor.offset = { 0, 0 };
+        //    scissor.extent = this->VKswapChainExtent;
+        //    vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
+
+        //    // 버텍스 버퍼를 바인딩합니다.
+        //    VkBuffer vertexBuffers[] = { this->VKvertexBuffer };
+        //    VkDeviceSize offsets[] = { 0 };
+        //    vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
+
+        //    // 인덱스 버퍼를 바인딩합니다.
+        //    vkCmdBindIndexBuffer(commandBuffer, this->VKindexBuffer, 0, VK_INDEX_TYPE_UINT32);
+
+        //    // 디스크립터 세트를 바인딩합니다.
+        //    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->VKpipelineLayout, 0, 1, &this->VKdescriptorSets[currentFrame], 0, nullptr);
+        //    // 렌더 패스를 종료합니다.
+        //    vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(this->VKindices.size()), 1, 0, 0, 0);
+        }
+
+        //vkCmdEndRenderPass(commandBuffer);
+
+        // 커맨드 버퍼 기록을 종료합니다.
+        //if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS) {
+        //    throw std::runtime_error("failed to record command buffer!");
+        //}
     }
 
     void VulkanEngine::cleanupSwapChain()

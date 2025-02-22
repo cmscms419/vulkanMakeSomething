@@ -162,11 +162,11 @@ namespace vkutil {
         VkDeviceMemory VKdepthImageMemory;                 // 깊이 이미지 메모리 -> 깊이 이미지를 저장하는 데 사용
         VkImageView VKdepthImageView;                      // 깊이 이미지 뷰 -> 깊이 이미지를 뷰로 변환 (이미지 뷰는 이미지를 읽고 쓰는 데 사용)
 
-        VkSampleCountFlagBits VKmsaaSamples = VK_SAMPLE_COUNT_1_BIT; // MSAA 샘플 -> MSAA 샘플 수
         VkImage VKcolorImage;                              // 컬러 이미지 -> 컬러 이미지를 저장하는 데 사용
         VkDeviceMemory VKcolorImageMemory;                 // 컬러 이미지 메모리 -> 컬러 이미지를 저장하는 데 사용
         VkImageView VKcolorImageView;                      // 컬러 이미지 뷰 -> 컬러 이미지를 뷰로 변환 (이미지 뷰는 이미지를 읽고 쓰는 데 사용)
 
+        VkSampleCountFlagBits VKmsaaSamples = VK_SAMPLE_COUNT_1_BIT; // MSAA 샘플 -> MSAA 샘플 수
 
         std::shared_ptr<vkutil::object::Camera> camera;                      // 카메라 -> 카메라 객체
 

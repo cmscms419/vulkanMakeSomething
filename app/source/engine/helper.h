@@ -89,6 +89,8 @@ namespace vkengine {
         // Semaphore에 대한 information을 생성하는 함수
         VkSemaphoreCreateInfo semaphoreCreateInfo(VkSemaphoreCreateFlags flags = 0);
 
+
+        // https://steel-gourd-618.notion.site/Images-19618a41dc6f80b89bc1d1575bcf3d04 참고
         //  시작하려는 명령버퍼를 생성하는 함수
         VkCommandBuffer beginSingleTimeCommands(VkDevice& device, VkCommandPool& commandPool);
 
@@ -105,6 +107,13 @@ namespace vkengine {
             VkImageLayout oldLayout,
             VkImageLayout newLayout,
             uint32_t mipLevels);
+
+        // 이미지 레이아웃을 전환하는 함수(
+        //void 
+
+        // stencilComponent를 가지고 있는지 확인하는 함수
+        bool hasStencilComponent(VkFormat format);
+
     }
 }
 
