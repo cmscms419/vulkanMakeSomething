@@ -98,6 +98,7 @@ namespace vkutil {
 
         vkDestroyPipeline(this->VKdevice, this->VKgraphicsPipeline, nullptr);
         vkDestroyPipelineLayout(this->VKdevice, this->VKpipelineLayout, nullptr);
+        
         vkDestroyRenderPass(this->VKdevice, this->VKrenderPass, nullptr);
 
         for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)

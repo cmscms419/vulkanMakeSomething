@@ -21,6 +21,9 @@ namespace vkengine
 
     VulkanEngine::VulkanEngine(std::string root_path) {
       this->RootPath = root_path;
+      this->VKwindow = nullptr;
+      this->VKinstance = {};
+      this->VKdebugUtilsMessenger = VK_NULL_HANDLE;
     }
 
     VulkanEngine::~VulkanEngine()
@@ -51,7 +54,18 @@ namespace vkengine
     {
         if (this->_isInitialized)
         {
-            //this->VKswapChain->~VKSwapChain();
+            vkDestroyImageView(this->VKdevice->VKdevice, this->VKdepthStencill.depthImageView, nullptr);
+            vkDestroyImage(this->VKdevice->VKdevice, this->VKdepthStencill.depthImage, nullptr);
+            vkFreeMemory(this->VKdevice->VKdevice, this->VKdepthStencill.depthImageMemory, nullptr);
+
+            for (auto framebuffers : this->VKswapChainFramebuffers)
+            {
+                vkDestroyFramebuffer(this->VKdevice->VKdevice, framebuffers, nullptr);
+            }
+            
+            this->VKswapChain->cleanupSwapChain();
+            
+            vkDestroyRenderPass(this->VKdevice->VKdevice, this->VKrenderPass, nullptr);
             
             for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
             {
@@ -60,6 +74,11 @@ namespace vkengine
                 vkDestroyFence(this->VKdevice->VKdevice, this->VKframeData[i].VkinFlightFences, nullptr);
             }
             
+            //this->VKdevice->cleanup();
+
+            vkDestroyCommandPool(this->VKdevice->VKdevice, this->VKdevice->VKcommandPool, nullptr);
+            vkDestroyDevice(this->VKdevice->VKdevice, nullptr);
+
             if (enableValidationLayers) {
                 DestroyDebugUtilsMessengerEXT(this->VKinstance, this->VKdebugUtilsMessenger, nullptr);
             }
@@ -85,7 +104,7 @@ namespace vkengine
 
         }
 
-        //vkDeviceWaitIdle(this->VKdevice);
+        vkDeviceWaitIdle(this->VKdevice->VKdevice);
         state = false;
 
         return state;
@@ -107,7 +126,7 @@ namespace vkengine
         result = this->VKswapChain->acquireNextImage(this->getCurrnetFrameData().VkimageavailableSemaphore, imageIndex);
 
         if (result == VK_ERROR_OUT_OF_DATE_KHR) {
-            //this->recreateSwapChain(); // 스왑 체인을 다시 생성합니다.
+            this->recreateSwapChain(); // 스왑 체인을 다시 생성합니다.
             return;
         }
         else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
@@ -122,8 +141,62 @@ namespace vkengine
         // 렌더링을 시작하기 전에 이미지를 렌더링할 준비가 되었는지 확인합니다.
         // 지정된 명령 버퍼를 초기화하고, 선택적으로 플래그를 사용하여 초기화 동작을 제어
         vkResetCommandBuffer(this->VKframeData[currentFrame].mainCommandBuffer, 0);
-        
         this->recordCommandBuffer(&this->VKframeData[currentFrame], imageIndex);
+
+        // 렌더링을 시작하기 전에 렌더링할 준비가 되었는지 확인합니다.
+        VkSubmitInfo submitInfo{};
+
+        // VkSubmitInfo 구조체는 큐에 제출할 명령 버퍼를 지정합니다.
+        submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO; // 구조체 타입을 지정합니다.
+
+        // 렌더링을 시작하기 전에 세마포어를 설정합니다.
+        VkSemaphore waitSemaphores[] = { this->VKframeData[currentFrame].VkimageavailableSemaphore };
+        VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
+        submitInfo.waitSemaphoreCount = 1;
+        submitInfo.pWaitSemaphores = waitSemaphores;
+        submitInfo.pWaitDstStageMask = waitStages;
+
+        // 렌더링을 시작하기 전에 커맨드 버퍼를 설정합니다.
+        submitInfo.commandBufferCount = 1;
+        submitInfo.pCommandBuffers = &this->VKframeData[currentFrame].mainCommandBuffer;
+
+        // 렌더링을 시작하기 전에 세마포어를 설정합니다.
+        VkSemaphore signalSemaphores[] = { this->VKframeData[currentFrame].VkrenderFinishedSemaphore };
+        submitInfo.signalSemaphoreCount = 1;
+        submitInfo.pSignalSemaphores = signalSemaphores;
+
+        vkResetFences(this->VKdevice->VKdevice, 1, &this->VKframeData[currentFrame].VkinFlightFences); // 플래그를 재설정합니다. -> 렌더링이 끝나면 플래그를 재설정합니다.
+
+        // 렌더링을 시작합니다.
+        if (vkQueueSubmit(this->VKdevice->graphicsVKQueue, 1, &submitInfo, this->VKframeData[currentFrame].VkinFlightFences) != VK_SUCCESS) {
+            throw std::runtime_error("failed to submit draw command buffer!");
+        }
+
+        // 렌더링을 시작하기 전에 세마포어를 설정합니다.
+        VkPresentInfoKHR presentInfo{};
+
+        // VkPresentInfoKHR 구조체는 스왑 체인 이미지의 프레젠테이션을 위한 정보를 제공합니다.
+        presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR; // 구조체 타입을 지정합니다.
+
+        presentInfo.waitSemaphoreCount = 1;
+        presentInfo.pWaitSemaphores = signalSemaphores;
+
+        VkSwapchainKHR swapChains[] = { this->VKswapChain->getSwapChain() };
+        presentInfo.swapchainCount = 1;
+        presentInfo.pSwapchains = swapChains;
+        presentInfo.pResults = nullptr;
+
+        presentInfo.pImageIndices = &imageIndex;
+
+        result = vkQueuePresentKHR(this->VKdevice->presentVKQueue, &presentInfo); // 프레젠테이션 큐에 이미지를 제출합니다.
+
+        if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || framebufferResized) {
+            this->framebufferResized = false;
+            this->recreateSwapChain();
+        }
+        else if (result != VK_SUCCESS) {
+            throw std::runtime_error("failed to present swap chain image!");
+        }
 
         this->currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
     }
@@ -154,7 +227,7 @@ namespace vkengine
         this->init_sync_structures();
         this->createDepthStencilResources();
         this->createRenderPass();
-        this->createPipelineCache();
+        //this->createPipelineCache();
         this->createFramebuffers();
 
         return true;
@@ -196,23 +269,22 @@ namespace vkengine
         // 커맨드 풀 생성 정보 구조체를 초기화합니다.
         VkCommandPoolCreateInfo poolInfo = helper::commandPoolCreateInfo(queueFamilyIndices.graphicsAndComputeFamily, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
 
-        for (auto& framedata : this->VKframeData)
-        {
             VkResult result = vkCreateCommandPool(this->VKdevice->VKdevice, &poolInfo, nullptr, &this->VKdevice->VKcommandPool);
             
             if (result != VK_SUCCESS) {
                 return false;
             }
 
-            VkCommandBufferAllocateInfo allocInfo = helper::commandBufferAllocateInfo(this->VKdevice->VKcommandPool, 1, VK_COMMAND_BUFFER_LEVEL_PRIMARY);
+            for (auto& framedata : this->VKframeData)
+            {
+                VkCommandBufferAllocateInfo allocInfo = helper::commandBufferAllocateInfo(this->VKdevice->VKcommandPool, 1, VK_COMMAND_BUFFER_LEVEL_PRIMARY);
 
-            result = vkAllocateCommandBuffers(this->VKdevice->VKdevice, &allocInfo, &framedata.mainCommandBuffer);
-            
-            if (result != VK_SUCCESS) {
-                return false;
+                result = vkAllocateCommandBuffers(this->VKdevice->VKdevice, &allocInfo, &framedata.mainCommandBuffer);
+                
+                if (result != VK_SUCCESS) {
+                    return false;
+                }
             }
-
-        }
         return true;
     }
 
@@ -223,13 +295,9 @@ namespace vkengine
 
         for (auto& frameData : this->VKframeData)
         {
-            VkResult result0 = vkCreateSemaphore(this->VKdevice->VKdevice, &semaphoreInfo, nullptr, &frameData.VkimageavailableSemaphore);
-            VkResult result1 = vkCreateSemaphore(this->VKdevice->VKdevice, &semaphoreInfo, nullptr, &frameData.VkrenderFinishedSemaphore);
-            VkResult result2 = vkCreateFence(this->VKdevice->VKdevice, &fenceInfo, nullptr, &frameData.VkinFlightFences);
-
-            if (result0 != VK_SUCCESS || result1 != VK_SUCCESS || result2 != VK_SUCCESS) {
-                return false;
-            }
+            VK_CHECK_RESULT(vkCreateSemaphore(this->VKdevice->VKdevice, &semaphoreInfo, nullptr, &frameData.VkimageavailableSemaphore));
+            VK_CHECK_RESULT(vkCreateSemaphore(this->VKdevice->VKdevice, &semaphoreInfo, nullptr, &frameData.VkrenderFinishedSemaphore));
+            VK_CHECK_RESULT(vkCreateFence(this->VKdevice->VKdevice, &fenceInfo, nullptr, &frameData.VkinFlightFences));
         }
 
         return true;
@@ -405,16 +473,16 @@ namespace vkengine
 
         // 깊이 이미지 레이아웃을 설정합니다.
         // 예제에서는 아직 사용하지 않음
-        //helper::transitionImageLayout(
-        //    this->VKdevice->VKdevice,
-        //    this->VKcommandPool,
-        //    this->VKdevice->graphicsVKQueue,
-        //    this->VKdepthStencill.depthImage,
-        //    this->VKdepthStencill.depthFormat,
-        //    VK_IMAGE_LAYOUT_UNDEFINED,
-        //    VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
-        //    1
-        //);
+        helper::transitionImageLayout(
+            this->VKdevice->VKdevice,
+            this->VKdevice->VKcommandPool,
+            this->VKdevice->graphicsVKQueue,
+            this->VKdepthStencill.depthImage,
+            this->VKdepthStencill.depthFormat,
+            VK_IMAGE_LAYOUT_UNDEFINED,
+            VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+            1
+        );
     }
 
     void VulkanEngine::createRenderPass()
@@ -423,12 +491,12 @@ namespace vkengine
         VkAttachmentDescription colorAttachment{};
         colorAttachment.format = this->VKswapChain->getSwapChainImageFormat();
         colorAttachment.samples = this->VKmsaaSamples;
-        colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-        colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+        colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR; // Render Pass 시작 시 클리어
+        colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE; // Render Pass 종료 시 저장
         colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
         colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-        colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-        colorAttachment.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+        colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED; // 시작 레이아웃은 중요하지 않음.
+        colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR; // 프레젠테이션에 사용
 
         //// 색상 첨부 파일을 설정합니다.
         //VkAttachmentDescription colorAttachmentResolve{};
@@ -534,10 +602,28 @@ namespace vkengine
             framebufferInfo.width = this->VKswapChain->getSwapChainExtent().width;
             framebufferInfo.height = this->VKswapChain->getSwapChainExtent().height;
             framebufferInfo.layers = 1;
+            
             if (vkCreateFramebuffer(this->VKdevice->VKdevice, &framebufferInfo, nullptr, &this->VKswapChainFramebuffers[i]) != VK_SUCCESS) {
                 throw std::runtime_error("failed to create framebuffer!");
             }
         }
+    }
+
+    void VulkanEngine::recreateSwapChain()
+    {
+        int width = 0, height = 0;
+        glfwGetFramebufferSize(this->VKwindow, &width, &height);
+
+        while (width == 0 || height == 0) {
+            glfwGetFramebufferSize(this->VKwindow, &width, &height);
+            glfwWaitEvents();
+        }
+
+        vkDeviceWaitIdle(this->VKdevice->VKdevice);
+
+        this->VKswapChain->createSwapChain(&this->VKdevice->queueFamilyIndices);  // 스왑 체인을 생성합니다.
+        this->VKswapChain->createImageViews(); // 이미지 뷰를 생성합니다.
+        this->createRenderPass(); // 렌더 패스를 생성합니다.
     }
 
     void VulkanEngine::recordCommandBuffer(FrameData *framedata, uint32_t imageIndex)
@@ -566,54 +652,43 @@ namespace vkengine
 
         // 렌더 패스를 시작합니다.
         vkCmdBeginRenderPass(framedata->mainCommandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+        
         {
             // 그래픽 파이프라인을 바인딩합니다.
-        //    vkCmdBindPipeline(framedata->mainCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->VKgraphicsPipeline);
+            //vkCmdBindPipeline(framedata->mainCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->VKgraphicsPipeline);
 
-        //    VkViewport viewport{};
-        //    viewport.x = 0.0f;
-        //    viewport.y = 0.0f;
-        //    viewport.width = static_cast<float>(this->VKswapChainExtent.width);
-        //    viewport.height = static_cast<float>(this->VKswapChainExtent.height);
-        //    viewport.minDepth = 0.0f;
-        //    viewport.maxDepth = 1.0f;
-        //    vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
+            VkViewport viewport{};
+            viewport.x = 0.0f;
+            viewport.y = 0.0f;
+            viewport.width = static_cast<float>(this->VKswapChain->getSwapChainExtent().width);
+            viewport.height = static_cast<float>(this->VKswapChain->getSwapChainExtent().height);
+            viewport.minDepth = 0.0f;
+            viewport.maxDepth = 1.0f;
+            vkCmdSetViewport(framedata->mainCommandBuffer, 0, 1, &viewport);
 
-        //    VkRect2D scissor{};
-        //    scissor.offset = { 0, 0 };
-        //    scissor.extent = this->VKswapChainExtent;
-        //    vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
+            VkRect2D scissor{};
+            scissor.offset = { 0, 0 };
+            scissor.extent = this->VKswapChain->getSwapChainExtent();
+            vkCmdSetScissor(framedata->mainCommandBuffer, 0, 1, &scissor);
 
-        //    // 버텍스 버퍼를 바인딩합니다.
-        //    VkBuffer vertexBuffers[] = { this->VKvertexBuffer };
-        //    VkDeviceSize offsets[] = { 0 };
-        //    vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
+            // 버텍스 버퍼를 바인딩합니다.
+            //VkBuffer vertexBuffers[] = { this->VKvertexBuffer };
+            //VkDeviceSize offsets[] = { 0 };
+            //vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
 
-        //    // 인덱스 버퍼를 바인딩합니다.
-        //    vkCmdBindIndexBuffer(commandBuffer, this->VKindexBuffer, 0, VK_INDEX_TYPE_UINT32);
+            // 인덱스 버퍼를 바인딩합니다.
+            //vkCmdBindIndexBuffer(commandBuffer, this->VKindexBuffer, 0, VK_INDEX_TYPE_UINT32);
 
-        //    // 디스크립터 세트를 바인딩합니다.
-        //    vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->VKpipelineLayout, 0, 1, &this->VKdescriptorSets[currentFrame], 0, nullptr);
-        //    // 렌더 패스를 종료합니다.
-        //    vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(this->VKindices.size()), 1, 0, 0, 0);
+            // 디스크립터 세트를 바인딩합니다.
+            //vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->VKpipelineLayout, 0, 1, &this->VKdescriptorSets[currentFrame], 0, nullptr);
+            // 렌더 패스를 종료합니다.
+            //vkCmdDrawIndexed(framedata->mainCommandBuffer, static_cast<uint32_t>(this->VKindices.size()), 1, 0, 0, 0);
         }
 
-        //vkCmdEndRenderPass(commandBuffer);
+        vkCmdEndRenderPass(framedata->mainCommandBuffer);
 
         // 커맨드 버퍼 기록을 종료합니다.
-        //if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS) {
-        //    throw std::runtime_error("failed to record command buffer!");
-        //}
-    }
-
-    void VulkanEngine::cleanupSwapChain()
-    {
-        //for (auto swapChainView : this->VKswapChainImageViews)
-        //{
-        //    vkDestroyImageView(this->VKdevice->VKdevice, swapChainView, nullptr);
-        //}
-        //
-        //vkDestroySwapchainKHR(this->VKdevice->VKdevice, this->VKswapChain, nullptr);
+        VK_CHECK_RESULT(vkEndCommandBuffer(framedata->mainCommandBuffer));
     }
 
     bool VulkanEngine::checkValidationLayerSupport()

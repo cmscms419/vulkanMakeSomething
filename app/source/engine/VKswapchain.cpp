@@ -12,11 +12,6 @@ namespace vkengine
 
     }
 
-    VKSwapChain::~VKSwapChain()
-    {
-        this->cleanupSwapChain();
-    }
-
     void VKSwapChain::createSwapChain(QueueFamilyIndices* VKqueueFamilyIndices)
     {
         SwapChainSupportDetails swapChainSupport = helper::querySwapChainSupport(this->VKphysicalDevice, this->VKsurface);
@@ -100,7 +95,6 @@ namespace vkengine
 
     void VKSwapChain::cleanupSwapChain()
     {
-
         for (auto imageView : this->VKswapChainImageViews) {
             vkDestroyImageView(this->VKdevice, imageView, nullptr);
         }

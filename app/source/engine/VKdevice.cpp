@@ -137,12 +137,8 @@ namespace vkengine {
 
         vkBindImageMemory(VKdevice, image, imageMemory, 0);
     }
-
-    VKDevice_::~VKDevice_()
+    void VKDevice_::cleanup()
     {
-        vkDestroyCommandPool(VKdevice, VKcommandPool, nullptr);
-        vkDestroyDevice(VKdevice, nullptr);
+
     }
-
-
 }

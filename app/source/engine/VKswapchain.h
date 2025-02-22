@@ -8,10 +8,11 @@ namespace vkengine {
     class VKSwapChain {
     public:
         VKSwapChain(VkPhysicalDevice physicalDevice, VkDevice device, VkSurfaceKHR surface, VkInstance* Instance);
-        ~VKSwapChain();
+        ~VKSwapChain() = default;
         
         void createSwapChain(QueueFamilyIndices* VKqueueFamilyIndices);
         void createImageViews();
+        void cleanupSwapChain();
 
         VkExtent2D getSwapChainExtent() { return this->VKswapChainExtent; }
         VkFormat getSwapChainImageFormat() { return this->VKswapChainImageFormat; }
@@ -22,7 +23,6 @@ namespace vkengine {
         VkResult acquireNextImage(VkSemaphore presentCompleteSemaphore, uint32_t& imageIndex);
 
     private:
-        void cleanupSwapChain();
 
         VkSwapchainKHR VKswapChain{ VK_NULL_HANDLE };
         VkExtent2D VKswapChainExtent{ 0, 0 };

@@ -53,9 +53,9 @@ namespace vkengine {
         virtual void createRenderPass();                           // 렌더 패스 생성
         virtual void createPipelineCache();                        // 파이프라인 캐시 생성
         virtual void createFramebuffers();                         // 프레임 버퍼 생성
+        virtual void recreateSwapChain();                          // 스왑 체인 재생성
 
         void recordCommandBuffer(FrameData* framedata, uint32_t imageIndex);                        // 커맨드 버퍼 레코드
-        void cleanupSwapChain();                          // 스왑 체인 정리
 
         // 도구
         bool checkValidationLayerSupport();               // 검증 레이어 지원 확인
