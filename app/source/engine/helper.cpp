@@ -2,6 +2,24 @@
 
 namespace vkengine {
     namespace helper {
+        std::vector<char> readFile(const std::string& filename)
+        {
+            // 파일 끝으로 이동하여 파일 크기를 가져옵니다.
+            std::ifstream file(filename, std::ios::ate | std::ios::binary);
+
+            // 파일을 열 수 없는 경우 예외를 발생시킵니다.
+            if (!file.is_open()) {
+                throw std::runtime_error("failed to open file!");
+            }
+
+            size_t fileSize = (size_t)file.tellg(); // 파일 크기를 이용하여 버퍼를 할당합니다.
+            std::vector<char> buffer(fileSize);     // 파일 포인터를 파일의 시작으로 이동합니다.
+            file.seekg(0);                          // 파일 포인터를 파일의 시작으로 이동합니다.
+            file.read(buffer.data(), fileSize);     // 파일 내용을 버퍼에 읽어옵니다. -> 파일을 fileSize 크기만큼 한번에 읽어온다.
+            file.close();                           // 파일을 닫습니다.
+
+            return buffer;
+        }
 
         bool isDeviceSuitable(VkPhysicalDevice device, VkSurfaceKHR VKsurface, QueueFamilyIndices* indices)
         {
@@ -97,6 +115,46 @@ namespace vkengine {
 
             return target;
         }
+
+        void copyBuffer(VkDevice& VKdevice, VkCommandPool& VKcommandPool, VkQueue& graphicsVKQueue, VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size)
+        {
+            VkCommandBuffer commandBuffer = beginSingleTimeCommands(VKdevice, VKcommandPool);
+            
+            VkBufferCopy copyRegion{};
+            copyRegion.size = size;
+            vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
+            
+            endSingleTimeCommands(VKdevice, VKcommandPool, graphicsVKQueue, commandBuffer);
+        }
+
+        void createBuffer(VkDevice device, VkPhysicalDevice physicalDevice, VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory)
+        {
+            // 버퍼 생성 정보를 담은 구조체를 초기화한다.
+            VkBufferCreateInfo bufferInfo{};
+            
+            bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;        // 구조체 타입을 지정한다.
+            bufferInfo.size = size;                                         // 생성할 버퍼의 크기를 설정한다.
+            bufferInfo.usage = usage;                                       // 버퍼 사용 목적을 지정한다 (예: vertex, index 등).
+            bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;             // 버퍼의 공유 모드를 독점으로 설정한다.
+
+            // 지정된 정보를 바탕으로 버퍼를 생성하고, 성공 여부를 검사한다.
+            VK_CHECK_RESULT(vkCreateBuffer(device, &bufferInfo, nullptr, &buffer));
+
+            // 생성된 버퍼에 필요한 메모리 요구사항 정보를 가져온다.
+            VkMemoryRequirements memRequirements;
+            vkGetBufferMemoryRequirements(device, buffer, &memRequirements);
+
+            // 메모리 할당 정보를 담은 구조체를 초기화한다.
+            VkMemoryAllocateInfo allocInfo{};
+            
+            allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;                                                   // 구조체 타입을 지정한다.    
+            allocInfo.allocationSize = memRequirements.size;                                                            // 버퍼를 위한 메모리 크기를 설정한다.
+            allocInfo.memoryTypeIndex = findMemoryType(physicalDevice, memRequirements.memoryTypeBits, properties);     // 요구사항에 맞는 메모리 타입 인덱스를 찾아서 지정한다.
+            
+            VK_CHECK_RESULT(vkAllocateMemory(device, &allocInfo, nullptr, &bufferMemory));  // 위 정보를 바탕으로 메모리를 할당하고 성공 여부를 검사한다.
+            VK_CHECK_RESULT(vkBindBufferMemory(device, buffer, bufferMemory, 0));           // 할당된 메모리를 버퍼와 바인딩하여 GPU에서 사용할 수 있게 한다.
+        }
+
 
         bool checkDeviceExtensionSupport(VkPhysicalDevice device)
         {

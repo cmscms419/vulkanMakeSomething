@@ -6,6 +6,9 @@
 namespace vkengine {
     namespace helper {
 
+        // 파일을 읽어오는 함수
+        std::vector<char> readFile(const std::string& filename);
+
         // 물리 디바이스가 요구 사항을 충족하는지 확인하는 함수
         bool isDeviceSuitable(VkPhysicalDevice device, VkSurfaceKHR VKsurface, QueueFamilyIndices* indices);
 
@@ -13,6 +16,25 @@ namespace vkengine {
         // PROB : 큐 패밀리가 여러개인 경우에 필요한 처리가 있는 패밀리를 먼저 찾을 경우, 그 패밀리의 인덱스만 반환함
         // TODO ; 큐 패밀리가 여러개인 경우에 대한 처리가 필요함
         const QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device, VkSurfaceKHR VKsurface);
+
+        // 버퍼를 복사하는 함수
+        void copyBuffer(
+            VkDevice& VKdevice,
+            VkCommandPool& VKcommandPool,
+            VkQueue& graphicsVKQueue,
+            VkBuffer srcBuffer,
+            VkBuffer dstBuffer,
+            VkDeviceSize size);
+
+        // buffer를 생성하는 함수
+        void createBuffer(
+            VkDevice device,
+            VkPhysicalDevice physicalDevice,
+            VkDeviceSize size,
+            VkBufferUsageFlags usage,
+            VkMemoryPropertyFlags properties,
+            VkBuffer& buffer,
+            VkDeviceMemory& bufferMemory);
 
         // 물리 디바이스의 확장 기능을 지원하는지 확인하는 함수
         // 검증 레이어 지원 여부를 확인하는 함수

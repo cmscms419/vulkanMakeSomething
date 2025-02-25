@@ -74,5 +74,17 @@
     <None Include="..\..\shader\vert.spv">
       <Filter>shader</Filter>
     </None>
+    <None Include="..\..\shader\trinagle00.frag">
+      <Filter>shader</Filter>
+    </None>
+    <None Include="..\..\shader\trinagle00.vert">
+      <Filter>shader</Filter>
+    </None>
+    <None Include="..\..\shader\vertTrinagle00.spv">
+      <Filter>shader</Filter>
+    </None>
+    <None Include="..\..\shader\fragTrinagle00.spv">
+      <Filter>shader</Filter>
+    </None>
   </ItemGroup>
 </Project>

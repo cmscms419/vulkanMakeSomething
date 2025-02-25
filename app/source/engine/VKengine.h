@@ -22,27 +22,30 @@ namespace vkengine {
         static VulkanEngine& Get();
 
         //initializes everything in the engine
-        void init();
+        virtual void init();
 
         //shuts down the engine
-        void cleanup();
+        virtual void cleanup();
 
         //mainLoop
-        bool mainLoop();
+        virtual bool mainLoop();
 
         // drawFrame
-        void drawFrame();
+        virtual void drawFrame();
 
         // create window
-        void initWindow();
+        virtual void initWindow();
+
+        // prepare
+        virtual bool prepare();
+
 
     protected:
 
-        virtual bool init_vulkan();
+        virtual bool initVulkan();
         virtual bool init_swapchain();
-        virtual bool init_commands();
+        virtual bool init_command_pool();
         virtual bool init_sync_structures();
-        virtual bool prepare();
 
         // 엔진 초기화
         virtual void createInstance();                             // 인스턴스 생성
@@ -54,8 +57,9 @@ namespace vkengine {
         virtual void createPipelineCache();                        // 파이프라인 캐시 생성
         virtual void createFramebuffers();                         // 프레임 버퍼 생성
         virtual void recreateSwapChain();                          // 스왑 체인 재생성
+        virtual bool createCommandBuffer();                        // 커맨드 버퍼 생성
 
-        void recordCommandBuffer(FrameData* framedata, uint32_t imageIndex);                        // 커맨드 버퍼 레코드
+        virtual void recordCommandBuffer(FrameData* framedata, uint32_t imageIndex);    // 커맨드 버퍼 레코드
 
         // 도구
         bool checkValidationLayerSupport();               // 검증 레이어 지원 확인

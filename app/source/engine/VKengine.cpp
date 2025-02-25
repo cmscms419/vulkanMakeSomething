@@ -20,16 +20,19 @@ namespace vkengine
     }
 
     VulkanEngine::VulkanEngine(std::string root_path) {
-      this->RootPath = root_path;
-      this->VKwindow = nullptr;
-      this->VKinstance = {};
-      this->VKdebugUtilsMessenger = VK_NULL_HANDLE;
+        this->RootPath = root_path;
+        this->VKwindow = nullptr;
+        this->VKinstance = {};
+        this->VKdebugUtilsMessenger = VK_NULL_HANDLE;
+        
+        for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+        {
+            this->VKframeData[i] = FrameData();
+        }
     }
 
     VulkanEngine::~VulkanEngine()
-    {
-        this->cleanup();
-    }
+    {}
 
     FrameData& VulkanEngine::getCurrnetFrameData()
     {
@@ -46,8 +49,7 @@ namespace vkengine
         loadedEngine = this;
 
         this->initWindow();
-        this->init_vulkan();
-        this->prepare();
+        this->initVulkan();
 
         this->_isInitialized = true;
 
@@ -63,11 +65,11 @@ namespace vkengine
             {
                 vkDestroyFramebuffer(this->VKdevice->VKdevice, framebuffers, nullptr);
             }
-            
+
             this->VKswapChain->cleanupSwapChain();
-            
+
             vkDestroyRenderPass(this->VKdevice->VKdevice, this->VKrenderPass, nullptr);
-            
+
             for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
             {
                 vkDestroySemaphore(this->VKdevice->VKdevice, this->VKframeData[i].VkimageavailableSemaphore, nullptr);
@@ -76,7 +78,7 @@ namespace vkengine
             }
 
             vkDestroyPipelineCache(this->VKdevice->VKdevice, this->VKpipelineCache, nullptr);
-            
+
             this->VKdevice->cleanup();
 
             if (enableValidationLayers) {
@@ -129,9 +131,6 @@ namespace vkengine
             throw std::runtime_error("failed to acquire swap chain image!");
         }
 
-        // 여기서 update를 된, 데이터를 적용시킨다. -> 예) uniform 버퍼를 업데이트합니다.
-        //this->updateUniformBuffer(this->currentFrame);
-
         vkResetFences(this->VKdevice->VKdevice, 1, &this->getCurrnetFrameData().VkinFlightFences); // 플래그를 재설정합니다. -> 렌더링이 끝나면 플래그를 재설정합니다.
 
         // 렌더링을 시작하기 전에 이미지를 렌더링할 준비가 되었는지 확인합니다.
@@ -177,12 +176,12 @@ namespace vkengine
         presentInfo.pNext = nullptr;
 
         presentInfo.waitSemaphoreCount = 1;
-        presentInfo.pWaitSemaphores = signalSemaphores; 
+        presentInfo.pWaitSemaphores = signalSemaphores;
 
         VkSwapchainKHR swapChains[] = { this->VKswapChain->getSwapChain() };
         presentInfo.swapchainCount = 1;
         presentInfo.pSwapchains = swapChains;
-        
+
         presentInfo.pResults = nullptr;
 
         presentInfo.pImageIndices = &imageIndex;
@@ -220,31 +219,33 @@ namespace vkengine
 
     bool VulkanEngine::prepare()
     {
-        this->init_swapchain();
+        VulkanEngine::init_command_pool();
 
-        this->init_commands();
+        VulkanEngine::init_swapchain();
         
-        this->createDepthStencilResources();
+        VulkanEngine::createCommandBuffer();
         
-        this->createRenderPass();
+        VulkanEngine::createDepthStencilResources();
         
-        this->createFramebuffers();
+        VulkanEngine::createRenderPass();
         
-        this->init_sync_structures();
+        VulkanEngine::createFramebuffers();
         
-        this->createPipelineCache();
+        VulkanEngine::init_sync_structures();
+        
+        VulkanEngine::createPipelineCache();
 
         return true;
     }
 
-    bool VulkanEngine::init_vulkan()
+    bool VulkanEngine::initVulkan()
     {
         if (glfwVulkanSupported() == GLFW_FALSE) {
             throw std::runtime_error("Vulkan is not supported");
         }
 
         this->createInstance();
-        
+
         if (enableValidationLayers)
         {
             this->setupDebugCallback();
@@ -261,46 +262,29 @@ namespace vkengine
         this->VKswapChain = new VKSwapChain(this->VKdevice->VKphysicalDevice, this->VKdevice->VKdevice, this->VKsurface, &this->VKinstance);
         this->VKswapChain->createSwapChain(&this->VKdevice->queueFamilyIndices);
         this->VKswapChain->createImageViews();
-        
+
         return true;
     }
 
-    bool VulkanEngine::init_commands()
+    bool VulkanEngine::init_command_pool()
     {
         // command pool create and command buffer create
         QueueFamilyIndices queueFamilyIndices = this->VKdevice->queueFamilyIndices;
-        
+
         // 커맨드 풀 생성 정보 구조체를 초기화합니다.
         VkCommandPoolCreateInfo poolInfo = helper::commandPoolCreateInfo(queueFamilyIndices.graphicsAndComputeFamily, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
 
-            VkResult result = vkCreateCommandPool(this->VKdevice->VKdevice, &poolInfo, nullptr, &this->VKdevice->VKcommandPool);
-            
-            if (result != VK_SUCCESS) {
-                return false;
-            }
+        VK_CHECK_RESULT(vkCreateCommandPool(this->VKdevice->VKdevice, &poolInfo, nullptr, &this->VKdevice->VKcommandPool));
 
-            for (auto& framedata : this->VKframeData)
-            {
-                VkCommandBufferAllocateInfo allocInfo = helper::commandBufferAllocateInfo(this->VKdevice->VKcommandPool, 1, VK_COMMAND_BUFFER_LEVEL_PRIMARY);
-
-                result = vkAllocateCommandBuffers(this->VKdevice->VKdevice, &allocInfo, &framedata.mainCommandBuffer);
-                
-                if (result != VK_SUCCESS) {
-                    return false;
-                }
-            }
         return true;
     }
 
     bool VulkanEngine::init_sync_structures()
     {
-        VkSemaphoreCreateInfo semaphoreInfo = helper::semaphoreCreateInfo(0);
         VkFenceCreateInfo fenceInfo = helper::fenceCreateInfo(VK_FENCE_CREATE_SIGNALED_BIT);
 
         for (auto& frameData : this->VKframeData)
         {
-            VK_CHECK_RESULT(vkCreateSemaphore(this->VKdevice->VKdevice, &semaphoreInfo, nullptr, &frameData.VkimageavailableSemaphore));
-            VK_CHECK_RESULT(vkCreateSemaphore(this->VKdevice->VKdevice, &semaphoreInfo, nullptr, &frameData.VkrenderFinishedSemaphore));
             VK_CHECK_RESULT(vkCreateFence(this->VKdevice->VKdevice, &fenceInfo, nullptr, &frameData.VkinFlightFences));
         }
 
@@ -415,7 +399,7 @@ namespace vkengine
 
         int Score = 0;
         VkPhysicalDevice pdevice = VK_NULL_HANDLE;
-        
+
         int i = 0;
         for (const auto& candidate : candidates) {
 
@@ -476,17 +460,17 @@ namespace vkengine
         );
 
         // 깊이 이미지 레이아웃을 설정합니다.
-        // 예제에서는 아직 사용하지 않음
-        helper::transitionImageLayout(
-            this->VKdevice->VKdevice,
-            this->VKdevice->VKcommandPool,
-            this->VKdevice->graphicsVKQueue,
-            this->VKdepthStencill.depthImage,
-            this->VKdepthStencill.depthFormat,
-            VK_IMAGE_LAYOUT_UNDEFINED,
-            VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
-            1
-        );
+        // 나중에 다시 확인
+        //helper::transitionImageLayout(
+        //    this->VKdevice->VKdevice,
+        //    this->VKdevice->VKcommandPool,
+        //    this->VKdevice->graphicsVKQueue,
+        //    this->VKdepthStencill.depthImage,
+        //    this->VKdepthStencill.depthFormat,
+        //    VK_IMAGE_LAYOUT_UNDEFINED,
+        //    VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+        //    1
+        //);
     }
 
     void VulkanEngine::createRenderPass()
@@ -544,12 +528,18 @@ namespace vkengine
         subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
         subpass.colorAttachmentCount = 1;
         subpass.pColorAttachments = &colorAttachmentRef;
-        subpass.pResolveAttachments = nullptr;
         subpass.pDepthStencilAttachment = &depthAttachmentRef;
+        subpass.inputAttachmentCount = 0;
+        subpass.pInputAttachments = nullptr;
+        subpass.preserveAttachmentCount = 0;
+        subpass.pPreserveAttachments = nullptr;
+        subpass.pResolveAttachments = nullptr;
 
         // 서브패스 종속성을 설정합니다.
         // 외부 서브패스와 대상 서브패스를 설정합니다.
         // 소스 스테이지 마스크와 대상 스테이지 마스크를 설정합니다.
+        //이 코드는 외부(서브패스 미포함)에서 컬러·깊이/스텐실 단계가 끝날 때까지 기다린 후 
+        // 메인 서브패스가 해당 리소스를 안전하게 쓰도록 동기화를 설정합니다.
         VkSubpassDependency dependency{};
         dependency.srcSubpass = VK_SUBPASS_EXTERNAL; // 외부 서브패스
         dependency.dstSubpass = 0;                   // 대상 서브패스
@@ -557,6 +547,7 @@ namespace vkengine
         dependency.srcAccessMask = 0;                                                                                           // 소스 액세스 마스크 -> 0
         dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;   // 대상 스테이지 마스크 -> 색상 첨부 출력 비트
         dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;         // 대상 액세스 마스크 -> 색상 첨부 쓰기 비트
+        dependency.dependencyFlags = 0;                                                                                         // 종속성 플래그 -> 0
 
         // 첨부 파일을 설정합니다.
         std::array<VkAttachmentDescription, 2> dependencies = { colorAttachment, depthAttachment };
@@ -591,24 +582,23 @@ namespace vkengine
 
         for (size_t i = 0; i < this->VKswapChainFramebuffers.size(); i++)
         {
-            std::array<VkImageView, 2> attachments = {
+            const VkImageView attachments[2] = {
               this->VKswapChain->getSwapChainImageViews()[i],
               this->VKdepthStencill.depthImageView,
               // color attachment is resolved to this image
             };
+
             VkFramebufferCreateInfo framebufferInfo{};
             framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
             framebufferInfo.pNext = nullptr;
             framebufferInfo.renderPass = this->VKrenderPass;
-            framebufferInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
-            framebufferInfo.pAttachments = attachments.data();
+            framebufferInfo.attachmentCount = 2;
+            framebufferInfo.pAttachments = attachments;
             framebufferInfo.width = this->VKswapChain->getSwapChainExtent().width;
             framebufferInfo.height = this->VKswapChain->getSwapChainExtent().height;
             framebufferInfo.layers = 1;
-            
-            if (vkCreateFramebuffer(this->VKdevice->VKdevice, &framebufferInfo, nullptr, &this->VKswapChainFramebuffers[i]) != VK_SUCCESS) {
-                throw std::runtime_error("failed to create framebuffer!");
-            }
+
+            VK_CHECK_RESULT(vkCreateFramebuffer(this->VKdevice->VKdevice, &framebufferInfo, nullptr, &this->VKswapChainFramebuffers[i]));
         }
     }
 
@@ -629,13 +619,31 @@ namespace vkengine
         this->createRenderPass(); // 렌더 패스를 생성합니다.
     }
 
-    void VulkanEngine::recordCommandBuffer(FrameData *framedata, uint32_t imageIndex)
+    bool VulkanEngine::createCommandBuffer()
+    {
+        VkCommandBufferAllocateInfo allocInfo = helper::commandBufferAllocateInfo(this->VKdevice->VKcommandPool, 1, VK_COMMAND_BUFFER_LEVEL_PRIMARY);
+        
+        for (auto& framedata : this->VKframeData)
+        {
+            VK_CHECK_RESULT(vkAllocateCommandBuffers(this->VKdevice->VKdevice, &allocInfo, &framedata.mainCommandBuffer));
+        }
+
+        //for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+        //{
+        //    VK_CHECK_RESULT(vkAllocateCommandBuffers(this->VKdevice->VKdevice, &allocInfo, &this->VKframeData[i].mainCommandBuffer));
+        //}
+
+
+        return true;
+    }
+
+    void VulkanEngine::recordCommandBuffer(FrameData* framedata, uint32_t imageIndex)
     {
         // 커맨드 버퍼 기록을 시작합니다.
         VkCommandBufferBeginInfo beginInfo = framedata->commandBufferBeginInfo(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
-        
+
         VK_CHECK_RESULT(vkBeginCommandBuffer(framedata->mainCommandBuffer, &beginInfo));
-        
+
         // 렌더 패스를 시작하기 위한 클리어 값 설정
         std::array<VkClearValue, 2> clearValues{};
         clearValues[0].color = { {0.2f, 0.2f, 0.2f, 1.0f} };

@@ -10,6 +10,15 @@
     <Filter Include="app\common">
       <UniqueIdentifier>{406f1946-ce17-4095-abd9-2449c4a8e275}</UniqueIdentifier>
     </Filter>
+    <Filter Include="app\triangle">
+      <UniqueIdentifier>{a380fe96-44c2-4fb9-ac52-6a38c14ad06f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="component">
+      <UniqueIdentifier>{9475362c-139b-4966-ba47-a629d4857e81}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="shader">
+      <UniqueIdentifier>{8ab59d28-75f1-4158-9e56-a5e8a258572e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\app\source\main_engine.cpp" />
@@ -34,6 +43,12 @@
     <ClCompile Include="..\..\app\source\engine\VKswapchain.cpp">
       <Filter>source</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\app\cpp\triangle.cpp">
+      <Filter>app\triangle</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\source\engine\Camera.cpp">
+      <Filter>component</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\app\source\engine\VKdevice.h">
@@ -57,5 +72,43 @@
     <ClInclude Include="..\..\app\source\engine\VKswapchain.h">
       <Filter>source</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\app\cpp\triangle.h">
+      <Filter>app\triangle</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\app\source\engine\Camera.h">
+      <Filter>component</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\shader\compile.bat">
+      <Filter>shader</Filter>
+    </None>
+    <None Include="..\..\shader\compile_debug.bat">
+      <Filter>shader</Filter>
+    </None>
+    <None Include="..\..\shader\frag.spv">
+      <Filter>shader</Filter>
+    </None>
+    <None Include="..\..\shader\shader.frag">
+      <Filter>shader</Filter>
+    </None>
+    <None Include="..\..\shader\shader.vert">
+      <Filter>shader</Filter>
+    </None>
+    <None Include="..\..\shader\vert.spv">
+      <Filter>shader</Filter>
+    </None>
+    <None Include="..\..\shader\trinagle00.frag">
+      <Filter>shader</Filter>
+    </None>
+    <None Include="..\..\shader\trinagle00.vert">
+      <Filter>shader</Filter>
+    </None>
+    <None Include="..\..\shader\vertTrinagle00.spv">
+      <Filter>shader</Filter>
+    </None>
+    <None Include="..\..\shader\fragTrinagle00.spv">
+      <Filter>shader</Filter>
+    </None>
   </ItemGroup>
 </Project>

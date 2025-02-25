@@ -106,9 +106,7 @@ namespace vkengine {
 
         imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
         imageInfo.imageType = VK_IMAGE_TYPE_2D;
-        imageInfo.extent.width = width;
-        imageInfo.extent.height = height;
-        imageInfo.extent.depth = 1;
+        imageInfo.extent = { width, height, 1 };
         imageInfo.mipLevels = mipLevels;
         imageInfo.arrayLayers = 1;
         imageInfo.format = format;
@@ -119,9 +117,7 @@ namespace vkengine {
         imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
         imageInfo.flags = 0; // Optional
 
-        if (vkCreateImage(VKdevice, &imageInfo, nullptr, &image) != VK_SUCCESS) {
-            throw std::runtime_error("failed to create image!");
-        }
+        VK_CHECK_RESULT(vkCreateImage(VKdevice, &imageInfo, nullptr, &image));
 
         VkMemoryRequirements memRequirements;
         vkGetImageMemoryRequirements(VKdevice, image, &memRequirements);
@@ -131,12 +127,25 @@ namespace vkengine {
         allocInfo.allocationSize = memRequirements.size;
         allocInfo.memoryTypeIndex = helper::findMemoryType(VKphysicalDevice, memRequirements.memoryTypeBits, properties);
 
-        if (vkAllocateMemory(VKdevice, &allocInfo, nullptr, &imageMemory) != VK_SUCCESS) {
-            throw std::runtime_error("failed to allocate image memory!");
-        }
-
-        vkBindImageMemory(VKdevice, image, imageMemory, 0);
+        VK_CHECK_RESULT(vkAllocateMemory(VKdevice, &allocInfo, nullptr, &imageMemory));
+        VK_CHECK_RESULT(vkBindImageMemory(VKdevice, image, imageMemory, 0));
     }
+
+    const VkShaderModule VKDevice_::createShaderModule(const std::string& path)
+    {
+        auto shaderCode = helper::readFile(path);
+
+        VkShaderModuleCreateInfo createInfo{};
+        createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+        createInfo.codeSize = shaderCode.size();
+        createInfo.pCode = reinterpret_cast<const uint32_t*>(shaderCode.data());
+
+        VkShaderModule shaderModule;
+        VK_CHECK_RESULT(vkCreateShaderModule(this->VKdevice, &createInfo, nullptr, &shaderModule));
+
+        return shaderModule;
+    }
+
     void VKDevice_::cleanup()
     {
         vkDestroyCommandPool(VKdevice, VKcommandPool, nullptr);

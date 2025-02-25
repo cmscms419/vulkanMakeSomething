@@ -89,7 +89,6 @@ const bool enableValidationLayers = false;
 struct QueueFamilyIndices {
     uint32_t graphicsAndComputeFamily = 0;  // 그래픽스/컴퓨팅 큐 패밀리 인덱스 (그래픽스/컴퓨팅 명령을 처리하는 큐)
     uint32_t presentFamily = 0;             // 프레젠트 큐 패밀리 인덱스 (윈도우 시스템과 Vulkan을 연결하는 인터페이스)
-    
     VkQueueFamilyProperties queueFamilyProperties = {};
 
     bool graphicsAndComputeFamilyHasValue = false;
@@ -121,7 +120,6 @@ struct QueueFamilyIndices {
         }
         return target;
     }
-
     const uint32_t getComputeQueueFamilyIndex() {
         uint32_t target = -1;
         if (queueFamilyProperties.queueFlags & VkQueueFlagBits::VK_QUEUE_COMPUTE_BIT)
@@ -130,7 +128,6 @@ struct QueueFamilyIndices {
         }
         return target;
     }
-
     const bool isComplete() {
         return this->graphicsAndComputeFamilyHasValue && this->presentFamilyHasValue;
     }
@@ -195,6 +192,71 @@ struct Vertex {
 
 };
 
+struct Vertex_ {
+    glm::vec3 pos;
+    glm::vec3 color;
+
+    // 바인딩 설명을 반환하는 함수
+    // 이 구조체의 멤버 변수가 어떻게 바인딩되는지 설명합니다.
+    static VkVertexInputBindingDescription getBindingDescription() {
+        VkVertexInputBindingDescription bindingDescription{};
+
+        bindingDescription.binding = 0;
+        bindingDescription.stride = sizeof(Vertex_);
+        bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+
+        return bindingDescription;
+    }
+
+    // 어트리뷰트 설명을 반환하는 함수
+    // 위치와 색상을 나타내는 두 개의 어트리뷰트가 있습니다.
+    static std::array<VkVertexInputAttributeDescription, 2> getAttributeDescriptions() {
+        std::array<VkVertexInputAttributeDescription, 2> attributeDescriptions{};
+
+        attributeDescriptions[0].binding = 0;
+        attributeDescriptions[0].location = 0;
+        attributeDescriptions[0].format = VK_FORMAT_R32G32B32_SFLOAT;
+        attributeDescriptions[0].offset = offsetof(Vertex_, pos);
+
+        attributeDescriptions[1].binding = 0;
+        attributeDescriptions[1].location = 1;
+        attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
+        attributeDescriptions[1].offset = offsetof(Vertex_, color);
+
+        return attributeDescriptions;
+    }
+
+    bool operator==(const Vertex_& other) const {
+        return pos == other.pos && color == other.color;
+    }
+
+};
+
+struct VertexBuffer {
+    VkBuffer vertexBuffer;
+    VkDeviceMemory vertexMemory;
+    VkBuffer indexBuffer;
+    VkDeviceMemory indexmemory;
+
+    void cleanup(VkDevice device) {
+        vkDestroyBuffer(device, vertexBuffer, nullptr);
+        vkFreeMemory(device, vertexMemory, nullptr);
+        vkDestroyBuffer(device, indexBuffer, nullptr);
+        vkFreeMemory(device, indexmemory, nullptr);
+    }
+};
+
+struct UniformBuffer {
+    VkBuffer buffer;
+    VkDeviceMemory memory;
+    void* Mapped;
+
+    void cleanup(VkDevice device) {
+        vkDestroyBuffer(device, buffer, nullptr);
+        vkFreeMemory(device, memory, nullptr);
+    }
+};
+
 struct Particle {
     glm::vec2 position;
     glm::vec2 velocity;
@@ -244,7 +306,13 @@ struct depthStencill {
 };
 
 struct FrameData {
-public: 
+    FrameData() {
+        mainCommandBuffer = VK_NULL_HANDLE;
+        VkimageavailableSemaphore = VK_NULL_HANDLE;
+        VkrenderFinishedSemaphore = VK_NULL_HANDLE;
+        VkinFlightFences = VK_NULL_HANDLE;
+    }
+
     VkCommandBuffer mainCommandBuffer;
     VkSemaphore VkimageavailableSemaphore;
     VkSemaphore VkrenderFinishedSemaphore;
@@ -380,9 +448,25 @@ const std::vector<Vertex> testVectex = {
     {{-0.5f, 0.5f, -0.5f}, {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}}
 };
 
+const std::vector<Vertex_> testVectex_ = {
+    {{-0.5f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}},
+    {{0.5f, -0.5f, 0.0f}, {0.0f, 1.0f, 0.0f}},
+    {{0.5f, 0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}},
+    {{-0.5f, 0.5f, 0.0f}, {1.0f, 1.0f, 1.0f}},
+
+    {{-0.5f, -0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}},
+    {{0.5f, -0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}},
+    {{0.5f, 0.5f, -0.5f}, {0.0f, 0.0f, 1.0f}},
+    {{-0.5f, 0.5f, -0.5f}, {1.0f, 1.0f, 1.0f}}
+};
+
 const std::vector<uint16_t> testindices = {
         0, 1, 2, 2, 3, 0,
         4, 5, 6, 6, 7, 4
+};
+
+const std::vector<uint16_t> testindices_ = {
+        0, 1, 2, 2, 3, 0
 };
 
 namespace std {
@@ -391,6 +475,13 @@ namespace std {
             return ((hash<glm::vec3>()(vertex.pos) ^
                     (hash<glm::vec3>()(vertex.color) << 1)) >> 1) ^
                     (hash<glm::vec2>()(vertex.texCoord) << 1);
+        }
+    };
+
+    template<> struct hash<Vertex_> {
+        size_t operator()(Vertex_ const& vertex) const {
+            return ((hash<glm::vec3>()(vertex.pos) ^
+                (hash<glm::vec3>()(vertex.color) << 1)));
         }
     };
 }

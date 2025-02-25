@@ -124,7 +124,6 @@ namespace vkutil {
         std::vector<VkImageView> VKswapChainImageViews;     // 스왑 체인 이미지 뷰 -> 스왑 체인 이미지를 뷰로 변환 (이미지 뷰는 이미지를 읽고 쓰는 데 사용됨)
         VkFormat VKswapChainImageFormat;                    // 스왑 체인 이미지 포맷 -> 스왑 체인 이미지의 픽셀 형식
         VkExtent2D VKswapChainExtent;                       // 스왑 체인 이미지 해상도 -> 스왑 체인 이미지의 너비와 높이
-        VkDescriptorSetLayout VKdescriptorSetLayout;        // 디스크립터 세트 레이아웃 -> 디스크립터 세트를 생성하는 데 사용
         VkPipelineLayout VKpipelineLayout;                  // 파이프라인 레이아웃 -> 파이프라인에 사용되는 레이아웃
         VkRenderPass VKrenderPass;                          // 렌더 패스 -> 렌더링 작업을 정의하는 데 사용
         VkPipeline VKgraphicsPipeline;                      // 그래픽스 파이프라인 -> 그래픽스 파이프라인을 생성
@@ -140,6 +139,7 @@ namespace vkutil {
 
         VkBuffer VKvertexBuffer;                            // 버텍스 버퍼 -> 버텍스 데이터를 저장하는 데 사용
         VkDeviceMemory VKvertexBufferMemory;                // 버텍스 버퍼 메모리 -> 버텍스 데이터를 저장하는 데 사용
+        
         VkBuffer VKindexBuffer;                             // 인덱스 버퍼 -> 인덱스 데이터를 저장하는 데 사용
         VkDeviceMemory VKindexBufferMemory;                 // 인덱스 버퍼 메모리 -> 인덱스 데이터를 저장하는 데 사용
 
@@ -148,6 +148,7 @@ namespace vkutil {
         std::vector<void*> VKuniformBuffersMapped;          // 유니폼 버퍼 매핑 -> 유니폼 데이터를 매핑하는 데 사용
 
         VkDescriptorPool VKdescriptorPool;                  // 디스크립터 풀 -> 디스크립터를 생성하는 데 사용
+        VkDescriptorSetLayout VKdescriptorSetLayout;        // 디스크립터 세트 레이아웃 -> 디스크립터 세트를 생성하는 데 사용
         std::vector<VkDescriptorSet> VKdescriptorSets;      // 디스크립터 세트 -> 디스크립터를 생성하는 데 사용
 
         uint32_t VKmipLevels;                               // 밉 레벨 -> 이미지의 미입 레벨

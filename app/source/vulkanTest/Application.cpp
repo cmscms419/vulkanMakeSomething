@@ -161,7 +161,8 @@ namespace vkutil {
         if (glfwVulkanSupported() == GLFW_FALSE) {
             throw std::runtime_error("Vulkan is not supported");
         }
-
+        
+        // 기본
         this->createInstance();
         this->setupDebugCallback();
         this->createSurface();
@@ -170,22 +171,31 @@ namespace vkutil {
         this->createSwapChain();
         this->createImageViews();
         this->createRenderPass();
+        
+        // shader 설정
         this->createDescriptorSetLayout();
         this->createGraphicsPipeline();
+        
         this->createCommandPool();
+        this->createCommandBuffers();
+        
+        // 그래픽 파이프라인 설정 후, 컬러 및 깊이 리소스를 생성합니다.
         this->createColorResources();
         this->createDepthResources();
+        
         this->createFramebuffers();
+
         this->createTextureImage();
         this->createTextureImageView();
         this->createTextureSampler();
         this->loadModel();
+
         this->createVertexBuffer();
         this->createIndexBuffer();
         this->createUniformBuffers();
         this->createDescriptorPool();
         this->createDescriptorSets();
-        this->createCommandBuffers();
+
         this->createSyncObjects();
 
     }
@@ -1345,6 +1355,8 @@ namespace vkutil {
         }
     }
 
+    // 깊이 리소스는 깊이 테스트에 필요한 이미지를 생성하여,
+    // 3D 씬에서 객체 간의 상대적인 깊이를 정확하게 계산하는 데 사용됩니다.
     void Application::createDepthResources()
     {
         // 깊이 이미지를 생성합니다.
@@ -1432,6 +1444,8 @@ namespace vkutil {
         }
     }
 
+    // 컬러 리소스는 멀티샘플링 처리를 위해 추가적인 색상 이미지를 생성하며,
+    // 최종 렌더링 결과의 품질 향상을 도모합니다.
     void Application::createColorResources()
     {
         VkFormat colorFormat = this->VKswapChainImageFormat;

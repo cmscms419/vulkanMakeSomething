@@ -1,4 +1,5 @@
 #include "engine/VKengine.h"
+#include "../../app/cpp/triangle.h"
 
 int main(int argc, char* argv[]) {
 
@@ -14,7 +15,7 @@ int main(int argc, char* argv[]) {
 
     std::unique_ptr<vkengine::VulkanEngine> engine;
     
-    switch (0)
+    switch (1)
     {
     case 0:
         // 기본형
@@ -22,7 +23,7 @@ int main(int argc, char* argv[]) {
         break;
     case 1:
         // 삼각형
-
+        engine = std::make_unique<vkengine::triangle>(root_path);
         break;
     default:
         break;
@@ -30,7 +31,11 @@ int main(int argc, char* argv[]) {
 
     engine->init();
 
+    engine->prepare();
+
     engine->mainLoop();
+
+    engine->cleanup();
 
     return EXIT_SUCCESS;
 }

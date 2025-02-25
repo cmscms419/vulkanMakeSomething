@@ -28,9 +28,13 @@
     <None Include="..\..\shader\compile.bat" />
     <None Include="..\..\shader\compile_debug.bat" />
     <None Include="..\..\shader\frag.spv" />
+    <None Include="..\..\shader\fragTrinagle00.spv" />
     <None Include="..\..\shader\shader.frag" />
     <None Include="..\..\shader\shader.vert" />
+    <None Include="..\..\shader\trinagle00.frag" />
+    <None Include="..\..\shader\trinagle00.vert" />
     <None Include="..\..\shader\vert.spv" />
+    <None Include="..\..\shader\vertTrinagle00.spv" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{961CB7AD-D855-4611-8025-A94BC31029F5}</ProjectGuid>
