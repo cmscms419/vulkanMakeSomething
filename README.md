@@ -4,8 +4,7 @@
 ### 이전에 directx11에서 만든 3d cloth를 구현하는 것이 현재 목표
 ### 잘 만들면 이것을 통해서 이것저것을 만들 생각입니다.
 ## + 추가로 RenderDoc을 이용해서, shader Debug 가능
-# 정리한 개인자료: https://www.notion.so/Vulkan-Tutorial-18118a41dc6f80c7adc7d7ba3f95542e?pvs=4
-
+정리한 개인자료: https://www.notion.so/Vulkan-Tutorial-18118a41dc6f80c7adc7d7ba3f95542e?pvs=4
 # ++
 https://vulkan-tutorial.com/Introduction 사이트를 참고해서 vulkan_test 프로젝트를
 Multisampling 챕터까지 완성했습니다. 
