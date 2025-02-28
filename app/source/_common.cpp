@@ -258,9 +258,8 @@ namespace vkutil {
             viewInfo.subresourceRange.layerCount = 1;
 
             VkImageView imageView;
-            if (vkCreateImageView(device, &viewInfo, nullptr, &imageView) != VK_SUCCESS) {
-                throw std::runtime_error("failed to create texture image view!");
-            }
+            
+            VK_CHECK_RESULT(vkCreateImageView(device, &viewInfo, nullptr, &imageView));
 
             return imageView;
         }

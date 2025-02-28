@@ -12,6 +12,15 @@
 #define TINYOBJLOADER_IMPLEMENTATION
 #include "../../include/common/tiny_obj_loader.h"
 
+#include "imgui.h" 
+#include "imconfig.h"
+#include "imgui_internal.h"
+#include "imgui_impl_glfw.h"
+#include "imgui_impl_vulkan.h"
+#include "imstb_rectpack.h"
+#include "imstb_textedit.h"
+#include "imstb_truetype.h"
+
 using vkutil::object::Camera;
 using namespace vkutil::helper_;
 
@@ -74,6 +83,7 @@ namespace vkutil {
     void Application::init() {
         initWindow(); //    GLFW 윈도우 생성
         initVulkan();
+        initUI();
     }
 
     void Application::update() {
@@ -89,6 +99,9 @@ namespace vkutil {
 #ifdef DEBUG_
         printf("cleanup\n");
 #endif // DEBUG_
+        ImGui_ImplVulkan_Shutdown();
+        ImGui_ImplGlfw_Shutdown();
+        ImGui::DestroyContext();
 
         this->cleanupSwapChain();
 
@@ -224,12 +237,9 @@ namespace vkutil {
 
         // uniform 버퍼를 업데이트합니다.
         this->updateUniformBuffer(currentFrame);
+        this->recordCommandBuffer(this->VKcommandBuffers[currentFrame], imageIndex);
 
         vkResetFences(this->VKdevice, 1, &this->VkinFlightFences[currentFrame]); // 플래그를 재설정합니다. -> 렌더링이 끝나면 플래그를 재설정합니다.
-
-        // 렌더링을 시작하기 전에 이미지를 렌더링할 준비가 되었는지 확인합니다.
-        vkResetCommandBuffer(this->VKcommandBuffers[currentFrame], 0);
-        this->recordCommandBuffer(this->VKcommandBuffers[currentFrame], imageIndex);
 
         // 렌더링을 시작하기 전에 렌더링할 준비가 되었는지 확인합니다.
         VkSubmitInfo submitInfo{};
@@ -287,6 +297,38 @@ namespace vkutil {
         }
 
         this->currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
+    }
+
+    void Application::initUI()
+    {
+        ImGui::CreateContext();
+        //ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;       // Enable Keyboard Controls
+        //ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;        // Enable Gamepad Controls
+
+        ImGui_ImplGlfw_InitForVulkan(this->VKwindow, true);
+
+        ImGui_ImplVulkan_InitInfo init_info = {};
+        init_info.Instance = this->VKinstance;
+        init_info.PhysicalDevice = this->VKphysicalDevice;
+        init_info.Device = this->VKdevice;
+        init_info.QueueFamily = this->VKqueueFamilyIndices.getGraphicsQueueFamilyIndex();
+        init_info.ImageCount = MAX_FRAMES_IN_FLIGHT;
+        init_info.MinImageCount = MAX_FRAMES_IN_FLIGHT;
+        init_info.Queue = this->graphicsVKQueue;
+        init_info.PipelineCache = VK_NULL_HANDLE;
+        init_info.DescriptorPool = this->VKdescriptorPool;
+        init_info.Allocator = VK_NULL_HANDLE;
+        init_info.RenderPass = this->VKrenderPass;
+        init_info.MSAASamples = this->VKmsaaSamples;
+        init_info.Subpass = 0;
+
+        ImGui_ImplVulkan_Init(&init_info);
+        ImGui_ImplVulkan_CreateFontsTexture();
+        ImGui_ImplVulkan_DestroyFontsTexture();
+    }
+
+    void Application::drawUI()
+    {
     }
 
     bool Application::mainLoop()
@@ -603,17 +645,6 @@ namespace vkutil {
         colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
         colorAttachment.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
-        // 색상 첨부 파일을 설정합니다.
-        VkAttachmentDescription colorAttachmentResolve{};
-        colorAttachmentResolve.format = this->VKswapChainImageFormat;
-        colorAttachmentResolve.samples = VK_SAMPLE_COUNT_1_BIT;
-        colorAttachmentResolve.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-        colorAttachmentResolve.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-        colorAttachmentResolve.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-        colorAttachmentResolve.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-        colorAttachmentResolve.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-        colorAttachmentResolve.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-
         // 깊이 첨부 파일을 설정합니다.
         VkAttachmentDescription depthAttachment{};
         depthAttachment.format = helper_::findDepthFormat(this->VKphysicalDevice);
@@ -624,6 +655,17 @@ namespace vkutil {
         depthAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
         depthAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
         depthAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+        
+        // 색상 첨부 파일을 설정합니다.
+        VkAttachmentDescription colorAttachmentResolve{};
+        colorAttachmentResolve.format = this->VKswapChainImageFormat;
+        colorAttachmentResolve.samples = VK_SAMPLE_COUNT_1_BIT;
+        colorAttachmentResolve.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+        colorAttachmentResolve.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+        colorAttachmentResolve.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+        colorAttachmentResolve.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        colorAttachmentResolve.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        colorAttachmentResolve.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
         // 렌더 패스 서브패스를 설정합니다.
         VkAttachmentReference colorAttachmentRef{};
@@ -1140,32 +1182,20 @@ namespace vkutil {
 
     void Application::createDescriptorPool()
     {
-        /* 이전 코드 참고용 */
-        //// 디스크립터 풀 크기를 설정합니다.
-        //VkDescriptorPoolSize poolSize{};
-        //poolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-        //poolSize.descriptorCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
-        //
-        //// 디스크립터 풀 생성 정보 구조체를 초기화합니다.
-        //VkDescriptorPoolCreateInfo poolInfo{};
-        //poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-        //poolInfo.poolSizeCount = 1;
-        //poolInfo.pPoolSizes = &poolSize;
-        //poolInfo.maxSets = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
-
         //// 디스크립터 풀 크기를 설정합니다.
         std::array<VkDescriptorPoolSize, 2> poolSizes{};
         poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
         poolSizes[0].descriptorCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
         poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-        poolSizes[1].descriptorCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
+        poolSizes[1].descriptorCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT) * 2;
 
         // 디스크립터 풀 생성 정보 구조체를 초기화합니다.
         VkDescriptorPoolCreateInfo poolInfo{};
         poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+        poolInfo.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
         poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
         poolInfo.pPoolSizes = poolSizes.data();
-        poolInfo.maxSets = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
+        poolInfo.maxSets = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT) * 2;
 
         if (vkCreateDescriptorPool(this->VKdevice, &poolInfo, nullptr, &this->VKdescriptorPool) != VK_SUCCESS) {
             throw std::runtime_error("failed to create descriptor pool!");
@@ -1600,7 +1630,7 @@ namespace vkutil {
 
         for (const auto& availableFormat : availableFormats)
         {
-            if (availableFormat.format == VK_FORMAT_B8G8R8A8_SRGB &&            // 32비트 BGR 색상 구조를 지원하는지 확인
+            if (availableFormat.format == VK_FORMAT_B8G8R8A8_UNORM &&            // 32비트 BGR 색상 구조를 지원하는지 확인
                 availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR // SRGB 색상 공간을 지원하는지 확인
                 )
             {
@@ -1664,7 +1694,7 @@ namespace vkutil {
         // 커맨드 버퍼 기록을 시작합니다.
         VkCommandBufferBeginInfo beginInfo{};
         beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-        beginInfo.flags = 0; // Optional
+        beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT; // Optional
         beginInfo.pInheritanceInfo = nullptr; // Optional
 
         if (vkBeginCommandBuffer(commandBuffer, &beginInfo) != VK_SUCCESS) {
@@ -1720,6 +1750,15 @@ namespace vkutil {
             vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->VKpipelineLayout, 0, 1, &this->VKdescriptorSets[currentFrame], 0, nullptr);
             // 렌더 패스를 종료합니다.
             vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(this->VKindices.size()), 1, 0, 0, 0);
+
+            ImGui_ImplVulkan_NewFrame();
+            ImGui_ImplGlfw_NewFrame();
+            ImGui::NewFrame();
+
+            ImGui::ShowDemoWindow();
+
+            ImGui::Render();
+            ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), commandBuffer);
         }
 
         vkCmdEndRenderPass(commandBuffer);

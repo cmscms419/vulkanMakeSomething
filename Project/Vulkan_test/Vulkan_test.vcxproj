@@ -11,6 +11,13 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\app\source\engine\imgui.cpp" />
+    <ClCompile Include="..\..\app\source\engine\imgui_demo.cpp" />
+    <ClCompile Include="..\..\app\source\engine\imgui_draw.cpp" />
+    <ClCompile Include="..\..\app\source\engine\imgui_impl_glfw.cpp" />
+    <ClCompile Include="..\..\app\source\engine\imgui_impl_vulkan.cpp" />
+    <ClCompile Include="..\..\app\source\engine\imgui_tables.cpp" />
+    <ClCompile Include="..\..\app\source\engine\imgui_widgets.cpp" />
     <ClCompile Include="..\..\app\source\main_vulkanTest.cpp" />
     <ClCompile Include="..\..\app\source\vulkanTest\Application.cpp" />
     <ClCompile Include="..\..\app\source\vulkanTest\Camera.cpp" />
@@ -18,6 +25,7 @@
     <ClCompile Include="..\..\app\source\_common.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\app\source\engine\VKimgui.h" />
     <ClInclude Include="..\..\app\source\object_data.h" />
     <ClInclude Include="..\..\app\source\vulkanTest\Application.h" />
     <ClInclude Include="..\..\app\source\vulkanTest\Camera.h" />

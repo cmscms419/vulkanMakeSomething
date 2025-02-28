@@ -99,6 +99,13 @@
     <ClCompile Include="..\..\app\source\engine\Camera.cpp" />
     <ClCompile Include="..\..\app\source\engine\Debug.cpp" />
     <ClCompile Include="..\..\app\source\engine\helper.cpp" />
+    <ClCompile Include="..\..\app\source\engine\imgui.cpp" />
+    <ClCompile Include="..\..\app\source\engine\imgui_demo.cpp" />
+    <ClCompile Include="..\..\app\source\engine\imgui_draw.cpp" />
+    <ClCompile Include="..\..\app\source\engine\imgui_impl_glfw.cpp" />
+    <ClCompile Include="..\..\app\source\engine\imgui_impl_vulkan.cpp" />
+    <ClCompile Include="..\..\app\source\engine\imgui_tables.cpp" />
+    <ClCompile Include="..\..\app\source\engine\imgui_widgets.cpp" />
     <ClCompile Include="..\..\app\source\engine\VKdevice.cpp" />
     <ClCompile Include="..\..\app\source\engine\VKengine.cpp" />
     <ClCompile Include="..\..\app\source\engine\VKimgui.cpp" />

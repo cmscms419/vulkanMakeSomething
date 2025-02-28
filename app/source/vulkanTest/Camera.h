@@ -2,6 +2,7 @@
 #define INCLUDE_CAMERA_H_
 
 #include "../_common.h"
+#include "../struct.h"
 
 namespace vkutil {
     namespace object {

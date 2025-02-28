@@ -2,6 +2,16 @@
 #define INCLUDE_SOURCE_APPLICATION_H
 
 #include "../_common.h"
+#include "../struct.h"
+
+#include "imgui.h" 
+#include "imconfig.h"
+#include "imgui_internal.h"
+#include "imgui_impl_glfw.h"
+#include "imgui_impl_vulkan.h"
+#include "imstb_rectpack.h"
+#include "imstb_textedit.h"
+#include "imstb_truetype.h"
 
 namespace vkutil {
 
@@ -28,6 +38,8 @@ namespace vkutil {
         virtual void initWindow();
         virtual void initVulkan();
         virtual void drawFrame(); 
+        virtual void initUI();
+        virtual void drawUI();
         
         // 기본
         // Vulkan 인스턴스 생성
@@ -59,6 +71,12 @@ namespace vkutil {
         
         void loadModel();
         void createColorResources();
+
+        void createUIDescriptorPool();
+        void createUIRenderPass();
+        void createUICommandPool(VkCommandPool* commandpool, VkCommandPoolCreateFlagBits flag);
+        void createUICommandBuffers();
+        void createUIFramebuffers();
 
         // 도구
 
@@ -106,6 +124,8 @@ namespace vkutil {
         // uniform 버퍼를 업데이트하는 함수
         // uniform 버퍼를 업데이트하고 셰이더에 전달
         void updateUniformBuffer(uint32_t currentImage);
+
+        void recordCommandBuffer2(uint32_t imageindex);
         
         GLFWwindow* VKwindow;                               // GLFW 윈도우 핸들 -> GLFW 윈도우 핸들을 저장
         VkInstance VKinstance;                              // Vulkan 인스턴스 -> Vulkan API를 사용하기 위한 인스턴스
@@ -171,8 +191,15 @@ namespace vkutil {
 
         std::shared_ptr<vkutil::object::Camera> camera;                      // 카메라 -> 카메라 객체
 
+        VkCommandPool uiCommandPool;                       // UI 커맨드 풀 -> UI 커맨드 풀
+        VkDescriptorPool uiDescriptorPool;                  // UI 디스크립터 풀 -> UI 디스크립터 풀
+        VkRenderPass uiRenderPass;                          // UI 렌더 패스 -> UI 렌더 패스
+        std::vector<VkCommandBuffer> uiCommandBuffers;      // UI 커맨드 버퍼 -> UI 커맨드 버퍼
+        std::vector<VkFramebuffer> uiFramebuffers;          // UI 프레임 버퍼 -> UI 프레임 버퍼
+
         std::string RootPath = "";                          // 루트 경로
         size_t currentFrame = 0;                            // 현재 프레임 인덱스
+        uint32_t imageCount = 2;                            // 이미지 개수
         bool state;                                         // 프로그램 상태 
     };
 

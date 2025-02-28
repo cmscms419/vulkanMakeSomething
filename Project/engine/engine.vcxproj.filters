@@ -22,6 +22,9 @@
     <Filter Include="app\imgui">
       <UniqueIdentifier>{9208fa2e-0d38-4fab-92df-d886e01d3def}</UniqueIdentifier>
     </Filter>
+    <Filter Include="source\imgui">
+      <UniqueIdentifier>{c296ab41-e891-4cfa-ac1c-2e05c6817f4a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\app\source\main_engine.cpp" />
@@ -57,6 +60,27 @@
     </ClCompile>
     <ClCompile Include="..\..\app\cpp\imguiTriangle.cpp">
       <Filter>app\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\source\engine\imgui.cpp">
+      <Filter>source\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\source\engine\imgui_demo.cpp">
+      <Filter>source\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\source\engine\imgui_draw.cpp">
+      <Filter>source\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\source\engine\imgui_impl_glfw.cpp">
+      <Filter>source\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\source\engine\imgui_impl_vulkan.cpp">
+      <Filter>source\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\source\engine\imgui_tables.cpp">
+      <Filter>source\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\source\engine\imgui_widgets.cpp">
+      <Filter>source\imgui</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
