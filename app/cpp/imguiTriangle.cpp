@@ -36,7 +36,6 @@ namespace vkengine {
         this->createDescriptorSets();
 
         this->createGraphicsPipeline();
-        this->v
 
         return true;
     }

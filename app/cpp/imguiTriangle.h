@@ -53,7 +53,7 @@ namespace vkengine
         std::shared_ptr<vkengine::object::Camera> camera = nullptr;
         VertexBuffer VKvertexBuffer{};
         std::vector<UniformBuffer> VKuniformBuffer = {};
-        //gui::vkGUI* gui = nullptr;
+        gui::vkGUI* gui = nullptr;
 
         VkPipeline VKgraphicsPipeline = VK_NULL_HANDLE;                      // 그래픽스 파이프라인 -> 그래픽스 파이프라인을 생성
         VkPipelineLayout VKpipelineLayout{ VK_NULL_HANDLE };

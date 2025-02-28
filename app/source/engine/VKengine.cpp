@@ -502,8 +502,8 @@ namespace vkengine
         dependency.srcSubpass = VK_SUBPASS_EXTERNAL; // 외부 서브패스
         dependency.dstSubpass = 0;                   // 대상 서브패스
         dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;   // 소스 스테이지 마스크 -> 색상 첨부 출력 비트
-        dependency.srcAccessMask = 0;                                                                                           // 소스 액세스 마스크 -> 0
         dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;   // 대상 스테이지 마스크 -> 색상 첨부 출력 비트
+        dependency.srcAccessMask = 0;                                                                                           // 소스 액세스 마스크 -> 0
         dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;         // 대상 액세스 마스크 -> 색상 첨부 쓰기 비트
         dependency.dependencyFlags = 0;                                                                                         // 종속성 플래그 -> 0
 

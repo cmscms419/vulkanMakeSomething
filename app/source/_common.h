@@ -20,10 +20,6 @@
 #include <GLFW/glfw3.h>
 #include <GLFW/glfw3native.h>
 
-#include "../source/engine/imgui.h"
-#include "../source/engine/imgui_impl_glfw.h"
-#include "../source/engine/imgui_impl_vulkan.h"
-
 //#ifdef _WIN32
 //#include <windows.h>
 //#elif __linux__

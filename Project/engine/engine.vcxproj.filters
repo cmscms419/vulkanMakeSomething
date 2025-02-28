@@ -22,9 +22,6 @@
     <Filter Include="app\imgui">
       <UniqueIdentifier>{9208fa2e-0d38-4fab-92df-d886e01d3def}</UniqueIdentifier>
     </Filter>
-    <Filter Include="source\ui">
-      <UniqueIdentifier>{4e55c2e4-661c-4ef9-bacb-d49e9f248b53}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\app\source\main_engine.cpp" />
@@ -55,32 +52,11 @@
     <ClCompile Include="..\..\app\source\engine\Camera.cpp">
       <Filter>component</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\app\source\engine\imgui_demo.cpp">
-      <Filter>source\ui</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\app\source\engine\imgui_draw.cpp">
-      <Filter>source\ui</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\app\source\engine\VKimgui.cpp">
       <Filter>source</Filter>
     </ClCompile>
     <ClCompile Include="..\..\app\cpp\imguiTriangle.cpp">
       <Filter>app\imgui</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\app\source\engine\imgui_impl_glfw.cpp">
-      <Filter>source\ui</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\app\source\engine\imgui_impl_vulkan.cpp">
-      <Filter>source\ui</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\app\source\engine\imgui.cpp">
-      <Filter>source\ui</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\app\source\engine\imgui_tables.cpp">
-      <Filter>source\ui</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\app\source\engine\imgui_widgets.cpp">
-      <Filter>source\ui</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -111,35 +87,14 @@
     <ClInclude Include="..\..\app\source\engine\Camera.h">
       <Filter>component</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\app\source\engine\imgui.h">
-      <Filter>source\ui</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\app\source\struct.h">
       <Filter>app\common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\app\source\engine\imgui_impl_vulkan.h">
-      <Filter>source\ui</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\app\source\engine\imgui_impl_glfw.h">
-      <Filter>source\ui</Filter>
     </ClInclude>
     <ClInclude Include="..\..\app\source\engine\VKimgui.h">
       <Filter>source</Filter>
     </ClInclude>
     <ClInclude Include="..\..\app\cpp\imguiTriangle.h">
       <Filter>app\imgui</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\app\source\engine\imstb_rectpack.h">
-      <Filter>source\ui</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\app\source\engine\imstb_textedit.h">
-      <Filter>source\ui</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\app\source\engine\imstb_truetype.h">
-      <Filter>source\ui</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\app\source\engine\imgui_internal.h">
-      <Filter>source\ui</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
