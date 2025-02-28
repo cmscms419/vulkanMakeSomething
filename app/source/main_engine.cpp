@@ -1,5 +1,8 @@
 #include "engine/VKengine.h"
 #include "../../app/cpp/triangle.h"
+#include "../../app/cpp/imguiTriangle.h"
+
+#define SELECTED_ENGINE 2
 
 int main(int argc, char* argv[]) {
 
@@ -14,21 +17,22 @@ int main(int argc, char* argv[]) {
     }
 
     std::unique_ptr<vkengine::VulkanEngine> engine;
-    
-    switch (1)
-    {
-    case 0:
-        // 기본형
-        engine = std::make_unique<vkengine::VulkanEngine>(root_path);
-        break;
-    case 1:
-        // 삼각형
-        engine = std::make_unique<vkengine::triangle>(root_path);
-        break;
-    default:
-        break;
-    }
 
+
+#if SELECTED_ENGINE == 0
+        engine = std::make_unique<vkengine::VulkanEngine>(root_path);
+
+#elif SELECTED_ENGINE == 1
+        engine = std::make_unique<vkengine::triangle>(root_path);
+#elif SELECTED_ENGINE == 2
+        engine = std::make_unique<vkengine::imguiTriangle>(root_path);
+#else
+    return EXIT_FAILURE;
+#endif
+
+#if SELECTED_ENGINE  < 0
+
+#else
     engine->init();
 
     engine->prepare();
@@ -36,6 +40,7 @@ int main(int argc, char* argv[]) {
     engine->mainLoop();
 
     engine->cleanup();
+#endif
 
     return EXIT_SUCCESS;
 }

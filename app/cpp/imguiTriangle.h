@@ -1,9 +1,10 @@
-﻿#ifndef INCLUDE_SOURCE_APPLICATION_H
-#define INCLUDE_SOURCE_APPLICATION_H
+﻿#ifndef INCLUDE_SOURCE_IMGUITRINAGLE_H
+#define INCLUDE_SOURCE_IMGUITRINAGLE_H
 
 #define VKUTIL_APPLICATION_H
 
 #include "../source/engine/VKengine.h"
+#include "../source/engine/VKimgui.h"
 
 namespace vkengine
 {
@@ -11,17 +12,21 @@ namespace vkengine
         class Camera;
     }
 
-    class triangle : public VulkanEngine
+    namespace gui {
+        class vkGUI;
+    }
+
+    class imguiTriangle : public VulkanEngine
     {
     public:
-        triangle(std::string root_path);
-        ~triangle();
+        imguiTriangle(std::string root_path);
+        ~imguiTriangle();
 
         virtual void init() override;
         virtual bool prepare() override;
-        //virtual bool mainLoop() override;
         virtual void cleanup() override;
         virtual void drawFrame() override;
+        virtual bool mainLoop() override;
     
     protected:
         virtual bool init_sync_structures() override;
@@ -48,6 +53,7 @@ namespace vkengine
         std::shared_ptr<vkengine::object::Camera> camera = nullptr;
         VertexBuffer VKvertexBuffer{};
         std::vector<UniformBuffer> VKuniformBuffer = {};
+        //gui::vkGUI* gui = nullptr;
 
         VkPipeline VKgraphicsPipeline = VK_NULL_HANDLE;                      // 그래픽스 파이프라인 -> 그래픽스 파이프라인을 생성
         VkPipelineLayout VKpipelineLayout{ VK_NULL_HANDLE };
@@ -55,4 +61,4 @@ namespace vkengine
     };
 }
 
-#endif // INCLUDE_SOURCE_APPLICATION_H
+#endif // INCLUDE_SOURCE_IMGUITRINAGLE_H

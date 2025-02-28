@@ -94,26 +94,45 @@
     </CudaCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\app\cpp\imguiTriangle.cpp" />
     <ClCompile Include="..\..\app\cpp\triangle.cpp" />
     <ClCompile Include="..\..\app\source\engine\Camera.cpp" />
     <ClCompile Include="..\..\app\source\engine\Debug.cpp" />
     <ClCompile Include="..\..\app\source\engine\helper.cpp" />
+    <ClCompile Include="..\..\app\source\engine\imgui.cpp" />
+    <ClCompile Include="..\..\app\source\engine\imgui_demo.cpp" />
+    <ClCompile Include="..\..\app\source\engine\imgui_draw.cpp" />
+    <ClCompile Include="..\..\app\source\engine\imgui_impl_glfw.cpp" />
+    <ClCompile Include="..\..\app\source\engine\imgui_impl_vulkan.cpp" />
+    <ClCompile Include="..\..\app\source\engine\imgui_tables.cpp" />
+    <ClCompile Include="..\..\app\source\engine\imgui_widgets.cpp" />
     <ClCompile Include="..\..\app\source\engine\VKdevice.cpp" />
     <ClCompile Include="..\..\app\source\engine\VKengine.cpp" />
+    <ClCompile Include="..\..\app\source\engine\VKimgui.cpp" />
     <ClCompile Include="..\..\app\source\engine\VKkey.cpp" />
     <ClCompile Include="..\..\app\source\engine\VKswapchain.cpp" />
     <ClCompile Include="..\..\app\source\main_engine.cpp" />
     <ClCompile Include="..\..\app\source\_common.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\app\cpp\imguiTriangle.h" />
     <ClInclude Include="..\..\app\cpp\triangle.h" />
     <ClInclude Include="..\..\app\source\engine\Camera.h" />
     <ClInclude Include="..\..\app\source\engine\Debug.h" />
     <ClInclude Include="..\..\app\source\engine\helper.h" />
+    <ClInclude Include="..\..\app\source\engine\imgui.h" />
+    <ClInclude Include="..\..\app\source\engine\imgui_impl_glfw.h" />
+    <ClInclude Include="..\..\app\source\engine\imgui_impl_vulkan.h" />
+    <ClInclude Include="..\..\app\source\engine\imgui_internal.h" />
+    <ClInclude Include="..\..\app\source\engine\imstb_rectpack.h" />
+    <ClInclude Include="..\..\app\source\engine\imstb_textedit.h" />
+    <ClInclude Include="..\..\app\source\engine\imstb_truetype.h" />
     <ClInclude Include="..\..\app\source\engine\VKdevice.h" />
     <ClInclude Include="..\..\app\source\engine\VKengine.h" />
+    <ClInclude Include="..\..\app\source\engine\VKimgui.h" />
     <ClInclude Include="..\..\app\source\engine\VKkey.h" />
     <ClInclude Include="..\..\app\source\engine\VKswapchain.h" />
+    <ClInclude Include="..\..\app\source\struct.h" />
     <ClInclude Include="..\..\app\source\_common.h" />
   </ItemGroup>
   <ItemGroup>

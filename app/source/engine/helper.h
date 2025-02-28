@@ -2,6 +2,7 @@
 #define INCLUDE_SOURCE_HELPER_H_
 
 #include "../_common.h"
+#include "../struct.h"
 
 namespace vkengine {
     namespace helper {

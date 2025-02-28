@@ -1,4 +1,5 @@
 #include "_common.h"
+#include "struct.h"
 
 namespace vkutil {
 

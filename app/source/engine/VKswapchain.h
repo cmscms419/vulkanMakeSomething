@@ -2,6 +2,7 @@
 #define INCLUDE_VULKANSWAPCHAIN_H_
 
 #include "../_common.h"
+#include "../struct.h"
 
 namespace vkengine {
 
@@ -14,14 +15,14 @@ namespace vkengine {
         void createImageViews();
         void cleanupSwapChain();
 
-        VkExtent2D getSwapChainExtent() { return this->VKswapChainExtent; }
-        VkFormat getSwapChainImageFormat() { return this->VKswapChainImageFormat; }
-        VkSwapchainKHR getSwapChain() { return this->VKswapChain; }
+        const VkExtent2D getSwapChainExtent() { return this->VKswapChainExtent; }
+        const VkFormat getSwapChainImageFormat() { return this->VKswapChainImageFormat; }
+        const VkSwapchainKHR getSwapChain() { return this->VKswapChain; }
 
         std::vector<VkImage> getSwapChainImages() { return this->VKswapChainImages; }
         std::vector<VkImageView> getSwapChainImageViews() { return this->VKswapChainImageViews; }
         VkResult acquireNextImage(VkSemaphore presentCompleteSemaphore, uint32_t& imageIndex);
-
+        uint32_t getSwapChainImageCount() { return static_cast<uint32_t>(this->VKswapChainImages.size()); }
     private:
 
         VkSwapchainKHR VKswapChain{ VK_NULL_HANDLE };

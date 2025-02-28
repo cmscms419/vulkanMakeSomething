@@ -2,6 +2,8 @@
 #include "DebugFunction.h"
 #include "Camera.h"
 
+#include "../struct.h"
+
 #ifndef STB_IMAGE_IMPLEMENTATION
 #define STB_IMAGE_IMPLEMENTATION
 #include "../../include/common/stb_image.h"

@@ -2,6 +2,7 @@
 #define INCLUDE_VULKANDEVICE_H_
 
 #include "../_common.h"
+#include "../struct.h"
 
 namespace vkengine {
 
