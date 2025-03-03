@@ -917,7 +917,7 @@ namespace vkutil {
             framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
             framebufferInfo.renderPass = this->VKrenderPass;
             framebufferInfo.attachmentCount = static_cast<uint32_t>(attachments.size());;
-            framebufferInfo.pAttachments = attachments.data();;
+            framebufferInfo.pAttachments = attachments.data();
             framebufferInfo.width = this->VKswapChainExtent.width;
             framebufferInfo.height = this->VKswapChainExtent.height;
             framebufferInfo.layers = 1;

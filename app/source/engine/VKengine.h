@@ -55,11 +55,11 @@ namespace vkengine {
         VkDebugUtilsMessengerEXT getDebugUtilsMessenger() const { return VKdebugUtilsMessenger; }
         VkSurfaceKHR getSurface() const { return VKsurface; }
         const FrameData* getFrameData() { return VKframeData; }
-        VkRenderPass getRenderPass() const { return VKrenderPass; }
+        VkRenderPass getRenderPass() const { return *this->VKrenderPass.get(); }
         std::vector<VkFramebuffer> getSwapChainFramebuffers() const { return VKswapChainFramebuffers; }
         depthStencill getDepthStencill() const { return VKdepthStencill; }
-        VKSwapChain* getSwapChain() const { return VKswapChain; }
-        VKDevice_* getDevice() const { return VKdevice; }
+        VKSwapChain* getSwapChain() const { return VKswapChain.get(); }
+        VKDevice_* getDevice() const { return VKdevice.get(); }
         VkSampleCountFlagBits getMsaaSamples() const { return VKmsaaSamples; }
         VkPipelineCache getPipelineCache() const { return VKpipelineCache; }
         std::string getRootPath() const { return RootPath; }
@@ -67,7 +67,8 @@ namespace vkengine {
         bool getState() const { return state; }
         VkDescriptorPool getDescriptorPool() const { return VKdescriptorPool; }
         VkDescriptorSetLayout getDescriptorSetLayout() const { return VKdescriptorSetLayout; }
-
+        void setWindowWidth(int width) { windowWidth = width; }
+        void setWindowHeight(int height) { windowHeight = height; }
     protected:
 
         virtual bool initVulkan();
@@ -99,12 +100,12 @@ namespace vkengine {
         VkSurfaceKHR VKsurface{ VK_NULL_HANDLE };  // 서피스 -> 윈도우 시스템과 Vulkan을 연결하는 인터페이스
 
         FrameData VKframeData[MAX_FRAMES_IN_FLIGHT];        // 프레임 데이터 -> 프레임 데이터 구조체
-        VkRenderPass VKrenderPass{ VK_NULL_HANDLE };        // 렌더 패스 -> 렌더링 작업을 정의하는 데 사용
+        std::unique_ptr<VkRenderPass> VKrenderPass{ VK_NULL_HANDLE };        // 렌더 패스 -> 렌더링 작업을 정의하는 데 사용
         std::vector<VkFramebuffer> VKswapChainFramebuffers; // 스왑 체인 프레임 버퍼 -> 스왑 체인 이미지를 렌더링할 때 사용 (프레임 버퍼는 이미지를 렌더링하는 데 사용)
         depthStencill VKdepthStencill{};  // 깊이 스텐실 -> 깊이 스텐실 이미지와 메모리
 
-        VKSwapChain* VKswapChain{ VK_NULL_HANDLE };  // 스왑 체인 -> 스왑 체인 클래스
-        VKDevice_* VKdevice{};  // 디바이스 -> GPU Logical,Physical struct Handle
+        std::unique_ptr<VKSwapChain> VKswapChain;  // 스왑 체인 -> 스왑 체인 클래스
+        std::unique_ptr<VKDevice_> VKdevice{};  // 디바이스 -> GPU Logical,Physical struct Handle
         VkSampleCountFlagBits VKmsaaSamples = VK_SAMPLE_COUNT_1_BIT; // MSAA 샘플 -> MSAA 샘플 수
         VkPipelineCache VKpipelineCache{ VK_NULL_HANDLE }; // 파이프라인 캐시 -> 파이프라인 캐시를 생성
 
@@ -118,6 +119,8 @@ namespace vkengine {
         std::string RootPath = "";                          // 루트 경로
         size_t currentFrame = 0;                            // 현재 프레임 인덱스
         bool state = false;                                         // 프로그램 상태 
+        int windowWidth = WIDTH;                                  // 윈도우 너비
+        int windowHeight = HEIGHT;                                // 윈도우 높이
     };
 
 }

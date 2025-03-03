@@ -19,11 +19,11 @@
     <Filter Include="shader">
       <UniqueIdentifier>{8ab59d28-75f1-4158-9e56-a5e8a258572e}</UniqueIdentifier>
     </Filter>
-    <Filter Include="app\imgui">
-      <UniqueIdentifier>{9208fa2e-0d38-4fab-92df-d886e01d3def}</UniqueIdentifier>
-    </Filter>
     <Filter Include="source\imgui">
       <UniqueIdentifier>{c296ab41-e891-4cfa-ac1c-2e05c6817f4a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="app\common\imgui">
+      <UniqueIdentifier>{9208fa2e-0d38-4fab-92df-d886e01d3def}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -59,7 +59,7 @@
       <Filter>source</Filter>
     </ClCompile>
     <ClCompile Include="..\..\app\cpp\imguiTriangle.cpp">
-      <Filter>app\imgui</Filter>
+      <Filter>app\common\imgui</Filter>
     </ClCompile>
     <ClCompile Include="..\..\app\source\engine\imgui.cpp">
       <Filter>source\imgui</Filter>
@@ -118,7 +118,7 @@
       <Filter>source</Filter>
     </ClInclude>
     <ClInclude Include="..\..\app\cpp\imguiTriangle.h">
-      <Filter>app\imgui</Filter>
+      <Filter>app\common\imgui</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -23,7 +23,10 @@ namespace vkengine
         this->RootPath = root_path;
         this->VKwindow = nullptr;
         this->VKinstance = {};
+        
         this->VKdebugUtilsMessenger = VK_NULL_HANDLE;
+        
+        this->VKrenderPass = std::make_unique<VkRenderPass>();
         
         for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
         {
@@ -67,7 +70,7 @@ namespace vkengine
 
             this->VKswapChain->cleanupSwapChain();
 
-            vkDestroyRenderPass(this->VKdevice->VKdevice, this->VKrenderPass, nullptr);
+            vkDestroyRenderPass(this->VKdevice->VKdevice, *this->VKrenderPass, nullptr);
 
             for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
             {
@@ -116,12 +119,11 @@ namespace vkengine
         glfwInit();
 
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-        glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 
         int WIDTH_ = WIDTH;
         int HEIGHT_ = HEIGHT;
 
-        this->VKwindow = glfwCreateWindow(WIDTH_, HEIGHT_, "vulkan game engine 000", nullptr, nullptr);
+        this->VKwindow = glfwCreateWindow(WIDTH_, HEIGHT_, "vulkan game engine", nullptr, nullptr);
 
         glfwSetWindowUserPointer(this->VKwindow, this);
         glfwSetFramebufferSizeCallback(this->VKwindow, framebufferResizeCallback);
@@ -217,7 +219,7 @@ namespace vkengine
 
     bool VulkanEngine::init_swapchain()
     {
-        this->VKswapChain = new VKSwapChain(this->VKdevice->VKphysicalDevice, this->VKdevice->VKdevice, this->VKsurface, &this->VKinstance);
+        this->VKswapChain = std::make_unique<VKSwapChain>(this->VKdevice->VKphysicalDevice, this->VKdevice->VKdevice, this->VKsurface, &this->VKinstance);
         this->VKswapChain->createSwapChain(&this->VKdevice->queueFamilyIndices);
         this->VKswapChain->createImageViews();
 
@@ -376,7 +378,7 @@ namespace vkengine
             throw std::runtime_error("failed to find a suitable GPU!");
         }
 
-        this->VKdevice = new vkengine::VKDevice_(pdevice, indices[selectQueueFamilyIndeices]);
+        this->VKdevice = std::make_unique<VKDevice_>(pdevice, indices[selectQueueFamilyIndeices]);
 
         // 파생된 예제는 물리적 장치에서 읽은 지원되는 확장 목록에 따라 확장 기능을 활성화할 수 있습니다.
         // 필요할 때 코드 생성
@@ -521,9 +523,7 @@ namespace vkengine
         renderPassInfo.dependencyCount = 1;
         renderPassInfo.pDependencies = &dependency;
 
-        if (vkCreateRenderPass(this->VKdevice->VKdevice, &renderPassInfo, nullptr, &this->VKrenderPass) != VK_SUCCESS) {
-            throw std::runtime_error("failed to create render pass!");
-        }
+        VK_CHECK_RESULT(vkCreateRenderPass(this->VKdevice->VKdevice, &renderPassInfo, nullptr, this->VKrenderPass.get()));
     }
 
     void VulkanEngine::createPipelineCache()
@@ -549,7 +549,7 @@ namespace vkengine
             VkFramebufferCreateInfo framebufferInfo{};
             framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
             framebufferInfo.pNext = nullptr;
-            framebufferInfo.renderPass = this->VKrenderPass;
+            framebufferInfo.renderPass = *this->VKrenderPass.get();
             framebufferInfo.attachmentCount = 2;
             framebufferInfo.pAttachments = attachments;
             framebufferInfo.width = this->VKswapChain->getSwapChainExtent().width;
@@ -571,10 +571,20 @@ namespace vkengine
         }
 
         vkDeviceWaitIdle(this->VKdevice->VKdevice);
+        
+        this->VKdepthStencill.cleanup(this->VKdevice->VKdevice);
+
+        for (auto framebuffers : this->VKswapChainFramebuffers)
+        {
+            vkDestroyFramebuffer(this->VKdevice->VKdevice, framebuffers, nullptr);
+        }
+        
+        this->VKswapChain->cleanupSwapChain();
 
         this->VKswapChain->createSwapChain(&this->VKdevice->queueFamilyIndices);  // 스왑 체인을 생성합니다.
         this->VKswapChain->createImageViews(); // 이미지 뷰를 생성합니다.
-        this->createRenderPass(); // 렌더 패스를 생성합니다.
+        VulkanEngine::createDepthStencilResources(); // 깊이 스텐실 리소스를 생성합니다.
+        this->createFramebuffers(); // 렌더 패스를 생성합니다.
     }
 
     bool VulkanEngine::createCommandBuffer()

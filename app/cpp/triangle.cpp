@@ -48,7 +48,7 @@ namespace vkengine {
             
             vkDestroyPipeline(this->VKdevice->VKdevice, this->VKgraphicsPipeline, nullptr);
             vkDestroyPipelineLayout(this->VKdevice->VKdevice, this->VKpipelineLayout, nullptr);
-            vkDestroyRenderPass(this->VKdevice->VKdevice, this->VKrenderPass, nullptr);
+            vkDestroyRenderPass(this->VKdevice->VKdevice, *this->VKrenderPass.get(), nullptr);
 
             // 추가적인 부분
             for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
@@ -170,7 +170,7 @@ namespace vkengine {
         // 렌더 패스 시작 정보 구조체를 초기화합니다.
         VkRenderPassBeginInfo renderPassInfo{};
         renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-        renderPassInfo.renderPass = this->VKrenderPass;
+        renderPassInfo.renderPass = *this->VKrenderPass.get();
         renderPassInfo.framebuffer = this->VKswapChainFramebuffers[imageIndex];
         renderPassInfo.renderArea.offset = { 0, 0 };
         renderPassInfo.renderArea.extent = this->VKswapChain->getSwapChainExtent();
@@ -556,7 +556,7 @@ namespace vkengine {
         pipelineInfo.pColorBlendState = &colorBlending;
         pipelineInfo.pDynamicState = &dynamicState; // Optional
         pipelineInfo.layout = this->VKpipelineLayout;
-        pipelineInfo.renderPass = this->VKrenderPass;
+        pipelineInfo.renderPass = *this->VKrenderPass.get();
         pipelineInfo.subpass = 0;
         pipelineInfo.basePipelineHandle = VK_NULL_HANDLE; // Optional
         pipelineInfo.basePipelineIndex = -1; // Optional
