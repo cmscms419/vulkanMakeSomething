@@ -188,7 +188,7 @@ namespace vkengine {
         }
         //this->camera->setViewDirection(glm::vec3(0.0f), glm::vec3(0.5f, 0.0f, 1.0f));
         //this->camera->setViewDirection(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-        this->camera->setViewDirection(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(-1.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+        this->camera->setViewDirection(glm::vec3(2.0f, -2.0f, 2.0f), glm::vec3(-1.0f, 1.0f, -1.0f), glm::vec3(0.0f, 0.0f, 1.0f));
         this->camera->setPerspectiveProjection(45.0f, this->VKswapChain->getSwapChainExtent().width / this->VKswapChain->getSwapChainExtent().height, 0.1f, 100.0f);
     }
 
@@ -259,7 +259,7 @@ namespace vkengine {
             // 디스크립터 세트를 바인딩합니다.
             vkCmdBindDescriptorSets(framedata->mainCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->VKpipelineLayout, 0, 1, &this->VKdescriptorSets[this->currentFrame], 0, nullptr);
             // 렌더 패스를 종료합니다.
-            vkCmdDrawIndexed(framedata->mainCommandBuffer, static_cast<uint32_t>(testindices_.size()), 1, 0, 0, 0);
+            vkCmdDrawIndexed(framedata->mainCommandBuffer, static_cast<uint32_t>(cubeindices_.size()), 1, 0, 0, 0);
         }
 
         vkCmdEndRenderPass(framedata->mainCommandBuffer);
@@ -270,7 +270,7 @@ namespace vkengine {
 
     void cameraEngine::createVertexbuffer()
     {
-        VkDeviceSize buffersize = sizeof(testVectex_[0]) * testVectex_.size();
+        VkDeviceSize buffersize = sizeof(cube[0]) * cube.size();
 
         VkBuffer stagingBuffer;
         VkDeviceMemory stagingBufferMemory;
@@ -286,7 +286,7 @@ namespace vkengine {
 
         void* data;
         vkMapMemory(this->VKdevice->VKdevice, stagingBufferMemory, 0, buffersize, 0, &data);
-        memcpy(data, testVectex_.data(), (size_t)buffersize);
+        memcpy(data, cube.data(), (size_t)buffersize);
         vkUnmapMemory(this->VKdevice->VKdevice, stagingBufferMemory);
 
         helper::createBuffer(
@@ -313,7 +313,7 @@ namespace vkengine {
 
     void cameraEngine::createIndexBuffer()
     {
-        VkDeviceSize buffersize = sizeof(testindices_[0]) * testindices_.size();
+        VkDeviceSize buffersize = sizeof(cubeindices_[0]) * cubeindices_.size();
         VkBuffer stagingBuffer;
         VkDeviceMemory stagingBufferMemory;
 
@@ -328,7 +328,7 @@ namespace vkengine {
 
         void* data;
         vkMapMemory(this->VKdevice->VKdevice, stagingBufferMemory, 0, buffersize, 0, &data);
-        memcpy(data, testindices_.data(), (size_t)buffersize);
+        memcpy(data, cubeindices_.data(), (size_t)buffersize);
         vkUnmapMemory(this->VKdevice->VKdevice, stagingBufferMemory);
 
         helper::createBuffer(

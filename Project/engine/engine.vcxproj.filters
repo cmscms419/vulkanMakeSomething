@@ -7,9 +7,6 @@
     <Filter Include="app">
       <UniqueIdentifier>{f9bd0ae7-abc2-4a96-8844-2f6e778397c2}</UniqueIdentifier>
     </Filter>
-    <Filter Include="app\common">
-      <UniqueIdentifier>{406f1946-ce17-4095-abd9-2449c4a8e275}</UniqueIdentifier>
-    </Filter>
     <Filter Include="app\triangle">
       <UniqueIdentifier>{a380fe96-44c2-4fb9-ac52-6a38c14ad06f}</UniqueIdentifier>
     </Filter>
@@ -25,6 +22,9 @@
     <Filter Include="app\camera">
       <UniqueIdentifier>{9208fa2e-0d38-4fab-92df-d886e01d3def}</UniqueIdentifier>
     </Filter>
+    <Filter Include="source\common">
+      <UniqueIdentifier>{406f1946-ce17-4095-abd9-2449c4a8e275}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\app\source\main_engine.cpp" />
@@ -38,7 +38,7 @@
       <Filter>source</Filter>
     </ClCompile>
     <ClCompile Include="..\..\app\source\_common.cpp">
-      <Filter>app\common</Filter>
+      <Filter>source\common</Filter>
     </ClCompile>
     <ClCompile Include="..\..\app\source\engine\Debug.cpp">
       <Filter>source</Filter>
@@ -94,7 +94,7 @@
       <Filter>source</Filter>
     </ClInclude>
     <ClInclude Include="..\..\app\source\_common.h">
-      <Filter>app\common</Filter>
+      <Filter>source\common</Filter>
     </ClInclude>
     <ClInclude Include="..\..\app\source\engine\Debug.h">
       <Filter>source</Filter>
@@ -112,7 +112,7 @@
       <Filter>component</Filter>
     </ClInclude>
     <ClInclude Include="..\..\app\source\struct.h">
-      <Filter>app\common</Filter>
+      <Filter>source\common</Filter>
     </ClInclude>
     <ClInclude Include="..\..\app\source\engine\VKimgui.h">
       <Filter>source</Filter>
