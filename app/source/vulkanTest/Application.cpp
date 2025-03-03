@@ -159,7 +159,7 @@ namespace vkutil {
         glfwInit();
 
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-        glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+        //glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 
         int WIDTH_ = WIDTH;
         int HEIGHT_ = HEIGHT;
@@ -237,9 +237,10 @@ namespace vkutil {
 
         // uniform 버퍼를 업데이트합니다.
         this->updateUniformBuffer(currentFrame);
-        this->recordCommandBuffer(this->VKcommandBuffers[currentFrame], imageIndex);
 
         vkResetFences(this->VKdevice, 1, &this->VkinFlightFences[currentFrame]); // 플래그를 재설정합니다. -> 렌더링이 끝나면 플래그를 재설정합니다.
+        
+        this->recordCommandBuffer(this->VKcommandBuffers[currentFrame], imageIndex);
 
         // 렌더링을 시작하기 전에 렌더링할 준비가 되었는지 확인합니다.
         VkSubmitInfo submitInfo{};
@@ -289,7 +290,6 @@ namespace vkutil {
         result = vkQueuePresentKHR(this->presentVKQueue, &presentInfo); // 프레젠테이션 큐에 이미지를 제출합니다.
 
         if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || framebufferResized) {
-            this->framebufferResized = false;
             this->recreateSwapChain();
         }
         else if (result != VK_SUCCESS) {
@@ -1027,7 +1027,9 @@ namespace vkutil {
         this->createImageViews(); // 이미지 뷰를 생성합니다.
         this->createColorResources(); // 컬러 리소스를 생성합니다.
         this->createDepthResources(); // 깊이 리소스를 생성합니다.
-        this->createRenderPass(); // 렌더 패스를 생성합니다.
+        this->createFramebuffers(); // 렌더 패스를 생성합니다.
+
+        this->framebufferResized = false;
     }
 
     void Application::createVertexBuffer()
@@ -1754,9 +1756,9 @@ namespace vkutil {
             ImGui_ImplVulkan_NewFrame();
             ImGui_ImplGlfw_NewFrame();
             ImGui::NewFrame();
-
+            
             ImGui::ShowDemoWindow();
-
+            
             ImGui::Render();
             ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), commandBuffer);
         }
@@ -1778,10 +1780,11 @@ namespace vkutil {
         object::UniformBufferObject ubo{};
 
         ubo.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-        //ubo.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-        ubo.view = this->camera->getViewMatrix();
-        //ubo.proj = glm::perspective(glm::radians(45.0f), this->VKswapChainExtent.width / (float)this->VKswapChainExtent.height, 0.1f, 10.0f);
-        ubo.proj = this->camera->getProjectionMatrix();
+        ubo.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+        //ubo.view = this->camera->getViewMatrix();
+        ubo.proj = glm::perspective(glm::radians(45.0f), this->VKswapChainExtent.width / (float)this->VKswapChainExtent.height, 0.1f, 10.0f);
+        ubo.proj[1][1] *= -1;
+        //ubo.proj = this->camera->getProjectionMatrix();
 
         memcpy(this->VKuniformBuffersMapped[currentImage], &ubo, sizeof(ubo));
     }

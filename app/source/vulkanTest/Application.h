@@ -72,12 +72,6 @@ namespace vkutil {
         void loadModel();
         void createColorResources();
 
-        void createUIDescriptorPool();
-        void createUIRenderPass();
-        void createUICommandPool(VkCommandPool* commandpool, VkCommandPoolCreateFlagBits flag);
-        void createUICommandBuffers();
-        void createUIFramebuffers();
-
         // 도구
 
         // 주어진 물리 장치에서 큐 패밀리 속성을 찾는 함수
