@@ -108,7 +108,7 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\app\cpp\imguiTriangle.cpp" />
+    <ClCompile Include="..\..\app\cpp\cameraEngine.cpp" />
     <ClCompile Include="..\..\app\cpp\triangle.cpp" />
     <ClCompile Include="..\..\app\source\engine\Camera.cpp" />
     <ClCompile Include="..\..\app\source\engine\Debug.cpp" />
@@ -129,7 +129,7 @@
     <ClCompile Include="..\..\app\source\_common.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\app\cpp\imguiTriangle.h" />
+    <ClInclude Include="..\..\app\cpp\cameraEngine.h" />
     <ClInclude Include="..\..\app\cpp\triangle.h" />
     <ClInclude Include="..\..\app\source\engine\Camera.h" />
     <ClInclude Include="..\..\app\source\engine\Debug.h" />

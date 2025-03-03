@@ -162,10 +162,16 @@ namespace vkutil {
             return this->front;
         }
 
-        glm::mat4 Camera::getProjectionMatrix()
+        void Camera::MoveForward(float deltaTime)
         {
-            return this->projection;
+            this->pos += this->front * this->speed * deltaTime;
         }
+
+        void Camera::MoveRight(float deltaTime)
+        {
+            this->pos += this->right * this->speed * deltaTime;
+        }
+
         void Camera::getProjection(float& fov, float& aspect, float& nearP, float& farP)
         {
             // Implementation here

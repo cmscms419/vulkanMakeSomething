@@ -22,7 +22,7 @@
     <Filter Include="source\imgui">
       <UniqueIdentifier>{c296ab41-e891-4cfa-ac1c-2e05c6817f4a}</UniqueIdentifier>
     </Filter>
-    <Filter Include="app\common\imgui">
+    <Filter Include="app\camera">
       <UniqueIdentifier>{9208fa2e-0d38-4fab-92df-d886e01d3def}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
@@ -58,8 +58,8 @@
     <ClCompile Include="..\..\app\source\engine\VKimgui.cpp">
       <Filter>source</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\app\cpp\imguiTriangle.cpp">
-      <Filter>app\common\imgui</Filter>
+    <ClCompile Include="..\..\app\cpp\cameraEngine.cpp">
+      <Filter>app\camera</Filter>
     </ClCompile>
     <ClCompile Include="..\..\app\source\engine\imgui.cpp">
       <Filter>source\imgui</Filter>
@@ -117,8 +117,8 @@
     <ClInclude Include="..\..\app\source\engine\VKimgui.h">
       <Filter>source</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\app\cpp\imguiTriangle.h">
-      <Filter>app\common\imgui</Filter>
+    <ClInclude Include="..\..\app\cpp\cameraEngine.h">
+      <Filter>app\camera</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

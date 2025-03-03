@@ -1,4 +1,4 @@
-﻿#include "imguiTriangle.h"
+﻿#include "cameraEngine.h"
 #include "../source/engine/helper.h"
 #include "../source/engine/Camera.h"
 #include "../source/engine/Debug.h"
@@ -10,19 +10,17 @@ using namespace vkengine::debug;
 using vkengine::object::Camera;
 
 namespace vkengine {
-    imguiTriangle::imguiTriangle(std::string root_path) : VulkanEngine(root_path) {}
-    imguiTriangle::~imguiTriangle() {}
+    cameraEngine::cameraEngine(std::string root_path) : VulkanEngine(root_path) {}
+    cameraEngine::~cameraEngine() {}
 
-    void imguiTriangle::init()
+    void cameraEngine::init()
     {
         VulkanEngine::init();
 
         this->camera = std::make_shared<vkengine::object::Camera>();
-        this->camera->setProjection(45.0f, (float)WIDTH / (float)HEIGHT, 0.1f, 100.0f);
-        this->camera->setView(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
     }
 
-    bool imguiTriangle::prepare()
+    bool cameraEngine::prepare()
     {
         VulkanEngine::prepare();
         this->init_sync_structures();
@@ -40,7 +38,7 @@ namespace vkengine {
         return true;
     }
 
-    void imguiTriangle::cleanup()
+    void cameraEngine::cleanup()
     {
         if (this->_isInitialized)
         {
@@ -86,7 +84,7 @@ namespace vkengine {
 
     }
 
-    void imguiTriangle::drawFrame()
+    void cameraEngine::drawFrame()
     {
         // 렌더링을 시작하기 전에 프레임을 렌더링할 준비가 되었는지 확인합니다.
         VK_CHECK_RESULT(vkWaitForFences(this->VKdevice->VKdevice, 1, &this->getCurrnetFrameData().VkinFlightFences, VK_TRUE, UINT64_MAX));
@@ -141,10 +139,18 @@ namespace vkengine {
         this->currentFrame = (this->currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
     }
 
-    bool imguiTriangle::mainLoop()
+    bool cameraEngine::mainLoop()
     {
+        static auto currentTime = std::chrono::high_resolution_clock::now();
+        
         while (!glfwWindowShouldClose(this->VKwindow)) {
             glfwPollEvents();
+
+            auto newTime = std::chrono::high_resolution_clock::now();
+            float frameTime = std::chrono::duration<float, std::chrono::seconds::period>(newTime - currentTime).count();
+            currentTime = newTime;
+
+            this->update(frameTime);
             drawFrame();
 
 #ifdef DEBUG_
@@ -159,7 +165,33 @@ namespace vkengine {
         return state;
     }
 
-    bool imguiTriangle::init_sync_structures()
+    void cameraEngine::update(float dt)
+    {
+        if (this->m_keyPressed[GLFW_KEY_W])
+        {
+            this->camera->MoveForward(dt);
+        }
+
+        if (this->m_keyPressed[GLFW_KEY_S])
+        {
+            this->camera->MoveForward(-dt);
+        }
+
+        if (this->m_keyPressed[GLFW_KEY_A])
+        {
+            this->camera->MoveRight(-dt);
+        }
+
+        if (this->m_keyPressed[GLFW_KEY_D])
+        {
+            this->camera->MoveRight(dt);
+        }
+        //this->camera->setViewTarget(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+        //this->camera->setViewDirection(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(-1.0f));
+        this->camera->setPerspectiveProjection(45.0f, this->VKswapChain->getSwapChainExtent().width / this->VKswapChain->getSwapChainExtent().height, 0.1f, 100.0f);
+    }
+
+    bool cameraEngine::init_sync_structures()
     {
         VkSemaphoreCreateInfo semaphoreInfo = helper::semaphoreCreateInfo(0);
         VkFenceCreateInfo fenceInfo = helper::fenceCreateInfo(VK_FENCE_CREATE_SIGNALED_BIT);
@@ -173,7 +205,7 @@ namespace vkengine {
         return true;
     }
 
-    void imguiTriangle::recordCommandBuffer(FrameData* framedata, uint32_t imageIndex)
+    void cameraEngine::recordCommandBuffer(FrameData* framedata, uint32_t imageIndex)
     {
         // 커맨드 버퍼 기록을 시작합니다.
         VkCommandBufferBeginInfo beginInfo = framedata->commandBufferBeginInfo(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
@@ -235,7 +267,7 @@ namespace vkengine {
         VK_CHECK_RESULT(vkEndCommandBuffer(framedata->mainCommandBuffer));
     }
 
-    void imguiTriangle::createVertexbuffer()
+    void cameraEngine::createVertexbuffer()
     {
         VkDeviceSize buffersize = sizeof(testVectex_[0]) * testVectex_.size();
 
@@ -278,7 +310,7 @@ namespace vkengine {
         vkFreeMemory(this->VKdevice->VKdevice, stagingBufferMemory, nullptr);
     }
 
-    void imguiTriangle::createIndexBuffer()
+    void cameraEngine::createIndexBuffer()
     {
         VkDeviceSize buffersize = sizeof(testindices_[0]) * testindices_.size();
         VkBuffer stagingBuffer;
@@ -320,7 +352,7 @@ namespace vkengine {
         vkFreeMemory(this->VKdevice->VKdevice, stagingBufferMemory, nullptr);
     }
 
-    void imguiTriangle::createUniformBuffers()
+    void cameraEngine::createUniformBuffers()
     {
         VkDeviceSize bufferSize = sizeof(UniformBufferObject);
 
@@ -341,7 +373,7 @@ namespace vkengine {
         }
     }
 
-    void imguiTriangle::createDescriptorSetLayout()
+    void cameraEngine::createDescriptorSetLayout()
     {
         // Binding 0: Uniform buffer (Vertex shader)
         VkDescriptorSetLayoutBinding uboLayoutBinding{};
@@ -361,7 +393,7 @@ namespace vkengine {
         VK_CHECK_RESULT(vkCreateDescriptorSetLayout(this->VKdevice->VKdevice, &layoutInfo, nullptr, &this->VKdescriptorSetLayout));
     }
 
-    void imguiTriangle::createDescriptorPool()
+    void cameraEngine::createDescriptorPool()
     {
         //// 디스크립터 풀 크기를 설정합니다.
         std::array<VkDescriptorPoolSize, 1> poolSizes{};
@@ -380,7 +412,7 @@ namespace vkengine {
         VK_CHECK_RESULT(vkCreateDescriptorPool(this->VKdevice->VKdevice, &poolInfo, nullptr, &this->VKdescriptorPool));
     }
 
-    void imguiTriangle::createDescriptorSets()
+    void cameraEngine::createDescriptorSets()
     {
         // 디스크립터 세트 레이아웃을 설정합니다.
         std::vector<VkDescriptorSetLayout> layouts(MAX_FRAMES_IN_FLIGHT, this->VKdescriptorSetLayout);
@@ -423,7 +455,7 @@ namespace vkengine {
         }
     }
 
-    void imguiTriangle::createGraphicsPipeline()
+    void cameraEngine::createGraphicsPipeline()
     {
         VkShaderModule baseVertshaderModule = this->VKdevice->createShaderModule(this->RootPath + "../../../../../../shader/vertTrinagle00.spv");
         VkShaderModule baseFragShaderModule = this->VKdevice->createShaderModule(this->RootPath + "../../../../../../shader/fragTrinagle00.spv");
@@ -544,7 +576,7 @@ namespace vkengine {
         colorBlending.blendConstants[2] = 0.0f;                                       // 블렌딩 상수를 설정
         colorBlending.blendConstants[3] = 0.0f;                                       // 블렌딩 상수를 설정
 
-        // 고정 기능 상태를 설정합니다.
+        // 다이나믹 상태 설정 -> 레스터화 상태를 동적으로 변경할 수 있습니다.
         VkPipelineDynamicStateCreateInfo dynamicState{};
         dynamicState.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
         dynamicState.dynamicStateCount = static_cast<uint32_t>(dynamicStates.size());
@@ -585,7 +617,7 @@ namespace vkengine {
         vkDestroyShaderModule(this->VKdevice->VKdevice, baseFragShaderModule, nullptr);
     }
 
-    void imguiTriangle::updateUniformBuffer(uint32_t currentImage)
+    void cameraEngine::updateUniformBuffer(uint32_t currentImage)
     {
         static auto startTime = std::chrono::high_resolution_clock::now();
         auto currentTime = std::chrono::high_resolution_clock::now();
@@ -594,15 +626,13 @@ namespace vkengine {
         UniformBufferObject ubo{};
 
         ubo.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-        //ubo.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
         ubo.view = this->camera->getViewMatrix();
-        //ubo.proj = glm::perspective(glm::radians(45.0f), this->VKswapChainExtent.width / (float)this->VKswapChainExtent.height, 0.1f, 10.0f);
         ubo.proj = this->camera->getProjectionMatrix();
 
         memcpy(this->VKuniformBuffer[currentImage].Mapped, &ubo, sizeof(ubo));
     }
 
-    void imguiTriangle::cleanupSwapcChain()
+    void cameraEngine::cleanupSwapcChain()
     {
         this->VKdepthStencill.cleanup(this->VKdevice->VKdevice);
 

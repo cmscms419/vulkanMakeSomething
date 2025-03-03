@@ -1,7 +1,9 @@
 #include "VKkey.h"
 #include "VKengine.h"
+#include "Camera.h"
 
 using vkengine::VulkanEngine;
+using vkengine::object::Camera;
 
 namespace vkengine
 {
@@ -12,17 +14,14 @@ namespace vkengine
             if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
                 glfwSetWindowShouldClose(window, GLFW_TRUE);
             }
-            if (key == GLFW_KEY_W && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
-                PRINT_TO_CONSOLE("W key pressed or repeat");
+            
+            if (action == GLFW_PRESS || action == GLFW_REPEAT) 
+            {
+                app->setKeyPressed(key, true);
             }
-            if (key == GLFW_KEY_A && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
-                PRINT_TO_CONSOLE("A key pressed or repeat");
-            }
-            if (key == GLFW_KEY_S && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
-                PRINT_TO_CONSOLE("S key pressed or repeat");
-            }
-            if (key == GLFW_KEY_D && (action == GLFW_PRESS || action == GLFW_REPEAT)) {
-                PRINT_TO_CONSOLE("D key pressed or repeat");
+            else if (action == GLFW_RELEASE) 
+            {
+                app->setKeyPressed(key, false);
             }
         }
     }

@@ -4,10 +4,11 @@ namespace vkengine {
     namespace object {
 
         Camera::Camera() {
-            pos = glm::vec3(0.0f);
-            up = glm::vec3(0.0f, 1.0f, 0.0f);
-            front = glm::vec3(0.0f, 0.0f, -1.0f);
-            right = glm::vec3(0.0f);
+            pos = glm::vec3(3.0f);
+            right = glm::vec3(1.0f, 0.0f, 0.0f);
+            up = glm::vec3(0.0f, -1.0f, 0.0f);
+            target = glm::vec3(0.0f, 0.0f, 0.0f);
+            dir = glm::normalize(target - pos);
             
             yaw = -90.0f;
             pitch = 0.0f;
@@ -21,158 +22,100 @@ namespace vkengine {
             speed = 2.5f;
             sensitivity = 0.1f;
             
-            view = glm::lookAt(front, pos, up);
-            projection = glm::perspective(glm::radians(fov), aspect, nearP, farP);
-            viewProjection = projection * view;
-            viewProjectionInverse = glm::inverse(viewProjection);
-            viewInverse = glm::inverse(view);
-            projectionInverse = glm::inverse(projection);
-            viewInverseTranspose = glm::transpose(viewInverse);
-            projectionInverseTranspose = glm::transpose(projectionInverse);
+            this->setViewDirection(pos, dir);
+            this->setPerspectiveProjection(glm::radians(fov), aspect, nearP, farP);
+
+#if DEBUG_
+            printf("Camera Position: %f %f %f\n", this->pos.x, this->pos.y, this->pos.z);
+            printf("Camera Target: %f %f %f\n", this->target.x, this->target.y, this->target.z);
+            printf("Camera Direction: %f %f %f\n", this->dir.x, this->dir.y, this->dir.z);
+            printf("Camera Right: %f %f %f\n", this->right.x, this->right.y, this->right.z);
+#endif
         }
         
         Camera::~Camera() {}
 
         void Camera::update() {
             // Implementation here
+            
+            //printf("Camera Position: %f %f %f\n", this->pos.x, this->pos.y, this->pos.z);
         }
-
-        void Camera::setProjection(float fov, float aspect, float nearP, float farP) {
-            // Implementation here
-            this->aspect = aspect;
-            this->fov = glm::radians(fov);
-            this->nearP = nearP;
-            this->farP = farP;
-
-            this->projection = glm::perspective(this->fov, this->aspect, this->nearP, this->farP);
-            this->projection[1][1] *= -1;
-        }
-
-        void Camera::setView(glm::vec3 pos, glm::vec3 target, glm::vec3 up) {
-            // Implementation here
-            this->pos = pos;
-            this->front = target;
-            this->up = up;
-            this->view = glm::lookAt(this->pos, this->front, this->up);
-        }
-
-        void Camera::setSpeed(float speed) {
-            // Implementation here
-        }
-
-        void Camera::setSensitivity(float sensitivity) {
-            // Implementation here
-        }
-
-        void Camera::setFov(float fov) {
-            // Implementation here
-        }
-
-        void Camera::setAspect(float aspect) {
-            // Implementation here
-        }
-
-        void Camera::setNear(float near) {
-            // Implementation here
-        }
-
-        void Camera::setFar(float far) {
-            // Implementation here
-        }
-
-        void Camera::setPos(glm::vec3 pos) {
-            // Implementation here
-        }
-
-        void Camera::setTarget(glm::vec3 target) {
-            // Implementation here
-        }
-
-        void Camera::setUp(glm::vec3 up) {
-            // Implementation here
-        }
-
-        void Camera::setFront(glm::vec3 front) {
-            // Implementation here
-        }
-
-        void Camera::setRight(glm::vec3 right) {
-            // Implementation here
-        }
-
-        void Camera::setYaw(float yaw) {
-            // Implementation here
-        }
-
-        void Camera::setPitch(float pitch) {
-            // Implementation here
-        }
-
-        void Camera::setRoll(float roll) {
-            // Implementation here
-        }
-
-        void Camera::setViewMatrix(glm::mat4 view) {
-            // Implementation here
-        }
-
-        void Camera::setProjectionMatrix(glm::mat4 projection) {
-            // Implementation here
-        }
-
-        void Camera::setViewProjectionMatrix(glm::mat4 viewProjection) {
-            // Implementation here
-        }
-
-        void Camera::setViewProjectionMatrix(glm::mat4 view, glm::mat4 projection) {
-            // Implementation here
-        }
-
-        void Camera::setViewProjectionMatrix(glm::mat4 view, glm::mat4 projection, glm::mat4 viewProjection) {
-            // Implementation here
-        }
-
-        void Camera::setViewProjectionMatrix(glm::mat4 view, glm::mat4 projection, glm::mat4 viewProjection, glm::mat4 viewProjectionInverse) {
-            // Implementation here
-        }
-
-        void Camera::setViewProjectionMatrix(glm::mat4 view, glm::mat4 projection, glm::mat4 viewProjection, glm::mat4 viewProjectionInverse, glm::mat4 viewInverse) {
-            // Implementation here
-        }
-
-        void Camera::setViewProjectionMatrix(glm::mat4 view, glm::mat4 projection, glm::mat4 viewProjection, glm::mat4 viewProjectionInverse, glm::mat4 viewInverse, glm::mat4 projectionInverse) {
-            // Implementation here
-        }
-
-        void Camera::setViewProjectionMatrix(glm::mat4 view, glm::mat4 projection, glm::mat4 viewProjection, glm::mat4 viewProjectionInverse, glm::mat4 viewInverse, glm::mat4 projectionInverse, glm::mat4 projectionInverseTranspose) {
-            // Implementation here
-        }
-
-        void Camera::setViewProjectionMatrix(glm::mat4 view, glm::mat4 projection, glm::mat4 viewProjection, glm::mat4 viewProjectionInverse, glm::mat4 viewInverse, glm::mat4 projectionInverse, glm::mat4 projectionInverseTranspose, glm::mat4 viewInverseTranspose) {
-            // Implementation here
-        }
-
-        glm::mat4 Camera::getViewMatrix()
+        
+        void Camera::MoveForward(float deltaTime)
         {
-            return this->view;
+            this->pos += this->target * this->speed * deltaTime;
         }
 
-        glm::vec3 Camera::getView()
+        void Camera::MoveRight(float deltaTime)
         {
-            return this->front;
+            this->pos += this->right * this->speed * deltaTime;
         }
 
-        glm::mat4 Camera::getProjectionMatrix()
+        void Camera::setPerspectiveProjection(float fov, float aspect, float nearP, float farP)
         {
-            return this->projection;
+            assert(glm::abs(aspect - std::numeric_limits<float>::epsilon()) > 0.0f);
+
+            const float tanHalfFovy = tan(fov / 2.f);
+            projectionMatrix = glm::mat4{ 0.0f };
+            projectionMatrix[0][0] = 1.f / (aspect * tanHalfFovy);
+            projectionMatrix[1][1] = 1.f / (tanHalfFovy);
+            projectionMatrix[2][2] = farP / (farP - nearP);
+            projectionMatrix[2][3] = 1.f;
+            projectionMatrix[3][2] = -(farP * nearP) / (farP - nearP);
         }
-        void Camera::getProjection(float& fov, float& aspect, float& nearP, float& farP)
+
+        void Camera::setViewDirection(glm::vec3 pos, glm::vec3 dir, glm::vec3 up)
         {
-            // Implementation here
-            fov = this->fov;
-            aspect = this->aspect;
-            nearP = this->nearP;
-            farP = this->farP;
+            const glm::vec3 w{ glm::normalize(dir) };
+            const glm::vec3 u{ glm::normalize(glm::cross(w, up)) };
+            const glm::vec3 v{ glm::cross(w, u) };
+
+            viewMatrix = glm::mat4{ 1.f };
+            viewMatrix[0][0] = u.x;
+            viewMatrix[1][0] = u.y;
+            viewMatrix[2][0] = u.z;
+            viewMatrix[0][1] = v.x;
+            viewMatrix[1][1] = v.y;
+            viewMatrix[2][1] = v.z;
+            viewMatrix[0][2] = w.x;
+            viewMatrix[1][2] = w.y;
+            viewMatrix[2][2] = w.z;
+            viewMatrix[3][0] = -glm::dot(u, pos);
+            viewMatrix[3][1] = -glm::dot(v, pos);
+            viewMatrix[3][2] = -glm::dot(w, pos);
         }
+
+        void Camera::setViewTarget(glm::vec3 pos, glm::vec3 target, glm::vec3 up)
+        {
+            setViewDirection(pos, target - pos, up);
+        }
+
+        void Camera::setViewXYZ(glm::vec3 pos, glm::vec3 rot)
+        {
+            const float c3 = glm::cos(rot.z);
+            const float s3 = glm::sin(rot.z);
+            const float c2 = glm::cos(rot.x);
+            const float s2 = glm::sin(rot.x);
+            const float c1 = glm::cos(rot.y);
+            const float s1 = glm::sin(rot.y);
+            const glm::vec3 u{ (c1 * c3 + s1 * s2 * s3), (c2 * s3), (c1 * s2 * s3 - c3 * s1) };
+            const glm::vec3 v{ (c3 * s1 * s2 - c1 * s3), (c2 * c3), (c1 * c3 * s2 + s1 * s3) };
+            const glm::vec3 w{ (c2 * s1), (-s2), (c1 * c2) };
+            viewMatrix = glm::mat4{ 1.f };
+            viewMatrix[0][0] = u.x;
+            viewMatrix[1][0] = u.y;
+            viewMatrix[2][0] = u.z;
+            viewMatrix[0][1] = v.x;
+            viewMatrix[1][1] = v.y;
+            viewMatrix[2][1] = v.z;
+            viewMatrix[0][2] = w.x;
+            viewMatrix[1][2] = w.y;
+            viewMatrix[2][2] = w.z;
+            viewMatrix[3][0] = -glm::dot(u, pos);
+            viewMatrix[3][1] = -glm::dot(v, pos);
+            viewMatrix[3][2] = -glm::dot(w, pos);
+        }
+
+
     }
 }

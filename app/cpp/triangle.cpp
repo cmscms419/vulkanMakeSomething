@@ -18,8 +18,6 @@ namespace vkengine {
         VulkanEngine::init();
 
         this->camera = std::make_shared<vkengine::object::Camera>();
-        this->camera->setProjection(45.0f, (float)WIDTH / (float)HEIGHT, 0.1f, 100.0f);
-        this->camera->setView(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
     }
 
     bool triangle::prepare()

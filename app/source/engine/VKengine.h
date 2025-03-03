@@ -9,6 +9,10 @@
 
 namespace vkengine {
 
+    namespace object {
+        class Camera;
+    }
+
     class VulkanEngine {
     public:
         VulkanEngine(std::string root_path);
@@ -69,6 +73,8 @@ namespace vkengine {
         VkDescriptorSetLayout getDescriptorSetLayout() const { return VKdescriptorSetLayout; }
         void setWindowWidth(int width) { windowWidth = width; }
         void setWindowHeight(int height) { windowHeight = height; }
+        std::shared_ptr<vkengine::object::Camera> getCamera() { return camera; }
+        void setKeyPressed(int key, bool value) { m_keyPressed[key] = value; }
     protected:
 
         virtual bool initVulkan();
@@ -113,6 +119,8 @@ namespace vkengine {
         VkDescriptorSetLayout VKdescriptorSetLayout{ VK_NULL_HANDLE };
         std::vector<VkDescriptorSet> VKdescriptorSets = {};
 
+        std::shared_ptr<vkengine::object::Camera> camera = nullptr;  // 카메라 -> 카메라 클래스
+
         // 렌더링을 시작하기 전에 렌더링할 준비가 되었는지 확인하는 변수
         VkSubmitInfo VKsubmitInfo{};  // 제출 정보 -> 제출할 명령 버퍼와 세마포어를 저장
 
@@ -121,6 +129,11 @@ namespace vkengine {
         bool state = false;                                         // 프로그램 상태 
         int windowWidth = WIDTH;                                  // 윈도우 너비
         int windowHeight = HEIGHT;                                // 윈도우 높이
+
+        // 현재 키보드가 눌렸는지 상태를 저장하는 배열
+        bool m_keyPressed[256] = {
+            false,
+        };
     };
 
 }

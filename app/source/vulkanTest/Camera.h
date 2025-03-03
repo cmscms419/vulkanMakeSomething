@@ -50,6 +50,9 @@ namespace vkutil {
             glm::mat4 getViewMatrix();
             glm::vec3 getView();
 
+            void MoveForward(float deltaTime);
+            void MoveRight(float deltaTime);
+
             glm::mat4 getProjectionMatrix();
             void getProjection(float& fov, float& aspect, float& nearP, float& farP);
 
