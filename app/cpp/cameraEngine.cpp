@@ -186,8 +186,9 @@ namespace vkengine {
         {
             this->camera->MoveRight(dt);
         }
-        //this->camera->setViewTarget(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-        //this->camera->setViewDirection(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(-1.0f));
+        //this->camera->setViewDirection(glm::vec3(0.0f), glm::vec3(0.5f, 0.0f, 1.0f));
+        //this->camera->setViewDirection(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+        this->camera->setViewDirection(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(-1.0f), glm::vec3(0.0f, 0.0f, 1.0f));
         this->camera->setPerspectiveProjection(45.0f, this->VKswapChain->getSwapChainExtent().width / this->VKswapChain->getSwapChainExtent().height, 0.1f, 100.0f);
     }
 

@@ -25,8 +25,8 @@ namespace vkengine {
             const glm::mat4& getProjectionMatrix() { return this->projectionMatrix; }
             const glm::mat4& getViewMatrix() { return this->viewMatrix; }
 
-            void setViewDirection(glm::vec3 pos, glm::vec3 dir, glm::vec3 up = glm::vec3(0.f, -1.f, 0.f));
-            void setViewTarget(glm::vec3 pos, glm::vec3 target, glm::vec3 up = glm::vec3(0.f, -1.f, 0.f));
+            void setViewDirection(glm::vec3 pos, glm::vec3 dir, glm::vec3 up = glm::vec3(0.f, 1.f, 0.f));
+            void setViewTarget(glm::vec3 pos, glm::vec3 target, glm::vec3 up = glm::vec3(0.f, 1.f, 0.f));
             void setViewXYZ(glm::vec3 pos, glm::vec3 rot);
 
         private:
@@ -46,8 +46,8 @@ namespace vkengine {
             float speed;
             float sensitivity;
 
-            glm::mat4 viewMatrix;
-            glm::mat4 projectionMatrix;
+            glm::mat4 viewMatrix{ 1.f };
+            glm::mat4 projectionMatrix{ 1.f };
        };
     }
 }

@@ -4,16 +4,13 @@ namespace vkengine {
     namespace object {
 
         Camera::Camera() {
-            pos = glm::vec3(3.0f);
+            pos = glm::vec3(2.0f);
             right = glm::vec3(1.0f, 0.0f, 0.0f);
-            up = glm::vec3(0.0f, -1.0f, 0.0f);
-            target = glm::vec3(0.0f, 0.0f, 0.0f);
-            dir = glm::normalize(target - pos);
-            
-            yaw = -90.0f;
-            pitch = 0.0f;
-            roll = 0.0f;
-            
+            up = glm::vec3(0.0f, 1.0f, 0.0f);
+            //target = glm::vec3(0.5f, 0.5f, -1.0f);
+            //dir = glm::normalize(target - pos);
+            dir = glm::cross(right, up) * -1.f;
+
             fov = 45.0f;
             aspect = (float)WIDTH / (float)HEIGHT;
             nearP = 0.1f;
@@ -24,7 +21,7 @@ namespace vkengine {
             
             this->setViewDirection(pos, dir);
             this->setPerspectiveProjection(glm::radians(fov), aspect, nearP, farP);
-
+            this->projectionMatrix[1][1] *= -1;
 #if DEBUG_
             printf("Camera Position: %f %f %f\n", this->pos.x, this->pos.y, this->pos.z);
             printf("Camera Target: %f %f %f\n", this->target.x, this->target.y, this->target.z);
