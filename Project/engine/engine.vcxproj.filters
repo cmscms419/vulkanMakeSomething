@@ -120,6 +120,9 @@
     <ClInclude Include="..\..\app\cpp\cameraEngine.h">
       <Filter>app\camera</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\app\source\math_.h">
+      <Filter>source\common</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\shader\compile.bat">

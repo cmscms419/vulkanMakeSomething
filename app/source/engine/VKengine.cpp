@@ -128,7 +128,7 @@ namespace vkengine
         glfwSetWindowUserPointer(this->VKwindow, this);
         glfwSetFramebufferSizeCallback(this->VKwindow, framebufferResizeCallback);
         glfwSetKeyCallback(this->VKwindow, vkengine::input::key_callback);  // 키 입력 콜백 설정
-
+        glfwSetCursorPosCallback(this->VKwindow, vkengine::input::cursorPositionCallback); // 마우스 입력 콜백 설정
     }
 
     bool VulkanEngine::prepare()

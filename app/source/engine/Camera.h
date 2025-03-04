@@ -3,6 +3,7 @@
 
 #include "../_common.h"
 #include "../struct.h"
+#include "VKengine.h"
 
 namespace vkengine {
     namespace object {
@@ -21,6 +22,7 @@ namespace vkengine {
             void MoveForward(float deltaTime);
             void MoveRight(float deltaTime);
             void MoveUp(float deltaTime);
+            void MoveRotate(int xpos, int ypos,int windowWidth, int windowHeight);
 
             void setPerspectiveProjection(float fov, float aspect, float nearP, float farP);
 
@@ -40,7 +42,6 @@ namespace vkengine {
 
             float yaw;
             float pitch;
-            float roll;
             float fov;
             float aspect;
             float nearP;

@@ -75,6 +75,7 @@ namespace vkengine {
         void setWindowHeight(int height) { windowHeight = height; }
         std::shared_ptr<vkengine::object::Camera> getCamera() { return camera; }
         void setKeyPressed(int key, bool value) { m_keyPressed[key] = value; }
+
     protected:
 
         virtual bool initVulkan();
@@ -134,6 +135,10 @@ namespace vkengine {
         bool m_keyPressed[256] = {
             false,
         };
+
+        // 마우스 커서 위치
+        int currnetX = 0;
+        int currnetY = 0;
     };
 
 }

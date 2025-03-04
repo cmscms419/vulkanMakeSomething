@@ -1,5 +1,9 @@
 #include "Camera.h"
 
+#include "../math_.h"
+
+using namespace vkMath;
+
 namespace vkengine {
     namespace object {
 
@@ -16,6 +20,9 @@ namespace vkengine {
             
             speed = 2.5f;
             sensitivity = 0.1f;
+
+            yaw = 0.0f;
+            pitch = 0.0f;
             
             this->setViewDirection(pos, dir, up);
             this->setPerspectiveProjection(glm::radians(fov), aspect, nearP, farP);
@@ -31,9 +38,10 @@ namespace vkengine {
 
         void Camera::update() {
             // Implementation here
-            this->setViewDirection(pos, dir);
+            this->setViewDirection(pos, dir, up);
 #if DEBUG_
-            printf("\rCamera Position: %f %f %f", this->pos.x, this->pos.y, this->pos.z);
+            //printf("\rCamera Position: %f %f %f", this->pos.x, this->pos.y, this->pos.z);
+            printf("\rCamera Direction: %f %f %f", this->dir.x, this->dir.y, this->dir.z);
 #endif
         }
         
@@ -50,6 +58,70 @@ namespace vkengine {
         void Camera::MoveUp(float deltaTime)
         {
             this->pos += this->up * this->speed * deltaTime;
+        }
+
+        void Camera::MoveRotate(int xpos, int ypos, int windowWidth, int windowHeight)
+        {
+            // 마우스 커서의 위치를 NDC로 변환
+            // 마우스 커서는 좌측 상단 (0, 0), 우측 하단(width-1, height-1)
+            // NDC는 좌측 상단이 (-1, -1), 우측 하단(1, 1)
+            float x = xpos * 2.0f / windowWidth - 1.0f;
+            float y = ypos * 2.0f / windowHeight - 1.0f;
+
+            // 커서가 화면 밖으로 나갔을 경우 범위 조절
+            // 게임에서는 클램프를 안할 수도 있습니다.
+            x = glm::clamp(x, -1.0f, 1.0f);
+            y = glm::clamp(y, -1.0f, 1.0f);
+
+            this->yaw = x * vkMath::XM_2PI;
+            this->pitch = y * vkMath::XM_PIDIV2;
+
+            // yaw 회전 행렬 생성
+            // 방향 벡터 회전
+            this->dir = glm::vec3(vkMath::CreateRotationY(this->yaw) * glm::vec4(0.0f, 0.0f, 1.0f, 1.0f));
+            
+            this->right = glm::cross(this->dir, glm::vec3(0.0f, 1.0f, 0.0f));
+
+#if 0
+            static bool firstMouse = true;
+            static float lastX = 0.0f;
+            static float lastY = 0.0f;
+            
+            if (firstMouse)
+            {
+                lastX = xpos;
+                lastY = ypos;
+                firstMouse = false;
+            }
+            
+            float xoffset = xpos - lastX;
+            float yoffset = lastY - ypos;
+            
+            lastX = xpos;
+            lastY = ypos;
+            
+            xoffset *= this->sensitivity;
+            yoffset *= this->sensitivity;
+            
+            this->yaw += xoffset;
+            this->pitch += yoffset;
+            
+            if (this->pitch > 89.0f)
+                this->pitch = 89.0f;
+            
+            if (this->pitch < -89.0f)
+                this->pitch = -89.0f;
+            
+            glm::vec3 front;
+            
+            front.x = cos(glm::radians(this->yaw)) * cos(glm::radians(this->pitch));
+            front.y = sin(glm::radians(this->pitch));
+            front.z = sin(glm::radians(this->yaw)) * cos(glm::radians(this->pitch));
+            
+            this->dir = glm::normalize(front);
+            this->right = glm::normalize(glm::cross(this->dir, glm::vec3(0.0f, 1.0f, 0.0f)));
+            this->up = glm::normalize(glm::cross(this->right, this->dir));
+#endif
         }
 
         void Camera::setPerspectiveProjection(float fov, float aspect, float nearP, float farP)
@@ -69,7 +141,6 @@ namespace vkengine {
             *
             * In Vulkan, the y-axis is inverted compared to OpenGL.
             * This line multiplies the y-axis scale factor by -1 to correct the direction.
-            
             * Vulkan에서는 OpenGL에 비해 y축이 반전됩니다.
             * 이 선은 y축 배율 인수에 -1을 곱하여 방향을 수정합니다.
             */

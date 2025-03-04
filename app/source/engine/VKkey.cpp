@@ -33,5 +33,32 @@ namespace vkengine
 
             }
         }
+        void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods)
+        {
+            VulkanEngine* app = reinterpret_cast<VulkanEngine*>(glfwGetWindowUserPointer(window));
+            if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
+             //   app->setMousePressed(GLFW_MOUSE_BUTTON_LEFT, true);
+            }
+            else if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE) {
+               // app->setMousePressed(GLFW_MOUSE_BUTTON_LEFT, false);
+            }
+            else if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS) {
+                //app->setMousePressed(GLFW_MOUSE_BUTTON_RIGHT, true);
+            }
+            else if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_RELEASE) {
+               // app->setMousePressed(GLFW_MOUSE_BUTTON_RIGHT, false);
+            }
+        }
+        void cursorPositionCallback(GLFWwindow* window, double xpos, double ypos)
+        {
+            
+            glfwGetCursorPos(window, &xpos, &ypos);
+            
+            int windowWidth, windowHeight;
+            glfwGetWindowSize(window, &windowWidth, &windowHeight);
+
+            VulkanEngine* app = reinterpret_cast<VulkanEngine*>(glfwGetWindowUserPointer(window));
+            app->getCamera()->MoveRotate(xpos, ypos, windowWidth, windowHeight);
+        }
     }
 }

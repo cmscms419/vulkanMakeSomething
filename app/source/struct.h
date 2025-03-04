@@ -2,6 +2,7 @@
 #define INCLUDE_STRUCT_H_
 
 #include "./_common.h"
+#include "./math.h"
 
 #define GLM_FORCE_RADIANS
 #define GLM_ENABLE_EXPERIMENTAL
@@ -9,6 +10,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/hash.hpp>
+
 
 struct QueueFamilyIndices {
     uint32_t graphicsAndComputeFamily = 0;  // 그래픽스/컴퓨팅 큐 패밀리 인덱스 (그래픽스/컴퓨팅 명령을 처리하는 큐)
@@ -344,5 +346,7 @@ namespace std {
         }
     };
 }
+
+
 
 #endif // !INCLUDE_STRUCT_H_

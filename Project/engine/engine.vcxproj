@@ -139,6 +139,7 @@
     <ClInclude Include="..\..\app\source\engine\VKimgui.h" />
     <ClInclude Include="..\..\app\source\engine\VKkey.h" />
     <ClInclude Include="..\..\app\source\engine\VKswapchain.h" />
+    <ClInclude Include="..\..\app\source\math_.h" />
     <ClInclude Include="..\..\app\source\struct.h" />
     <ClInclude Include="..\..\app\source\_common.h" />
   </ItemGroup>
