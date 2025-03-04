@@ -186,9 +186,18 @@ namespace vkengine {
         {
             this->camera->MoveRight(dt);
         }
-        //this->camera->setViewDirection(glm::vec3(0.0f), glm::vec3(0.5f, 0.0f, 1.0f));
-        //this->camera->setViewDirection(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-        this->camera->setViewDirection(glm::vec3(2.0f, -2.0f, 2.0f), glm::vec3(-1.0f, 1.0f, -1.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+
+        if (this->m_keyPressed[GLFW_KEY_Q])
+        {
+            this->camera->MoveUp(-dt);
+        }
+        if (this->m_keyPressed[GLFW_KEY_E])
+        {
+            this->camera->MoveUp(dt);
+        }
+
+        //this->camera->setViewDirection(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(-1.0f, -1.0f, -1.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+        this->camera->update();
         this->camera->setPerspectiveProjection(45.0f, this->VKswapChain->getSwapChainExtent().width / this->VKswapChain->getSwapChainExtent().height, 0.1f, 100.0f);
     }
 
@@ -626,7 +635,8 @@ namespace vkengine {
 
         UniformBufferObject ubo{};
 
-        ubo.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+        //ubo.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, -1.0f, 0.0f));
+        ubo.model = glm::mat4(1.0f);
         ubo.view = this->camera->getViewMatrix();
         ubo.proj = this->camera->getProjectionMatrix();
 

@@ -15,6 +15,11 @@ namespace vkengine
                 glfwSetWindowShouldClose(window, GLFW_TRUE);
             }
             
+            // 유효한 키인지 확인
+            if (key < GLFW_KEY_A || key > GLFW_KEY_Z) {
+                return; // 유효하지 않은 키는 무시
+            }
+
             if (action == GLFW_PRESS || action == GLFW_REPEAT) 
             {
                 app->setKeyPressed(key, true);
@@ -22,6 +27,10 @@ namespace vkengine
             else if (action == GLFW_RELEASE) 
             {
                 app->setKeyPressed(key, false);
+            }
+            else
+            {
+
             }
         }
     }

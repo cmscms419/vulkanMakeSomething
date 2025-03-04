@@ -17,8 +17,10 @@ namespace vkengine {
             void setPos(glm::vec3 pos);
             glm::vec3 getTarget() { return this->target; }
             glm::vec3 getPos() { return this->pos; }
+
             void MoveForward(float deltaTime);
             void MoveRight(float deltaTime);
+            void MoveUp(float deltaTime);
 
             void setPerspectiveProjection(float fov, float aspect, float nearP, float farP);
 

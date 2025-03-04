@@ -4,24 +4,21 @@ namespace vkengine {
     namespace object {
 
         Camera::Camera() {
-            pos = glm::vec3(2.0f);
+            pos = glm::vec3(0.0f, 0.0f, 3.0f);
             right = glm::vec3(1.0f, 0.0f, 0.0f);
-            up = glm::vec3(0.0f, 1.0f, 0.0f);
-            //target = glm::vec3(0.5f, 0.5f, -1.0f);
-            //dir = glm::normalize(target - pos);
-            dir = glm::cross(right, up) * -1.f;
+            dir = glm::vec3(0.0f, 0.0f, -1.0f);
+            up = glm::normalize(glm::cross(right, dir));
 
             fov = 45.0f;
             aspect = (float)WIDTH / (float)HEIGHT;
             nearP = 0.1f;
-            farP = 100.0f;
+            farP = 1000.0f;
             
             speed = 2.5f;
             sensitivity = 0.1f;
             
-            this->setViewDirection(pos, dir);
+            this->setViewDirection(pos, dir, up);
             this->setPerspectiveProjection(glm::radians(fov), aspect, nearP, farP);
-            this->projectionMatrix[1][1] *= -1;
 #if DEBUG_
             printf("Camera Position: %f %f %f\n", this->pos.x, this->pos.y, this->pos.z);
             printf("Camera Target: %f %f %f\n", this->target.x, this->target.y, this->target.z);
@@ -34,18 +31,25 @@ namespace vkengine {
 
         void Camera::update() {
             // Implementation here
-            
-            //printf("Camera Position: %f %f %f\n", this->pos.x, this->pos.y, this->pos.z);
+            this->setViewDirection(pos, dir);
+#if DEBUG_
+            printf("\rCamera Position: %f %f %f", this->pos.x, this->pos.y, this->pos.z);
+#endif
         }
         
         void Camera::MoveForward(float deltaTime)
         {
-            this->pos += this->target * this->speed * deltaTime;
+            this->pos += this->dir * this->speed * deltaTime;
         }
 
         void Camera::MoveRight(float deltaTime)
         {
             this->pos += this->right * this->speed * deltaTime;
+        }
+
+        void Camera::MoveUp(float deltaTime)
+        {
+            this->pos += this->up * this->speed * deltaTime;
         }
 
         void Camera::setPerspectiveProjection(float fov, float aspect, float nearP, float farP)
@@ -59,13 +63,24 @@ namespace vkengine {
             projectionMatrix[2][2] = farP / (farP - nearP);
             projectionMatrix[2][3] = 1.f;
             projectionMatrix[3][2] = -(farP * nearP) / (farP - nearP);
+            
+            /**
+            * @brief Adjusts the y-axis direction for Vulkan coordinate system.
+            *
+            * In Vulkan, the y-axis is inverted compared to OpenGL.
+            * This line multiplies the y-axis scale factor by -1 to correct the direction.
+            
+            * Vulkan에서는 OpenGL에 비해 y축이 반전됩니다.
+            * 이 선은 y축 배율 인수에 -1을 곱하여 방향을 수정합니다.
+            */
+            projectionMatrix[1][1] *= -1.f;
         }
 
         void Camera::setViewDirection(glm::vec3 pos, glm::vec3 dir, glm::vec3 up)
         {
             const glm::vec3 w{ glm::normalize(dir) };
             const glm::vec3 u{ glm::normalize(glm::cross(w, up)) };
-            const glm::vec3 v{ glm::cross(w, u) };
+            const glm::vec3 v{ glm::cross(u, w) };
 
             viewMatrix = glm::mat4{ 1.f };
             viewMatrix[0][0] = u.x;

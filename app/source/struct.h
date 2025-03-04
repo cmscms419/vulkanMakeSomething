@@ -313,9 +313,9 @@ const std::vector<VertexPosColor> cube{
 
     // tail face (green)
     {{-0.5f, -0.5f, -0.5f}, {.1f, .8f, .1f}},
-    {{0.5f, -0.5f, -0.5f}, {.1f, .8f, .1f}},
-    {{0.5f, 0.5f, -0.5f}, {.1f, .8f, .1f}},
     {{-0.5f, 0.5f, -0.5f}, {.1f, .8f, .1f}},
+    {{0.5f, 0.5f, -0.5f}, {.1f, .8f, .1f}},
+    {{0.5f, -0.5f, -0.5f}, {.1f, .8f, .1f}},
 };
 
 const std::vector<uint16_t> cubeindices_ = {
