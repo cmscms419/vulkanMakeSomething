@@ -45,6 +45,20 @@ namespace vkMath
 
         return rotationX;
     }
+
+    const glm::mat4 CreateRotationZ(float radians) {
+        float cosZ = glm::cos(radians);
+        float sinZ = glm::sin(radians);
+
+        glm::mat4 rotationZ{
+            cosZ, -sinZ, 0.0f, 0.0f,
+            sinZ, cosZ, 0.0f, 0.0f,
+            0.0f, 0.0f, 1.0f, 0.0f,
+            0.0f, 0.0f, 0.0f, 1.0f
+        };
+
+        return rotationZ;
+    }
 }
 
 #endif // !INCLUDE_MATH_H_
