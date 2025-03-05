@@ -76,12 +76,13 @@ namespace vkengine {
 
             // 방향 벡터 회전
             glm::vec3 dirction(0.0f, 0.0f, -1.0f);
-#if 1
+#if 0
             dirction = glm::vec3(vkMath::CreateRotationY(this->yaw) * glm::vec4(dirction, 1.0f));
             dirction = glm::vec3(vkMath::CreateRotationX(this->pitch) * glm::vec4(dirction, 1.0f));
+            dirction = glm::vec3(vkMath::CreateRotationZ(0.0f) * glm::vec4(dirction, 1.0f));
             
 #else
-            dirction = glm::vec3(vkMath::CreateRotation(this->yaw,this->pitch, XM_PIDIV2) * glm::vec4(0.0f, 0.0f, -1.0f, 1.0f));
+            dirction = glm::vec3(vkMath::CreateRotation(this->yaw,this->pitch, 0.0f) * glm::vec4(0.0f, 0.0f, -1.0f, 1.0f));
 #endif
             this->dir = glm::normalize(dirction);
             this->right = glm::cross(this->dir, glm::vec3(0.0f, 1.0f, 0.0f));
