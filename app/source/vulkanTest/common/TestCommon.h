@@ -1,5 +1,5 @@
-ï»¿#ifndef INCLUDE_COMMON_H
-#define INCLUDE_COMMON_H
+#ifndef INCLUDE_TEST_COMMON_H
+#define INCLUDE_TEST_COMMON_H
 
 #include <algorithm>
 #include <array>
@@ -97,23 +97,23 @@ namespace vkutil
 {
     namespace helper_
     {
-        // íŒŒì¼ì„ ì½ì–´ì˜¤ëŠ” í•¨ìˆ˜
+        // ÆÄÀÏÀ» ÀĞ¾î¿À´Â ÇÔ¼ö
         std::vector<char> readFile(const std::string& filename);
-        
-        // ë¬¼ë¦¬ ë””ë°”ì´ìŠ¤ì˜ í™•ì¥ ê¸°ëŠ¥ì„ ì§€ì›í•˜ëŠ”ì§€ í™•ì¸í•˜ëŠ” í•¨ìˆ˜
+
+        // ¹°¸® µğ¹ÙÀÌ½ºÀÇ È®Àå ±â´ÉÀ» Áö¿øÇÏ´ÂÁö È®ÀÎÇÏ´Â ÇÔ¼ö
         uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties, VkPhysicalDevice VKphysicalDevice);
-        
-        // ë²„í¼ë¥¼ ìƒì„±í•˜ëŠ” í•¨ìˆ˜
-        // ë²„í¼ë¥¼ ìƒì„±í•˜ê³  ë©”ëª¨ë¦¬ë¥¼ í• ë‹¹í•©ë‹ˆë‹¤.
-        void createBuffer(VkDevice device, 
-            VkPhysicalDevice physicalDevice, 
-            VkDeviceSize size, 
-            VkBufferUsageFlags usage, 
-            VkMemoryPropertyFlags properties, 
-            VkBuffer& buffer, 
+
+        // ¹öÆÛ¸¦ »ı¼ºÇÏ´Â ÇÔ¼ö
+        // ¹öÆÛ¸¦ »ı¼ºÇÏ°í ¸Ş¸ğ¸®¸¦ ÇÒ´çÇÕ´Ï´Ù.
+        void createBuffer(VkDevice device,
+            VkPhysicalDevice physicalDevice,
+            VkDeviceSize size,
+            VkBufferUsageFlags usage,
+            VkMemoryPropertyFlags properties,
+            VkBuffer& buffer,
             VkDeviceMemory& bufferMemory);
 
-        // ë²„í¼ë¥¼ ë³µì‚¬í•˜ëŠ” í•¨ìˆ˜
+        // ¹öÆÛ¸¦ º¹»çÇÏ´Â ÇÔ¼ö
         void copyBuffer(
             VkDevice& VKdevice,
             VkCommandPool& VKcommandPool,
@@ -121,8 +121,8 @@ namespace vkutil
             VkBuffer srcBuffer,
             VkBuffer dstBuffer,
             VkDeviceSize size);
-        
-        // ì´ë¯¸ì§€ë¥¼ ìƒì„±í•˜ëŠ” í•¨ìˆ˜
+
+        // ÀÌ¹ÌÁö¸¦ »ı¼ºÇÏ´Â ÇÔ¼ö
         void createImage(
             VkDevice& VKdevice,
             VkPhysicalDevice& VKphysicalDevice,
@@ -137,13 +137,13 @@ namespace vkutil
             VkImage& image,
             VkDeviceMemory& imageMemory);
 
-        //  ì‹œì‘í•˜ë ¤ëŠ” ëª…ë ¹ë²„í¼ë¥¼ ìƒì„±í•˜ëŠ” í•¨ìˆ˜
+        //  ½ÃÀÛÇÏ·Á´Â ¸í·É¹öÆÛ¸¦ »ı¼ºÇÏ´Â ÇÔ¼ö
         VkCommandBuffer beginSingleTimeCommands(VkDevice& device, VkCommandPool& commandPool);
-    
-        // ëª…ë ¹ë²„í¼ë¥¼ ì¢…ë£Œí•˜ëŠ” í•¨ìˆ˜
+
+        // ¸í·É¹öÆÛ¸¦ Á¾·áÇÏ´Â ÇÔ¼ö
         void endSingleTimeCommands(VkDevice& device, VkCommandPool& commandPool, VkQueue& graphicsQueue, VkCommandBuffer& commandBuffer);
 
-        // ì´ë¯¸ì§€ ë ˆì´ì•„ì›ƒì„ ì „í™˜í•˜ëŠ” í•¨ìˆ˜
+        // ÀÌ¹ÌÁö ·¹ÀÌ¾Æ¿ôÀ» ÀüÈ¯ÇÏ´Â ÇÔ¼ö
         void transitionImageLayout(
             VkDevice& device,
             VkCommandPool& commandPool,
@@ -155,7 +155,7 @@ namespace vkutil
             uint32_t mipLevels
         );
 
-        // ì´ë¯¸ì§€ë¥¼ ë³µì‚¬í•˜ëŠ” í•¨ìˆ˜
+        // ÀÌ¹ÌÁö¸¦ º¹»çÇÏ´Â ÇÔ¼ö
         void copyBufferToImage(
             VkDevice& device,
             VkCommandPool& commandPool,
@@ -165,29 +165,29 @@ namespace vkutil
             uint32_t width,
             uint32_t height);
 
-        // ì´ë¯¸ì§€ ë·°ë¥¼ ìƒì„±í•˜ëŠ” í•¨ìˆ˜
+        // ÀÌ¹ÌÁö ºä¸¦ »ı¼ºÇÏ´Â ÇÔ¼ö
         VkImageView createImageView(
             VkDevice& device,
             VkImage image,
-            VkFormat format, 
+            VkFormat format,
             VkImageAspectFlags aspectFlags,
             uint32_t mipLevels
         );
 
-        // Formatì„ ì§€ì›í•˜ëŠ”ì§€ í™•ì¸í•˜ëŠ” í•¨ìˆ˜
+        // FormatÀ» Áö¿øÇÏ´ÂÁö È®ÀÎÇÏ´Â ÇÔ¼ö
         VkFormat findSupportedFormat(
             VkPhysicalDevice physicalDevice,
             const std::vector<VkFormat>& candidates,
             VkImageTiling tiling,
             VkFormatFeatureFlags features);
 
-        // ê¹Šì´ í˜•ì‹ì„ ì°¾ëŠ” í•¨ìˆ˜
+        // ±íÀÌ Çü½ÄÀ» Ã£´Â ÇÔ¼ö
         VkFormat findDepthFormat(VkPhysicalDevice physicalDevice);
 
-        // ìŠ¤í…ì‹¤ ì»´í¬ë„ŒíŠ¸ë¥¼ ê°€ì§€ê³  ìˆëŠ”ì§€ í™•ì¸í•˜ëŠ” í•¨ìˆ˜
+        // ½ºÅÙ½Ç ÄÄÆ÷³ÍÆ®¸¦ °¡Áö°í ÀÖ´ÂÁö È®ÀÎÇÏ´Â ÇÔ¼ö
         bool hasStencilComponent(VkFormat format);
 
-        // Mipmapsì„ ìƒì„±í•˜ëŠ” í•¨ìˆ˜
+        // MipmapsÀ» »ı¼ºÇÏ´Â ÇÔ¼ö
         void generateMipmaps(
             VkPhysicalDevice physicalDevice,
             VkDevice device,
@@ -199,15 +199,13 @@ namespace vkutil
             int32_t texHeight,
             uint32_t mipLevels);
 
-        // ìµœëŒ€ ì‚¬ìš© ê°€ëŠ¥í•œ ìƒ˜í”Œë§ ìˆ˜ë¥¼ ë°˜í™˜í•˜ëŠ” í•¨ìˆ˜
+        // ÃÖ´ë »ç¿ë °¡´ÉÇÑ »ùÇÃ¸µ ¼ö¸¦ ¹İÈ¯ÇÏ´Â ÇÔ¼ö
         VkSampleCountFlagBits getMaxUsableSampleCount(VkPhysicalDevice physicalDevice);
 
-        // setupCommandBuffer ë‚˜ì¤‘ì— ì¶”ê°€
-        // flushSetupCommands ë‚˜ì¤‘ì— ì¶”ê°€
-            
+        // setupCommandBuffer ³ªÁß¿¡ Ãß°¡
+        // flushSetupCommands ³ªÁß¿¡ Ãß°¡
+
     }
 }
 
-
-
-#endif // INCLUDE_COMMON_H
+#endif // INCLUDE_TEST_COMMON_H

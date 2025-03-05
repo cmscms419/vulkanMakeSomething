@@ -214,7 +214,7 @@ namespace vkengine {
                 return 0;
             }
 
-#ifdef DEBUG_/
+#ifdef DEBUG_
             printf("Device %s score: %d\n", deviceProperties.deviceName, score);
             printf("DeviceProperties.deviceType: %d\n", deviceProperties.deviceType);
             printf("Device Name: %s\n", deviceProperties.deviceName);

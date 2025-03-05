@@ -1,8 +1,7 @@
-#include "_common.h"
-#include "struct.h"
+#include "TestCommon.h"
 
-namespace vkutil {
-
+namespace vkutil
+{
     namespace helper_
     {
         std::vector<char> readFile(const std::string& filename) {
@@ -58,14 +57,14 @@ namespace vkutil {
             allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
             allocInfo.allocationSize = memRequirements.size;
             allocInfo.memoryTypeIndex = findMemoryType(memRequirements.memoryTypeBits, properties, physicalDevice);
-            
+
             if (vkAllocateMemory(device, &allocInfo, nullptr, &bufferMemory) != VK_SUCCESS) {
                 throw std::runtime_error("failed to allocate buffer memory!");
             }
 
             vkBindBufferMemory(device, buffer, bufferMemory, 0);
         }
-        
+
         void copyBuffer(VkDevice& VKdevice, VkCommandPool& VKcommandPool, VkQueue& graphicsVKQueue, VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size)
         {
             VkCommandBuffer commandBuffer = helper_::beginSingleTimeCommands(VKdevice, VKcommandPool);
@@ -135,7 +134,7 @@ namespace vkutil {
             return commandBuffer;
 
         }
-        
+
         void endSingleTimeCommands(VkDevice& device, VkCommandPool& commandPool, VkQueue& graphicsQueue, VkCommandBuffer& commandBuffer)
         {
             vkEndCommandBuffer(commandBuffer);
@@ -237,9 +236,9 @@ namespace vkutil {
 
             region.imageOffset = { 0, 0, 0 };
             region.imageExtent = { width, height, 1 };
-            
+
             vkCmdCopyBufferToImage(commandBuffer, buffer, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
-            
+
             endSingleTimeCommands(device, commandPool, graphicsQueue, commandBuffer);
         }
 
@@ -258,7 +257,7 @@ namespace vkutil {
             viewInfo.subresourceRange.layerCount = 1;
 
             VkImageView imageView;
-            
+
             VK_CHECK_RESULT(vkCreateImageView(device, &viewInfo, nullptr, &imageView));
 
             return imageView;
@@ -310,7 +309,7 @@ namespace vkutil {
             }
 
             VkCommandBuffer commandBuffer = beginSingleTimeCommands(device, commandPool);
-            
+
             // 레이아웃 전환
             VkImageMemoryBarrier barrier{};
 
@@ -375,12 +374,12 @@ namespace vkutil {
                     0, nullptr,
                     1, &barrier);
 
-                if (mipWidth > 1) 
+                if (mipWidth > 1)
                 {
                     mipWidth /= 2;
                 }
 
-                if (mipHeight > 1) 
+                if (mipHeight > 1)
                 {
                     mipHeight /= 2;
                 }
@@ -440,14 +439,4 @@ namespace vkutil {
         }
 
     }
-}
-
-VkCommandBufferBeginInfo FrameData::commandBufferBeginInfo(VkCommandBufferUsageFlags flags)
-{
-    VkCommandBufferBeginInfo info = {};
-    info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-    info.pNext = nullptr;
-    info.flags = flags;
-    info.pInheritanceInfo = nullptr;
-    return info;
 }

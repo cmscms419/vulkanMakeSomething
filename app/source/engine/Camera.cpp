@@ -1,7 +1,5 @@
 #include "Camera.h"
 
-#include "../math_.h"
-
 using namespace vkMath;
 
 namespace vkengine {
@@ -73,55 +71,21 @@ namespace vkengine {
             x = glm::clamp(x, -1.0f, 1.0f);
             y = glm::clamp(y, -1.0f, 1.0f);
 
-            this->yaw = x * vkMath::XM_2PI;
-            this->pitch = y * vkMath::XM_PIDIV2;
+            this->yaw = x * vkMath::XM_PI; // 0 ~ 180도 마우스 회전 -> Y축 기준으로 회전
+            this->pitch = y * vkMath::XM_PIDIV4; // 0 ~ 180도 마우스 회전 -> X축 기준으로 회전
 
             // 방향 벡터 회전
-            this->dir = glm::vec3(vkMath::CreateRotationY(this->yaw) * glm::vec4(0.0f, 0.0f, -1.0f, 1.0f));
-            this->dir = glm::vec3(vkMath::CreateRotationX(this->pitch) * glm::vec4(this->dir.x, this->dir.y * -1.f, this->dir.z, 1.0f));
+            glm::vec3 dirction(0.0f, 0.0f, -1.0f);
+#if 1
+            dirction = glm::vec3(vkMath::CreateRotationY(this->yaw) * glm::vec4(dirction, 1.0f));
+            dirction = glm::vec3(vkMath::CreateRotationX(this->pitch) * glm::vec4(dirction, 1.0f));
             
+#else
+            dirction = glm::vec3(vkMath::CreateRotation(this->yaw,this->pitch, XM_PIDIV2) * glm::vec4(0.0f, 0.0f, -1.0f, 1.0f));
+#endif
+            this->dir = glm::normalize(dirction);
             this->right = glm::cross(this->dir, glm::vec3(0.0f, 1.0f, 0.0f));
 
-#if 0
-            static bool firstMouse = true;
-            static float lastX = 0.0f;
-            static float lastY = 0.0f;
-            
-            if (firstMouse)
-            {
-                lastX = xpos;
-                lastY = ypos;
-                firstMouse = false;
-            }
-            
-            float xoffset = xpos - lastX;
-            float yoffset = lastY - ypos;
-            
-            lastX = xpos;
-            lastY = ypos;
-            
-            xoffset *= this->sensitivity;
-            yoffset *= this->sensitivity;
-            
-            this->yaw += xoffset;
-            this->pitch += yoffset;
-            
-            if (this->pitch > 89.0f)
-                this->pitch = 89.0f;
-            
-            if (this->pitch < -89.0f)
-                this->pitch = -89.0f;
-            
-            glm::vec3 front;
-            
-            front.x = cos(glm::radians(this->yaw)) * cos(glm::radians(this->pitch));
-            front.y = sin(glm::radians(this->pitch));
-            front.z = sin(glm::radians(this->yaw)) * cos(glm::radians(this->pitch));
-            
-            this->dir = glm::normalize(front);
-            this->right = glm::normalize(glm::cross(this->dir, glm::vec3(0.0f, 1.0f, 0.0f)));
-            this->up = glm::normalize(glm::cross(this->right, this->dir));
-#endif
         }
 
         void Camera::setPerspectiveProjection(float fov, float aspect, float nearP, float farP)

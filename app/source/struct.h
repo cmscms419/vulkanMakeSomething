@@ -1,8 +1,8 @@
 #ifndef INCLUDE_STRUCT_H_
 #define INCLUDE_STRUCT_H_
 
-#include "./_common.h"
-#include "./math.h"
+#include "common.h"
+#include "./vkmath.h"
 
 #define GLM_FORCE_RADIANS
 #define GLM_ENABLE_EXPERIMENTAL
