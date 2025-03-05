@@ -1,4 +1,4 @@
-#include "VKkey.h"
+#include "VKinputEvent.h"
 #include "VKengine.h"
 #include "Camera.h"
 
@@ -58,7 +58,7 @@ namespace vkengine
             glfwGetWindowSize(window, &windowWidth, &windowHeight);
 
             VulkanEngine* app = reinterpret_cast<VulkanEngine*>(glfwGetWindowUserPointer(window));
-            app->getCamera()->MoveRotate(xpos, ypos, windowWidth, windowHeight);
+            app->getCamera()->MoveRotate(static_cast<int>(xpos), static_cast<int>(ypos), windowWidth, windowHeight);
         }
     }
 }

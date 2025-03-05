@@ -1,5 +1,5 @@
-#ifndef INCLUDE_VKKEY_H_
-#define INCLUDE_VKKEY_H_
+#ifndef INCLUDE_VK_INPUT_EVENT_H_
+#define INCLUDE_VK_INPUT_EVENT_H_
 
 #include "../common.h"
 
@@ -10,4 +10,4 @@ namespace vkengine {
         void cursorPositionCallback(GLFWwindow* window, double xpos, double ypos);
     }
 }
-#endif // INCLUDE_VKKEY_H_
+#endif // INCLUDE_VKINPUTEVENT_H_
