@@ -1,7 +1,7 @@
 #ifndef INCLUDE_VKKEY_H_
 #define INCLUDE_VKKEY_H_
 
-#include "../_common.h"
+#include "../common.h"
 
 namespace vkengine {
     namespace input {

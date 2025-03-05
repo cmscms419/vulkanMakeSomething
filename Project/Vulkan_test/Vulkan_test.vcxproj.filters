@@ -33,9 +33,6 @@
     <ClCompile Include="..\..\app\source\vulkanTest\Application.cpp">
       <Filter>app\source</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\app\source\_common.cpp">
-      <Filter>app\common</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\app\source\main_vulkanTest.cpp" />
     <ClCompile Include="..\..\app\source\engine\imgui.cpp">
       <Filter>app\imgui</Filter>
@@ -58,6 +55,9 @@
     <ClCompile Include="..\..\app\source\engine\imgui_widgets.cpp">
       <Filter>app\imgui</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\app\source\vulkanTest\common\TestCommon.cpp">
+      <Filter>app\common</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\app\source\vulkanTest\Camera.h">
@@ -69,13 +69,13 @@
     <ClInclude Include="..\..\app\source\vulkanTest\Application.h">
       <Filter>app\source</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\app\source\_common.h">
-      <Filter>app\common</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\app\source\object_data.h">
       <Filter>app\common</Filter>
     </ClInclude>
     <ClInclude Include="..\..\app\source\engine\VKimgui.h">
+      <Filter>app\common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\app\source\vulkanTest\common\TestCommon.h">
       <Filter>app\common</Filter>
     </ClInclude>
   </ItemGroup>

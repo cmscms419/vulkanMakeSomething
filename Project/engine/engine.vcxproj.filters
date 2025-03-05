@@ -37,7 +37,7 @@
     <ClCompile Include="..\..\app\source\engine\VKkey.cpp">
       <Filter>source</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\app\source\_common.cpp">
+    <ClCompile Include="..\..\app\source\common.cpp">
       <Filter>source\common</Filter>
     </ClCompile>
     <ClCompile Include="..\..\app\source\engine\Debug.cpp">
@@ -93,7 +93,7 @@
     <ClInclude Include="..\..\app\source\engine\VKkey.h">
       <Filter>source</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\app\source\_common.h">
+    <ClInclude Include="..\..\app\source\common.h">
       <Filter>source\common</Filter>
     </ClInclude>
     <ClInclude Include="..\..\app\source\engine\Debug.h">
@@ -120,7 +120,7 @@
     <ClInclude Include="..\..\app\cpp\cameraEngine.h">
       <Filter>app\camera</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\app\source\math_.h">
+    <ClInclude Include="..\..\app\source\vkmath.h">
       <Filter>source\common</Filter>
     </ClInclude>
   </ItemGroup>

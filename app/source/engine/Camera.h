@@ -1,7 +1,7 @@
 ﻿#ifndef INCLUDE_CAMERA_H_
 #define INCLUDE_CAMERA_H_
 
-#include "../_common.h"
+#include "../common.h"
 #include "../struct.h"
 #include "VKengine.h"
 

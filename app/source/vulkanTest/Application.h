@@ -1,7 +1,7 @@
 ﻿#ifndef INCLUDE_SOURCE_APPLICATION_H
 #define INCLUDE_SOURCE_APPLICATION_H
 
-#include "../_common.h"
+#include "./common/TestCommon.h"
 #include "../struct.h"
 
 #include "imgui.h" 
