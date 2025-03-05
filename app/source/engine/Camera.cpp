@@ -74,11 +74,11 @@ namespace vkengine {
             y = glm::clamp(y, -1.0f, 1.0f);
 
             this->yaw = x * vkMath::XM_2PI;
-            this->pitch = y * vkMath::XM_PIDIV2 * -1.f;
+            this->pitch = y * vkMath::XM_PIDIV2;
 
             // 방향 벡터 회전
-            this->dir = glm::vec3(vkMath::CreateRotationY(this->yaw) * glm::vec4(0.0f, 0.0f, 1.0f, 1.0f));
-            this->dir = glm::vec3(vkMath::CreateRotationX(this->pitch) * glm::vec4(this->dir, 1.0f));
+            this->dir = glm::vec3(vkMath::CreateRotationY(this->yaw) * glm::vec4(0.0f, 0.0f, -1.0f, 1.0f));
+            this->dir = glm::vec3(vkMath::CreateRotationX(this->pitch) * glm::vec4(this->dir.x, this->dir.y * -1.f, this->dir.z, 1.0f));
             
             this->right = glm::cross(this->dir, glm::vec3(0.0f, 1.0f, 0.0f));
 
