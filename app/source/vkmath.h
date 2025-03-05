@@ -1,4 +1,4 @@
-#ifndef INCLUDE_MATH_H_
+ï»¿#ifndef INCLUDE_MATH_H_
 #define INCLUDE_MATH_H_
 
 #define GLM_FORCE_RADIANS
@@ -10,7 +10,7 @@
 
 namespace vkMath
 {
-    // #DiredctXMath.h ¿¡¼­ °¡Á®¿Â »ó¼ö
+    // #DiredctXMath.h ì—ì„œ ê°€ì ¸ì˜¨ ìƒìˆ˜
     constexpr float XM_PI = 3.141592654f;
     constexpr float XM_2PI = 6.283185307f;
     constexpr float XM_1DIVPI = 0.318309886f;
@@ -63,6 +63,15 @@ namespace vkMath
     inline const glm::mat4 CreateRotation(float yaw, float pitch, float roll) {
         return CreateRotationY(yaw) * CreateRotationX(pitch) * CreateRotationZ(roll);
     }
+
+    inline const glm::vec3 RotationQuat(const glm::quat q, const glm::vec3 dir)
+    {
+        glm::quat quatDir(0.0f, dir.x, dir.y, dir.z);
+        glm::quat qConjugate(q.w, -q.x, -q.y, -q.z);
+        glm::quat quatRotdir = q * quatDir * qConjugate; // q Â· v Â· qâ»Â¹
+        return glm::vec3(quatRotdir.x, quatRotdir.y, quatRotdir.z);
+    }
+
 }
 
 #endif // !INCLUDE_MATH_H_
