@@ -1,11 +1,21 @@
 #ifndef INCLUDE_VULKANENGINE_H_
 #define INCLUDE_VULKANENGINE_H_
 
-#include "../common.h"
-#include "../struct.h"
+#include "../../common/common.h"
+#include "../../common/struct.h"
+
+#define GLFW_INCLUDE_VULKAN
+#define GLFW_EXPOSE_NATIVE_WIN32
+#include <GLFW/glfw3.h>
+#include <GLFW/glfw3native.h>
+
+#include <map>
 
 #include "VKdevice.h"
 #include "VKswapchain.h"
+#include "VKinputEvent.h"
+#include "Debug.h"
+#include "helper.h"
 
 namespace vkengine {
 

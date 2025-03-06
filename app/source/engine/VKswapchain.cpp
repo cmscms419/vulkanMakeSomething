@@ -1,5 +1,4 @@
 #include "VKswapchain.h"
-#include "helper.h"
 
 namespace vkengine
 {
@@ -86,11 +85,6 @@ namespace vkengine
         printf("\n");
 #endif // DEBUG_
 
-    }
-
-    VkResult VKSwapChain::acquireNextImage(VkSemaphore presentCompleteSemaphore, uint32_t& imageIndex)
-    {
-        return vkAcquireNextImageKHR(this->VKdevice, this->VKswapChain, UINT64_MAX, presentCompleteSemaphore, (VkFence)nullptr, &imageIndex);
     }
 
     void VKSwapChain::cleanupSwapChain()

@@ -4,6 +4,11 @@
 #include "../source/engine/VKengine.h"
 #include "../source/engine/VKimgui.h"
 
+#include "../source/engine/helper.h"
+#include "../source/engine/Camera.h"
+#include "../source/engine/Debug.h"
+#include "../common/struct.h"
+
 namespace vkengine
 {
     namespace gui {

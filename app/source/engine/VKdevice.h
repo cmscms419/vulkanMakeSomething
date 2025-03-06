@@ -1,8 +1,10 @@
 #ifndef INCLUDE_VULKANDEVICE_H_
 #define INCLUDE_VULKANDEVICE_H_
 
-#include "../common.h"
-#include "../struct.h"
+#include "../../common/common.h"
+#include "../../common/struct.h"
+
+#include <set>
 
 namespace vkengine {
 

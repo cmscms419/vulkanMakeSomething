@@ -2,15 +2,11 @@
 #define INCLUDE_STRUCT_H_
 
 #include "common.h"
-#include "./vkmath.h"
 
-#define GLM_FORCE_RADIANS
-#define GLM_ENABLE_EXPERIMENTAL
-#define GLM_FORCE_DEPTH_ZERO_TO_ONE
+#include <vector>
+#include <array>
+
 #include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtx/hash.hpp>
-
 
 struct QueueFamilyIndices {
     uint32_t graphicsAndComputeFamily = 0;  // 그래픽스/컴퓨팅 큐 패밀리 인덱스 (그래픽스/컴퓨팅 명령을 처리하는 큐)
@@ -28,7 +24,7 @@ struct QueueFamilyIndices {
         presentFamily = index;
         presentFamilyHasValue = true;
     }
-    const uint32_t getGraphicsQueueFamilyIndex() {
+    uint32_t getGraphicsQueueFamilyIndex() const {
         uint32_t target = -1;
 
         if (queueFamilyProperties.queueFlags & VkQueueFlagBits::VK_QUEUE_GRAPHICS_BIT)
@@ -38,7 +34,7 @@ struct QueueFamilyIndices {
 
         return target;
     }
-    const uint32_t getPresentQueueFamilyIndex() {
+    uint32_t getPresentQueueFamilyIndex() const {
         uint32_t target = -1;
         if (queueFamilyProperties.queueFlags & VkQueueFlagBits::VK_QUEUE_GRAPHICS_BIT)
         {
@@ -46,7 +42,7 @@ struct QueueFamilyIndices {
         }
         return target;
     }
-    const uint32_t getComputeQueueFamilyIndex() {
+    uint32_t getComputeQueueFamilyIndex() const {
         uint32_t target = -1;
         if (queueFamilyProperties.queueFlags & VkQueueFlagBits::VK_QUEUE_COMPUTE_BIT)
         {
@@ -54,7 +50,7 @@ struct QueueFamilyIndices {
         }
         return target;
     }
-    const bool isComplete() {
+    bool isComplete() const {
         return this->graphicsAndComputeFamilyHasValue && this->presentFamilyHasValue;
     }
     void reset() {
@@ -164,7 +160,7 @@ struct VertexBuffer {
     VkBuffer indexBuffer;
     VkDeviceMemory indexmemory;
 
-    void cleanup(VkDevice device) {
+    void cleanup(VkDevice device) const {
         vkDestroyBuffer(device, vertexBuffer, nullptr);
         vkFreeMemory(device, vertexMemory, nullptr);
         vkDestroyBuffer(device, indexBuffer, nullptr);
@@ -177,7 +173,7 @@ struct UniformBuffer {
     VkDeviceMemory memory;
     void* Mapped;
 
-    void cleanup(VkDevice device) {
+    void cleanup(VkDevice device) const {
         vkDestroyBuffer(device, buffer, nullptr);
         vkFreeMemory(device, memory, nullptr);
     }
@@ -224,7 +220,7 @@ struct depthStencill {
     VkDeviceMemory depthImageMemory{};
     VkImageView depthImageView{};
 
-    void cleanup(VkDevice device) {
+    void cleanup(VkDevice device) const {
         vkDestroyImageView(device, depthImageView, nullptr);
         vkDestroyImage(device, depthImage, nullptr);
         vkFreeMemory(device, depthImageMemory, nullptr);
@@ -328,25 +324,6 @@ const std::vector<uint16_t> cubeindices_ = {
 	   16, 17, 18, 18, 19, 16,
 	   20, 21, 22, 22, 23, 20
 };
-
-
-namespace std {
-    template<> struct hash<Vertex> {
-        size_t operator()(Vertex const& vertex) const {
-            return ((hash<glm::vec3>()(vertex.pos) ^
-                (hash<glm::vec3>()(vertex.color) << 1)) >> 1) ^
-                (hash<glm::vec2>()(vertex.texCoord) << 1);
-        }
-    };
-
-    template<> struct hash<VertexPosColor> {
-        size_t operator()(VertexPosColor const& vertex) const {
-            return ((hash<glm::vec3>()(vertex.pos) ^
-                    (hash<glm::vec3>()(vertex.color) << 1)));
-        }
-    };
-}
-
 
 
 #endif // !INCLUDE_STRUCT_H_

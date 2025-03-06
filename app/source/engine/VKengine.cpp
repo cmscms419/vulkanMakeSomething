@@ -1,7 +1,4 @@
 #include "VKengine.h"
-#include "VKinputEvent.h"
-#include "Debug.h"
-#include "helper.h"
 
 using vkengine::input::key_callback;
 using vkengine::VKDevice_;
@@ -54,7 +51,6 @@ namespace vkengine
         this->initVulkan();
 
         this->_isInitialized = true;
-
     }
 
     void VulkanEngine::cleanup()

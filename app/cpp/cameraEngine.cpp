@@ -1,8 +1,4 @@
 ﻿#include "cameraEngine.h"
-#include "../source/engine/helper.h"
-#include "../source/engine/Camera.h"
-#include "../source/engine/Debug.h"
-#include "../source/struct.h"
 
 using namespace vkengine::helper;
 using namespace vkengine::debug;

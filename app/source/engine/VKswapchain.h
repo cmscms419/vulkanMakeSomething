@@ -1,8 +1,11 @@
 #ifndef INCLUDE_VULKANSWAPCHAIN_H_
 #define INCLUDE_VULKANSWAPCHAIN_H_
 
-#include "../common.h"
-#include "../struct.h"
+#include "../../common/common.h"
+#include "../../common/struct.h"
+#include "../../common/macros.h"
+
+#include "helper.h"
 
 namespace vkengine {
 
@@ -15,14 +18,18 @@ namespace vkengine {
         void createImageViews();
         void cleanupSwapChain();
 
-        const VkExtent2D getSwapChainExtent() { return this->VKswapChainExtent; }
-        const VkFormat getSwapChainImageFormat() { return this->VKswapChainImageFormat; }
-        const VkSwapchainKHR getSwapChain() { return this->VKswapChain; }
+        VkExtent2D getSwapChainExtent() const { return this->VKswapChainExtent; }
+        VkFormat getSwapChainImageFormat() const { return this->VKswapChainImageFormat; }
+        VkSwapchainKHR getSwapChain() const { return this->VKswapChain; }
 
         std::vector<VkImage> getSwapChainImages() { return this->VKswapChainImages; }
         std::vector<VkImageView> getSwapChainImageViews() { return this->VKswapChainImageViews; }
-        VkResult acquireNextImage(VkSemaphore presentCompleteSemaphore, uint32_t& imageIndex);
         uint32_t getSwapChainImageCount() { return static_cast<uint32_t>(this->VKswapChainImages.size()); }
+        
+        VkResult acquireNextImage(VkSemaphore presentCompleteSemaphore, uint32_t& imageIndex) const
+        {
+            return vkAcquireNextImageKHR(this->VKdevice, this->VKswapChain, UINT64_MAX, presentCompleteSemaphore, (VkFence)nullptr, &imageIndex);
+        }
     private:
 
         VkSwapchainKHR VKswapChain{ VK_NULL_HANDLE };

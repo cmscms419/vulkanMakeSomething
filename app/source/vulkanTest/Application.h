@@ -2,7 +2,7 @@
 #define INCLUDE_SOURCE_APPLICATION_H
 
 #include "./common/TestCommon.h"
-#include "../struct.h"
+#include "../../common/struct.h"
 
 #include "imgui.h" 
 #include "imconfig.h"

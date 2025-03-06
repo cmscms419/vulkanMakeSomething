@@ -6,22 +6,6 @@ namespace vkengine {
     namespace object {
 
         Camera::Camera() {
-            pos = glm::vec3(0.0f, 0.0f, 3.0f);
-            right = glm::vec3(1.0f, 0.0f, 0.0f);
-            dir = glm::vec3(0.0f, 0.0f, -1.0f);
-            up = glm::normalize(glm::cross(right, dir));
-
-            fov = 45.0f;
-            aspect = (float)WIDTH / (float)HEIGHT;
-            nearP = 0.1f;
-            farP = 1000.0f;
-            
-            speed = 2.5f;
-            sensitivity = 0.1f;
-
-            yaw = 0.0f;
-            pitch = 0.0f;
-            
             this->setViewDirection(pos, dir, up);
             this->setPerspectiveProjection(glm::radians(fov), aspect, nearP, farP);
 #if DEBUG_
@@ -81,7 +65,7 @@ namespace vkengine {
             glm::quat qYaw = glm::angleAxis(this->yaw, glm::vec3(0.0f, 1.0f, 0.0f)); // YÃà
             glm::quat qPitch = glm::angleAxis(this->pitch, glm::vec3(1.0f, 0.0f, 0.0f)); // XÃà
 
-            glm::quat Result = qYaw * qPitch;
+            glm::quat Result = qYaw * qPitch; 
             dirction = vkMath::RotationQuat(Result, dirction);
             this->dir = glm::normalize(dirction);
             

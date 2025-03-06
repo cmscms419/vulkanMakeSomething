@@ -1,8 +1,12 @@
 #ifndef INCLUDE_SOURCE_HELPER_H_
 #define INCLUDE_SOURCE_HELPER_H_
 
-#include "../common.h"
-#include "../struct.h"
+#include <set>
+#include <fstream>
+
+#include "../../common/common.h"
+#include "../../common/struct.h"
+#include "../../common/macros.h"
 
 namespace vkengine {
     namespace helper {

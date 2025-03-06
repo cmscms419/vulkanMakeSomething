@@ -1,9 +1,13 @@
 ﻿#ifndef INCLUDE_CAMERA_H_
 #define INCLUDE_CAMERA_H_
 
-#include "../common.h"
-#include "../struct.h"
-#include "VKengine.h"
+#include <glm/glm.hpp>
+#include <glm/gtc/quaternion.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+
+#include "../../common/vkmath.h"
+#include "../../common/macros.h"
+
 
 namespace vkengine {
     namespace object {
@@ -16,13 +20,13 @@ namespace vkengine {
             void update();
 
             void setPos(glm::vec3 pos);
-            glm::vec3 getTarget() { return this->target; }
-            glm::vec3 getPos() { return this->pos; }
+            const glm::vec3 getTarget() { return this->target; }
+            const glm::vec3 getPos() { return this->pos; }
 
             void MoveForward(float deltaTime);
             void MoveRight(float deltaTime);
             void MoveUp(float deltaTime);
-            void MoveRotate(int xpos, int ypos,int windowWidth, int windowHeight);
+            void MoveRotate(int xpos, int ypos, int windowWidth, int windowHeight);
 
             void setPerspectiveProjection(float fov, float aspect, float nearP, float farP);
 
@@ -34,24 +38,24 @@ namespace vkengine {
             void setViewXYZ(glm::vec3 pos, glm::vec3 rot);
 
         private:
-            glm::vec3 pos;
-            glm::vec3 up;
-            glm::vec3 target;
-            glm::vec3 dir;
-            glm::vec3 right;
+            glm::vec3 pos{ glm::vec3(0.0f, 0.0f, 3.0f) };
+            glm::vec3 up{ glm::vec3(0.0f, 1.0f, 0.0f) };
+            glm::vec3 target{ glm::vec3(0.0f) };
+            glm::vec3 dir{ glm::vec3(0.0f, 0.0f, -1.0f) };
+            glm::vec3 right{ glm::vec3(1.0f, 0.0f, 0.0f) };
 
-            float yaw;
-            float pitch;
-            float fov;
-            float aspect;
-            float nearP;
-            float farP;
-            float speed;
-            float sensitivity;
+            float yaw{ 0.0f };
+            float pitch{ 0.0f };
+            float fov{ 45.f };
+            float aspect = []() { return (float)WIDTH / (float)HEIGHT; }();
+            float nearP{ 0.1f };
+            float farP{ 1000.0f };
+            float speed{ 2.5f };;
+            float sensitivity{ 0.1f };
 
             glm::mat4 viewMatrix{ 1.f };
             glm::mat4 projectionMatrix{ 1.f };
-       };
+        };
     }
 }
 
