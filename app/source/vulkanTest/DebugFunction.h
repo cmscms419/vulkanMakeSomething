@@ -1,7 +1,7 @@
 #ifndef INCLUDE_SOURCE_DEBUGFUNCTION_H
 #define INCLUDE_SOURCE_DEBUGFUNCTION_H
 
-#include "../_common.h"
+#include "common/TestCommon.h"
 
 namespace vkutil {
 

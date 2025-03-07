@@ -1,8 +1,9 @@
 ﻿#ifndef INCLUDE_CAMERA_H_
 #define INCLUDE_CAMERA_H_
 
-#include "../_common.h"
-#include "../../common/struct.h"
+#include "common/TestCommon.h"
+#include "./common/struct.h"
+#include "./common/vkmath.h"
 
 namespace vkutil {
     namespace object {

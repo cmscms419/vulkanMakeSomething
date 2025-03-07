@@ -58,6 +58,9 @@
     <ClCompile Include="..\..\app\source\vulkanTest\common\TestCommon.cpp">
       <Filter>app\common</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\app\source\vulkanTest\common\vkmath.cpp">
+      <Filter>app\common</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\app\source\vulkanTest\Camera.h">
@@ -76,6 +79,12 @@
       <Filter>app\common</Filter>
     </ClInclude>
     <ClInclude Include="..\..\app\source\vulkanTest\common\TestCommon.h">
+      <Filter>app\common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\app\source\vulkanTest\common\vkmath.h">
+      <Filter>app\common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\app\source\vulkanTest\common\struct.h">
       <Filter>app\common</Filter>
     </ClInclude>
   </ItemGroup>

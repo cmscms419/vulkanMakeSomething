@@ -258,7 +258,7 @@ namespace vkutil
 
             VkImageView imageView;
 
-            VK_CHECK_RESULT(vkCreateImageView(device, &viewInfo, nullptr, &imageView));
+            vkCreateImageView(device, &viewInfo, nullptr, &imageView);
 
             return imageView;
         }
