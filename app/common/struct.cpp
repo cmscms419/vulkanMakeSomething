@@ -1,6 +1,4 @@
 ﻿#include "struct.h"
-
-#define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/hash.hpp>
 
 namespace std {
@@ -15,7 +13,7 @@ namespace std {
     template<> struct hash<VertexPosColor> {
         size_t operator()(VertexPosColor const& vertex) const {
             return ((hash<glm::vec3>()(vertex.pos) ^
-                    (hash<glm::vec3>()(vertex.color) << 1)));
+                (hash<glm::vec3>()(vertex.color) << 1)));
         }
     };
 }

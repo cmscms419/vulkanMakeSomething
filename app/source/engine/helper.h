@@ -15,12 +15,12 @@ namespace vkengine {
         std::vector<char> readFile(const std::string& filename);
 
         // 물리 디바이스가 요구 사항을 충족하는지 확인하는 함수
-        bool isDeviceSuitable(VkPhysicalDevice device, VkSurfaceKHR VKsurface, QueueFamilyIndices* indices);
+        bool isDeviceSuitable(VkPhysicalDevice &device, VkSurfaceKHR &VKsurface, QueueFamilyIndices* indices);
 
         // 주어진 물리 장치에서 큐 패밀리 속성을 찾는 함수
         // PROB : 큐 패밀리가 여러개인 경우에 필요한 처리가 있는 패밀리를 먼저 찾을 경우, 그 패밀리의 인덱스만 반환함
         // TODO ; 큐 패밀리가 여러개인 경우에 대한 처리가 필요함
-        const QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device, VkSurfaceKHR VKsurface);
+        const QueueFamilyIndices findQueueFamilies(VkPhysicalDevice &device, VkSurfaceKHR &VKsurface);
 
         // 버퍼를 복사하는 함수
         void copyBuffer(

@@ -330,9 +330,7 @@ namespace vkengine
         uint32_t deviceCount = 0;
         vkEnumeratePhysicalDevices(this->VKinstance, &deviceCount, nullptr);
 
-        if (deviceCount == 0) {
-            throw std::runtime_error("failed to find GPUs with Vulkan support!");
-        }
+        assert(deviceCount != 0);
 
         std::vector<VkPhysicalDevice> devices(deviceCount);
         vkEnumeratePhysicalDevices(this->VKinstance, &deviceCount, devices.data());
@@ -344,7 +342,7 @@ namespace vkengine
         std::vector<QueueFamilyIndices> indices(deviceCount);
 
         uint16_t selectQueueFamilyIndeices = 0;
-        for (const auto& device : devices) {
+        for (VkPhysicalDevice& device : devices) {
             if (helper::isDeviceSuitable(device, this->VKsurface, &indices[selectQueueFamilyIndeices]))
             {
                 int score = helper::rateDeviceSuitability(device);

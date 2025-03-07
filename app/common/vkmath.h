@@ -16,9 +16,44 @@ namespace vkMath
     constexpr float XM_PIDIV2 = 1.570796327f;
     constexpr float XM_PIDIV4 = 0.785398163f;
 
-    const glm::mat4 CreateRotationY(float radians);
-    const glm::mat4 CreateRotationX(float radians);
-    const glm::mat4 CreateRotationZ(float radians);
+    inline const glm::mat4 CreateRotationY(float radians)
+    {
+        float cosY = glm::cos(radians);
+        float sinY = glm::sin(radians);
+        glm::mat4 rotationY{
+            cosY, 0.0f, -sinY, 0.0f,
+            0.0f, 1.0f, 0.0f, 0.0f,
+            sinY, 0.0f, cosY, 0.0f,
+            0.0f, 0.0f, 0.0f, 1.0f
+        };
+        return rotationY;
+    }
+    inline const glm::mat4 CreateRotationX(float radians)
+    {
+        float cosX = glm::cos(radians);
+        float sinX = glm::sin(radians);
+
+        glm::mat4 rotationX{
+            1.0f, 0.0f, 0.0f, 0.0f,
+            0.0f, cosX, sinX, 0.0f,
+            0.0f, -sinX, cosX, 0.0f,
+            0.0f, 0.0f, 0.0f, 1.0f
+        };
+        return rotationX;
+    }
+    inline const glm::mat4 CreateRotationZ(float radians)
+    {
+        float cosZ = glm::cos(radians);
+        float sinZ = glm::sin(radians);
+        glm::mat4 rotationZ{
+            cosZ, -sinZ, 0.0f, 0.0f,
+            sinZ, cosZ, 0.0f, 0.0f,
+            0.0f, 0.0f, 1.0f, 0.0f,
+            0.0f, 0.0f, 0.0f, 1.0f
+        };
+
+        return rotationZ;
+    }
     
     const glm::mat4 CreateRotation(float yaw, float pitch, float roll);
     

@@ -21,7 +21,7 @@ namespace vkengine {
             return buffer;
         }
 
-        bool isDeviceSuitable(VkPhysicalDevice device, VkSurfaceKHR VKsurface, QueueFamilyIndices* indices)
+        bool isDeviceSuitable(VkPhysicalDevice &device, VkSurfaceKHR &VKsurface, QueueFamilyIndices* indices)
         {
             QueueFamilyIndices indices_ = findQueueFamilies(device, VKsurface);
             *indices = indices_;
@@ -40,7 +40,7 @@ namespace vkengine {
             return indices_.isComplete() && extensionsSupported && swapChainAdequate && supportedFeatures.samplerAnisotropy;
         }
 
-        const QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device, VkSurfaceKHR VKsurface)
+        const QueueFamilyIndices findQueueFamilies(VkPhysicalDevice &device, VkSurfaceKHR &VKsurface)
         {
             QueueFamilyIndices indices; // 큐 패밀리의 개수를 저장할 변수를 초기화
             QueueFamilyIndices target; // 큐 패밀리의 개수를 저장할 변수를 초기화

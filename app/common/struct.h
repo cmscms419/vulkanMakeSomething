@@ -6,6 +6,7 @@
 #include <vector>
 #include <array>
 
+#define GLM_ENABLE_EXPERIMENTAL
 #include <glm/glm.hpp>
 
 struct QueueFamilyIndices {
@@ -324,6 +325,8 @@ const std::vector<uint16_t> cubeindices_ = {
 	   16, 17, 18, 18, 19, 16,
 	   20, 21, 22, 22, 23, 20
 };
+
+
 
 
 #endif // !INCLUDE_STRUCT_H_
