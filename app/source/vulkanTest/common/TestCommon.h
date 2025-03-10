@@ -86,6 +86,7 @@ const std::vector<VkDynamicState> dynamicStates = {
 
 const std::string MODEL_PATH = "../../../../../../source/viking_room.obj";
 const std::string TEXTURE_PATH = "../../../../../../source/viking_room.png";
+const std::string TEST_TEXTURE_PATH = "../../../../../../source/image.jpg";
 
 #ifdef DEBUG_
 const bool enableValidationLayers = true;

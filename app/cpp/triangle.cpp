@@ -40,30 +40,30 @@ namespace vkengine {
         {
             this->cleanupSwapcChain();
             
-            vkDestroyPipeline(this->VKdevice->VKdevice, this->VKgraphicsPipeline, nullptr);
-            vkDestroyPipelineLayout(this->VKdevice->VKdevice, this->VKpipelineLayout, nullptr);
-            vkDestroyRenderPass(this->VKdevice->VKdevice, *this->VKrenderPass.get(), nullptr);
+            vkDestroyPipeline(this->VKdevice->logicaldevice, this->VKgraphicsPipeline, nullptr);
+            vkDestroyPipelineLayout(this->VKdevice->logicaldevice, this->VKpipelineLayout, nullptr);
+            vkDestroyRenderPass(this->VKdevice->logicaldevice, *this->VKrenderPass.get(), nullptr);
 
             // 추가적인 부분
             for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
             {
-                vkDestroyBuffer(this->VKdevice->VKdevice, this->VKuniformBuffer[i].buffer, nullptr);
-                vkFreeMemory(this->VKdevice->VKdevice, this->VKuniformBuffer[i].memory, nullptr);
+                vkDestroyBuffer(this->VKdevice->logicaldevice, this->VKuniformBuffer[i].buffer, nullptr);
+                vkFreeMemory(this->VKdevice->logicaldevice, this->VKuniformBuffer[i].memory, nullptr);
             }
 
-            vkDestroyDescriptorPool(this->VKdevice->VKdevice, this->VKdescriptorPool, nullptr);
-            vkDestroyDescriptorSetLayout(this->VKdevice->VKdevice, this->VKdescriptorSetLayout, nullptr);
+            vkDestroyDescriptorPool(this->VKdevice->logicaldevice, this->VKdescriptorPool, nullptr);
+            vkDestroyDescriptorSetLayout(this->VKdevice->logicaldevice, this->VKdescriptorSetLayout, nullptr);
 
-            this->VKvertexBuffer.cleanup(this->VKdevice->VKdevice);
+            this->VKvertexBuffer.cleanup(this->VKdevice->logicaldevice);
 
             for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
             {
-                vkDestroySemaphore(this->VKdevice->VKdevice, this->VKframeData[i].VkimageavailableSemaphore, nullptr);
-                vkDestroySemaphore(this->VKdevice->VKdevice, this->VKframeData[i].VkrenderFinishedSemaphore, nullptr);
-                vkDestroyFence(this->VKdevice->VKdevice, this->VKframeData[i].VkinFlightFences, nullptr);
+                vkDestroySemaphore(this->VKdevice->logicaldevice, this->VKframeData[i].VkimageavailableSemaphore, nullptr);
+                vkDestroySemaphore(this->VKdevice->logicaldevice, this->VKframeData[i].VkrenderFinishedSemaphore, nullptr);
+                vkDestroyFence(this->VKdevice->logicaldevice, this->VKframeData[i].VkinFlightFences, nullptr);
             }
 
-            vkDestroyPipelineCache(this->VKdevice->VKdevice, this->VKpipelineCache, nullptr);
+            vkDestroyPipelineCache(this->VKdevice->logicaldevice, this->VKpipelineCache, nullptr);
 
             this->VKdevice->cleanup();
 
@@ -83,7 +83,7 @@ namespace vkengine {
     void triangle::drawFrame()
     {
         // 렌더링을 시작하기 전에 프레임을 렌더링할 준비가 되었는지 확인합니다.
-        VK_CHECK_RESULT(vkWaitForFences(this->VKdevice->VKdevice, 1, &this->getCurrnetFrameData().VkinFlightFences, VK_TRUE, UINT64_MAX));
+        VK_CHECK_RESULT(vkWaitForFences(this->VKdevice->logicaldevice, 1, &this->getCurrnetFrameData().VkinFlightFences, VK_TRUE, UINT64_MAX));
 
         // 이미지를 가져오기 위해 스왑 체인에서 이미지 인덱스를 가져옵니다.
         // 주어진 스왑체인에서 다음 이미지를 획득하고, 
@@ -95,7 +95,7 @@ namespace vkengine {
         this->updateUniformBuffer(static_cast<uint32_t>(this->currentFrame));
         
         // 플래그를 재설정합니다. -> 렌더링이 끝나면 플래그를 재설정합니다.
-        vkResetFences(this->VKdevice->VKdevice, 1, &this->getCurrnetFrameData().VkinFlightFences); 
+        vkResetFences(this->VKdevice->logicaldevice, 1, &this->getCurrnetFrameData().VkinFlightFences); 
 
         // 렌더링을 시작하기 전에 이미지를 렌더링할 준비가 되었는지 확인합니다.
         // 지정된 명령 버퍼를 초기화하고, 선택적으로 플래그를 사용하여 초기화 동작을 제어
@@ -124,7 +124,7 @@ namespace vkengine {
         VKsubmitInfo.pSignalSemaphores = signalSemaphores;
 
         // 플래그를 재설정합니다. -> 렌더링이 끝나면 플래그를 재설정합니다.
-        vkResetFences(this->VKdevice->VKdevice, 1, &this->VKframeData[this->currentFrame].VkinFlightFences); 
+        vkResetFences(this->VKdevice->logicaldevice, 1, &this->VKframeData[this->currentFrame].VkinFlightFences); 
         
         // 렌더링을 시작합니다.
         VK_CHECK_RESULT(vkQueueSubmit(this->VKdevice->graphicsVKQueue, 1, &VKsubmitInfo, this->VKframeData[this->currentFrame].VkinFlightFences));
@@ -142,8 +142,8 @@ namespace vkengine {
 
         for (auto& frameData : this->VKframeData)
         {
-            VK_CHECK_RESULT(vkCreateSemaphore(this->VKdevice->VKdevice, &semaphoreInfo, nullptr, &frameData.VkimageavailableSemaphore));
-            VK_CHECK_RESULT(vkCreateSemaphore(this->VKdevice->VKdevice, &semaphoreInfo, nullptr, &frameData.VkrenderFinishedSemaphore));
+            VK_CHECK_RESULT(vkCreateSemaphore(this->VKdevice->logicaldevice, &semaphoreInfo, nullptr, &frameData.VkimageavailableSemaphore));
+            VK_CHECK_RESULT(vkCreateSemaphore(this->VKdevice->logicaldevice, &semaphoreInfo, nullptr, &frameData.VkrenderFinishedSemaphore));
         }
 
         return true;
@@ -202,7 +202,7 @@ namespace vkengine {
             // 디스크립터 세트를 바인딩합니다.
             vkCmdBindDescriptorSets(framedata->mainCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->VKpipelineLayout, 0, 1, &this->VKdescriptorSets[this->currentFrame], 0, nullptr);
             // 렌더 패스를 종료합니다.
-            vkCmdDrawIndexed(framedata->mainCommandBuffer, static_cast<uint32_t>(testindices_.size()), 1, 0, 0, 0);
+            vkCmdDrawIndexed(framedata->mainCommandBuffer, static_cast<uint32_t>(TriangleTestIndices_.size()), 1, 0, 0, 0);
         }
 
         vkCmdEndRenderPass(framedata->mainCommandBuffer);
@@ -213,14 +213,14 @@ namespace vkengine {
 
     void triangle::createVertexbuffer()
     {
-        VkDeviceSize buffersize = sizeof(testVectex_[0]) * testVectex_.size();
+        VkDeviceSize buffersize = sizeof(TriangleTestVertices[0]) * TriangleTestVertices.size();
 
         VkBuffer stagingBuffer;
         VkDeviceMemory stagingBufferMemory;
 
         helper::createBuffer(
-            this->VKdevice->VKdevice,
-            this->VKdevice->VKphysicalDevice,
+            this->VKdevice->logicaldevice,
+            this->VKdevice->physicalDevice,
             buffersize,
             VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
             VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
@@ -228,13 +228,13 @@ namespace vkengine {
             stagingBufferMemory);
 
         void* data;
-        vkMapMemory(this->VKdevice->VKdevice, stagingBufferMemory, 0, buffersize, 0, &data);
-            memcpy(data, testVectex_.data(), (size_t)buffersize);
-        vkUnmapMemory(this->VKdevice->VKdevice, stagingBufferMemory);
+        vkMapMemory(this->VKdevice->logicaldevice, stagingBufferMemory, 0, buffersize, 0, &data);
+            memcpy(data, TriangleTestVertices.data(), (size_t)buffersize);
+        vkUnmapMemory(this->VKdevice->logicaldevice, stagingBufferMemory);
 
         helper::createBuffer(
-            this->VKdevice->VKdevice,
-            this->VKdevice->VKphysicalDevice,
+            this->VKdevice->logicaldevice,
+            this->VKdevice->physicalDevice,
             buffersize,
             VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
             VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
@@ -242,27 +242,27 @@ namespace vkengine {
             this->VKvertexBuffer.vertexMemory);
 
         helper::copyBuffer(
-            this->VKdevice->VKdevice,
-            this->VKdevice->VKcommandPool,
+            this->VKdevice->logicaldevice,
+            this->VKdevice->commandPool,
             this->VKdevice->graphicsVKQueue,
             stagingBuffer,
             this->VKvertexBuffer.vertexBuffer,
             buffersize);
 
         // 버퍼 생성이 끝나면 스테이징 버퍼를 제거합니다.
-        vkDestroyBuffer(this->VKdevice->VKdevice, stagingBuffer, nullptr);
-        vkFreeMemory(this->VKdevice->VKdevice, stagingBufferMemory, nullptr);
+        vkDestroyBuffer(this->VKdevice->logicaldevice, stagingBuffer, nullptr);
+        vkFreeMemory(this->VKdevice->logicaldevice, stagingBufferMemory, nullptr);
     }
 
     void triangle::createIndexBuffer()
     {
-        VkDeviceSize buffersize = sizeof(testindices_[0]) * testindices_.size();
+        VkDeviceSize buffersize = sizeof(TriangleTestIndices_[0]) * TriangleTestIndices_.size();
         VkBuffer stagingBuffer;
         VkDeviceMemory stagingBufferMemory;
         
         helper::createBuffer(
-            this->VKdevice->VKdevice,
-            this->VKdevice->VKphysicalDevice,
+            this->VKdevice->logicaldevice,
+            this->VKdevice->physicalDevice,
             buffersize,
             VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
             VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
@@ -270,13 +270,13 @@ namespace vkengine {
             stagingBufferMemory);
         
         void* data;
-        vkMapMemory(this->VKdevice->VKdevice, stagingBufferMemory, 0, buffersize, 0, &data);
-        memcpy(data, testindices_.data(), (size_t)buffersize);
-        vkUnmapMemory(this->VKdevice->VKdevice, stagingBufferMemory);
+        vkMapMemory(this->VKdevice->logicaldevice, stagingBufferMemory, 0, buffersize, 0, &data);
+        memcpy(data, TriangleTestIndices_.data(), (size_t)buffersize);
+        vkUnmapMemory(this->VKdevice->logicaldevice, stagingBufferMemory);
         
         helper::createBuffer(
-            this->VKdevice->VKdevice,
-            this->VKdevice->VKphysicalDevice,
+            this->VKdevice->logicaldevice,
+            this->VKdevice->physicalDevice,
             buffersize,
             VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
             VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
@@ -284,16 +284,16 @@ namespace vkengine {
             this->VKvertexBuffer .indexmemory);
         
         helper::copyBuffer(
-            this->VKdevice->VKdevice,
-            this->VKdevice->VKcommandPool,
+            this->VKdevice->logicaldevice,
+            this->VKdevice->commandPool,
             this->VKdevice->graphicsVKQueue,
             stagingBuffer,
             this->VKvertexBuffer.indexBuffer,
             buffersize);
         
         // 버퍼 생성이 끝나면 스테이징 버퍼를 제거합니다.
-        vkDestroyBuffer(this->VKdevice->VKdevice, stagingBuffer, nullptr);
-        vkFreeMemory(this->VKdevice->VKdevice, stagingBufferMemory, nullptr);
+        vkDestroyBuffer(this->VKdevice->logicaldevice, stagingBuffer, nullptr);
+        vkFreeMemory(this->VKdevice->logicaldevice, stagingBufferMemory, nullptr);
     }
 
     void triangle::createUniformBuffers()
@@ -305,15 +305,15 @@ namespace vkengine {
         for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
         {
             helper::createBuffer(
-                this->VKdevice->VKdevice,
-                this->VKdevice->VKphysicalDevice,
+                this->VKdevice->logicaldevice,
+                this->VKdevice->physicalDevice,
                 bufferSize,
                 VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
                 VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
                 this->VKuniformBuffer[i].buffer,
                 this->VKuniformBuffer[i].memory);
 
-            vkMapMemory(this->VKdevice->VKdevice, this->VKuniformBuffer[i].memory, 0, bufferSize, 0, &this->VKuniformBuffer[i].Mapped);
+            vkMapMemory(this->VKdevice->logicaldevice, this->VKuniformBuffer[i].memory, 0, bufferSize, 0, &this->VKuniformBuffer[i].Mapped);
         }
     }
 
@@ -334,7 +334,7 @@ namespace vkengine {
         layoutInfo.bindingCount = 1;
         layoutInfo.pBindings = &uboLayoutBinding;
 
-        VK_CHECK_RESULT(vkCreateDescriptorSetLayout(this->VKdevice->VKdevice, &layoutInfo, nullptr, &this->VKdescriptorSetLayout));
+        VK_CHECK_RESULT(vkCreateDescriptorSetLayout(this->VKdevice->logicaldevice, &layoutInfo, nullptr, &this->VKdescriptorSetLayout));
     }
 
     void triangle::createDescriptorPool()
@@ -353,7 +353,7 @@ namespace vkengine {
         poolInfo.pPoolSizes = poolSizes.data();
         poolInfo.maxSets = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
 
-        VK_CHECK_RESULT(vkCreateDescriptorPool(this->VKdevice->VKdevice, &poolInfo, nullptr, &this->VKdescriptorPool));
+        VK_CHECK_RESULT(vkCreateDescriptorPool(this->VKdevice->logicaldevice, &poolInfo, nullptr, &this->VKdescriptorPool));
     }
 
     void triangle::createDescriptorSets()
@@ -374,7 +374,7 @@ namespace vkengine {
         this->VKdescriptorSets.resize(MAX_FRAMES_IN_FLIGHT);
 
         // 디스크립터 세트를 할당합니다.
-        VK_CHECK_RESULT(vkAllocateDescriptorSets(this->VKdevice->VKdevice, &allocInfo, this->VKdescriptorSets.data()));
+        VK_CHECK_RESULT(vkAllocateDescriptorSets(this->VKdevice->logicaldevice, &allocInfo, this->VKdescriptorSets.data()));
 
         // 디스크립터 세트를 설정합니다.
         for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
@@ -395,7 +395,7 @@ namespace vkengine {
             descriptorWrites[0].descriptorCount = 1;
             descriptorWrites[0].pBufferInfo = &bufferInfo;
 
-            vkUpdateDescriptorSets(this->VKdevice->VKdevice, static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
+            vkUpdateDescriptorSets(this->VKdevice->logicaldevice, static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
         }
     }
 
@@ -534,7 +534,7 @@ namespace vkengine {
         pipelineLayoutInfo.pushConstantRangeCount = 0;                            // 푸시 상수 범위 개수를 설정
         pipelineLayoutInfo.pPushConstantRanges = nullptr;                         // 푸시 상수 범위 포인터를 설정
 
-        VK_CHECK_RESULT(vkCreatePipelineLayout(this->VKdevice->VKdevice, &pipelineLayoutInfo, nullptr, &this->VKpipelineLayout));
+        VK_CHECK_RESULT(vkCreatePipelineLayout(this->VKdevice->logicaldevice, &pipelineLayoutInfo, nullptr, &this->VKpipelineLayout));
 
         // 그래픽 파이프라인 생성 정보 구조체를 초기화합니다.
         VkGraphicsPipelineCreateInfo pipelineInfo{};
@@ -555,10 +555,10 @@ namespace vkengine {
         pipelineInfo.basePipelineHandle = VK_NULL_HANDLE; // Optional
         pipelineInfo.basePipelineIndex = -1; // Optional
 
-        VK_CHECK_RESULT(vkCreateGraphicsPipelines(this->VKdevice->VKdevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &this->VKgraphicsPipeline));
+        VK_CHECK_RESULT(vkCreateGraphicsPipelines(this->VKdevice->logicaldevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &this->VKgraphicsPipeline));
 
-        vkDestroyShaderModule(this->VKdevice->VKdevice, baseVertshaderModule, nullptr);
-        vkDestroyShaderModule(this->VKdevice->VKdevice, baseFragShaderModule, nullptr);
+        vkDestroyShaderModule(this->VKdevice->logicaldevice, baseVertshaderModule, nullptr);
+        vkDestroyShaderModule(this->VKdevice->logicaldevice, baseFragShaderModule, nullptr);
     }
 
     void triangle::updateUniformBuffer(uint32_t currentImage)
@@ -580,11 +580,11 @@ namespace vkengine {
 
     void triangle::cleanupSwapcChain()
     {
-        this->VKdepthStencill.cleanup(this->VKdevice->VKdevice);
+        this->VKdepthStencill.cleanup(this->VKdevice->logicaldevice);
 
         for (auto framebuffers : this->VKswapChainFramebuffers)
         {
-            vkDestroyFramebuffer(this->VKdevice->VKdevice, framebuffers, nullptr);
+            vkDestroyFramebuffer(this->VKdevice->logicaldevice, framebuffers, nullptr);
         }
 
         this->VKswapChain->cleanupSwapChain();

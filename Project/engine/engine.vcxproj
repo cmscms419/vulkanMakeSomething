@@ -48,8 +48,8 @@
     <LibraryPath>$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(VULKAN_SDK)\Lib</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <OutDir>$(SolutionDir)../exe\$(SolutionName)\$(Platform)\$(Configuration)\</OutDir>
-    <IntDir>$(SolutionDir)../build\$(SolutionName)\$(Platform)\$(Configuration)\</IntDir>
+    <OutDir>$(SolutionDir)../exe\$(ProjectName)\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)../build\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
     <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(VULKAN_SDK)\Include</IncludePath>
     <LibraryPath>$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(VULKAN_SDK)\Lib</LibraryPath>
   </PropertyGroup>
@@ -64,16 +64,16 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>DEBUG_;WIN32;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>./;$(CudaToolkitDir)/include;$(VULKAN_SDK)/include;../../external/imgui;../../external/GLFW/include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>./;$(CudaToolkitDir)/include;$(VULKAN_SDK)/include;../../external/imgui;../../external/GLFW/include;../../include/common/</AdditionalIncludeDirectories>
       <SDLCheck>true</SDLCheck>
       <LanguageStandard_C>stdc11</LanguageStandard_C>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
-      <AdditionalDependencies>vulkan-1.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;glfw3dll.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>vulkan-1.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;glfw3dll.lib;zlib.lib;libpng.lib</AdditionalDependencies>
       <LinkTimeCodeGeneration>Default</LinkTimeCodeGeneration>
-      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories);$(CudaToolkitLibDir);../../external/GLFW/lib/$(Configuration)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories);$(CudaToolkitLibDir);../../external/GLFW/lib/$(Configuration)/;../../external/zlib/lib/$(Configuration)/;../../external/libpng/lib/$(Configuration)/</AdditionalLibraryDirectories>
     </Link>
     <CudaCompile>
       <TargetMachinePlatform>64</TargetMachinePlatform>
@@ -89,17 +89,18 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;WIN64;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>./;$(CudaToolkitDir)/include;$(VULKAN_SDK)/include;../../external/imgui;../../external/GLFW/include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>./;$(CudaToolkitDir)/include;$(VULKAN_SDK)/include;../../external/imgui;../../external/GLFW/include;../../include/common/</AdditionalIncludeDirectories>
       <SDLCheck>true</SDLCheck>
+      <LanguageStandard_C>stdc11</LanguageStandard_C>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <SubSystem>Console</SubSystem>
-      <AdditionalDependencies>vulkan-1.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;glfw3dll.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>vulkan-1.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;glfw3dll.lib;zlib.lib;libpng.lib</AdditionalDependencies>
       <LinkTimeCodeGeneration>Default</LinkTimeCodeGeneration>
-      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories);$(CudaToolkitLibDir);../../external/GLFW/lib/$(Configuration)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories);$(CudaToolkitLibDir);../../external/GLFW/lib/$(Configuration)/;../../external/zlib/lib/$(Configuration)/;../../external/libpng/lib/$(Configuration)/</AdditionalLibraryDirectories>
     </Link>
     <CudaCompile>
       <TargetMachinePlatform>64</TargetMachinePlatform>
@@ -110,10 +111,14 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\app\common\common.cpp" />
+    <ClCompile Include="..\..\app\common\macros.cpp" />
+    <ClCompile Include="..\..\app\common\resourseload.c" />
     <ClCompile Include="..\..\app\common\struct.cpp" />
     <ClCompile Include="..\..\app\common\vkmath.cpp" />
     <ClCompile Include="..\..\app\cpp\cameraEngine.cpp" />
     <ClCompile Include="..\..\app\cpp\skymap.cpp" />
+    <ClCompile Include="..\..\app\cpp\texture.cpp" />
+    <ClCompile Include="..\..\app\cpp\texturecube.cpp" />
     <ClCompile Include="..\..\app\cpp\triangle.cpp" />
     <ClCompile Include="..\..\app\source\engine\Camera.cpp" />
     <ClCompile Include="..\..\app\source\engine\Debug.cpp" />
@@ -131,16 +136,20 @@
     <ClCompile Include="..\..\app\source\engine\VKimgui.cpp" />
     <ClCompile Include="..\..\app\source\engine\VKinputEvent.cpp" />
     <ClCompile Include="..\..\app\source\engine\VKswapchain.cpp" />
+    <ClCompile Include="..\..\app\source\engine\VKtexture.cpp" />
     <ClCompile Include="..\..\app\source\main_engine.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\app\common\common.h" />
     <ClInclude Include="..\..\app\common\macros.h" />
     <ClInclude Include="..\..\app\common\object_data.h" />
+    <ClInclude Include="..\..\app\common\resourseload.h" />
     <ClInclude Include="..\..\app\common\struct.h" />
     <ClInclude Include="..\..\app\common\vkmath.h" />
     <ClInclude Include="..\..\app\cpp\cameraEngine.h" />
     <ClInclude Include="..\..\app\cpp\skymap.h" />
+    <ClInclude Include="..\..\app\cpp\texture.h" />
+    <ClInclude Include="..\..\app\cpp\texturecube.h" />
     <ClInclude Include="..\..\app\cpp\triangle.h" />
     <ClInclude Include="..\..\app\source\engine\Camera.h" />
     <ClInclude Include="..\..\app\source\engine\Debug.h" />
@@ -151,6 +160,7 @@
     <ClInclude Include="..\..\app\source\engine\VKimgui.h" />
     <ClInclude Include="..\..\app\source\engine\VKinputEvent.h" />
     <ClInclude Include="..\..\app\source\engine\VKswapchain.h" />
+    <ClInclude Include="..\..\app\source\engine\VKtexture.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\shader\compile.bat" />

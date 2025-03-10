@@ -1,67 +1,65 @@
 #ifndef INCLUDE_MACROS_H_
 #define INCLUDE_MACROS_H_
 
-#include "common.h"
-
+#include <windows.h>
+#include <Lmcons.h>
 #include <algorithm>
 #include <vector>
 #include <string>
 
+#include <vulkan/vulkan.h>
 
-constexpr int WIDTH = 1280;
-constexpr int HEIGHT = 720;
-constexpr int MAX_FRAMES = 4;
-constexpr int MAX_FRAMES_IN_FLIGHT = 2;
-constexpr int CREATESURFACE_VKWIN32SURFACECREATEINFOKHR = 0;
+#include "common.h"
 
-const std::vector<const char*> validationLayers = {
-    "VK_LAYER_KHRONOS_validation"
-};
-
-const std::vector<const char*> deviceExtensions = {
-    VK_KHR_SWAPCHAIN_EXTENSION_NAME,
-    VK_KHR_SHADER_NON_SEMANTIC_INFO_EXTENSION_NAME
-};
-
-const std::vector<VkDynamicState> dynamicStates = {
-    VK_DYNAMIC_STATE_VIEWPORT,
-    VK_DYNAMIC_STATE_SCISSOR
-};
-
-const std::string MODEL_PATH = "../../../../../../source/viking_room.obj";
-const std::string TEXTURE_PATH = "../../../../../../source/viking_room.png";
-
-#ifdef DEBUG_
-const bool enableValidationLayers = true;
-#else
-const bool enableValidationLayers = false;
-#endif
-
+constexpr const char* DEBUG_USER_NAME_0 = "alstj";
 constexpr int UNIQUE_VERTEXTYPE = 1;
+
+#if DEBUG_
+#define PRINT_TO_CONSOLE(text, ...)              \
+{                                           \
+    const std::string localUserName = UserName; \
+    const std::string targetUserName = static_cast<const std::string>(DEBUG_USER_NAME_0); /* 여기에 자신의 사용자 이름을 입력하세요 */ \
+    if (vkengine::enableValidationLayers && localUserName == targetUserName) { \
+        printf(text, __VA_ARGS__);          \
+    }                                       \
+}                                           \
 
 #define CHECK_RESULT(f)                                                  \
 {                                                                        \
-    bool res = (f);                                                      \
-    if (res != true) {                                                   \
-      printf("Fatal : function is %d in %s at line %d\n", res, __FILE__, \
-             __LINE__);                                                  \
-      assert(res == true);                                               \
-    }                                                                    \
-  }                                                                      \
+    const std::string localUserName = UserName; \
+    const std::string targetUserName = static_cast<const std::string>(DEBUG_USER_NAME_0); /* 여기에 자신의 사용자 이름을 입력하세요 */ \
+    bool res = (f);                                                     \
+    if (vkengine::enableValidationLayers && localUserName == targetUserName) {        \
+        if (res != true) {                                                  \
+            printf("Fatal : function is %d in %s at line %d\n", res, __FILE__,  \
+                __LINE__);                                                      \
+        }                                                                           \
+    }                                                                       \
+    assert(res == true);                                                \
+}                                                                      \
 
 #define VK_CHECK_RESULT(f)                                               \
 {                                                                        \
+    const std::string localUserName = UserName; \
+    const std::string targetUserName = static_cast<const std::string>(DEBUG_USER_NAME_0); /* 여기에 자신의 사용자 이름을 입력하세요 */ \
     VkResult res = (f);                                                  \
+    if (vkengine::enableValidationLayers && localUserName == targetUserName) {        \
     if (res != VK_SUCCESS) {                                             \
       printf("Fatal : VkResult is %d in %s at line %d\n", res, __FILE__, \
              __LINE__);                                                  \
-      assert(res == VK_SUCCESS);                                         \
     }                                                                    \
+    }                                                                    \
+      assert(res == VK_SUCCESS);                                         \
   }                                                                      \
 
-#define PRINT_TO_CONSOLE(text)              \
-{                                           \
-    printf("%s \n", &text);                 \
-}                                           \
+#else
+
+#define PRINT_TO_CONSOLE(text, ...)
+#define CHECK_RESULT(f) f
+#define VK_CHECK_RESULT(f) f
+
+#endif // DEBUG_
+
+extern const std::string UserName;
 
 #endif // !INCLUDE_MACROS_H_

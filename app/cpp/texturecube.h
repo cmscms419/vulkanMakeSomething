@@ -1,5 +1,5 @@
-#ifndef INCLUDE_SKYMAP_H_
-#define INCLUDE_SKYMAP_H_
+ï»¿#ifndef INCLUDE_SOURCE_TEXTURECUBE_H
+#define INCLUDE_SOURCE_TEXTURECUBE_H
 
 #include "../source/engine/VKengine.h"
 #include "../source/engine/helper.h"
@@ -10,15 +10,12 @@
 
 namespace vkengine
 {
-    namespace gui {
-        class vkGUI;
-    }
 
-    class skycubeEngine : public VulkanEngine
+    class TextureCubeEngine : public VulkanEngine
     {
     public:
-        skycubeEngine(std::string root_path);
-        ~skycubeEngine();
+        TextureCubeEngine(std::string root_path);
+        ~TextureCubeEngine();
 
         virtual void init() override;
         virtual bool prepare() override;
@@ -26,25 +23,25 @@ namespace vkengine
         virtual void drawFrame() override;
         virtual bool mainLoop() override;
         void update(float dt);
-
+    
     protected:
         virtual bool init_sync_structures() override;
-        virtual void recordCommandBuffer(FrameData* framedata, uint32_t imageIndex) override; // Ä¿¸Çµå ¹öÆÛ ·¹ÄÚµå
+        virtual void recordCommandBuffer(FrameData* framedata, uint32_t imageIndex) override; // ì»¤ë§¨ë“œ ë²„í¼ ë ˆì½”ë“œ
     private:
 
-        // °¢ 3d ¸ğµ¨À» »ı¼ºÇÏ±â À§ÇÑ ÇÔ¼ö
+        // ê° 3d ëª¨ë¸ì„ ìƒì„±í•˜ê¸° ìœ„í•œ í•¨ìˆ˜
         void createVertexbuffer();
         void createIndexBuffer();
         void createUniformBuffers();
 
-        // DescriptorÀÇ set, pool, layoutÀ» »ı¼ºÇÏ±â À§ÇÑ ÇÔ¼öµé
+        // Descriptorì˜ set, pool, layoutì„ ìƒì„±í•˜ê¸° ìœ„í•œ í•¨ìˆ˜ë“¤
         void createDescriptorSetLayout();
         void createDescriptorPool();
         void createDescriptorSets();
 
-        // grapics pipelineÀ» »ı¼ºÇÏ±â À§ÇÑ ÇÔ¼ö
+        // grapics pipelineì„ ìƒì„±í•˜ê¸° ìœ„í•œ í•¨ìˆ˜
         void createGraphicsPipeline();
-
+        
         void updateUniformBuffer(uint32_t currentImage);
 
         void cleanupSwapcChain();
@@ -53,9 +50,9 @@ namespace vkengine
         IndexBuffer_ VKindexBuffer{};
         std::vector<UniformBuffer> VKuniformBuffer = {};
 
-        VkPipeline VKgraphicsPipeline = VK_NULL_HANDLE;                      // ±×·¡ÇÈ½º ÆÄÀÌÇÁ¶óÀÎ -> ±×·¡ÇÈ½º ÆÄÀÌÇÁ¶óÀÎÀ» »ı¼º
+        VkPipeline VKgraphicsPipeline = VK_NULL_HANDLE;                      // ê·¸ë˜í”½ìŠ¤ íŒŒì´í”„ë¼ì¸ -> ê·¸ë˜í”½ìŠ¤ íŒŒì´í”„ë¼ì¸ì„ ìƒì„±
         VkPipelineLayout VKpipelineLayout{ VK_NULL_HANDLE };
     };
 }
 
-#endif // !INCLUDE_SKYMAP_H_
+#endif // INCLUDE_SOURCE_TEXTURECUBE_H

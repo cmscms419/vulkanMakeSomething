@@ -10,12 +10,12 @@ namespace vkengine {
         assert(physicalDevice);
         assert(indice.isComplete());
 
-        this->VKphysicalDevice = physicalDevice;
+        this->physicalDevice = physicalDevice;
         this->queueFamilyIndices = indice;
 
-        vkGetPhysicalDeviceProperties(this->VKphysicalDevice, &properties);       // 물리 디바이스 속성 가져오기
-        vkGetPhysicalDeviceFeatures(this->VKphysicalDevice, &features);           // 물리 디바이스 기능 가져오기
-        vkGetPhysicalDeviceMemoryProperties(VKphysicalDevice, &memoryProperties); // 메모리 속성 가져오기
+        vkGetPhysicalDeviceProperties(this->physicalDevice, &properties);       // 물리 디바이스 속성 가져오기
+        vkGetPhysicalDeviceFeatures(this->physicalDevice, &features);           // 물리 디바이스 기능 가져오기
+        vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memoryProperties); // 메모리 속성 가져오기
 
         uint32_t supportedApiVersion = properties.apiVersion;
 
@@ -85,22 +85,22 @@ namespace vkengine {
         }
 
         // 논리 장치를 생성합니다.
-        result = vkCreateDevice(this->VKphysicalDevice, &createInfo, nullptr, &this->VKdevice);
+        result = vkCreateDevice(this->physicalDevice, &createInfo, nullptr, &this->logicaldevice);
 
         if (result != VK_SUCCESS) {
             return result;
         }
 
         // 논리 디바이스에서 그래픽 큐 핸들을 가져옵니다.
-        vkGetDeviceQueue(this->VKdevice, this->queueFamilyIndices.graphicsAndComputeFamily, 0, &this->graphicsVKQueue);
+        vkGetDeviceQueue(this->logicaldevice, this->queueFamilyIndices.graphicsAndComputeFamily, 0, &this->graphicsVKQueue);
         
         // 논리 디바이스에서 프레젠테이션 큐 핸들을 가져옵니다.
-        vkGetDeviceQueue(this->VKdevice, this->queueFamilyIndices.presentFamily, 0, &this->presentVKQueue);
+        vkGetDeviceQueue(this->logicaldevice, this->queueFamilyIndices.presentFamily, 0, &this->presentVKQueue);
 
         return result;
     }
 
-    void VKDevice_::createimageview(uint32_t width, uint32_t height, uint32_t mipLevels, VkSampleCountFlagBits numSamples, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory)
+    void VKDevice_::createimageview(uint32_t width, uint32_t height, uint32_t mipLevels, VkSampleCountFlagBits numSamples, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory) const
     {
         VkImageCreateInfo imageInfo{};
 
@@ -117,21 +117,21 @@ namespace vkengine {
         imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
         imageInfo.flags = 0; // Optional
 
-        VK_CHECK_RESULT(vkCreateImage(VKdevice, &imageInfo, nullptr, &image));
+        VK_CHECK_RESULT(vkCreateImage(logicaldevice, &imageInfo, nullptr, &image));
 
         VkMemoryRequirements memRequirements;
-        vkGetImageMemoryRequirements(VKdevice, image, &memRequirements);
+        vkGetImageMemoryRequirements(logicaldevice, image, &memRequirements);
 
         VkMemoryAllocateInfo allocInfo{};
         allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
         allocInfo.allocationSize = memRequirements.size;
-        allocInfo.memoryTypeIndex = helper::findMemoryType(VKphysicalDevice, memRequirements.memoryTypeBits, properties);
+        allocInfo.memoryTypeIndex = helper::findMemoryType(physicalDevice, memRequirements.memoryTypeBits, properties);
 
-        VK_CHECK_RESULT(vkAllocateMemory(VKdevice, &allocInfo, nullptr, &imageMemory));
-        VK_CHECK_RESULT(vkBindImageMemory(VKdevice, image, imageMemory, 0));
+        VK_CHECK_RESULT(vkAllocateMemory(logicaldevice, &allocInfo, nullptr, &imageMemory));
+        VK_CHECK_RESULT(vkBindImageMemory(logicaldevice, image, imageMemory, 0));
     }
 
-    const VkShaderModule VKDevice_::createShaderModule(const std::string& path)
+    const VkShaderModule VKDevice_::createShaderModule(const std::string& path) const
     {
         auto shaderCode = helper::readFile(path);
 
@@ -140,15 +140,15 @@ namespace vkengine {
         createInfo.codeSize = shaderCode.size();
         createInfo.pCode = reinterpret_cast<const uint32_t*>(shaderCode.data());
 
-        VkShaderModule shaderModule;
-        VK_CHECK_RESULT(vkCreateShaderModule(this->VKdevice, &createInfo, nullptr, &shaderModule));
+        VkShaderModule shaderModule{ VK_NULL_HANDLE };
+        VK_CHECK_RESULT(vkCreateShaderModule(this->logicaldevice, &createInfo, nullptr, &shaderModule));
 
         return shaderModule;
     }
 
-    void VKDevice_::cleanup()
+    void VKDevice_::cleanup() const
     {
-        vkDestroyCommandPool(VKdevice, VKcommandPool, nullptr);
-        vkDestroyDevice(VKdevice, nullptr);
+        vkDestroyCommandPool(logicaldevice, commandPool, nullptr);
+        vkDestroyDevice(logicaldevice, nullptr);
     }
 }

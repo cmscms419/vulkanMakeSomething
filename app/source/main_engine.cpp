@@ -1,11 +1,16 @@
+
 #include "engine/VKengine.h"
 #include "../../app/cpp/triangle.h"
 #include "../../app/cpp/cameraEngine.h"
+#include "../../app/cpp/skymap.h"
+#include "../../app/cpp/texture.h"
 
-#define SELECTED_ENGINE 2
+#define SELECTED_ENGINE 4
 
 int main(int argc, char* argv[]) {
 
+    //UserName;
+    
     char path[MAX_PATH];
     std::string root_path = "";
 
@@ -21,11 +26,14 @@ int main(int argc, char* argv[]) {
 
 #if SELECTED_ENGINE == 0
         engine = std::make_unique<vkengine::VulkanEngine>(root_path);
-
 #elif SELECTED_ENGINE == 1
         engine = std::make_unique<vkengine::triangle>(root_path);
 #elif SELECTED_ENGINE == 2
         engine = std::make_unique<vkengine::cameraEngine>(root_path);
+#elif SELECTED_ENGINE == 3
+    engine = std::make_unique<vkengine::skycubeEngine>(root_path);
+#elif SELECTED_ENGINE == 4
+    engine = std::make_unique<vkengine::TextureEngine>(root_path);
 #else
     return EXIT_FAILURE;
 #endif

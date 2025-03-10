@@ -13,7 +13,7 @@ namespace vkengine {
     public:
         VKSwapChain(VkPhysicalDevice physicalDevice, VkDevice device, VkSurfaceKHR surface, VkInstance* Instance);
         ~VKSwapChain() = default;
-        
+
         void createSwapChain(QueueFamilyIndices* VKqueueFamilyIndices);
         void createImageViews();
         void cleanupSwapChain();
@@ -24,8 +24,8 @@ namespace vkengine {
 
         std::vector<VkImage> getSwapChainImages() { return this->VKswapChainImages; }
         std::vector<VkImageView> getSwapChainImageViews() { return this->VKswapChainImageViews; }
-        uint32_t getSwapChainImageCount() { return static_cast<uint32_t>(this->VKswapChainImages.size()); }
-        
+        uint32_t getSwapChainImageCount() const { return static_cast<uint32_t>(this->VKswapChainImages.size()); }
+
         VkResult acquireNextImage(VkSemaphore presentCompleteSemaphore, uint32_t& imageIndex) const
         {
             return vkAcquireNextImageKHR(this->VKdevice, this->VKswapChain, UINT64_MAX, presentCompleteSemaphore, (VkFence)nullptr, &imageIndex);

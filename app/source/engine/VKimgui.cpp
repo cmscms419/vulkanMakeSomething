@@ -39,8 +39,8 @@ namespace vkengine {
             // Initialize ImGui
             ImGui_ImplVulkan_InitInfo init_info = {};
             init_info.Instance = engine->getInstance();
-            init_info.PhysicalDevice = engine->getDevice()->VKphysicalDevice;
-            init_info.Device = engine->getDevice()->VKdevice;
+            init_info.PhysicalDevice = engine->getDevice()->physicalDevice;
+            init_info.Device = engine->getDevice()->logicaldevice;
             init_info.QueueFamily = engine->getDevice()->queueFamilyIndices.getGraphicsQueueFamilyIndex();
             init_info.Queue = engine->getDevice()->graphicsVKQueue;
             init_info.DescriptorPool = engine->getDescriptorPool();
@@ -55,7 +55,7 @@ namespace vkengine {
 
             ImGui_ImplVulkan_CreateFontsTexture();
 
-            vkDeviceWaitIdle(engine->getDevice()->VKdevice);
+            vkDeviceWaitIdle(engine->getDevice()->logicaldevice);
 
         }
         void vkGUI::initResources(VkRenderPass renderPass, VkQueue copyQueue, const std::string& shadersPath)

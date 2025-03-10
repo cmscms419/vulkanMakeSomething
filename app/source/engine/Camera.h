@@ -5,6 +5,7 @@
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
+#include "../../common/common.h"
 #include "../../common/vkmath.h"
 #include "../../common/macros.h"
 

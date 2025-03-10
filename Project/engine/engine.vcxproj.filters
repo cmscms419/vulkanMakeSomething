@@ -28,6 +28,12 @@
     <Filter Include="app\skymap">
       <UniqueIdentifier>{d72abba6-8d83-436f-944e-722337971191}</UniqueIdentifier>
     </Filter>
+    <Filter Include="app\texture">
+      <UniqueIdentifier>{61cada18-272f-4ddd-a6c2-dc1f9771c34b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="app\textureCube">
+      <UniqueIdentifier>{5597e1c6-6f07-4e78-8cdc-cee3cc127ade}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\app\source\main_engine.cpp" />
@@ -38,12 +44,6 @@
       <Filter>source</Filter>
     </ClCompile>
     <ClCompile Include="..\..\app\source\engine\VKinputEvent.cpp">
-      <Filter>source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\app\source\engine\Debug.cpp">
-      <Filter>source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\app\source\engine\helper.cpp">
       <Filter>source</Filter>
     </ClCompile>
     <ClCompile Include="..\..\app\source\engine\VKswapchain.cpp">
@@ -97,6 +97,27 @@
     <ClCompile Include="..\..\app\common\struct.cpp">
       <Filter>source\common</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\app\common\macros.cpp">
+      <Filter>source\common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\cpp\texture.cpp">
+      <Filter>app\texture</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\source\engine\Debug.cpp">
+      <Filter>source\common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\source\engine\helper.cpp">
+      <Filter>source\common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\source\engine\VKtexture.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\cpp\texturecube.cpp">
+      <Filter>app\textureCube</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\common\resourseload.c">
+      <Filter>source\common</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\app\source\engine\VKdevice.h">
@@ -106,12 +127,6 @@
       <Filter>source</Filter>
     </ClInclude>
     <ClInclude Include="..\..\app\source\engine\VKinputEvent.h">
-      <Filter>source</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\app\source\engine\Debug.h">
-      <Filter>source</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\app\source\engine\helper.h">
       <Filter>source</Filter>
     </ClInclude>
     <ClInclude Include="..\..\app\source\engine\VKswapchain.h">
@@ -148,6 +163,24 @@
       <Filter>source\common</Filter>
     </ClInclude>
     <ClInclude Include="..\..\app\common\vkmath.h">
+      <Filter>source\common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\app\cpp\texture.h">
+      <Filter>app\texture</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\app\source\engine\helper.h">
+      <Filter>source\common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\app\source\engine\Debug.h">
+      <Filter>source\common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\app\source\engine\VKtexture.h">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\app\cpp\texturecube.h">
+      <Filter>app\textureCube</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\app\common\resourseload.h">
       <Filter>source\common</Filter>
     </ClInclude>
   </ItemGroup>

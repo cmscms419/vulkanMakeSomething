@@ -1,4 +1,4 @@
-﻿#include "cameraEngine.h"
+﻿#include "texturecube.h"
 
 using namespace vkengine::helper;
 using namespace vkengine::debug;
@@ -6,17 +6,17 @@ using namespace vkengine::debug;
 using vkengine::object::Camera;
 
 namespace vkengine {
-    cameraEngine::cameraEngine(std::string root_path) : VulkanEngine(root_path) {}
-    cameraEngine::~cameraEngine() {}
+    TextureCubeEngine::TextureCubeEngine(std::string root_path) : VulkanEngine(root_path) {}
+    TextureCubeEngine::~TextureCubeEngine() {}
 
-    void cameraEngine::init()
+    void TextureCubeEngine::init()
     {
         VulkanEngine::init();
 
         this->camera = std::make_shared<vkengine::object::Camera>();
     }
 
-    bool cameraEngine::prepare()
+    bool TextureCubeEngine::prepare()
     {
         VulkanEngine::prepare();
         this->init_sync_structures();
@@ -34,7 +34,7 @@ namespace vkengine {
         return true;
     }
 
-    void cameraEngine::cleanup()
+    void TextureCubeEngine::cleanup()
     {
         if (this->_isInitialized)
         {
@@ -54,7 +54,8 @@ namespace vkengine {
             vkDestroyDescriptorPool(this->VKdevice->logicaldevice, this->VKdescriptorPool, nullptr);
             vkDestroyDescriptorSetLayout(this->VKdevice->logicaldevice, this->VKdescriptorSetLayout, nullptr);
 
-            this->VKvertexBuffer.cleanup(this->VKdevice->logicaldevice);
+            this->VKvertexBuffer.cleanup();
+            this->VKindexBuffer.cleanup();
 
             for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
             {
@@ -80,7 +81,7 @@ namespace vkengine {
 
     }
 
-    void cameraEngine::drawFrame()
+    void TextureCubeEngine::drawFrame()
     {
         // 렌더링을 시작하기 전에 프레임을 렌더링할 준비가 되었는지 확인합니다.
         VK_CHECK_RESULT(vkWaitForFences(this->VKdevice->logicaldevice, 1, &this->getCurrnetFrameData().VkinFlightFences, VK_TRUE, UINT64_MAX));
@@ -135,7 +136,7 @@ namespace vkengine {
         this->currentFrame = (this->currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
     }
 
-    bool cameraEngine::mainLoop()
+    bool TextureCubeEngine::mainLoop()
     {
         static auto currentTime = std::chrono::high_resolution_clock::now();
         
@@ -161,7 +162,7 @@ namespace vkengine {
         return state;
     }
 
-    void cameraEngine::update(float dt)
+    void TextureCubeEngine::update(float dt)
     {
         if (this->m_keyPressed[GLFW_KEY_W])
         {
@@ -197,7 +198,7 @@ namespace vkengine {
         this->camera->setPerspectiveProjection(45.0f, static_cast<float>(this->VKswapChain->getSwapChainExtent().width / this->VKswapChain->getSwapChainExtent().height), 0.1f, 100.0f);
     }
 
-    bool cameraEngine::init_sync_structures()
+    bool TextureCubeEngine::init_sync_structures()
     {
         VkSemaphoreCreateInfo semaphoreInfo = helper::semaphoreCreateInfo(0);
         VkFenceCreateInfo fenceInfo = helper::fenceCreateInfo(VK_FENCE_CREATE_SIGNALED_BIT);
@@ -211,7 +212,7 @@ namespace vkengine {
         return true;
     }
 
-    void cameraEngine::recordCommandBuffer(FrameData* framedata, uint32_t imageIndex)
+    void TextureCubeEngine::recordCommandBuffer(FrameData* framedata, uint32_t imageIndex)
     {
         // 커맨드 버퍼 기록을 시작합니다.
         VkCommandBufferBeginInfo beginInfo = framedata->commandBufferBeginInfo(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
@@ -254,12 +255,12 @@ namespace vkengine {
             vkCmdSetScissor(framedata->mainCommandBuffer, 0, 1, &scissor);
 
             // 버텍스 버퍼를 바인딩합니다.
-            VkBuffer vertexBuffers[] = { this->VKvertexBuffer.vertexBuffer };
+            VkBuffer vertexBuffers[] = { this->VKvertexBuffer.buffer };
             VkDeviceSize offsets[] = { 0 };
             vkCmdBindVertexBuffers(framedata->mainCommandBuffer, 0, 1, vertexBuffers, offsets);
 
             // 인덱스 버퍼를 바인딩합니다.
-            vkCmdBindIndexBuffer(framedata->mainCommandBuffer, this->VKvertexBuffer.indexBuffer, 0, VK_INDEX_TYPE_UINT16);
+            vkCmdBindIndexBuffer(framedata->mainCommandBuffer, this->VKindexBuffer.buffer, 0, VK_INDEX_TYPE_UINT16);
 
             // 디스크립터 세트를 바인딩합니다.
             vkCmdBindDescriptorSets(framedata->mainCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->VKpipelineLayout, 0, 1, &this->VKdescriptorSets[this->currentFrame], 0, nullptr);
@@ -273,7 +274,7 @@ namespace vkengine {
         VK_CHECK_RESULT(vkEndCommandBuffer(framedata->mainCommandBuffer));
     }
 
-    void cameraEngine::createVertexbuffer()
+    void TextureCubeEngine::createVertexbuffer()
     {
         VkDeviceSize buffersize = sizeof(cube[0]) * cube.size();
 
@@ -289,26 +290,22 @@ namespace vkengine {
             stagingBuffer,
             stagingBufferMemory);
 
-        void* data;
-        vkMapMemory(this->VKdevice->logicaldevice, stagingBufferMemory, 0, buffersize, 0, &data);
-        memcpy(data, cube.data(), (size_t)buffersize);
-        vkUnmapMemory(this->VKdevice->logicaldevice, stagingBufferMemory);
-
-        helper::createBuffer(
+        helper::copyToDeviceMemory(
             this->VKdevice->logicaldevice,
-            this->VKdevice->physicalDevice,
-            buffersize,
-            VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
-            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-            this->VKvertexBuffer.vertexBuffer,
-            this->VKvertexBuffer.vertexMemory);
+            cube.data(),
+            stagingBufferMemory,
+            buffersize);
 
-        helper::copyBuffer(
-            this->VKdevice->logicaldevice,
-            this->VKdevice->commandPool,
-            this->VKdevice->graphicsVKQueue,
+        this->VKvertexBuffer.device = this->VKdevice->logicaldevice;
+        this->VKvertexBuffer.size = buffersize;
+        this->VKvertexBuffer.usageFlags = VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+        this->VKvertexBuffer.memoryPropertyFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
+        this->VKvertexBuffer.createBuffer(this->VKdevice->physicalDevice);
+
+        helper::copyBuffer2(
+            *this->VKdevice,
             stagingBuffer,
-            this->VKvertexBuffer.vertexBuffer,
+            this->VKvertexBuffer.buffer,
             buffersize);
 
         // 버퍼 생성이 끝나면 스테이징 버퍼를 제거합니다.
@@ -316,9 +313,10 @@ namespace vkengine {
         vkFreeMemory(this->VKdevice->logicaldevice, stagingBufferMemory, nullptr);
     }
 
-    void cameraEngine::createIndexBuffer()
+    void TextureCubeEngine::createIndexBuffer()
     {
         VkDeviceSize buffersize = sizeof(cubeindices_[0]) * cubeindices_.size();
+
         VkBuffer stagingBuffer;
         VkDeviceMemory stagingBufferMemory;
 
@@ -331,26 +329,22 @@ namespace vkengine {
             stagingBuffer,
             stagingBufferMemory);
 
-        void* data;
-        vkMapMemory(this->VKdevice->logicaldevice, stagingBufferMemory, 0, buffersize, 0, &data);
-        memcpy(data, cubeindices_.data(), (size_t)buffersize);
-        vkUnmapMemory(this->VKdevice->logicaldevice, stagingBufferMemory);
-
-        helper::createBuffer(
+        helper::copyToDeviceMemory(
             this->VKdevice->logicaldevice,
-            this->VKdevice->physicalDevice,
-            buffersize,
-            VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
-            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-            this->VKvertexBuffer.indexBuffer,
-            this->VKvertexBuffer.indexmemory);
+            cubeindices_.data(),
+            stagingBufferMemory,
+            buffersize);
 
-        helper::copyBuffer(
-            this->VKdevice->logicaldevice,
-            this->VKdevice->commandPool,
-            this->VKdevice->graphicsVKQueue,
+        this->VKindexBuffer.device = this->VKdevice->logicaldevice;
+        this->VKindexBuffer.size = buffersize;
+        this->VKindexBuffer.usageFlags = VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
+        this->VKindexBuffer.memoryPropertyFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
+        this->VKindexBuffer.createBuffer(this->VKdevice->physicalDevice);
+
+        helper::copyBuffer2(
+            *this->VKdevice,
             stagingBuffer,
-            this->VKvertexBuffer.indexBuffer,
+            this->VKindexBuffer.buffer,
             buffersize);
 
         // 버퍼 생성이 끝나면 스테이징 버퍼를 제거합니다.
@@ -358,7 +352,7 @@ namespace vkengine {
         vkFreeMemory(this->VKdevice->logicaldevice, stagingBufferMemory, nullptr);
     }
 
-    void cameraEngine::createUniformBuffers()
+    void TextureCubeEngine::createUniformBuffers()
     {
         VkDeviceSize bufferSize = sizeof(UniformBufferObject);
 
@@ -379,7 +373,7 @@ namespace vkengine {
         }
     }
 
-    void cameraEngine::createDescriptorSetLayout()
+    void TextureCubeEngine::createDescriptorSetLayout()
     {
         // Binding 0: Uniform buffer (Vertex shader)
         VkDescriptorSetLayoutBinding uboLayoutBinding{};
@@ -399,7 +393,7 @@ namespace vkengine {
         VK_CHECK_RESULT(vkCreateDescriptorSetLayout(this->VKdevice->logicaldevice, &layoutInfo, nullptr, &this->VKdescriptorSetLayout));
     }
 
-    void cameraEngine::createDescriptorPool()
+    void TextureCubeEngine::createDescriptorPool()
     {
         //// 디스크립터 풀 크기를 설정합니다.
         std::array<VkDescriptorPoolSize, 1> poolSizes{};
@@ -418,7 +412,7 @@ namespace vkengine {
         VK_CHECK_RESULT(vkCreateDescriptorPool(this->VKdevice->logicaldevice, &poolInfo, nullptr, &this->VKdescriptorPool));
     }
 
-    void cameraEngine::createDescriptorSets()
+    void TextureCubeEngine::createDescriptorSets()
     {
         // 디스크립터 세트 레이아웃을 설정합니다.
         std::vector<VkDescriptorSetLayout> layouts(MAX_FRAMES_IN_FLIGHT, this->VKdescriptorSetLayout);
@@ -461,7 +455,7 @@ namespace vkengine {
         }
     }
 
-    void cameraEngine::createGraphicsPipeline()
+    void TextureCubeEngine::createGraphicsPipeline()
     {
         VkShaderModule baseVertshaderModule = this->VKdevice->createShaderModule(this->RootPath + "../../../../../../shader/vertTrinagle00.spv");
         VkShaderModule baseFragShaderModule = this->VKdevice->createShaderModule(this->RootPath + "../../../../../../shader/fragTrinagle00.spv");
@@ -623,7 +617,7 @@ namespace vkengine {
         vkDestroyShaderModule(this->VKdevice->logicaldevice, baseFragShaderModule, nullptr);
     }
 
-    void cameraEngine::updateUniformBuffer(uint32_t currentImage)
+    void TextureCubeEngine::updateUniformBuffer(uint32_t currentImage)
     {
         static auto startTime = std::chrono::high_resolution_clock::now();
         auto currentTime = std::chrono::high_resolution_clock::now();
@@ -639,7 +633,7 @@ namespace vkengine {
         memcpy(this->VKuniformBuffer[currentImage].Mapped, &ubo, sizeof(ubo));
     }
 
-    void cameraEngine::cleanupSwapcChain()
+    void TextureCubeEngine::cleanupSwapcChain()
     {
         this->VKdepthStencill.cleanup(this->VKdevice->logicaldevice);
 

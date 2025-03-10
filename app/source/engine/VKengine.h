@@ -3,6 +3,7 @@
 
 #include "../../common/common.h"
 #include "../../common/struct.h"
+#include "../../common/macros.h"
 
 #define GLFW_INCLUDE_VULKAN
 #define GLFW_EXPOSE_NATIVE_WIN32
@@ -12,6 +13,7 @@
 #include <map>
 
 #include "VKdevice.h"
+#include "VKbuffer.h"
 #include "VKswapchain.h"
 #include "VKinputEvent.h"
 #include "Debug.h"

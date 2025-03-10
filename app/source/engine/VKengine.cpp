@@ -57,25 +57,25 @@ namespace vkengine
     {
         if (this->_isInitialized)
         {
-            this->VKdepthStencill.cleanup(this->VKdevice->VKdevice);
+            this->VKdepthStencill.cleanup(this->VKdevice->logicaldevice);
 
             for (auto framebuffers : this->VKswapChainFramebuffers)
             {
-                vkDestroyFramebuffer(this->VKdevice->VKdevice, framebuffers, nullptr);
+                vkDestroyFramebuffer(this->VKdevice->logicaldevice, framebuffers, nullptr);
             }
 
             this->VKswapChain->cleanupSwapChain();
 
-            vkDestroyRenderPass(this->VKdevice->VKdevice, *this->VKrenderPass, nullptr);
+            vkDestroyRenderPass(this->VKdevice->logicaldevice, *this->VKrenderPass, nullptr);
 
             for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
             {
-                vkDestroySemaphore(this->VKdevice->VKdevice, this->VKframeData[i].VkimageavailableSemaphore, nullptr);
-                vkDestroySemaphore(this->VKdevice->VKdevice, this->VKframeData[i].VkrenderFinishedSemaphore, nullptr);
-                vkDestroyFence(this->VKdevice->VKdevice, this->VKframeData[i].VkinFlightFences, nullptr);
+                vkDestroySemaphore(this->VKdevice->logicaldevice, this->VKframeData[i].VkimageavailableSemaphore, nullptr);
+                vkDestroySemaphore(this->VKdevice->logicaldevice, this->VKframeData[i].VkrenderFinishedSemaphore, nullptr);
+                vkDestroyFence(this->VKdevice->logicaldevice, this->VKframeData[i].VkinFlightFences, nullptr);
             }
 
-            vkDestroyPipelineCache(this->VKdevice->VKdevice, this->VKpipelineCache, nullptr);
+            vkDestroyPipelineCache(this->VKdevice->logicaldevice, this->VKpipelineCache, nullptr);
 
             this->VKdevice->cleanup();
 
@@ -104,7 +104,7 @@ namespace vkengine
 
         }
 
-        vkDeviceWaitIdle(this->VKdevice->VKdevice);
+        vkDeviceWaitIdle(this->VKdevice->logicaldevice);
         state = false;
 
         return state;
@@ -197,7 +197,7 @@ namespace vkengine
     bool VulkanEngine::initVulkan()
     {
         if (glfwVulkanSupported() == GLFW_FALSE) {
-            throw std::runtime_error("Vulkan is not supported");
+            return false;
         }
 
         this->createInstance();
@@ -215,7 +215,7 @@ namespace vkengine
 
     bool VulkanEngine::init_swapchain()
     {
-        this->VKswapChain = std::make_unique<VKSwapChain>(this->VKdevice->VKphysicalDevice, this->VKdevice->VKdevice, this->VKsurface, &this->VKinstance);
+        this->VKswapChain = std::make_unique<VKSwapChain>(this->VKdevice->physicalDevice, this->VKdevice->logicaldevice, this->VKsurface, &this->VKinstance);
         this->VKswapChain->createSwapChain(&this->VKdevice->queueFamilyIndices);
         this->VKswapChain->createImageViews();
 
@@ -230,7 +230,7 @@ namespace vkengine
         // 커맨드 풀 생성 정보 구조체를 초기화합니다.
         VkCommandPoolCreateInfo poolInfo = helper::commandPoolCreateInfo(queueFamilyIndices.graphicsAndComputeFamily, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
 
-        VK_CHECK_RESULT(vkCreateCommandPool(this->VKdevice->VKdevice, &poolInfo, nullptr, &this->VKdevice->VKcommandPool));
+        VK_CHECK_RESULT(vkCreateCommandPool(this->VKdevice->logicaldevice, &poolInfo, nullptr, &this->VKdevice->commandPool));
 
         return true;
     }
@@ -241,7 +241,7 @@ namespace vkengine
 
         for (auto& frameData : this->VKframeData)
         {
-            VK_CHECK_RESULT(vkCreateFence(this->VKdevice->VKdevice, &fenceInfo, nullptr, &frameData.VkinFlightFences));
+            VK_CHECK_RESULT(vkCreateFence(this->VKdevice->logicaldevice, &fenceInfo, nullptr, &frameData.VkinFlightFences));
         }
 
         return true;
@@ -288,13 +288,9 @@ namespace vkengine
         }
 
         // Vulkan 인스턴스를 생성합니다.
-        if (vkCreateInstance(&createInfo, nullptr, &this->VKinstance) != VK_SUCCESS) {
-            throw std::runtime_error("failed to create instance!"); // 인스턴스 생성 실패 시 예외를 발생시킵니다.
-        }
-        else
-        {
-            printf("create instance\n");
-        }
+        VK_CHECK_RESULT(vkCreateInstance(&createInfo, nullptr, &this->VKinstance));
+        PRINT_TO_CONSOLE("create instance\n");
+
     }
 
     void VulkanEngine::setupDebugCallback()
@@ -343,7 +339,7 @@ namespace vkengine
 
         uint16_t selectQueueFamilyIndeices = 0;
         for (VkPhysicalDevice& device : devices) {
-            if (helper::isDeviceSuitable(device, this->VKsurface, &indices[selectQueueFamilyIndeices]))
+            if (helper::isDeviceSuitable(device, this->VKsurface, indices[selectQueueFamilyIndeices]))
             {
                 int score = helper::rateDeviceSuitability(device);
                 candidates.insert(std::make_pair(score, device));
@@ -378,14 +374,15 @@ namespace vkengine
         // 필요할 때 코드 생성
 
         // 물리 장치 기능 구조체를 초기화합니다.
+        // TODO: 나중에 다시 확인
         this->VKdevice->features.samplerAnisotropy = VK_TRUE; // 샘플러를 사용하여 텍스처를 보간합니다.
         this->VKdevice->features.sampleRateShading = VK_TRUE; // 샘플 레이트 쉐이딩을 사용하여 픽셀을 그립니다.
 
         // 논리 디바이스를 생성합니다.
-        VkResult result = this->VKdevice->createLogicalDevice();
+        VK_CHECK_RESULT(this->VKdevice->createLogicalDevice());
 
         // depth format을 가져옵니다.
-        this->VKdepthStencill.depthFormat = helper::findDepthFormat(this->VKdevice->VKphysicalDevice);
+        this->VKdepthStencill.depthFormat = helper::findDepthFormat(this->VKdevice->physicalDevice);
     }
 
     void VulkanEngine::createDepthStencilResources()
@@ -406,7 +403,7 @@ namespace vkengine
 
         // 깊이 이미지 뷰를 생성합니다.
         this->VKdepthStencill.depthImageView = helper::createImageView(
-            this->VKdevice->VKdevice,
+            this->VKdevice->logicaldevice,
             this->VKdepthStencill.depthImage,
             this->VKdepthStencill.depthFormat,
             VK_IMAGE_ASPECT_DEPTH_BIT,
@@ -517,7 +514,7 @@ namespace vkengine
         renderPassInfo.dependencyCount = 1;
         renderPassInfo.pDependencies = &dependency;
 
-        VK_CHECK_RESULT(vkCreateRenderPass(this->VKdevice->VKdevice, &renderPassInfo, nullptr, this->VKrenderPass.get()));
+        VK_CHECK_RESULT(vkCreateRenderPass(this->VKdevice->logicaldevice, &renderPassInfo, nullptr, this->VKrenderPass.get()));
     }
 
     void VulkanEngine::createPipelineCache()
@@ -525,7 +522,7 @@ namespace vkengine
         VkPipelineCacheCreateInfo pipelineCacheCreateInfo{};
         pipelineCacheCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO;
 
-        VK_CHECK_RESULT(vkCreatePipelineCache(this->VKdevice->VKdevice, &pipelineCacheCreateInfo, nullptr, &this->VKpipelineCache));
+        VK_CHECK_RESULT(vkCreatePipelineCache(this->VKdevice->logicaldevice, &pipelineCacheCreateInfo, nullptr, &this->VKpipelineCache));
     }
 
     void VulkanEngine::createFramebuffers()
@@ -550,7 +547,7 @@ namespace vkengine
             framebufferInfo.height = this->VKswapChain->getSwapChainExtent().height;
             framebufferInfo.layers = 1;
 
-            VK_CHECK_RESULT(vkCreateFramebuffer(this->VKdevice->VKdevice, &framebufferInfo, nullptr, &this->VKswapChainFramebuffers[i]));
+            VK_CHECK_RESULT(vkCreateFramebuffer(this->VKdevice->logicaldevice, &framebufferInfo, nullptr, &this->VKswapChainFramebuffers[i]));
         }
     }
 
@@ -564,13 +561,13 @@ namespace vkengine
             glfwWaitEvents();
         }
 
-        vkDeviceWaitIdle(this->VKdevice->VKdevice);
+        vkDeviceWaitIdle(this->VKdevice->logicaldevice);
         
-        this->VKdepthStencill.cleanup(this->VKdevice->VKdevice);
+        this->VKdepthStencill.cleanup(this->VKdevice->logicaldevice);
 
         for (auto framebuffers : this->VKswapChainFramebuffers)
         {
-            vkDestroyFramebuffer(this->VKdevice->VKdevice, framebuffers, nullptr);
+            vkDestroyFramebuffer(this->VKdevice->logicaldevice, framebuffers, nullptr);
         }
         
         this->VKswapChain->cleanupSwapChain();
@@ -583,11 +580,11 @@ namespace vkengine
 
     bool VulkanEngine::createCommandBuffer()
     {
-        VkCommandBufferAllocateInfo allocInfo = helper::commandBufferAllocateInfo(this->VKdevice->VKcommandPool, 1, VK_COMMAND_BUFFER_LEVEL_PRIMARY);
+        VkCommandBufferAllocateInfo allocInfo = helper::commandBufferAllocateInfo(this->VKdevice->commandPool, 1, VK_COMMAND_BUFFER_LEVEL_PRIMARY);
         
         for (auto& framedata : this->VKframeData)
         {
-            VK_CHECK_RESULT(vkAllocateCommandBuffers(this->VKdevice->VKdevice, &allocInfo, &framedata.mainCommandBuffer));
+            VK_CHECK_RESULT(vkAllocateCommandBuffers(this->VKdevice->logicaldevice, &allocInfo, &framedata.mainCommandBuffer));
         }
 
 
