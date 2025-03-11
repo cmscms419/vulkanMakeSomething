@@ -74,6 +74,7 @@ void Vk2DTexture_::createTextureImage(int type)
         this->image,
         static_cast<uint32_t>(texWidth),
         static_cast<uint32_t>(texHeight));
+    
     vkengine::helper::transitionImageLayout(
         this->device->logicaldevice,
         this->device->commandPool,

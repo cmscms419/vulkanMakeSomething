@@ -458,6 +458,8 @@ namespace vkengine {
 
         // 디스크립터 세트를 할당합니다.
         VK_CHECK_RESULT(vkAllocateDescriptorSets(this->VKdevice->logicaldevice, &allocInfo, this->VKdescriptorSets.data()));
+        
+        std::array<VkWriteDescriptorSet, 2> descriptorWrites{};
 
         // 디스크립터 세트를 설정합니다.
         for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
@@ -473,8 +475,6 @@ namespace vkengine {
             imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
             imageInfo.imageView = this->a.imageView;
             imageInfo.sampler = this->a.sampler;
-
-            std::array<VkWriteDescriptorSet, 2> descriptorWrites{};
 
             descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
             descriptorWrites[0].dstSet = this->VKdescriptorSets[i];

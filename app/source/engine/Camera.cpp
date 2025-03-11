@@ -22,8 +22,8 @@ namespace vkengine {
             // Implementation here
             this->setViewDirection(pos, dir, up);
 #if DEBUG_
-            //printf("\rCamera Position: %f %f %f", this->pos.x, this->pos.y, this->pos.z);
-            printf("\rCamera Direction: %f %f %f", this->dir.x, this->dir.y, this->dir.z);
+            printf("\rCamera Position: %f %f %f", this->pos.x, this->pos.y, this->pos.z);
+            //printf("\rCamera Direction: %f %f %f", this->dir.x, this->dir.y, this->dir.z);
 #endif
         }
         
@@ -73,7 +73,7 @@ namespace vkengine {
             dirction = glm::vec3(vkMath::CreateRotation(this->yaw,this->pitch, 0.0f) * glm::vec4(0.0f, 0.0f, -1.0f, 1.0f));
 #endif
             this->dir = glm::normalize(dirction);
-            this->right = glm::cross(this->dir, glm::vec3(0.0f, 1.0f, 0.0f));
+            this->right = glm::normalize(glm::cross(this->dir, this->up));
 
         }
 
