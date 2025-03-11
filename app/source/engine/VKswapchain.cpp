@@ -4,16 +4,16 @@ namespace vkengine
 {
     VKSwapChain::VKSwapChain(VkPhysicalDevice physicalDevice, VkDevice device, VkSurfaceKHR surface, VkInstance* Instance)
     {
-        this->VKphysicalDevice = physicalDevice;
-        this->VKdevice = device;
-        this->VKsurface = surface;
-        this->VKInstance = *Instance;
+        this->physicalDevice = physicalDevice;
+        this->logicaldevice = device;
+        this->surface = surface;
+        this->Instance = *Instance;
 
     }
 
     void VKSwapChain::createSwapChain(QueueFamilyIndices* VKqueueFamilyIndices)
     {
-        SwapChainSupportDetails swapChainSupport = helper::querySwapChainSupport(this->VKphysicalDevice, this->VKsurface);
+        SwapChainSupportDetails swapChainSupport = helper::querySwapChainSupport(this->physicalDevice, this->surface);
 
         VkSurfaceFormatKHR surfaceFormat = chooseSwapSurfaceFormat(swapChainSupport.formats);
         VkPresentModeKHR presentMode = chooseSwapPresentMode(swapChainSupport.presentModes);
@@ -29,7 +29,7 @@ namespace vkengine
         // 스왑 체인 생성 정보 구조체를 초기화합니다.
         VkSwapchainCreateInfoKHR createInfo{};
         createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
-        createInfo.surface = this->VKsurface;
+        createInfo.surface = this->surface;
 
         createInfo.minImageCount = imageCount;                          // 이미지 개수를 설정합니다.
         createInfo.imageFormat = surfaceFormat.format;                  // 이미지 형식을 설정합니다.
@@ -57,14 +57,14 @@ namespace vkengine
         createInfo.clipped = VK_TRUE;                                             // 클리핑을 설정합니다. -> 다른 창이 앞에 있기 때문에 가려진 픽셀의 색상을 신경 쓰지 않는다는 의미
         createInfo.oldSwapchain = VK_NULL_HANDLE;                                 // 이전 스왑 체인을 설정합니다. -> 나중에 설정
 
-        VK_CHECK_RESULT(vkCreateSwapchainKHR(this->VKdevice, &createInfo, nullptr, &this->VKswapChain));
+        VK_CHECK_RESULT(vkCreateSwapchainKHR(this->logicaldevice, &createInfo, nullptr, &this->swapChain));
 
-        vkGetSwapchainImagesKHR(this->VKdevice, this->VKswapChain, &imageCount, nullptr);
-        this->VKswapChainImages.resize(imageCount);
-        vkGetSwapchainImagesKHR(this->VKdevice, this->VKswapChain, &imageCount, this->VKswapChainImages.data());
+        vkGetSwapchainImagesKHR(this->logicaldevice, this->swapChain, &imageCount, nullptr);
+        this->Images.resize(imageCount);
+        vkGetSwapchainImagesKHR(this->logicaldevice, this->swapChain, &imageCount, this->Images.data());
 
-        this->VKswapChainImageFormat = surfaceFormat.format;
-        this->VKswapChainExtent = extent;
+        this->ImageFormat = surfaceFormat.format;
+        this->Extent = extent;
 
 #ifdef DEBUG_
         printf("create swap chain\n");
@@ -87,23 +87,23 @@ namespace vkengine
 
     void VKSwapChain::cleanupSwapChain()
     {
-        for (auto imageView : this->VKswapChainImageViews) {
-            vkDestroyImageView(this->VKdevice, imageView, nullptr);
+        for (auto imageView : this->ImageViews) {
+            vkDestroyImageView(this->logicaldevice, imageView, nullptr);
         }
 
-        vkDestroySwapchainKHR(this->VKdevice, this->VKswapChain, nullptr);
+        vkDestroySwapchainKHR(this->logicaldevice, this->swapChain, nullptr);
     }
 
     void VKSwapChain::createImageViews()
     {
-        this->VKswapChainImageViews.resize(this->VKswapChainImages.size());
+        this->ImageViews.resize(this->Images.size());
 
-        for (int8_t i = 0; i < this->VKswapChainImages.size(); i++)
+        for (int8_t i = 0; i < this->Images.size(); i++)
         {
-            this->VKswapChainImageViews[i] = helper::createImageView(
-                this->VKdevice,
-                this->VKswapChainImages[i],
-                this->VKswapChainImageFormat,
+            this->ImageViews[i] = helper::createImageView(
+                this->logicaldevice,
+                this->Images[i],
+                this->ImageFormat,
                 VK_IMAGE_ASPECT_COLOR_BIT,
                 1);
         }

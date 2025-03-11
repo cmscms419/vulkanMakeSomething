@@ -1,7 +1,7 @@
 #ifndef INCLUDE_STRUCT_H_
 #define INCLUDE_STRUCT_H_
 
-#include "common.h"
+#include <vulkan/vulkan.h>
 
 #include <vector>
 #include <array>
@@ -258,9 +258,9 @@ struct UniformBufferObject {
 };
 
 extern const std::vector<Vertex> DepthTestVertices;
-extern const std::vector<VertexPosColor> TriangleTestVertices;
+extern const std::vector<Vertex> SquareTestVertices;
 extern const std::vector<uint16_t> DepthTestIndices;
-extern const std::vector<uint16_t> TriangleTestIndices_;
+extern const std::vector<uint16_t> SquareTestIndices_;
 extern const std::vector<VertexPosColor> cube;
 extern const std::vector<uint16_t> cubeindices_;
 

@@ -38,8 +38,8 @@ namespace vkengine {
             VkImageTiling tiling,
             VkImageUsageFlags usage,
             VkMemoryPropertyFlags properties,
-            VkImage image,
-            VkDeviceMemory imageMemory);
+            VkImage& image,
+            VkDeviceMemory& imageMemory);
 
 
         // 버퍼를 복사하는 함수

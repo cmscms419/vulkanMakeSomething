@@ -10,7 +10,6 @@
 struct VkTexture_ {
 
     vkengine::VKDevice_* device = VK_NULL_HANDLE;                   // Vulkan 장치 핸들
-    VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;   // Vulkan 물리 장치 핸들
     VkImage image = VK_NULL_HANDLE;                 // 텍스처 이미지 -> 텍스처 이미지를 저장하는 데 사용
     VkDeviceMemory imageMemory = VK_NULL_HANDLE;    // 텍스처 이미지 메모리 -> 텍스처 이미지를 저장하는 데 사용
     VkImageView imageView = VK_NULL_HANDLE;         // 텍스처 이미지 뷰 -> 텍스처 이미지를 뷰로 변환 (이미지 뷰는 이미지를 읽고 쓰는 데 사용)
@@ -20,7 +19,7 @@ struct VkTexture_ {
     int texWidth = 0;                         ///< 텍스처 너비
     int texHeight = 0;                        ///< 텍스처 높이
     uint32_t texChannels = 0;                      ///< 텍스처 채널
-    std::string texPath = "";                      ///< 텍스처 경로
+    const char* texPath;                      ///< 텍스처 경로
 
     //VkDevice device = VK_NULL_HANDLE; ///< Vulkan 장치 핸들
     //VkDescriptorImageInfo descriptor{}; ///< Vulkan 디스크립터 이미지 정보

@@ -30,6 +30,11 @@ struct VertexBuffer_  : public VkBufferObject_
     VertexPosColor vertexBuffer{}; ///< 버텍스 버퍼
 };
 
+struct VertexTextureBuffer : public VkBufferObject_
+{
+    Vertex vertexBuffer{}; ///< 버텍스 버퍼
+};
+
 struct IndexBuffer_ : public VkBufferObject_ {};
 
 

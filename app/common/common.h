@@ -27,7 +27,6 @@ constexpr int HEIGHT = 720;
 constexpr int MAX_FRAMES = 4;
 constexpr int MAX_FRAMES_IN_FLIGHT = 2;
 constexpr int CREATESURFACE_VKWIN32SURFACECREATEINFOKHR = 0;
-
 namespace vkengine
 {
     extern const std::vector<const char*> validationLayers;
@@ -35,6 +34,7 @@ namespace vkengine
     extern const std::vector<VkDynamicState> dynamicStates;
     extern const std::string MODEL_PATH;
     extern const std::string TEXTURE_PATH;
+    extern const std::string TEST_TEXTURE_PATH;
     extern const bool enableValidationLayers;
 
 } // namespace vkengine

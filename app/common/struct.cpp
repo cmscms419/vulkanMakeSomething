@@ -30,11 +30,11 @@ const std::vector<Vertex> DepthTestVertices = {
     {{-0.5f, 0.5f, -0.5f}, {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}}
 };
 
-const std::vector<VertexPosColor> TriangleTestVertices = {
-    {{-0.5f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}},
-    {{0.5f, -0.5f, 0.0f}, {0.0f, 1.0f, 0.0f}},
-    {{0.5f, 0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}},
-    {{-0.5f, 0.5f, 0.0f}, {1.0f, 1.0f, 1.0f}}
+const std::vector<Vertex> SquareTestVertices = {
+    {{-0.5f, -0.5f,0.0f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},
+    {{0.5f, -0.5f,0.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}},
+    {{0.5f, 0.5f,0.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},
+    {{-0.5f, 0.5f,0.0f}, {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}}
 };
 
 const std::vector<uint16_t> DepthTestIndices = {
@@ -42,7 +42,7 @@ const std::vector<uint16_t> DepthTestIndices = {
         4, 5, 6, 6, 7, 4
 };
 
-const std::vector<uint16_t> TriangleTestIndices_ = {
+const std::vector<uint16_t> SquareTestIndices_ = {
         0, 1, 2, 2, 3, 0
 };
 

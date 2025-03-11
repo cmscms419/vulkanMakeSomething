@@ -21,6 +21,20 @@ namespace vkengine {
         VulkanEngine::prepare();
         this->init_sync_structures();
 
+        // 테스트 코드
+        int texWidth = 0;
+        int texHeight = 0;
+        int texChannels = 0;
+        a.texWidth = texWidth;
+        a.texHeight = texHeight;
+        a.texChannels = texChannels;
+        this->a.device = this->VKdevice.get();
+        std::string path = this->RootPath + TEST_TEXTURE_PATH;
+        this->a.texPath = path.c_str();
+        this->a.createTextureImage(4);
+        this->a.createTextureImageView(VK_FORMAT_R8G8B8A8_SRGB);
+        this->a.createTextureSampler();
+
         this->createVertexbuffer();
         this->createIndexBuffer();
         this->createUniformBuffers();
@@ -54,8 +68,9 @@ namespace vkengine {
             vkDestroyDescriptorPool(this->VKdevice->logicaldevice, this->VKdescriptorPool, nullptr);
             vkDestroyDescriptorSetLayout(this->VKdevice->logicaldevice, this->VKdescriptorSetLayout, nullptr);
 
-            this->VKvertexBuffer.cleanup();
+            this->VKvertexBuffer2.cleanup();
             this->VKindexBuffer.cleanup();
+            this->a.cleanup();
 
             for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
             {
@@ -139,7 +154,7 @@ namespace vkengine {
     bool TextureEngine::mainLoop()
     {
         static auto currentTime = std::chrono::high_resolution_clock::now();
-        
+
         while (!glfwWindowShouldClose(this->VKwindow)) {
             glfwPollEvents();
 
@@ -255,7 +270,7 @@ namespace vkengine {
             vkCmdSetScissor(framedata->mainCommandBuffer, 0, 1, &scissor);
 
             // 버텍스 버퍼를 바인딩합니다.
-            VkBuffer vertexBuffers[] = { this->VKvertexBuffer.buffer };
+            VkBuffer vertexBuffers[] = { this->VKvertexBuffer2.buffer };
             VkDeviceSize offsets[] = { 0 };
             vkCmdBindVertexBuffers(framedata->mainCommandBuffer, 0, 1, vertexBuffers, offsets);
 
@@ -265,7 +280,7 @@ namespace vkengine {
             // 디스크립터 세트를 바인딩합니다.
             vkCmdBindDescriptorSets(framedata->mainCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->VKpipelineLayout, 0, 1, &this->VKdescriptorSets[this->currentFrame], 0, nullptr);
             // 렌더 패스를 종료합니다.
-            vkCmdDrawIndexed(framedata->mainCommandBuffer, static_cast<uint32_t>(cubeindices_.size()), 1, 0, 0, 0);
+            vkCmdDrawIndexed(framedata->mainCommandBuffer, static_cast<uint32_t>(SquareTestIndices_.size()), 1, 0, 0, 0);
         }
 
         vkCmdEndRenderPass(framedata->mainCommandBuffer);
@@ -276,7 +291,7 @@ namespace vkengine {
 
     void TextureEngine::createVertexbuffer()
     {
-        VkDeviceSize buffersize = sizeof(cube[0]) * cube.size();
+        VkDeviceSize buffersize = sizeof(SquareTestVertices[0]) * SquareTestVertices.size();
 
         VkBuffer stagingBuffer;
         VkDeviceMemory stagingBufferMemory;
@@ -292,40 +307,32 @@ namespace vkengine {
 
         helper::copyToDeviceMemory(
             this->VKdevice->logicaldevice,
-            cube.data(),
+            SquareTestVertices.data(),
             stagingBufferMemory,
             buffersize);
 
-        this->VKvertexBuffer.device = this->VKdevice->logicaldevice;
-        this->VKvertexBuffer.size = buffersize;
-        this->VKvertexBuffer.usageFlags = VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
-        this->VKvertexBuffer.memoryPropertyFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
-        this->VKvertexBuffer.createBuffer(this->VKdevice->physicalDevice);
+        this->VKvertexBuffer2.device = this->VKdevice->logicaldevice;
+        this->VKvertexBuffer2.size = buffersize;
+        this->VKvertexBuffer2.usageFlags = VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+        this->VKvertexBuffer2.memoryPropertyFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
+        this->VKvertexBuffer2.createBuffer(this->VKdevice->physicalDevice);
 
         helper::copyBuffer2(
             *this->VKdevice,
             stagingBuffer,
-            this->VKvertexBuffer.buffer,
+            this->VKvertexBuffer2.buffer,
             buffersize);
 
         // 버퍼 생성이 끝나면 스테이징 버퍼를 제거합니다.
         vkDestroyBuffer(this->VKdevice->logicaldevice, stagingBuffer, nullptr);
         vkFreeMemory(this->VKdevice->logicaldevice, stagingBufferMemory, nullptr);
 
-        // -> 테스트 코드
-        //int texWidth = 0;
-        //int texHeight = 0;
-        //int texChannels = 0;
-        //a.texWidth = texWidth;
-        //a.texHeight = texHeight;
-        //a.texChannels = texChannels;
-        //a.texPath = this->RootPath + "../../../../../../source/viking_room.png";
-        //a.createTextureImage(4);
+
     }
 
     void TextureEngine::createIndexBuffer()
     {
-        VkDeviceSize buffersize = sizeof(cubeindices_[0]) * cubeindices_.size();
+        VkDeviceSize buffersize = sizeof(SquareTestIndices_[0]) * SquareTestIndices_.size();
 
         VkBuffer stagingBuffer;
         VkDeviceMemory stagingBufferMemory;
@@ -341,7 +348,7 @@ namespace vkengine {
 
         helper::copyToDeviceMemory(
             this->VKdevice->logicaldevice,
-            cubeindices_.data(),
+            SquareTestIndices_.data(),
             stagingBufferMemory,
             buffersize);
 
@@ -393,12 +400,22 @@ namespace vkengine {
         uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
         uboLayoutBinding.pImmutableSamplers = nullptr;
 
+        // 샘플러 레이아웃 바인딩을 설정합니다.
+        VkDescriptorSetLayoutBinding samplerLayoutBinding{};
+        samplerLayoutBinding.binding = 1;
+        samplerLayoutBinding.descriptorCount = 1;
+        samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        samplerLayoutBinding.pImmutableSamplers = nullptr;
+        samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+
+        // 디스크립터 세트 레이아웃 생성 정보 구조체를 초기화합니다.
+        std::array<VkDescriptorSetLayoutBinding, 2> bindings = { uboLayoutBinding, samplerLayoutBinding };
         // Create the descriptor set layout
         VkDescriptorSetLayoutCreateInfo layoutInfo{};
         layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
         layoutInfo.pNext = nullptr;
-        layoutInfo.bindingCount = 1;
-        layoutInfo.pBindings = &uboLayoutBinding;
+        layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());;
+        layoutInfo.pBindings = bindings.data();
 
         VK_CHECK_RESULT(vkCreateDescriptorSetLayout(this->VKdevice->logicaldevice, &layoutInfo, nullptr, &this->VKdescriptorSetLayout));
     }
@@ -406,11 +423,11 @@ namespace vkengine {
     void TextureEngine::createDescriptorPool()
     {
         //// 디스크립터 풀 크기를 설정합니다.
-        std::array<VkDescriptorPoolSize, 1> poolSizes{};
+        std::array<VkDescriptorPoolSize, 2> poolSizes{};
         poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
         poolSizes[0].descriptorCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
-        //poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-        //poolSizes[1].descriptorCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
+        poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        poolSizes[1].descriptorCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
 
         // 디스크립터 풀 생성 정보 구조체를 초기화합니다.
         VkDescriptorPoolCreateInfo poolInfo{};
@@ -451,15 +468,29 @@ namespace vkengine {
             bufferInfo.offset = 0;
             bufferInfo.range = sizeof(UniformBufferObject);
 
-            std::array<VkWriteDescriptorSet, 1> descriptorWrites{};
+            // 디스크립터 이미지 정보를 설정합니다.
+            VkDescriptorImageInfo imageInfo{};
+            imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+            imageInfo.imageView = this->a.imageView;
+            imageInfo.sampler = this->a.sampler;
+
+            std::array<VkWriteDescriptorSet, 2> descriptorWrites{};
 
             descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
             descriptorWrites[0].dstSet = this->VKdescriptorSets[i];
             descriptorWrites[0].dstBinding = 0;
             descriptorWrites[0].dstArrayElement = 0;
-            descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+            descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER; // 디스크립터 타입을 유니폼 버퍼로 설정
             descriptorWrites[0].descriptorCount = 1;
             descriptorWrites[0].pBufferInfo = &bufferInfo;
+
+            descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+            descriptorWrites[1].dstSet = this->VKdescriptorSets[i];
+            descriptorWrites[1].dstBinding = 1;
+            descriptorWrites[1].dstArrayElement = 0;
+            descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER; // 디스크립터 타입을 이미지 샘플러로 설정
+            descriptorWrites[1].descriptorCount = 1;
+            descriptorWrites[1].pImageInfo = &imageInfo;
 
             vkUpdateDescriptorSets(this->VKdevice->logicaldevice, static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
         }
@@ -485,8 +516,8 @@ namespace vkengine {
         VkPipelineShaderStageCreateInfo shaderStages[] = { vertShaderStageInfo, fragShaderStageInfo };
 
         // vertex input
-        auto bindingDescription = VertexPosColor::getBindingDescription();
-        auto attributeDescriptions = VertexPosColor::getAttributeDescriptions();
+        auto bindingDescription = Vertex::getBindingDescription();
+        auto attributeDescriptions = Vertex::getAttributeDescriptions();
 
         // 그래픽 파이프라인 레이아웃을 생성합니다.
         VkPipelineVertexInputStateCreateInfo vertexInputInfo{};

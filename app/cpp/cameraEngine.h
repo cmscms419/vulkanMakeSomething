@@ -2,18 +2,15 @@
 #define INCLUDE_SOURCE_CAMERAENGINE_H
 
 #include "../source/engine/VKengine.h"
-#include "../source/engine/VKimgui.h"
 
 #include "../source/engine/helper.h"
 #include "../source/engine/Camera.h"
 #include "../source/engine/Debug.h"
+
 #include "../common/struct.h"
 
 namespace vkengine
 {
-    namespace gui {
-        class vkGUI;
-    }
 
     class cameraEngine : public VulkanEngine
     {
@@ -52,7 +49,6 @@ namespace vkengine
 
         VertexBuffer VKvertexBuffer{};
         std::vector<UniformBuffer> VKuniformBuffer = {};
-        gui::vkGUI* gui = nullptr;
 
         VkPipeline VKgraphicsPipeline = VK_NULL_HANDLE;                      // 그래픽스 파이프라인 -> 그래픽스 파이프라인을 생성
         VkPipelineLayout VKpipelineLayout{ VK_NULL_HANDLE };

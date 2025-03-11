@@ -1,6 +1,8 @@
 #include "VKbuffer.h"
 #include "helper.h"
 
+using namespace vkengine::helper;
+
 void VkBufferObject_::cleanup()
 {
     if (buffer != VK_NULL_HANDLE)

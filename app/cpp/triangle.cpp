@@ -202,7 +202,7 @@ namespace vkengine {
             // 디스크립터 세트를 바인딩합니다.
             vkCmdBindDescriptorSets(framedata->mainCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->VKpipelineLayout, 0, 1, &this->VKdescriptorSets[this->currentFrame], 0, nullptr);
             // 렌더 패스를 종료합니다.
-            vkCmdDrawIndexed(framedata->mainCommandBuffer, static_cast<uint32_t>(TriangleTestIndices_.size()), 1, 0, 0, 0);
+            vkCmdDrawIndexed(framedata->mainCommandBuffer, static_cast<uint32_t>(SquareTestIndices_.size()), 1, 0, 0, 0);
         }
 
         vkCmdEndRenderPass(framedata->mainCommandBuffer);
@@ -213,7 +213,7 @@ namespace vkengine {
 
     void triangle::createVertexbuffer()
     {
-        VkDeviceSize buffersize = sizeof(TriangleTestVertices[0]) * TriangleTestVertices.size();
+        VkDeviceSize buffersize = sizeof(SquareTestVertices[0]) * SquareTestVertices.size();
 
         VkBuffer stagingBuffer;
         VkDeviceMemory stagingBufferMemory;
@@ -229,7 +229,7 @@ namespace vkengine {
 
         void* data;
         vkMapMemory(this->VKdevice->logicaldevice, stagingBufferMemory, 0, buffersize, 0, &data);
-            memcpy(data, TriangleTestVertices.data(), (size_t)buffersize);
+            memcpy(data, SquareTestVertices.data(), (size_t)buffersize);
         vkUnmapMemory(this->VKdevice->logicaldevice, stagingBufferMemory);
 
         helper::createBuffer(
@@ -256,7 +256,7 @@ namespace vkengine {
 
     void triangle::createIndexBuffer()
     {
-        VkDeviceSize buffersize = sizeof(TriangleTestIndices_[0]) * TriangleTestIndices_.size();
+        VkDeviceSize buffersize = sizeof(SquareTestIndices_[0]) * SquareTestIndices_.size();
         VkBuffer stagingBuffer;
         VkDeviceMemory stagingBufferMemory;
         
@@ -271,7 +271,7 @@ namespace vkengine {
         
         void* data;
         vkMapMemory(this->VKdevice->logicaldevice, stagingBufferMemory, 0, buffersize, 0, &data);
-        memcpy(data, TriangleTestIndices_.data(), (size_t)buffersize);
+        memcpy(data, SquareTestIndices_.data(), (size_t)buffersize);
         vkUnmapMemory(this->VKdevice->logicaldevice, stagingBufferMemory);
         
         helper::createBuffer(

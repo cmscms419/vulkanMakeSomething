@@ -48,7 +48,7 @@ namespace vkengine
 
         void cleanupSwapcChain();
 
-        VertexBuffer_ VKvertexBuffer{};
+        VertexTextureBuffer VKvertexBuffer2{}; // 정사각형 -> texture 부착
         IndexBuffer_ VKindexBuffer{};
         std::vector<UniformBuffer> VKuniformBuffer = {};
 

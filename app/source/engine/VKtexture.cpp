@@ -1,8 +1,7 @@
 #include "VKtexture.h"
-#include "helper.h"
 #include "../../common/resourseload.h"
 
-using namespace vkengine::helper;
+#include "helper.h"
 
 void VkTexture_::cleanup()
 {
@@ -14,19 +13,20 @@ void VkTexture_::cleanup()
 
 void Vk2DTexture_::createTextureImage(int type)
 {
-    unsigned char* pixels = load_png_rgba(texPath.c_str(), &texWidth, &texHeight, type);
+    unsigned char* pixels = load_png_rgba(texPath, &texWidth, &texHeight, type);
     VkDeviceSize imageSize = texWidth * texHeight * 4;
 
     if (!pixels) { return; }
 
-    this->VKmipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(texWidth, texHeight)))) + 1;
+    //this->VKmipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(texWidth, texHeight)))) + 1;
+    this->VKmipLevels = 1;
 
     VkBuffer stagingBuffer;
     VkDeviceMemory stagingBufferMemory;
 
     vkengine::helper::createBuffer(
         this->device->logicaldevice,
-        this->physicalDevice,
+        this->device->physicalDevice,
         imageSize,
         VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
         VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
@@ -44,7 +44,7 @@ void Vk2DTexture_::createTextureImage(int type)
 
     vkengine::helper::createImage(
         this->device->logicaldevice,
-        this->physicalDevice,
+        this->device->physicalDevice,
         texWidth,
         texHeight,
         this->VKmipLevels,
@@ -90,7 +90,7 @@ void Vk2DTexture_::createTextureImage(int type)
 
 void Vk2DTexture_::createTextureImageView(VkFormat format)
 {
-    this->imageView = createImageView(
+    this->imageView = vkengine::helper::createImageView(
         this->device->logicaldevice,
         this->image,
         format,
@@ -101,7 +101,7 @@ void Vk2DTexture_::createTextureImageView(VkFormat format)
 void Vk2DTexture_::createTextureSampler()
 {
     VkPhysicalDeviceProperties properties{};
-    vkGetPhysicalDeviceProperties(this->physicalDevice, &properties);
+    vkGetPhysicalDeviceProperties(this->device->physicalDevice, &properties);
 
     VkSamplerCreateInfo samplerInfo{};
     samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;

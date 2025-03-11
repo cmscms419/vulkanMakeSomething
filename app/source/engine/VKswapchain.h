@@ -18,31 +18,32 @@ namespace vkengine {
         void createImageViews();
         void cleanupSwapChain();
 
-        VkExtent2D getSwapChainExtent() const { return this->VKswapChainExtent; }
-        VkFormat getSwapChainImageFormat() const { return this->VKswapChainImageFormat; }
-        VkSwapchainKHR getSwapChain() const { return this->VKswapChain; }
+        VkExtent2D getSwapChainExtent() const { return this->Extent; }
+        VkFormat getSwapChainImageFormat() const { return this->ImageFormat; }
+        VkSwapchainKHR getSwapChain() const { return this->swapChain; }
 
-        std::vector<VkImage> getSwapChainImages() { return this->VKswapChainImages; }
-        std::vector<VkImageView> getSwapChainImageViews() { return this->VKswapChainImageViews; }
-        uint32_t getSwapChainImageCount() const { return static_cast<uint32_t>(this->VKswapChainImages.size()); }
+        std::vector<VkImage> getSwapChainImages() { return this->Images; }
+        std::vector<VkImageView> getSwapChainImageViews() { return this->ImageViews; }
+        uint32_t getSwapChainImageCount() const { return static_cast<uint32_t>(this->Images.size()); }
 
         VkResult acquireNextImage(VkSemaphore presentCompleteSemaphore, uint32_t& imageIndex) const
         {
-            return vkAcquireNextImageKHR(this->VKdevice, this->VKswapChain, UINT64_MAX, presentCompleteSemaphore, (VkFence)nullptr, &imageIndex);
+            return vkAcquireNextImageKHR(this->logicaldevice, this->swapChain, UINT64_MAX, presentCompleteSemaphore, (VkFence)nullptr, &imageIndex);
         }
+
     private:
 
-        VkSwapchainKHR VKswapChain{ VK_NULL_HANDLE };
-        VkExtent2D VKswapChainExtent{ 0, 0 };
-        VkFormat VKswapChainImageFormat{ VK_FORMAT_UNDEFINED };
+        VkSwapchainKHR swapChain{ VK_NULL_HANDLE };
+        VkExtent2D Extent{ 0, 0 };
+        VkFormat ImageFormat{ VK_FORMAT_UNDEFINED };
 
-        std::vector<VkImage> VKswapChainImages{};
-        std::vector<VkImageView> VKswapChainImageViews{};
+        std::vector<VkImage> Images{};
+        std::vector<VkImageView> ImageViews{};
 
-        VkPhysicalDevice VKphysicalDevice{ VK_NULL_HANDLE };
-        VkDevice VKdevice{ VK_NULL_HANDLE };
-        VkSurfaceKHR VKsurface{ VK_NULL_HANDLE };
-        VkInstance VKInstance{ VK_NULL_HANDLE };
+        VkPhysicalDevice physicalDevice{ VK_NULL_HANDLE };
+        VkDevice logicaldevice{ VK_NULL_HANDLE };
+        VkSurfaceKHR surface{ VK_NULL_HANDLE };
+        VkInstance Instance{ VK_NULL_HANDLE };
 
         VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
         VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
