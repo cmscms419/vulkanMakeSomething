@@ -9,6 +9,7 @@
 
 #include "../common/struct.h"
 
+
 namespace vkengine
 {
 
@@ -48,9 +49,11 @@ namespace vkengine
         void cleanupSwapcChain();
 
         VertexBuffer VKvertexBuffer{};
+        IndexBuffer VKindexBuffer{};
+
         std::vector<UniformBuffer> VKuniformBuffer = {};
 
-        VkPipeline VKgraphicsPipeline = VK_NULL_HANDLE;                      // 그래픽스 파이프라인 -> 그래픽스 파이프라인을 생성
+        VkPipeline VKgraphicsPipeline{ VK_NULL_HANDLE };    // 그래픽스 파이프라인 -> 그래픽스 파이프라인을 생성
         VkPipelineLayout VKpipelineLayout{ VK_NULL_HANDLE };
     };
 }

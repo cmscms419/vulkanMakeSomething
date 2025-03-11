@@ -49,8 +49,9 @@ namespace vkengine
 
         void cleanupSwapcChain();
 
-        VertexBuffer_ VKvertexBuffer{};
-        IndexBuffer_ VKindexBuffer{};
+        VertexBuffer VKvertexBuffer{};
+        IndexBuffer VKindexBuffer{};
+
         std::vector<UniformBuffer> VKuniformBuffer = {};
 
         VkPipeline VKgraphicsPipeline = VK_NULL_HANDLE;                      // 그래픽스 파이프라인 -> 그래픽스 파이프라인을 생성

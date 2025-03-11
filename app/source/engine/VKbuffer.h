@@ -6,7 +6,7 @@
 #include "../../common/macros.h"
 
 
-struct VkBufferObject_ {
+struct VkBufferObject {
     
     VkDevice device = VK_NULL_HANDLE; ///< Vulkan 장치 핸들
     VkBuffer buffer = VK_NULL_HANDLE; ///< Vulkan 버퍼 핸들
@@ -25,17 +25,15 @@ struct VkBufferObject_ {
     void createBuffer(VkPhysicalDevice physicalDevice); ///< 버퍼 생성 함수
 };
 
-struct VertexBuffer_  : public VkBufferObject_
-{
-    VertexPosColor vertexBuffer{}; ///< 버텍스 버퍼
-};
-
-struct VertexTextureBuffer : public VkBufferObject_
+struct VertexBuffer : public VkBufferObject
 {
     Vertex vertexBuffer{}; ///< 버텍스 버퍼
 };
 
-struct IndexBuffer_ : public VkBufferObject_ {};
+struct IndexBuffer : public VkBufferObject 
+{
+
+};
 
 
 #endif // !INCLUDE_VKBUFFER_H_

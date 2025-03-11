@@ -12,8 +12,9 @@ namespace vkengine {
     void TextureEngine::init()
     {
         VulkanEngine::init();
-
-        this->camera = std::make_shared<vkengine::object::Camera>();
+        // Vulkan은 y좌표 + 방향이 아래이기 때문에, setPerspectiveProjection에서 반전시킨 y 좌표를 다시 반전시켜서 카메라가
+        // 보고 있는 방향에서는 텍스처를 똑바록 볼 수 있다. 하지만 이 방법은 x좌표, z좌표가 반전되어 있다.
+        this->camera = std::make_shared<vkengine::object::Camera>(glm::vec3(0.f,0.f,2.0f), glm::vec3(0.0f, -1.0f, 0.f), glm::vec3(0.f, 0.f, -1.0f));
     }
 
     bool TextureEngine::prepare()
@@ -31,6 +32,7 @@ namespace vkengine {
         this->a.device = this->VKdevice.get();
         std::string path = this->RootPath + TEST_TEXTURE_PATH;
         this->a.texPath = path.c_str();
+
         this->a.createTextureImage(4);
         this->a.createTextureImageView(VK_FORMAT_R8G8B8A8_SRGB);
         this->a.createTextureSampler();
@@ -498,8 +500,8 @@ namespace vkengine {
 
     void TextureEngine::createGraphicsPipeline()
     {
-        VkShaderModule baseVertshaderModule = this->VKdevice->createShaderModule(this->RootPath + "../../../../../../shader/vertTrinagle00.spv");
-        VkShaderModule baseFragShaderModule = this->VKdevice->createShaderModule(this->RootPath + "../../../../../../shader/fragTrinagle00.spv");
+        VkShaderModule baseVertshaderModule = this->VKdevice->createShaderModule(this->RootPath + "../../../../../../shader/vertTrinagle.spv");
+        VkShaderModule baseFragShaderModule = this->VKdevice->createShaderModule(this->RootPath + "../../../../../../shader/fragTrinagle.spv");
 
         VkPipelineShaderStageCreateInfo vertShaderStageInfo{};
         vertShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;

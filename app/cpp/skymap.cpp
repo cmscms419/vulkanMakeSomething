@@ -455,8 +455,8 @@ namespace vkengine {
 
     void skycubeEngine::createGraphicsPipeline()
     {
-        VkShaderModule baseVertshaderModule = this->VKdevice->createShaderModule(this->RootPath + "../../../../../../shader/vertTrinagle00.spv");
-        VkShaderModule baseFragShaderModule = this->VKdevice->createShaderModule(this->RootPath + "../../../../../../shader/fragTrinagle00.spv");
+        VkShaderModule baseVertshaderModule = this->VKdevice->createShaderModule(this->RootPath + "../../../../../../shader/vertCube.spv");
+        VkShaderModule baseFragShaderModule = this->VKdevice->createShaderModule(this->RootPath + "../../../../../../shader/fragCube.spv");
 
         VkPipelineShaderStageCreateInfo vertShaderStageInfo{};
         vertShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -473,8 +473,8 @@ namespace vkengine {
         VkPipelineShaderStageCreateInfo shaderStages[] = { vertShaderStageInfo, fragShaderStageInfo };
 
         // vertex input
-        auto bindingDescription = VertexPosColor::getBindingDescription();
-        auto attributeDescriptions = VertexPosColor::getAttributeDescriptions();
+        auto bindingDescription = Vertex::getBindingDescription();
+        auto attributeDescriptions = Vertex::getAttributeDescriptions();
 
         // 그래픽 파이프라인 레이아웃을 생성합니다.
         VkPipelineVertexInputStateCreateInfo vertexInputInfo{};

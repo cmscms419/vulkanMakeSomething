@@ -6,6 +6,7 @@ namespace vkengine {
     namespace object {
 
         Camera::Camera() {
+
             this->setViewDirection(pos, dir, up);
             this->setPerspectiveProjection(glm::radians(fov), aspect, nearP, farP);
 #if DEBUG_
@@ -16,6 +17,23 @@ namespace vkengine {
 #endif
         }
         
+        Camera::Camera(glm::vec3 pos, glm::vec3 up, glm::vec3 dir)
+        {
+            this->pos = pos;
+            this->up = up;
+            this->dir = dir;
+            this->right = glm::cross(this->dir, this->up);
+
+            this->setViewDirection(this->pos, this->dir, this->up);
+            this->setPerspectiveProjection(glm::radians(fov), aspect, nearP, farP);
+#if DEBUG_
+            printf("Camera Position: %f %f %f\n", this->pos.x, this->pos.y, this->pos.z);
+            printf("Camera Target: %f %f %f\n", this->target.x, this->target.y, this->target.z);
+            printf("Camera Direction: %f %f %f\n", this->dir.x, this->dir.y, this->dir.z);
+            printf("Camera Right: %f %f %f\n", this->right.x, this->right.y, this->right.z);
+#endif
+        }
+
         Camera::~Camera() {}
 
         void Camera::update() {

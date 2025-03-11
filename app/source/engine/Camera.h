@@ -16,7 +16,9 @@ namespace vkengine {
         class Camera {
 
         public:
-            Camera();
+            explicit Camera();
+            explicit Camera(glm::vec3 pos, glm::vec3 up, glm::vec3 dir);
+
             ~Camera();
             void update();
 
@@ -39,11 +41,11 @@ namespace vkengine {
             void setViewXYZ(glm::vec3 pos, glm::vec3 rot);
 
         private:
-            glm::vec3 pos{ glm::vec3(2.0f) };
-            glm::vec3 up{ glm::vec3(0.0f, 0.0f, 1.0f) };
+            glm::vec3 pos{ glm::vec3(0.0f, 0.0f, 3.0f) };
+            glm::vec3 up{ glm::vec3(0.0f, 1.0f, 0.0f) };
             glm::vec3 target{ glm::vec3(0.0f) };
-            glm::vec3 dir{ glm::vec3(-1.0f, -1.0f, -1.0f) };
-            glm::vec3 right{ glm::vec3(1.0f, 0.0f, 0.0f) } ;
+            glm::vec3 dir{ glm::vec3(0.0f, 0.0f, -1.0f) };
+            glm::vec3 right{ glm::vec3(1.0f, 0.0f, 0.0f) };
 
             float yaw{ 0.0f };
             float pitch{ 0.0f };

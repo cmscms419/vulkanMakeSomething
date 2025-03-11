@@ -54,7 +54,8 @@ namespace vkengine {
             vkDestroyDescriptorPool(this->VKdevice->logicaldevice, this->VKdescriptorPool, nullptr);
             vkDestroyDescriptorSetLayout(this->VKdevice->logicaldevice, this->VKdescriptorSetLayout, nullptr);
 
-            this->VKvertexBuffer.cleanup(this->VKdevice->logicaldevice);
+            this->VKvertexBuffer.cleanup();
+            this->VKindexBuffer.cleanup();
 
             for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
             {
@@ -254,12 +255,12 @@ namespace vkengine {
             vkCmdSetScissor(framedata->mainCommandBuffer, 0, 1, &scissor);
 
             // 버텍스 버퍼를 바인딩합니다.
-            VkBuffer vertexBuffers[] = { this->VKvertexBuffer.vertexBuffer };
+            VkBuffer vertexBuffers[] = { this->VKvertexBuffer.buffer };
             VkDeviceSize offsets[] = { 0 };
             vkCmdBindVertexBuffers(framedata->mainCommandBuffer, 0, 1, vertexBuffers, offsets);
 
             // 인덱스 버퍼를 바인딩합니다.
-            vkCmdBindIndexBuffer(framedata->mainCommandBuffer, this->VKvertexBuffer.indexBuffer, 0, VK_INDEX_TYPE_UINT16);
+            vkCmdBindIndexBuffer(framedata->mainCommandBuffer, this->VKindexBuffer.buffer, 0, VK_INDEX_TYPE_UINT16);
 
             // 디스크립터 세트를 바인딩합니다.
             vkCmdBindDescriptorSets(framedata->mainCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->VKpipelineLayout, 0, 1, &this->VKdescriptorSets[this->currentFrame], 0, nullptr);
@@ -300,15 +301,15 @@ namespace vkengine {
             buffersize,
             VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
             VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-            this->VKvertexBuffer.vertexBuffer,
-            this->VKvertexBuffer.vertexMemory);
+            this->VKvertexBuffer.buffer,
+            this->VKvertexBuffer.memory);
 
         helper::copyBuffer(
             this->VKdevice->logicaldevice,
             this->VKdevice->commandPool,
             this->VKdevice->graphicsVKQueue,
             stagingBuffer,
-            this->VKvertexBuffer.vertexBuffer,
+            this->VKvertexBuffer.buffer,
             buffersize);
 
         // 버퍼 생성이 끝나면 스테이징 버퍼를 제거합니다.
@@ -342,15 +343,15 @@ namespace vkengine {
             buffersize,
             VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
             VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-            this->VKvertexBuffer.indexBuffer,
-            this->VKvertexBuffer.indexmemory);
+            this->VKindexBuffer.buffer,
+            this->VKindexBuffer.memory);
 
         helper::copyBuffer(
             this->VKdevice->logicaldevice,
             this->VKdevice->commandPool,
             this->VKdevice->graphicsVKQueue,
             stagingBuffer,
-            this->VKvertexBuffer.indexBuffer,
+            this->VKindexBuffer.buffer,
             buffersize);
 
         // 버퍼 생성이 끝나면 스테이징 버퍼를 제거합니다.
@@ -463,8 +464,8 @@ namespace vkengine {
 
     void cameraEngine::createGraphicsPipeline()
     {
-        VkShaderModule baseVertshaderModule = this->VKdevice->createShaderModule(this->RootPath + "../../../../../../shader/vertTrinagle00.spv");
-        VkShaderModule baseFragShaderModule = this->VKdevice->createShaderModule(this->RootPath + "../../../../../../shader/fragTrinagle00.spv");
+        VkShaderModule baseVertshaderModule = this->VKdevice->createShaderModule(this->RootPath + "../../../../../../shader/vertTrinagle.spv");
+        VkShaderModule baseFragShaderModule = this->VKdevice->createShaderModule(this->RootPath + "../../../../../../shader/fragTrinagle.spv");
 
         VkPipelineShaderStageCreateInfo vertShaderStageInfo{};
         vertShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -481,8 +482,8 @@ namespace vkengine {
         VkPipelineShaderStageCreateInfo shaderStages[] = { vertShaderStageInfo, fragShaderStageInfo };
 
         // vertex input
-        auto bindingDescription = VertexPosColor::getBindingDescription();
-        auto attributeDescriptions = VertexPosColor::getAttributeDescriptions();
+        auto bindingDescription = Vertex::getBindingDescription();
+        auto attributeDescriptions = Vertex::getAttributeDescriptions();
 
         // 그래픽 파이프라인 레이아웃을 생성합니다.
         VkPipelineVertexInputStateCreateInfo vertexInputInfo{};

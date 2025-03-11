@@ -31,7 +31,7 @@
     <Filter Include="app\texture">
       <UniqueIdentifier>{61cada18-272f-4ddd-a6c2-dc1f9771c34b}</UniqueIdentifier>
     </Filter>
-    <Filter Include="app\textureCube">
+    <Filter Include="app\textureArray%28for cube%29">
       <UniqueIdentifier>{5597e1c6-6f07-4e78-8cdc-cee3cc127ade}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
@@ -113,7 +113,7 @@
       <Filter>source</Filter>
     </ClCompile>
     <ClCompile Include="..\..\app\cpp\texturecube.cpp">
-      <Filter>app\textureCube</Filter>
+      <Filter>app\textureArray%28for cube%29</Filter>
     </ClCompile>
     <ClCompile Include="..\..\app\common\resourseload.c">
       <Filter>source\common</Filter>
@@ -178,7 +178,7 @@
       <Filter>source</Filter>
     </ClInclude>
     <ClInclude Include="..\..\app\cpp\texturecube.h">
-      <Filter>app\textureCube</Filter>
+      <Filter>app\textureArray%28for cube%29</Filter>
     </ClInclude>
     <ClInclude Include="..\..\app\common\resourseload.h">
       <Filter>source\common</Filter>
@@ -191,28 +191,40 @@
     <None Include="..\..\shader\compile_debug.bat">
       <Filter>shader</Filter>
     </None>
-    <None Include="..\..\shader\frag.spv">
-      <Filter>shader</Filter>
-    </None>
-    <None Include="..\..\shader\shader.frag">
+    <None Include="..\..\shader\trinagle.vert">
       <Filter>shader</Filter>
     </None>
     <None Include="..\..\shader\shader.vert">
       <Filter>shader</Filter>
     </None>
+    <None Include="..\..\shader\cube.vert">
+      <Filter>shader</Filter>
+    </None>
+    <None Include="..\..\shader\vertTrinagle.spv">
+      <Filter>shader</Filter>
+    </None>
+    <None Include="..\..\shader\vertCube.spv">
+      <Filter>shader</Filter>
+    </None>
     <None Include="..\..\shader\vert.spv">
       <Filter>shader</Filter>
     </None>
-    <None Include="..\..\shader\trinagle00.frag">
+    <None Include="..\..\shader\fragTrinagle.spv">
       <Filter>shader</Filter>
     </None>
-    <None Include="..\..\shader\trinagle00.vert">
+    <None Include="..\..\shader\frag.spv">
       <Filter>shader</Filter>
     </None>
-    <None Include="..\..\shader\vertTrinagle00.spv">
+    <None Include="..\..\shader\trinagle.frag">
       <Filter>shader</Filter>
     </None>
-    <None Include="..\..\shader\fragTrinagle00.spv">
+    <None Include="..\..\shader\shader.frag">
+      <Filter>shader</Filter>
+    </None>
+    <None Include="..\..\shader\cube.frag">
+      <Filter>shader</Filter>
+    </None>
+    <None Include="..\..\shader\fragCube.spv">
       <Filter>shader</Filter>
     </None>
   </ItemGroup>

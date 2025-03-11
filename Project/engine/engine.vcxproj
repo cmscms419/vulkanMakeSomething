@@ -165,14 +165,18 @@
   <ItemGroup>
     <None Include="..\..\shader\compile.bat" />
     <None Include="..\..\shader\compile_debug.bat" />
+    <None Include="..\..\shader\cube.frag" />
+    <None Include="..\..\shader\cube.vert" />
     <None Include="..\..\shader\frag.spv" />
-    <None Include="..\..\shader\fragTrinagle00.spv" />
+    <None Include="..\..\shader\fragCube.spv" />
+    <None Include="..\..\shader\fragTrinagle.spv" />
     <None Include="..\..\shader\shader.frag" />
     <None Include="..\..\shader\shader.vert" />
-    <None Include="..\..\shader\trinagle00.frag" />
-    <None Include="..\..\shader\trinagle00.vert" />
+    <None Include="..\..\shader\trinagle.frag" />
+    <None Include="..\..\shader\trinagle.vert" />
     <None Include="..\..\shader\vert.spv" />
-    <None Include="..\..\shader\vertTrinagle00.spv" />
+    <None Include="..\..\shader\vertCube.spv" />
+    <None Include="..\..\shader\vertTrinagle.spv" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

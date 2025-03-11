@@ -475,8 +475,8 @@ namespace vkengine {
         VkPipelineShaderStageCreateInfo shaderStages[] = { vertShaderStageInfo, fragShaderStageInfo };
 
         // vertex input
-        auto bindingDescription = VertexPosColor::getBindingDescription();
-        auto attributeDescriptions = VertexPosColor::getAttributeDescriptions();
+        auto bindingDescription = Vertex::getBindingDescription();
+        auto attributeDescriptions = Vertex::getAttributeDescriptions();
 
         // 그래픽 파이프라인 레이아웃을 생성합니다.
         VkPipelineVertexInputStateCreateInfo vertexInputInfo{};

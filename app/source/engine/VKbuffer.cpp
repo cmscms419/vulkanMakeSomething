@@ -3,7 +3,7 @@
 
 using namespace vkengine::helper;
 
-void VkBufferObject_::cleanup()
+void VkBufferObject::cleanup()
 {
     if (buffer != VK_NULL_HANDLE)
     {
@@ -18,13 +18,13 @@ void VkBufferObject_::cleanup()
 // 함수는 버퍼 메모리를 매핑하여 CPU에서 접근할 수 있도록 합니다. 
 // vkMapMemory 함수를 호출하여 메모리를 매핑하고, 
 // 매핑된 메모리의 포인터를 mapped 멤버 변수에 저장합니다.
-VkResult VkBufferObject_::mapToMeBuffer(VkDeviceSize size, VkDeviceSize offset)
+VkResult VkBufferObject::mapToMeBuffer(VkDeviceSize size, VkDeviceSize offset)
 {
     // 버퍼 메모리를 매핑합니다.
     return vkMapMemory(device, memory, offset, size, 0, &mapped);
 }
 
-void VkBufferObject_::copyToMeBuffer(void* data, VkDeviceSize size)
+void VkBufferObject::copyToMeBuffer(void* data, VkDeviceSize size)
 {
     // 매핑된 메모리에 데이터를 복사합니다.
     memcpy(this->mapped, data, size);
@@ -33,7 +33,7 @@ void VkBufferObject_::copyToMeBuffer(void* data, VkDeviceSize size)
     vkUnmapMemory(device, memory);
 }
 
-void VkBufferObject_::createBuffer(VkPhysicalDevice physicalDevice)
+void VkBufferObject::createBuffer(VkPhysicalDevice physicalDevice)
 {
     vkengine::helper::createBuffer(
         this->device,

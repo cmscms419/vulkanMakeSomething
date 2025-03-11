@@ -9,10 +9,12 @@
 
 #include <vulkan/vulkan.h>
 
-#include "common.h"
-
 constexpr const char* DEBUG_USER_NAME_0 = "alstj";
 constexpr int UNIQUE_VERTEXTYPE = 1;
+
+namespace vkengine {
+    extern const bool enableValidationLayers;
+}
 
 #if DEBUG_
 #define PRINT_TO_CONSOLE(text, ...)              \

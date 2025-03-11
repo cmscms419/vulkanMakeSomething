@@ -5,7 +5,7 @@
 #include "../../app/cpp/skymap.h"
 #include "../../app/cpp/texture.h"
 
-#define SELECTED_ENGINE 4
+#define SELECTED_ENGINE 3
 
 int main(int argc, char* argv[]) {
 
