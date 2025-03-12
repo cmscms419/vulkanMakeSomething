@@ -84,7 +84,7 @@ namespace vkengine {
     void cameraEngine::drawFrame()
     {
         // 렌더링을 시작하기 전에 프레임을 렌더링할 준비가 되었는지 확인합니다.
-        VK_CHECK_RESULT(vkWaitForFences(this->VKdevice->logicaldevice, 1, &this->getCurrnetFrameData().VkinFlightFences, VK_TRUE, UINT64_MAX));
+        _VK_CHECK_RESULT_(vkWaitForFences(this->VKdevice->logicaldevice, 1, &this->getCurrnetFrameData().VkinFlightFences, VK_TRUE, UINT64_MAX));
 
         // 이미지를 가져오기 위해 스왑 체인에서 이미지 인덱스를 가져옵니다.
         // 주어진 스왑체인에서 다음 이미지를 획득하고, 
@@ -128,7 +128,7 @@ namespace vkengine {
         vkResetFences(this->VKdevice->logicaldevice, 1, &this->VKframeData[this->currentFrame].VkinFlightFences);
 
         // 렌더링을 시작합니다.
-        VK_CHECK_RESULT(vkQueueSubmit(this->VKdevice->graphicsVKQueue, 1, &VKsubmitInfo, this->VKframeData[this->currentFrame].VkinFlightFences));
+        _VK_CHECK_RESULT_(vkQueueSubmit(this->VKdevice->graphicsVKQueue, 1, &VKsubmitInfo, this->VKframeData[this->currentFrame].VkinFlightFences));
 
         // 렌더링 종료 후, 프레젠트를 시작합니다.
         VulkanEngine::presentFrame(&imageIndex);
@@ -205,8 +205,8 @@ namespace vkengine {
 
         for (auto& frameData : this->VKframeData)
         {
-            VK_CHECK_RESULT(vkCreateSemaphore(this->VKdevice->logicaldevice, &semaphoreInfo, nullptr, &frameData.VkimageavailableSemaphore));
-            VK_CHECK_RESULT(vkCreateSemaphore(this->VKdevice->logicaldevice, &semaphoreInfo, nullptr, &frameData.VkrenderFinishedSemaphore));
+            _VK_CHECK_RESULT_(vkCreateSemaphore(this->VKdevice->logicaldevice, &semaphoreInfo, nullptr, &frameData.VkimageavailableSemaphore));
+            _VK_CHECK_RESULT_(vkCreateSemaphore(this->VKdevice->logicaldevice, &semaphoreInfo, nullptr, &frameData.VkrenderFinishedSemaphore));
         }
 
         return true;
@@ -217,7 +217,7 @@ namespace vkengine {
         // 커맨드 버퍼 기록을 시작합니다.
         VkCommandBufferBeginInfo beginInfo = framedata->commandBufferBeginInfo(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
 
-        VK_CHECK_RESULT(vkBeginCommandBuffer(framedata->mainCommandBuffer, &beginInfo));
+        _VK_CHECK_RESULT_(vkBeginCommandBuffer(framedata->mainCommandBuffer, &beginInfo));
 
         // 렌더 패스를 시작하기 위한 클리어 값 설정
         std::array<VkClearValue, 2> clearValues{};
@@ -271,7 +271,7 @@ namespace vkengine {
         vkCmdEndRenderPass(framedata->mainCommandBuffer);
 
         // 커맨드 버퍼 기록을 종료합니다.
-        VK_CHECK_RESULT(vkEndCommandBuffer(framedata->mainCommandBuffer));
+        _VK_CHECK_RESULT_(vkEndCommandBuffer(framedata->mainCommandBuffer));
     }
 
     void cameraEngine::createVertexbuffer()
@@ -290,10 +290,11 @@ namespace vkengine {
             stagingBuffer,
             stagingBufferMemory);
 
-        void* data;
-        vkMapMemory(this->VKdevice->logicaldevice, stagingBufferMemory, 0, buffersize, 0, &data);
-        memcpy(data, cube.data(), (size_t)buffersize);
-        vkUnmapMemory(this->VKdevice->logicaldevice, stagingBufferMemory);
+        helper::copyToDeviceMemory(
+            this->VKdevice->logicaldevice,
+            cube.data(),
+            stagingBufferMemory,
+            buffersize);
 
         helper::createBuffer(
             this->VKdevice->logicaldevice,
@@ -332,10 +333,11 @@ namespace vkengine {
             stagingBuffer,
             stagingBufferMemory);
 
-        void* data;
-        vkMapMemory(this->VKdevice->logicaldevice, stagingBufferMemory, 0, buffersize, 0, &data);
-        memcpy(data, cubeindices_.data(), (size_t)buffersize);
-        vkUnmapMemory(this->VKdevice->logicaldevice, stagingBufferMemory);
+        helper::copyToDeviceMemory(
+            this->VKdevice->logicaldevice,
+            cubeindices_.data(),
+            stagingBufferMemory,
+            buffersize);
 
         helper::createBuffer(
             this->VKdevice->logicaldevice,
@@ -397,7 +399,7 @@ namespace vkengine {
         layoutInfo.bindingCount = 1;
         layoutInfo.pBindings = &uboLayoutBinding;
 
-        VK_CHECK_RESULT(vkCreateDescriptorSetLayout(this->VKdevice->logicaldevice, &layoutInfo, nullptr, &this->VKdescriptorSetLayout));
+        _VK_CHECK_RESULT_(vkCreateDescriptorSetLayout(this->VKdevice->logicaldevice, &layoutInfo, nullptr, &this->VKdescriptorSetLayout));
     }
 
     void cameraEngine::createDescriptorPool()
@@ -416,7 +418,7 @@ namespace vkengine {
         poolInfo.pPoolSizes = poolSizes.data();
         poolInfo.maxSets = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
 
-        VK_CHECK_RESULT(vkCreateDescriptorPool(this->VKdevice->logicaldevice, &poolInfo, nullptr, &this->VKdescriptorPool));
+        _VK_CHECK_RESULT_(vkCreateDescriptorPool(this->VKdevice->logicaldevice, &poolInfo, nullptr, &this->VKdescriptorPool));
     }
 
     void cameraEngine::createDescriptorSets()
@@ -437,7 +439,7 @@ namespace vkengine {
         this->VKdescriptorSets.resize(MAX_FRAMES_IN_FLIGHT);
 
         // 디스크립터 세트를 할당합니다.
-        VK_CHECK_RESULT(vkAllocateDescriptorSets(this->VKdevice->logicaldevice, &allocInfo, this->VKdescriptorSets.data()));
+        _VK_CHECK_RESULT_(vkAllocateDescriptorSets(this->VKdevice->logicaldevice, &allocInfo, this->VKdescriptorSets.data()));
 
         // 디스크립터 세트를 설정합니다.
         for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
@@ -597,7 +599,7 @@ namespace vkengine {
         pipelineLayoutInfo.pushConstantRangeCount = 0;                            // 푸시 상수 범위 개수를 설정
         pipelineLayoutInfo.pPushConstantRanges = nullptr;                         // 푸시 상수 범위 포인터를 설정
 
-        VK_CHECK_RESULT(vkCreatePipelineLayout(this->VKdevice->logicaldevice, &pipelineLayoutInfo, nullptr, &this->VKpipelineLayout));
+        _VK_CHECK_RESULT_(vkCreatePipelineLayout(this->VKdevice->logicaldevice, &pipelineLayoutInfo, nullptr, &this->VKpipelineLayout));
 
         // 그래픽 파이프라인 생성 정보 구조체를 초기화합니다.
         VkGraphicsPipelineCreateInfo pipelineInfo{};
@@ -618,7 +620,7 @@ namespace vkengine {
         pipelineInfo.basePipelineHandle = VK_NULL_HANDLE; // Optional
         pipelineInfo.basePipelineIndex = -1; // Optional
 
-        VK_CHECK_RESULT(vkCreateGraphicsPipelines(this->VKdevice->logicaldevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &this->VKgraphicsPipeline));
+        _VK_CHECK_RESULT_(vkCreateGraphicsPipelines(this->VKdevice->logicaldevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &this->VKgraphicsPipeline));
 
         vkDestroyShaderModule(this->VKdevice->logicaldevice, baseVertshaderModule, nullptr);
         vkDestroyShaderModule(this->VKdevice->logicaldevice, baseFragShaderModule, nullptr);

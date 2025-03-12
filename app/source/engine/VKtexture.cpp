@@ -122,6 +122,6 @@ void Vk2DTexture_::createTextureSampler()
     samplerInfo.minLod = 0.0f;
     samplerInfo.maxLod = 0.0f;
 
-    VK_CHECK_RESULT(vkCreateSampler(this->device->logicaldevice, &samplerInfo, nullptr, &this->sampler));
+    _VK_CHECK_RESULT_(vkCreateSampler(this->device->logicaldevice, &samplerInfo, nullptr, &this->sampler));
 }
 

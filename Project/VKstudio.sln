@@ -7,6 +7,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Vulkan_test", "Vulkan_test\
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "engine", "engine\engine.vcxproj", "{C14BEF55-A82F-4B5F-8F43-9EDE6FED3A02}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "basicEngine", "basicEngine\basicEngine.vcxproj", "{4C2DB017-DA5B-1C63-CFD9-6700B8C045BA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -21,8 +23,15 @@ Global
 		{C14BEF55-A82F-4B5F-8F43-9EDE6FED3A02}.Debug|x64.Build.0 = Debug|x64
 		{C14BEF55-A82F-4B5F-8F43-9EDE6FED3A02}.Release|x64.ActiveCfg = Release|x64
 		{C14BEF55-A82F-4B5F-8F43-9EDE6FED3A02}.Release|x64.Build.0 = Release|x64
+		{4C2DB017-DA5B-1C63-CFD9-6700B8C045BA}.Debug|x64.ActiveCfg = Debug|x64
+		{4C2DB017-DA5B-1C63-CFD9-6700B8C045BA}.Debug|x64.Build.0 = Debug|x64
+		{4C2DB017-DA5B-1C63-CFD9-6700B8C045BA}.Release|x64.ActiveCfg = Release|x64
+		{4C2DB017-DA5B-1C63-CFD9-6700B8C045BA}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {46E572E5-9639-4EE0-9508-072778161B66}
 	EndGlobalSection
 EndGlobal

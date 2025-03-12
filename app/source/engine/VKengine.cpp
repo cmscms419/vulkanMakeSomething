@@ -98,10 +98,6 @@ namespace vkengine
         while (!glfwWindowShouldClose(this->VKwindow)) {
             glfwPollEvents();
             drawFrame();
-#ifdef DEBUG_
-            //printf("update\n");
-#endif // DEBUG_
-
         }
 
         vkDeviceWaitIdle(this->VKdevice->logicaldevice);
@@ -157,7 +153,7 @@ namespace vkengine
             return;
         }
         else {
-            VK_CHECK_RESULT(result);
+            _VK_CHECK_RESULT_(result);
         }
     }
 
@@ -190,7 +186,7 @@ namespace vkengine
         }
         else
         {
-            VK_CHECK_RESULT(result);
+            _VK_CHECK_RESULT_(result);
         }
     }
 
@@ -230,7 +226,7 @@ namespace vkengine
         // 커맨드 풀 생성 정보 구조체를 초기화합니다.
         VkCommandPoolCreateInfo poolInfo = helper::commandPoolCreateInfo(queueFamilyIndices.graphicsAndComputeFamily, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
 
-        VK_CHECK_RESULT(vkCreateCommandPool(this->VKdevice->logicaldevice, &poolInfo, nullptr, &this->VKdevice->commandPool));
+        _VK_CHECK_RESULT_(vkCreateCommandPool(this->VKdevice->logicaldevice, &poolInfo, nullptr, &this->VKdevice->commandPool));
 
         return true;
     }
@@ -241,7 +237,7 @@ namespace vkengine
 
         for (auto& frameData : this->VKframeData)
         {
-            VK_CHECK_RESULT(vkCreateFence(this->VKdevice->logicaldevice, &fenceInfo, nullptr, &frameData.VkinFlightFences));
+            _VK_CHECK_RESULT_(vkCreateFence(this->VKdevice->logicaldevice, &fenceInfo, nullptr, &frameData.VkinFlightFences));
         }
 
         return true;
@@ -288,8 +284,8 @@ namespace vkengine
         }
 
         // Vulkan 인스턴스를 생성합니다.
-        VK_CHECK_RESULT(vkCreateInstance(&createInfo, nullptr, &this->VKinstance));
-        PRINT_TO_CONSOLE("create instance\n");
+        _VK_CHECK_RESULT_(vkCreateInstance(&createInfo, nullptr, &this->VKinstance));
+        _PRINT_TO_CONSOLE_("create instance\n");
 
     }
 
@@ -298,7 +294,7 @@ namespace vkengine
         VkDebugUtilsMessengerCreateInfoEXT createInfo;
         populateDebugMessengerCreateInfo(createInfo);
 
-        VK_CHECK_RESULT(CreateDebugUtilsMessengerEXT(this->VKinstance, &createInfo, nullptr, &this->VKdebugUtilsMessenger));
+        _VK_CHECK_RESULT_(CreateDebugUtilsMessengerEXT(this->VKinstance, &createInfo, nullptr, &this->VKdebugUtilsMessenger));
     }
 
     void VulkanEngine::createSurface()
@@ -379,7 +375,7 @@ namespace vkengine
         this->VKdevice->features.sampleRateShading = VK_TRUE; // 샘플 레이트 쉐이딩을 사용하여 픽셀을 그립니다.
 
         // 논리 디바이스를 생성합니다.
-        VK_CHECK_RESULT(this->VKdevice->createLogicalDevice());
+        _VK_CHECK_RESULT_(this->VKdevice->createLogicalDevice());
 
         // depth format을 가져옵니다.
         this->VKdepthStencill.depthFormat = helper::findDepthFormat(this->VKdevice->physicalDevice);
@@ -514,7 +510,7 @@ namespace vkengine
         renderPassInfo.dependencyCount = 1;
         renderPassInfo.pDependencies = &dependency;
 
-        VK_CHECK_RESULT(vkCreateRenderPass(this->VKdevice->logicaldevice, &renderPassInfo, nullptr, this->VKrenderPass.get()));
+        _VK_CHECK_RESULT_(vkCreateRenderPass(this->VKdevice->logicaldevice, &renderPassInfo, nullptr, this->VKrenderPass.get()));
     }
 
     void VulkanEngine::createPipelineCache()
@@ -522,7 +518,7 @@ namespace vkengine
         VkPipelineCacheCreateInfo pipelineCacheCreateInfo{};
         pipelineCacheCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO;
 
-        VK_CHECK_RESULT(vkCreatePipelineCache(this->VKdevice->logicaldevice, &pipelineCacheCreateInfo, nullptr, &this->VKpipelineCache));
+        _VK_CHECK_RESULT_(vkCreatePipelineCache(this->VKdevice->logicaldevice, &pipelineCacheCreateInfo, nullptr, &this->VKpipelineCache));
     }
 
     void VulkanEngine::createFramebuffers()
@@ -547,7 +543,7 @@ namespace vkengine
             framebufferInfo.height = this->VKswapChain->getSwapChainExtent().height;
             framebufferInfo.layers = 1;
 
-            VK_CHECK_RESULT(vkCreateFramebuffer(this->VKdevice->logicaldevice, &framebufferInfo, nullptr, &this->VKswapChainFramebuffers[i]));
+            _VK_CHECK_RESULT_(vkCreateFramebuffer(this->VKdevice->logicaldevice, &framebufferInfo, nullptr, &this->VKswapChainFramebuffers[i]));
         }
     }
 
@@ -584,7 +580,7 @@ namespace vkengine
         
         for (auto& framedata : this->VKframeData)
         {
-            VK_CHECK_RESULT(vkAllocateCommandBuffers(this->VKdevice->logicaldevice, &allocInfo, &framedata.mainCommandBuffer));
+            _VK_CHECK_RESULT_(vkAllocateCommandBuffers(this->VKdevice->logicaldevice, &allocInfo, &framedata.mainCommandBuffer));
         }
 
 

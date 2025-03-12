@@ -8,13 +8,11 @@ const std::string UserName = []()
 
 #if DEBUG_
 
-    if (std::string(username) == DEBUG_USER_NAME_0) {
-        printf("DEBUG MODE\n");
-    }
-    else
+    if (std::string(username) != DEBUG_USER_NAME_0) 
     {
         username[0] = '\0';
     }
+
 #else
 
     username[0] = '\0';

@@ -1,29 +1,17 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="source">
-      <UniqueIdentifier>{f0e5178c-9cb3-48c0-b27d-e12a7e5c083e}</UniqueIdentifier>
-    </Filter>
     <Filter Include="app">
       <UniqueIdentifier>{f9bd0ae7-abc2-4a96-8844-2f6e778397c2}</UniqueIdentifier>
     </Filter>
     <Filter Include="app\triangle">
       <UniqueIdentifier>{a380fe96-44c2-4fb9-ac52-6a38c14ad06f}</UniqueIdentifier>
     </Filter>
-    <Filter Include="component">
-      <UniqueIdentifier>{9475362c-139b-4966-ba47-a629d4857e81}</UniqueIdentifier>
-    </Filter>
     <Filter Include="shader">
       <UniqueIdentifier>{8ab59d28-75f1-4158-9e56-a5e8a258572e}</UniqueIdentifier>
     </Filter>
-    <Filter Include="source\imgui">
-      <UniqueIdentifier>{c296ab41-e891-4cfa-ac1c-2e05c6817f4a}</UniqueIdentifier>
-    </Filter>
     <Filter Include="app\camera">
       <UniqueIdentifier>{9208fa2e-0d38-4fab-92df-d886e01d3def}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="source\common">
-      <UniqueIdentifier>{406f1946-ce17-4095-abd9-2449c4a8e275}</UniqueIdentifier>
     </Filter>
     <Filter Include="app\skymap">
       <UniqueIdentifier>{d72abba6-8d83-436f-944e-722337971191}</UniqueIdentifier>
@@ -37,109 +25,25 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\app\source\main_engine.cpp" />
-    <ClCompile Include="..\..\app\source\engine\VKdevice.cpp">
-      <Filter>source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\app\source\engine\VKengine.cpp">
-      <Filter>source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\app\source\engine\VKinputEvent.cpp">
-      <Filter>source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\app\source\engine\VKswapchain.cpp">
-      <Filter>source</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\app\cpp\triangle.cpp">
       <Filter>app\triangle</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\app\source\engine\Camera.cpp">
-      <Filter>component</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\app\source\engine\VKimgui.cpp">
-      <Filter>source</Filter>
     </ClCompile>
     <ClCompile Include="..\..\app\cpp\cameraEngine.cpp">
       <Filter>app\camera</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\app\source\engine\imgui.cpp">
-      <Filter>source\imgui</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\app\source\engine\imgui_demo.cpp">
-      <Filter>source\imgui</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\app\source\engine\imgui_draw.cpp">
-      <Filter>source\imgui</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\app\source\engine\imgui_impl_glfw.cpp">
-      <Filter>source\imgui</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\app\source\engine\imgui_impl_vulkan.cpp">
-      <Filter>source\imgui</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\app\source\engine\imgui_tables.cpp">
-      <Filter>source\imgui</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\app\source\engine\imgui_widgets.cpp">
-      <Filter>source\imgui</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\app\cpp\skymap.cpp">
       <Filter>app\skymap</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\app\source\engine\VKbuffer.cpp">
-      <Filter>source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\app\common\common.cpp">
-      <Filter>source\common</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\app\common\vkmath.cpp">
-      <Filter>source\common</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\app\common\struct.cpp">
-      <Filter>source\common</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\app\common\macros.cpp">
-      <Filter>source\common</Filter>
     </ClCompile>
     <ClCompile Include="..\..\app\cpp\texture.cpp">
       <Filter>app\texture</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\app\source\engine\Debug.cpp">
-      <Filter>source\common</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\app\source\engine\helper.cpp">
-      <Filter>source\common</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\app\source\engine\VKtexture.cpp">
-      <Filter>source</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\app\cpp\texturecube.cpp">
       <Filter>app\textureArray%28for cube%29</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\app\common\resourseload.c">
-      <Filter>source\common</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\app\source\engine\VKdevice.h">
-      <Filter>source</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\app\source\engine\VKengine.h">
-      <Filter>source</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\app\source\engine\VKinputEvent.h">
-      <Filter>source</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\app\source\engine\VKswapchain.h">
-      <Filter>source</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\app\cpp\triangle.h">
       <Filter>app\triangle</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\app\source\engine\Camera.h">
-      <Filter>component</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\app\source\engine\VKimgui.h">
-      <Filter>source</Filter>
     </ClInclude>
     <ClInclude Include="..\..\app\cpp\cameraEngine.h">
       <Filter>app\camera</Filter>
@@ -147,41 +51,11 @@
     <ClInclude Include="..\..\app\cpp\skymap.h">
       <Filter>app\skymap</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\app\source\engine\VKbuffer.h">
-      <Filter>source</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\app\common\macros.h">
-      <Filter>source\common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\app\common\common.h">
-      <Filter>source\common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\app\common\object_data.h">
-      <Filter>source\common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\app\common\struct.h">
-      <Filter>source\common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\app\common\vkmath.h">
-      <Filter>source\common</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\app\cpp\texture.h">
       <Filter>app\texture</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\app\source\engine\helper.h">
-      <Filter>source\common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\app\source\engine\Debug.h">
-      <Filter>source\common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\app\source\engine\VKtexture.h">
-      <Filter>source</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\app\cpp\texturecube.h">
       <Filter>app\textureArray%28for cube%29</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\app\common\resourseload.h">
-      <Filter>source\common</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

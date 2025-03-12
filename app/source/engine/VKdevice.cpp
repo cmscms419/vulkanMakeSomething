@@ -30,12 +30,10 @@ namespace vkengine {
             // Vulkan 1.0을 지원하는 디바이스 처리
         }
 
-#ifdef DEBUG_
-        printf("Select Device\n");
-        printf("Select DeviceProperties.deviceType: %d\n", properties.deviceType);
-        printf("Select Device Name: %s\n", properties.deviceName);
-#endif // DEBUG_
-
+        _PRINT_TO_CONSOLE_("Select Device\n");
+        _PRINT_TO_CONSOLE_("Select DeviceProperties.deviceType: %d\n", properties.deviceType);
+        _PRINT_TO_CONSOLE_("Select Device Name: %s\n", properties.deviceName);
+        
         helper::getDeviceExtensionSupport(physicalDevice, &this->supportedExtensions);
     }
 
@@ -117,7 +115,7 @@ namespace vkengine {
         imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
         imageInfo.flags = 0; // Optional
 
-        VK_CHECK_RESULT(vkCreateImage(logicaldevice, &imageInfo, nullptr, &image));
+        _VK_CHECK_RESULT_(vkCreateImage(logicaldevice, &imageInfo, nullptr, &image));
 
         VkMemoryRequirements memRequirements;
         vkGetImageMemoryRequirements(logicaldevice, image, &memRequirements);
@@ -127,8 +125,8 @@ namespace vkengine {
         allocInfo.allocationSize = memRequirements.size;
         allocInfo.memoryTypeIndex = helper::findMemoryType(physicalDevice, memRequirements.memoryTypeBits, properties);
 
-        VK_CHECK_RESULT(vkAllocateMemory(logicaldevice, &allocInfo, nullptr, &imageMemory));
-        VK_CHECK_RESULT(vkBindImageMemory(logicaldevice, image, imageMemory, 0));
+        _VK_CHECK_RESULT_(vkAllocateMemory(logicaldevice, &allocInfo, nullptr, &imageMemory));
+        _VK_CHECK_RESULT_(vkBindImageMemory(logicaldevice, image, imageMemory, 0));
     }
 
     const VkShaderModule VKDevice_::createShaderModule(const std::string& path) const
@@ -141,7 +139,7 @@ namespace vkengine {
         createInfo.pCode = reinterpret_cast<const uint32_t*>(shaderCode.data());
 
         VkShaderModule shaderModule{ VK_NULL_HANDLE };
-        VK_CHECK_RESULT(vkCreateShaderModule(this->logicaldevice, &createInfo, nullptr, &shaderModule));
+        _VK_CHECK_RESULT_(vkCreateShaderModule(this->logicaldevice, &createInfo, nullptr, &shaderModule));
 
         return shaderModule;
     }

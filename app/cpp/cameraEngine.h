@@ -7,8 +7,8 @@
 #include "../source/engine/Camera.h"
 #include "../source/engine/Debug.h"
 
-#include "../common/struct.h"
 
+#include "../common/struct.h"
 
 namespace vkengine
 {

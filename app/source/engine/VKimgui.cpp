@@ -51,7 +51,7 @@ namespace vkengine {
             init_info.RenderPass = engine->getRenderPass();
             init_info.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
 
-            CHECK_RESULT(ImGui_ImplVulkan_Init(&init_info));
+            _CHECK_RESULT_(ImGui_ImplVulkan_Init(&init_info));
 
             ImGui_ImplVulkan_CreateFontsTexture();
 

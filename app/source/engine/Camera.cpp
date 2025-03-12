@@ -9,12 +9,11 @@ namespace vkengine {
 
             this->setViewDirection(pos, dir, up);
             this->setPerspectiveProjection(glm::radians(fov), aspect, nearP, farP);
-#if DEBUG_
-            printf("Camera Position: %f %f %f\n", this->pos.x, this->pos.y, this->pos.z);
-            printf("Camera Target: %f %f %f\n", this->target.x, this->target.y, this->target.z);
-            printf("Camera Direction: %f %f %f\n", this->dir.x, this->dir.y, this->dir.z);
-            printf("Camera Right: %f %f %f\n", this->right.x, this->right.y, this->right.z);
-#endif
+            
+            _PRINT_TO_CONSOLE_("Camera Position: %f %f %f\n", this->pos.x, this->pos.y, this->pos.z);
+            _PRINT_TO_CONSOLE_("Camera Target: %f %f %f\n", this->target.x, this->target.y, this->target.z);
+            _PRINT_TO_CONSOLE_("Camera Direction: %f %f %f\n", this->dir.x, this->dir.y, this->dir.z);
+            _PRINT_TO_CONSOLE_("Camera Right: %f %f %f\n", this->right.x, this->right.y, this->right.z);
         }
         
         Camera::Camera(glm::vec3 pos, glm::vec3 up, glm::vec3 dir)
@@ -26,12 +25,11 @@ namespace vkengine {
 
             this->setViewDirection(this->pos, this->dir, this->up);
             this->setPerspectiveProjection(glm::radians(fov), aspect, nearP, farP);
-#if DEBUG_
-            printf("Camera Position: %f %f %f\n", this->pos.x, this->pos.y, this->pos.z);
-            printf("Camera Target: %f %f %f\n", this->target.x, this->target.y, this->target.z);
-            printf("Camera Direction: %f %f %f\n", this->dir.x, this->dir.y, this->dir.z);
-            printf("Camera Right: %f %f %f\n", this->right.x, this->right.y, this->right.z);
-#endif
+
+            _PRINT_TO_CONSOLE_("Camera Position: %f %f %f\n", this->pos.x, this->pos.y, this->pos.z);
+            _PRINT_TO_CONSOLE_("Camera Target: %f %f %f\n", this->target.x, this->target.y, this->target.z);
+            _PRINT_TO_CONSOLE_("Camera Direction: %f %f %f\n", this->dir.x, this->dir.y, this->dir.z);
+            _PRINT_TO_CONSOLE_("Camera Right: %f %f %f\n", this->right.x, this->right.y, this->right.z);
         }
 
         Camera::~Camera() {}
@@ -39,10 +37,8 @@ namespace vkengine {
         void Camera::update() {
             // Implementation here
             this->setViewDirection(pos, dir, up);
-#if DEBUG_
-            printf("\rCamera Position: %f %f %f", this->pos.x, this->pos.y, this->pos.z);
-            //printf("\rCamera Direction: %f %f %f", this->dir.x, this->dir.y, this->dir.z);
-#endif
+            _PRINT_TO_CONSOLE_("\rCamera Position: %f %f %f", this->pos.x, this->pos.y, this->pos.z);
+            //_PRINT_TO_CONSOLE_("\rCamera Direction: %f %f %f", this->dir.x, this->dir.y, this->dir.z);
         }
         
         void Camera::MoveForward(float deltaTime)

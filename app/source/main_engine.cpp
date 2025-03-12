@@ -1,5 +1,6 @@
 
 #include "engine/VKengine.h"
+
 #include "../../app/cpp/triangle.h"
 #include "../../app/cpp/cameraEngine.h"
 #include "../../app/cpp/skymap.h"
@@ -9,7 +10,12 @@
 
 int main(int argc, char* argv[]) {
 
-    //UserName;
+    _PRINT_TO_CONSOLE_("Hello, Vulkan!\n");
+    _PRINT_TO_CONSOLE_("Debug Mode\n");
+    _PRINT_TO_CONSOLE_("Selected Engine: %d\n", SELECTED_ENGINE);
+    _PRINT_TO_CONSOLE_("User Name: %s\n", UserName.c_str());
+    _PRINT_TO_CONSOLE_("\n");
+
     
     char path[MAX_PATH];
     std::string root_path = "";

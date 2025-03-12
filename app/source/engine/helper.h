@@ -144,10 +144,8 @@ namespace vkengine {
         {
             VkPhysicalDeviceProperties deviceProperties;
             vkGetPhysicalDeviceProperties(device, &deviceProperties);
-#ifdef DEBUG_
-            printf("Device Name: %s\n", deviceProperties.deviceName);
-            printf("DeviceProperties.deviceType: %d\n", deviceProperties.deviceType);
-#endif // DEBUG_
+            _PRINT_TO_CONSOLE_("Device Name: %s\n", deviceProperties.deviceName);
+            _PRINT_TO_CONSOLE_("DeviceProperties.deviceType: %d\n", deviceProperties.deviceType);
         }
 
         // commandPood에 대한 information을 생성하는 함수
@@ -188,10 +186,10 @@ namespace vkengine {
 
         // 특정 데이터를 VkDeviceMemory 객체로 복사하는 함수
         template <typename T>
-        inline void copyToDeviceMemory(VkDevice device, const T* src, VkDeviceMemory dst, VkDeviceSize size)
+        inline void copyToDeviceMemory(VkDevice device, const T* src, VkDeviceMemory dst, VkDeviceSize size, VkDeviceSize offset = 0, VkMemoryMapFlags flags = 0)
         {
             void* data;
-            vkMapMemory(device, dst, 0, size, 0, &data);
+            vkMapMemory(device, dst, offset, size, flags, &data);
             memcpy(data, src, (size_t)size);
             vkUnmapMemory(device, dst);
         }

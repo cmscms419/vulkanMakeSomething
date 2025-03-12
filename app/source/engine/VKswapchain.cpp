@@ -57,7 +57,7 @@ namespace vkengine
         createInfo.clipped = VK_TRUE;                                             // 클리핑을 설정합니다. -> 다른 창이 앞에 있기 때문에 가려진 픽셀의 색상을 신경 쓰지 않는다는 의미
         createInfo.oldSwapchain = VK_NULL_HANDLE;                                 // 이전 스왑 체인을 설정합니다. -> 나중에 설정
 
-        VK_CHECK_RESULT(vkCreateSwapchainKHR(this->logicaldevice, &createInfo, nullptr, &this->swapChain));
+        _VK_CHECK_RESULT_(vkCreateSwapchainKHR(this->logicaldevice, &createInfo, nullptr, &this->swapChain));
 
         vkGetSwapchainImagesKHR(this->logicaldevice, this->swapChain, &imageCount, nullptr);
         this->Images.resize(imageCount);
@@ -66,22 +66,20 @@ namespace vkengine
         this->ImageFormat = surfaceFormat.format;
         this->Extent = extent;
 
-#ifdef DEBUG_
-        printf("create swap chain\n");
-        printf("SwapChain imageCount: %d\n", imageCount);
-        printf("SwapChain imageFormat: %d\n", surfaceFormat.format);
-        printf("SwapChain imageColorSpace: %d\n", surfaceFormat.colorSpace);
-        printf("SwapChain imageExtent.width: %d\n", extent.width);
-        printf("SwapChain imageExtent.height: %d\n", extent.height);
-        printf("SwapChain imageArrayLayers: %d\n", 1);
-        printf("SwapChain imageUsage: %d\n", VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT);
-        printf("SwapChain imageSharingMode: %d\n", VK_SHARING_MODE_EXCLUSIVE);
-        printf("SwapChain preTransform: %d\n", swapChainSupport.capabilities.currentTransform);
-        printf("SwapChain compositeAlpha: %d\n", VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR);
-        printf("SwapChain presentMode: %d\n", presentMode);
-        printf("SwapChain clipped: %d\n", VK_TRUE);
-        printf("\n");
-#endif // DEBUG_
+        _PRINT_TO_CONSOLE_("create swap chain\n");
+        _PRINT_TO_CONSOLE_("SwapChain imageCount: %d\n", imageCount);
+        _PRINT_TO_CONSOLE_("SwapChain imageFormat: %d\n", surfaceFormat.format);
+        _PRINT_TO_CONSOLE_("SwapChain imageColorSpace: %d\n", surfaceFormat.colorSpace);
+        _PRINT_TO_CONSOLE_("SwapChain imageExtent.width: %d\n", extent.width);
+        _PRINT_TO_CONSOLE_("SwapChain imageExtent.height: %d\n", extent.height);
+        _PRINT_TO_CONSOLE_("SwapChain imageArrayLayers: %d\n", 1);
+        _PRINT_TO_CONSOLE_("SwapChain imageUsage: %d\n", VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT);
+        _PRINT_TO_CONSOLE_("SwapChain imageSharingMode: %d\n", VK_SHARING_MODE_EXCLUSIVE);
+        _PRINT_TO_CONSOLE_("SwapChain preTransform: %d\n", swapChainSupport.capabilities.currentTransform);
+        _PRINT_TO_CONSOLE_("SwapChain compositeAlpha: %d\n", VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR);
+        _PRINT_TO_CONSOLE_("SwapChain presentMode: %d\n", presentMode);
+        _PRINT_TO_CONSOLE_("SwapChain clipped: %d\n", VK_TRUE);
+        _PRINT_TO_CONSOLE_("\n");
 
     }
 

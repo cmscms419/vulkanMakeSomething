@@ -61,22 +61,18 @@ namespace vkengine {
             bool selected = false;
             for (const auto& queueFamily : queueFamilies) {
                 // 현재 큐 패밀리가 그래픽스 큐를 지원하는지 확인
-#ifdef DEBUG_
-                printf("QueueFamily %d\n", i);
-                printf("QueueFamily queueCount: %d\n", queueFamily.queueCount);
-                printf("QueueFamily queueFlags: %d\n", queueFamily.queueFlags);
-                printf("QueueFamily timestampValidBits: %d\n", queueFamily.timestampValidBits);
-                printf("QueueFamily minImageTransferGranularity.width: %d\n", queueFamily.minImageTransferGranularity.width);
-                printf("QueueFamily minImageTransferGranularity.height: %d\n", queueFamily.minImageTransferGranularity.height);
-                printf("QueueFamily minImageTransferGranularity.depth: %d\n", queueFamily.minImageTransferGranularity.depth);
-#endif // DEBUG_
+                _PRINT_TO_CONSOLE_("QueueFamily %d\n", i);
+                _PRINT_TO_CONSOLE_("QueueFamily queueCount: %d\n", queueFamily.queueCount);
+                _PRINT_TO_CONSOLE_("QueueFamily queueFlags: %d\n", queueFamily.queueFlags);
+                _PRINT_TO_CONSOLE_("QueueFamily timestampValidBits: %d\n", queueFamily.timestampValidBits);
+                _PRINT_TO_CONSOLE_("QueueFamily minImageTransferGranularity.width: %d\n", queueFamily.minImageTransferGranularity.width);
+                _PRINT_TO_CONSOLE_("QueueFamily minImageTransferGranularity.height: %d\n", queueFamily.minImageTransferGranularity.height);
+                _PRINT_TO_CONSOLE_("QueueFamily minImageTransferGranularity.depth: %d\n", queueFamily.minImageTransferGranularity.depth);
 
                 if ((queueFamily.queueFlags & VkQueueFlagBits::VK_QUEUE_GRAPHICS_BIT)
                     && (queueFamily.queueFlags & VkQueueFlagBits::VK_QUEUE_COMPUTE_BIT)) {
-#ifdef DEBUG_
-                    PRINT_TO_CONSOLE("VK_QUEUE_GRAPHICS_BIT is supported\n");
-                    PRINT_TO_CONSOLE("VK_QUEUE_COMPUTE_BIT is supported\n");
-#endif // DEBUG_
+                    _PRINT_TO_CONSOLE_("VK_QUEUE_GRAPHICS_BIT is supported\n");
+                    _PRINT_TO_CONSOLE_("VK_QUEUE_COMPUTE_BIT is supported\n");
                     if (!selected)
                     {
                         indices.setgraphicsAndComputeFamily(i);
@@ -88,9 +84,7 @@ namespace vkengine {
 
                 if (presentSupport)
                 {
-#ifdef DEBUG_
-                    PRINT_TO_CONSOLE("VK_QUEUE_PRESENT_BIT is supported\n");
-#endif // DEBUG
+                    _PRINT_TO_CONSOLE_("VK_QUEUE_PRESENT_BIT is supported\n");
                     if (!selected)
                     {
                         indices.setPresentFamily(i);
@@ -103,9 +97,7 @@ namespace vkengine {
                     {
                         indices.queueFamilyProperties = queueFamily;
                         target = indices;
-#ifdef DEBUG_
-                        PRINT_TO_CONSOLE("------------------ select Queuefamily index: %d ------------------\n", i);
-#endif // DEBUG
+                        _PRINT_TO_CONSOLE_("------------------ select Queuefamily index: %d ------------------\n", i);
                         selected = true;
                     }
                 }
@@ -135,7 +127,7 @@ namespace vkengine {
             imageInfo.samples = numSamples;
             imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
             
-            VK_CHECK_RESULT(vkCreateImage(VKdevice, &imageInfo, nullptr, &image));
+            _VK_CHECK_RESULT_(vkCreateImage(VKdevice, &imageInfo, nullptr, &image));
             
             VkMemoryRequirements memRequirements;
             vkGetImageMemoryRequirements(VKdevice, image, &memRequirements);
@@ -145,7 +137,7 @@ namespace vkengine {
             allocInfo.allocationSize = memRequirements.size;
             allocInfo.memoryTypeIndex = findMemoryType(VKphysicalDevice, memRequirements.memoryTypeBits, properties);
             
-            VK_CHECK_RESULT(vkAllocateMemory(VKdevice, &allocInfo, nullptr, &imageMemory));
+            _VK_CHECK_RESULT_(vkAllocateMemory(VKdevice, &allocInfo, nullptr, &imageMemory));
             
             vkBindImageMemory(VKdevice, image, imageMemory, 0);
         }
@@ -183,7 +175,7 @@ namespace vkengine {
             bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;             // 버퍼의 공유 모드를 독점으로 설정한다.
 
             // 지정된 정보를 바탕으로 버퍼를 생성하고, 성공 여부를 검사한다.
-            VK_CHECK_RESULT(vkCreateBuffer(device, &bufferInfo, nullptr, &buffer));
+            _VK_CHECK_RESULT_(vkCreateBuffer(device, &bufferInfo, nullptr, &buffer));
 
             // 생성된 버퍼에 필요한 메모리 요구사항 정보를 가져온다.
             VkMemoryRequirements memRequirements;
@@ -196,8 +188,8 @@ namespace vkengine {
             allocInfo.allocationSize = memRequirements.size;                                                            // 버퍼를 위한 메모리 크기를 설정한다.
             allocInfo.memoryTypeIndex = findMemoryType(physicalDevice, memRequirements.memoryTypeBits, properties);     // 요구사항에 맞는 메모리 타입 인덱스를 찾아서 지정한다.
             
-            VK_CHECK_RESULT(vkAllocateMemory(device, &allocInfo, nullptr, &bufferMemory));  // 위 정보를 바탕으로 메모리를 할당하고 성공 여부를 검사한다.
-            VK_CHECK_RESULT(vkBindBufferMemory(device, buffer, bufferMemory, 0));           // 할당된 메모리를 버퍼와 바인딩하여 GPU에서 사용할 수 있게 한다.
+            _VK_CHECK_RESULT_(vkAllocateMemory(device, &allocInfo, nullptr, &bufferMemory));  // 위 정보를 바탕으로 메모리를 할당하고 성공 여부를 검사한다.
+            _VK_CHECK_RESULT_(vkBindBufferMemory(device, buffer, bufferMemory, 0));           // 할당된 메모리를 버퍼와 바인딩하여 GPU에서 사용할 수 있게 한다.
         }
 
         void copyBufferToImage(VkDevice device, VkCommandPool commandPool, VkQueue graphicsQueue, VkBuffer buffer, VkImage image, uint32_t width, uint32_t height)
@@ -234,10 +226,7 @@ namespace vkengine {
 
             for (const auto& extension : availableExtensions) {
 
-#ifdef DEBUG_
-                std::cout << '\t' << extension.extensionName << '\n';
-#endif // DEBUG
-
+                _PRINT_TO_CONSOLE_("Available Extension: %s\n", extension.extensionName);
                 requiredExtensions.erase(extension.extensionName);
             }
 
@@ -280,13 +269,11 @@ namespace vkengine {
                 return 0;
             }
 
-#ifdef DEBUG_
-            printf("Device %s score: %d\n", deviceProperties.deviceName, score);
-            printf("DeviceProperties.deviceType: %d\n", deviceProperties.deviceType);
-            printf("Device Name: %s\n", deviceProperties.deviceName);
-            printf("\n");
-#endif // DEBUG_
-
+            _PRINT_TO_CONSOLE_("Device %s score: %d\n", deviceProperties.deviceName, score);
+            _PRINT_TO_CONSOLE_("DeviceProperties.deviceType: %d\n", deviceProperties.deviceType);
+            _PRINT_TO_CONSOLE_("Device Name: %s\n", deviceProperties.deviceName);
+            _PRINT_TO_CONSOLE_("\n");
+            
             return score;
         }
 
@@ -348,7 +335,7 @@ namespace vkengine {
                 }
                 else
                 {
-                    PRINT_TO_CONSOLE("Failed to find supported format!\n");
+                    _PRINT_TO_CONSOLE_("Failed to find supported format!\n");
                 }
             }
 
@@ -386,7 +373,7 @@ namespace vkengine {
 
             VkImageView imageView{VK_NULL_HANDLE};
 
-            VK_CHECK_RESULT(vkCreateImageView(device, &viewInfo, nullptr, &imageView));
+            _VK_CHECK_RESULT_(vkCreateImageView(device, &viewInfo, nullptr, &imageView));
 
             return imageView;
         }
@@ -560,7 +547,7 @@ namespace vkengine {
             }
             else {
                 // 지원되지 않는 레이아웃 전환 요청시 예외 발생
-                PRINT_TO_CONSOLE("Unsupported layout transition!\n");
+                _PRINT_TO_CONSOLE_("Unsupported layout transition!\n");
                 return;
             }
 

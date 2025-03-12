@@ -1,0 +1,135 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="source">
+      <UniqueIdentifier>{a454d12e-1aec-4426-9c77-26d3418f3940}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\imgui">
+      <UniqueIdentifier>{86ad55b8-3a8f-4a8d-8e10-7a4adb4a80af}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\common">
+      <UniqueIdentifier>{6d4bdeae-2764-436e-ba73-fb09cc907caf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="component">
+      <UniqueIdentifier>{425bc866-d147-4ee6-b04c-0bec6d56e303}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\app\source\engine\VKbuffer.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\source\engine\VKdevice.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\source\engine\VKengine.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\source\engine\VKimgui.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\source\engine\VKinputEvent.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\source\engine\VKswapchain.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\source\engine\VKtexture.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\source\engine\imgui.cpp">
+      <Filter>source\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\source\engine\imgui_demo.cpp">
+      <Filter>source\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\source\engine\imgui_draw.cpp">
+      <Filter>source\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\source\engine\imgui_impl_glfw.cpp">
+      <Filter>source\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\source\engine\imgui_impl_vulkan.cpp">
+      <Filter>source\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\source\engine\imgui_tables.cpp">
+      <Filter>source\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\source\engine\imgui_widgets.cpp">
+      <Filter>source\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\common\common.cpp">
+      <Filter>source\common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\common\macros.cpp">
+      <Filter>source\common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\common\resourseload.c">
+      <Filter>source\common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\common\struct.cpp">
+      <Filter>source\common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\common\vkmath.cpp">
+      <Filter>source\common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\source\engine\Debug.cpp">
+      <Filter>source\common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\source\engine\helper.cpp">
+      <Filter>source\common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\source\engine\Camera.cpp">
+      <Filter>component</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\app\source\engine\VKbuffer.h">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\app\source\engine\VKdevice.h">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\app\source\engine\VKengine.h">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\app\source\engine\VKimgui.h">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\app\source\engine\VKinputEvent.h">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\app\source\engine\VKswapchain.h">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\app\source\engine\VKtexture.h">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\app\common\common.h">
+      <Filter>source\common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\app\common\macros.h">
+      <Filter>source\common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\app\common\object_data.h">
+      <Filter>source\common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\app\common\resourseload.h">
+      <Filter>source\common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\app\common\struct.h">
+      <Filter>source\common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\app\common\vkmath.h">
+      <Filter>source\common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\app\source\engine\Debug.h">
+      <Filter>source\common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\app\source\engine\helper.h">
+      <Filter>source\common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\app\source\engine\Camera.h">
+      <Filter>component</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
