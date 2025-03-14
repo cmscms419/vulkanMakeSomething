@@ -19,8 +19,8 @@
     <Filter Include="app\texture">
       <UniqueIdentifier>{61cada18-272f-4ddd-a6c2-dc1f9771c34b}</UniqueIdentifier>
     </Filter>
-    <Filter Include="app\textureArray%28for cube%29">
-      <UniqueIdentifier>{5597e1c6-6f07-4e78-8cdc-cee3cc127ade}</UniqueIdentifier>
+    <Filter Include="component">
+      <UniqueIdentifier>{a4a6a9a9-4dc9-4f78-9994-2566696d3f8d}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -37,8 +37,11 @@
     <ClCompile Include="..\..\app\cpp\texture.cpp">
       <Filter>app\texture</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\app\source\engine\Camera.cpp">
+      <Filter>component</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\app\cpp\texturecube.cpp">
-      <Filter>app\textureArray%28for cube%29</Filter>
+      <Filter>app\texture</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -54,8 +57,11 @@
     <ClInclude Include="..\..\app\cpp\texture.h">
       <Filter>app\texture</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\app\cpp\texturecube.h">
-      <Filter>app\textureArray%28for cube%29</Filter>
+    <ClInclude Include="..\..\app\source\engine\Camera.h">
+      <Filter>component</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\app\cpp\texturearray.h">
+      <Filter>app\texture</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

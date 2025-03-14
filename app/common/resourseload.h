@@ -6,6 +6,8 @@
 #include <png.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
+
 enum
 {
     Texture_default = 0, // only used for desired_channels
@@ -15,7 +17,7 @@ enum
     Texture_rgb_alpha = 4
 } TextureType;
 
-unsigned char* load_png_rgba(const char* filename, int* width, int* height, int type)
+unsigned char* load_png_rgba(const char* filename, uint32_t* width, uint32_t* height, int type)
 {
     FILE* fp = NULL;
     fopen_s(&fp, filename, "rb");
@@ -71,6 +73,38 @@ unsigned char* load_png_rgba(const char* filename, int* width, int* height, int 
     fclose(fp);
 
     return image_data;
+}
+
+void GetTextureSize(const char* filename, uint32_t* width, uint32_t* height)
+{
+    FILE* fp = NULL;
+    fopen_s(&fp, filename, "rb");
+    if (!fp) return;
+    png_structp png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+    if (!png_ptr) {
+        fclose(fp);
+        return;
+    }
+    png_infop info_ptr = png_create_info_struct(png_ptr);
+    if (!info_ptr) {
+        png_destroy_read_struct(&png_ptr, NULL, NULL);
+        fclose(fp);
+        return;
+    }
+    if (setjmp(png_jmpbuf(png_ptr))) {
+        png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
+        fclose(fp);
+        return;
+    }
+    
+    png_init_io(png_ptr, fp);
+    png_read_info(png_ptr, info_ptr);
+    *width = png_get_image_width(png_ptr, info_ptr);
+    *height = png_get_image_height(png_ptr, info_ptr);
+
+    png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
+    
+    fclose(fp);
 }
 
 #endif // !INCLUDE_RESOURSELOAD_H_

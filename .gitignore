@@ -1,6 +1,7 @@
 # Created by https://www.toptal.com/developers/gitignore/api/c++,visualstudio
 # Edit at https://www.toptal.com/developers/gitignore?templates=c++,visualstudio
 
+
 ### C++ ###
 # Prerequisites
 *.d
@@ -62,6 +63,8 @@ bld/
 [Ll]og/
 [Ll]ogs/
 exe/
+source/Texture
+external/basicEngine
 
 # Visual Studio 2015/2017 cache/options directory
 .vs/
@@ -245,6 +248,7 @@ ecf/
 rcf/
 
 # Windows Store app package directories and files
+
 AppPackages/
 BundleArtifacts/
 Package.StoreAssociation.xml

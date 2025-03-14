@@ -36,6 +36,12 @@ namespace vkengine
     extern const std::string MODEL_PATH;
     extern const std::string TEXTURE_PATH;
     extern const std::string TEST_TEXTURE_PATH;
+    extern const std::string TEST_TEXTURE_PATH_ARRAY0;
+    extern const std::string TEST_TEXTURE_PATH_ARRAY1;
+    extern const std::string TEST_TEXTURE_PATH_ARRAY2;
+    extern const std::string TEST_TEXTURE_PATH_ARRAY3;
+    extern const std::string TEST_TEXTURE_PATH_ARRAY4;
+    extern const std::string TEST_TEXTURE_PATH_ARRAY5;
     extern const bool enableValidationLayers;
 
 } // namespace vkengine

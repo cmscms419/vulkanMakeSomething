@@ -39,7 +39,8 @@ namespace vkengine {
             VkImageUsageFlags usage,
             VkMemoryPropertyFlags properties,
             VkImage& image,
-            VkDeviceMemory& imageMemory);
+            VkDeviceMemory& imageMemory,
+            uint32_t arrayLayer = 1);
 
 
         // 버퍼를 복사하는 함수
@@ -75,6 +76,16 @@ namespace vkengine {
             VkImage image,
             uint32_t width,
             uint32_t height);
+
+        void copyBufferToImage2(
+            VkDevice device,
+            VkCommandPool commandPool,
+            VkQueue graphicsQueue,
+            VkBuffer buffer,
+            VkImage image,
+            uint32_t width,
+            uint32_t height,
+            std::vector<VkDeviceSize> &sizeArray);
 
         // 물리 디바이스의 확장 기능을 지원하는지 확인하는 함수
         // 검증 레이어 지원 여부를 확인하는 함수
@@ -121,7 +132,7 @@ namespace vkengine {
         }
 
         // Mipmaps을 생성하는 함수
-        void generateMipmaps(
+        /*void generateMipmaps(
             VkPhysicalDevice physicalDevice,
             VkDevice device,
             VkCommandPool commandPool,
@@ -130,11 +141,11 @@ namespace vkengine {
             VkFormat imageFormat,
             int32_t texWidth,
             int32_t texHeight,
-            uint32_t mipLevels);
+            uint32_t mipLevels);*/
 
         // 최대 사용 가능한 샘플링 수를 반환하는 함수
 
-        VkSampleCountFlagBits getMaxUsableSampleCount(VkPhysicalDevice physicalDevice);
+        //VkSampleCountFlagBits getMaxUsableSampleCount(VkPhysicalDevice physicalDevice);
 
         // setupCommandBuffer 나중에 추가
         // flushSetupCommands 나중에 추가
@@ -178,8 +189,26 @@ namespace vkengine {
             VkImageLayout newLayout,
             uint32_t mipLevels);
 
-        // 이미지 레이아웃을 전환하는 함수(
-        //void 
+        // 이미지배열 레이아웃을 전환하는 함수
+        void transitionImageLayout2(
+            VkDevice device,
+            VkCommandPool commandPool,
+            VkQueue graphicsQueue,
+            VkImage image,
+            VkFormat format,
+            VkImageLayout oldLayout,
+            VkImageLayout newLayout,
+            uint32_t mipLevels,
+            uint32_t layerCount);
+
+        void setImageLayout(
+            VkCommandBuffer cmdbuffer,
+            VkImage image,
+            VkFormat format,
+            VkImageLayout oldImageLayout,
+            VkImageLayout newImageLayout,
+            VkImageSubresourceRange subresourceRange
+        );
 
         // stencilComponent를 가지고 있는지 확인하는 함수
         bool hasStencilComponent(VkFormat format);
@@ -193,6 +222,27 @@ namespace vkengine {
             memcpy(data, src, (size_t)size);
             vkUnmapMemory(device, dst);
         }
+
+        inline VkFenceCreateInfo fence_create_info(VkFenceCreateFlags flags)
+        {
+            VkFenceCreateInfo info = {};
+            info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+            info.pNext = nullptr;
+
+            info.flags = flags;
+
+            return info;
+        }
+
+        inline VkSemaphoreCreateInfo semaphore_create_info(VkSemaphoreCreateFlags flags)
+        {
+            VkSemaphoreCreateInfo info = {};
+            info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+            info.pNext = nullptr;
+            info.flags = flags;
+            return info;
+        }
+
     }
 
 }

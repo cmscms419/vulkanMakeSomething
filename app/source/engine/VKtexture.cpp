@@ -1,23 +1,20 @@
 #include "VKtexture.h"
-#include "../../common/resourseload.h"
-
 #include "helper.h"
 
-void VkTexture_::cleanup()
-{
-    vkDestroySampler(device->logicaldevice, sampler, nullptr);
-    vkDestroyImageView(device->logicaldevice, imageView, nullptr);
-    vkDestroyImage(device->logicaldevice, image, nullptr);
-    vkFreeMemory(device->logicaldevice, imageMemory, nullptr);
-}
+#define _IMAGE_LOAD_TYPE_ 0
 
-void Vk2DTexture_::createTextureImage(int type)
+#include "../../common/resourseload.h"
+
+
+void Vk2DTexture::createTextureImage(int type, const char* texPath)
 {
     unsigned char* pixels = load_png_rgba(texPath, &texWidth, &texHeight, type);
+    
+    _CHECK_RESULT_((pixels != nullptr));
+    
+
     VkDeviceSize imageSize = texWidth * texHeight * 4;
-
-    if (!pixels) { return; }
-
+    
     //this->VKmipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(texWidth, texHeight)))) + 1;
     this->VKmipLevels = 1;
 
@@ -89,7 +86,7 @@ void Vk2DTexture_::createTextureImage(int type)
     vkFreeMemory(this->device->logicaldevice, stagingBufferMemory, nullptr);
 }
 
-void Vk2DTexture_::createTextureImageView(VkFormat format)
+void Vk2DTexture::createTextureImageView(VkFormat format)
 {
     this->imageView = vkengine::helper::createImageView(
         this->device->logicaldevice,
@@ -99,7 +96,7 @@ void Vk2DTexture_::createTextureImageView(VkFormat format)
         this->VKmipLevels);
 }
 
-void Vk2DTexture_::createTextureSampler()
+void Vk2DTexture::createTextureSampler()
 {
     VkPhysicalDeviceProperties properties{};
     vkGetPhysicalDeviceProperties(this->device->physicalDevice, &properties);
@@ -125,3 +122,162 @@ void Vk2DTexture_::createTextureSampler()
     _VK_CHECK_RESULT_(vkCreateSampler(this->device->logicaldevice, &samplerInfo, nullptr, &this->sampler));
 }
 
+// https://github.com/SaschaWillems/Vulkan 이 사이트에서 texturearray 참고
+// 해당 예제는 리소스가 배열 형태로 되어 있어서, 배열 형태로 텍스처를 로드하는 예제이다.
+// 이 예제는 단일 리소스 여러개를 가져오는 형태로 여러번 리소스를 가져온다.
+void Vk2DTextureArray::createTextureImages(int type, std::vector<std::string>& texPath)
+{
+    this->imageCount = static_cast<uint32_t>(texPath.size());
+    
+    std::vector<VkBuffer> stagingBuffers;
+    std::vector<VkDeviceMemory> stagingBufferMemorys;
+
+    stagingBuffers.resize(this->imageCount);
+    stagingBufferMemorys.resize(this->imageCount);
+
+    VkDeviceSize offset = 0;
+
+    // 1 : 해당 방법은 메모리를 일일이 새로 할당하여 이전의 메모리 바로 다음에 새로운 메모리를 할당하는 방식이다.
+    // 0 : 불러올려는 이미지들의 개수와 크기를 계산해서 전체적인 메모리의 크기를 계산해서 한번에 할당하는 방식이다.
+#if _IMAGE_LOAD_TYPE_
+    for (size_t i = 0; i < this->imageCount; i++)
+    {
+        unsigned char* pixels = load_png_rgba(texPath[i].c_str(), &texWidth, &texHeight, type);
+
+        _CHECK_RESULT_((pixels != nullptr));
+
+        VkDeviceSize imageSize = texWidth * texHeight * 4;
+
+        //this->VKmipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(texWidth, texHeight)))) + 1;
+        this->VKmipLevels = 1;
+
+        vkengine::helper::createBuffer(
+            this->device->logicaldevice,
+            this->device->physicalDevice,
+            imageSize,
+            VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
+            VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+            stagingBuffers[i],
+            stagingBufferMemorys[i]);
+
+        vkengine::helper::copyToDeviceMemory(
+            this->device->logicaldevice,
+            pixels,
+            stagingBufferMemorys[i],
+            imageSize,
+            offset);
+
+        free(pixels);
+        offset += imageSize;
+    }
+#else
+    // 1. 먼저 각 이미지의 크기를 계산하여 총 크기를 구합니다.
+    VkDeviceSize totalImageSize = 0;
+    std::vector<VkDeviceSize> imageSizes(this->imageCount);
+
+    for (size_t i = 0; i < this->imageCount; i++) {
+        // 임시로 이미지를 로드하여 크기를 얻습니다.
+        GetTextureSize(texPath[i].c_str(), &texWidth, &texHeight);
+        VkDeviceSize imageSize = texWidth * texHeight * 4;
+        imageSizes[i] = imageSize;
+        totalImageSize += imageSize;
+    }
+
+    // 2. 전체 크기를 기준으로 단일 스테이징 버퍼 생성
+    VkBuffer stagingBuffer;
+    VkDeviceMemory stagingBufferMemory;
+
+    vkengine::helper::createBuffer(
+        this->device->logicaldevice,
+        this->device->physicalDevice,
+        totalImageSize,
+        VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+        VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+        stagingBuffer,
+        stagingBufferMemory);
+
+    // 3. 각 이미지 데이터를 단일 버퍼에 연속적으로 복사합니다.
+    for (size_t i = 0; i < this->imageCount; i++)
+    {
+        unsigned char* pixels = load_png_rgba(texPath[i].c_str(), &texWidth, &texHeight, type);
+        _CHECK_RESULT_((pixels != nullptr));
+
+        // imageSizes[i]는 현재 이미지의 크기입니다.
+        vkengine::helper::copyToDeviceMemory(
+            this->device->logicaldevice,
+            pixels,
+            stagingBufferMemory,
+            imageSizes[i],
+            offset);
+
+        free(pixels);
+        offset += imageSizes[i];
+    }
+
+    // 4. 이미지 메모리 생성  
+    vkengine::helper::createImage(
+        this->device->logicaldevice,
+        this->device->physicalDevice,
+        texWidth,
+        texHeight,
+        this->VKmipLevels,
+        VK_SAMPLE_COUNT_1_BIT,
+        VK_FORMAT_R8G8B8A8_SRGB,
+        VK_IMAGE_TILING_OPTIMAL,
+        VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+        VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+        this->image,
+        this->imageMemory,
+        this->imageCount);
+
+    vkengine::helper::transitionImageLayout2(
+        this->device->logicaldevice,
+        this->device->commandPool,
+        this->device->graphicsVKQueue,
+        this->image,
+        VK_FORMAT_R8G8B8A8_SRGB,
+        VK_IMAGE_LAYOUT_UNDEFINED,
+        VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+        this->VKmipLevels,
+        this->imageCount);
+
+    vkengine::helper::copyBufferToImage2(
+        this->device->logicaldevice,
+        this->device->commandPool,
+        this->device->graphicsVKQueue,
+        stagingBuffer,
+        this->image,
+        static_cast<uint32_t>(texWidth),
+        static_cast<uint32_t>(texHeight),
+        imageSizes);
+
+    vkengine::helper::transitionImageLayout2(
+        this->device->logicaldevice,
+        this->device->commandPool,
+        this->device->graphicsVKQueue,
+        this->image,
+        VK_FORMAT_R8G8B8A8_SRGB,
+        VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+        VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+        this->VKmipLevels,
+        this->imageCount);
+
+#endif
+
+}
+
+void Vk2DTextureArray::createTextureImage(int type, const char* texPath)
+{
+
+}
+
+void Vk2DTextureArray::createTextureImageView(VkFormat format)
+{
+
+}
+
+void Vk2DTextureArray::createTextureSampler()
+{
+
+}

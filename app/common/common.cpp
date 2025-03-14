@@ -20,6 +20,15 @@ namespace vkengine
     const std::string TEXTURE_PATH = "../../../../../../source/viking_room.png";
     const std::string TEST_TEXTURE_PATH = "../../../../../../source/image.png";
 
+    const std::string TEST_TEXTURE_PATH_ARRAY0 =  "../../../../../../source/Texture/512x512/Elements/Elements_15-512x512.png";
+    const std::string TEST_TEXTURE_PATH_ARRAY1 =  "../../../../../../source/Texture/512x512/Elements/Elements_16-512x512.png";
+    const std::string TEST_TEXTURE_PATH_ARRAY2 =  "../../../../../../source/Texture/512x512/Elements/Elements_17-512x512.png";
+    const std::string TEST_TEXTURE_PATH_ARRAY3 =  "../../../../../../source/Texture/512x512/Elements/Elements_18-512x512.png";
+    const std::string TEST_TEXTURE_PATH_ARRAY4 =  "../../../../../../source/Texture/512x512/Elements/Elements_19-512x512.png";
+    const std::string TEST_TEXTURE_PATH_ARRAY5 =  "../../../../../../source/Texture/512x512/Elements/Elements_20-512x512.png";
+    
+
+
 #ifdef DEBUG_
     const bool enableValidationLayers = true;
 #else

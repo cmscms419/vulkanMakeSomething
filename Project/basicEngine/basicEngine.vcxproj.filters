@@ -10,9 +10,6 @@
     <Filter Include="source\common">
       <UniqueIdentifier>{6d4bdeae-2764-436e-ba73-fb09cc907caf}</UniqueIdentifier>
     </Filter>
-    <Filter Include="component">
-      <UniqueIdentifier>{425bc866-d147-4ee6-b04c-0bec6d56e303}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\app\source\engine\VKbuffer.cpp">
@@ -78,9 +75,6 @@
     <ClCompile Include="..\..\app\source\engine\helper.cpp">
       <Filter>source\common</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\app\source\engine\Camera.cpp">
-      <Filter>component</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\app\source\engine\VKbuffer.h">
@@ -128,8 +122,8 @@
     <ClInclude Include="..\..\app\source\engine\helper.h">
       <Filter>source\common</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\app\source\engine\Camera.h">
-      <Filter>component</Filter>
+    <ClInclude Include="..\..\app\source\engine\VKmemoryAlloc.h">
+      <Filter>source</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

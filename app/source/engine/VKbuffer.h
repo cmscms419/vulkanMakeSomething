@@ -15,8 +15,8 @@ struct VkBufferObject {
     VkDeviceSize size = 0; ///< 버퍼 크기
     VkDeviceSize alignment = 0; ///< 버퍼 정렬
 
-    VkBufferUsageFlags usageFlags; ///< 버퍼 사용 플래그
-    VkMemoryPropertyFlags memoryPropertyFlags; ///< 메모리 속성 플래그
+    VkBufferUsageFlags usageFlags = 0; ///< 버퍼 사용 플래그
+    VkMemoryPropertyFlags memoryPropertyFlags = 0; ///< 메모리 속성 플래그
     void* mapped = nullptr; ///< 매핑된 메모리 포인터
 
     void cleanup(); ///< 버퍼 정리 함수

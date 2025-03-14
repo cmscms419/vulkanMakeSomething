@@ -16,7 +16,6 @@
     <ClCompile Include="..\..\app\common\resourseload.c" />
     <ClCompile Include="..\..\app\common\struct.cpp" />
     <ClCompile Include="..\..\app\common\vkmath.cpp" />
-    <ClCompile Include="..\..\app\source\engine\Camera.cpp" />
     <ClCompile Include="..\..\app\source\engine\Debug.cpp" />
     <ClCompile Include="..\..\app\source\engine\helper.cpp" />
     <ClCompile Include="..\..\app\source\engine\imgui.cpp" />
@@ -41,7 +40,6 @@
     <ClInclude Include="..\..\app\common\resourseload.h" />
     <ClInclude Include="..\..\app\common\struct.h" />
     <ClInclude Include="..\..\app\common\vkmath.h" />
-    <ClInclude Include="..\..\app\source\engine\Camera.h" />
     <ClInclude Include="..\..\app\source\engine\Debug.h" />
     <ClInclude Include="..\..\app\source\engine\helper.h" />
     <ClInclude Include="..\..\app\source\engine\VKbuffer.h" />
@@ -49,6 +47,7 @@
     <ClInclude Include="..\..\app\source\engine\VKengine.h" />
     <ClInclude Include="..\..\app\source\engine\VKimgui.h" />
     <ClInclude Include="..\..\app\source\engine\VKinputEvent.h" />
+    <ClInclude Include="..\..\app\source\engine\VKmemoryAlloc.h" />
     <ClInclude Include="..\..\app\source\engine\VKswapchain.h" />
     <ClInclude Include="..\..\app\source\engine\VKtexture.h" />
   </ItemGroup>

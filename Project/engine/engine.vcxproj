@@ -115,14 +115,16 @@
     <ClCompile Include="..\..\app\cpp\texture.cpp" />
     <ClCompile Include="..\..\app\cpp\texturecube.cpp" />
     <ClCompile Include="..\..\app\cpp\triangle.cpp" />
+    <ClCompile Include="..\..\app\source\engine\Camera.cpp" />
     <ClCompile Include="..\..\app\source\main_engine.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\app\cpp\cameraEngine.h" />
     <ClInclude Include="..\..\app\cpp\skymap.h" />
     <ClInclude Include="..\..\app\cpp\texture.h" />
-    <ClInclude Include="..\..\app\cpp\texturecube.h" />
+    <ClInclude Include="..\..\app\cpp\texturearray.h" />
     <ClInclude Include="..\..\app\cpp\triangle.h" />
+    <ClInclude Include="..\..\app\source\engine\Camera.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\shader\compile.bat" />

@@ -109,17 +109,15 @@ namespace vkengine {
             return target;
         }
 
-        void createImage(VkDevice VKdevice, VkPhysicalDevice VKphysicalDevice, uint32_t width, uint32_t height, uint32_t mipLevels, VkSampleCountFlagBits numSamples, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory)
+        void createImage(VkDevice VKdevice, VkPhysicalDevice VKphysicalDevice, uint32_t width, uint32_t height, uint32_t mipLevels, VkSampleCountFlagBits numSamples, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory, uint32_t arrayLayer)
         {
             VkImageCreateInfo imageInfo{};
 
             imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
             imageInfo.imageType = VK_IMAGE_TYPE_2D;
-            imageInfo.extent.width = width;
-            imageInfo.extent.height = height;
-            imageInfo.extent.depth = 1;
+            imageInfo.extent = { width, height, 1 };
             imageInfo.mipLevels = mipLevels;
-            imageInfo.arrayLayers = 1;
+            imageInfo.arrayLayers = arrayLayer;
             imageInfo.format = format;
             imageInfo.tiling = tiling;
             imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
@@ -138,8 +136,7 @@ namespace vkengine {
             allocInfo.memoryTypeIndex = findMemoryType(VKphysicalDevice, memRequirements.memoryTypeBits, properties);
             
             _VK_CHECK_RESULT_(vkAllocateMemory(VKdevice, &allocInfo, nullptr, &imageMemory));
-            
-            vkBindImageMemory(VKdevice, image, imageMemory, 0);
+            _VK_CHECK_RESULT_(vkBindImageMemory(VKdevice, image, imageMemory, 0));
         }
 
         void copyBuffer(VkDevice VKdevice, VkCommandPool VKcommandPool, VkQueue graphicsVKQueue, VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size)
@@ -174,7 +171,7 @@ namespace vkengine {
             bufferInfo.usage = usage;                                       // 버퍼 사용 목적을 지정한다 (예: vertex, index 등).
             bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;             // 버퍼의 공유 모드를 독점으로 설정한다.
 
-            // 지정된 정보를 바탕으로 버퍼를 생성하고, 성공 여부를 검사한다.
+            // 지정된 정보를 바탕으로 버퍼를 생성
             _VK_CHECK_RESULT_(vkCreateBuffer(device, &bufferInfo, nullptr, &buffer));
 
             // 생성된 버퍼에 필요한 메모리 요구사항 정보를 가져온다.
@@ -192,7 +189,14 @@ namespace vkengine {
             _VK_CHECK_RESULT_(vkBindBufferMemory(device, buffer, bufferMemory, 0));           // 할당된 메모리를 버퍼와 바인딩하여 GPU에서 사용할 수 있게 한다.
         }
 
-        void copyBufferToImage(VkDevice device, VkCommandPool commandPool, VkQueue graphicsQueue, VkBuffer buffer, VkImage image, uint32_t width, uint32_t height)
+        void copyBufferToImage(
+            VkDevice device, 
+            VkCommandPool commandPool, 
+            VkQueue graphicsQueue, 
+            VkBuffer buffer, 
+            VkImage image, 
+            uint32_t width, 
+            uint32_t height)
         {
             VkCommandBuffer commandBuffer = beginSingleTimeCommands(device, commandPool);
 
@@ -210,6 +214,44 @@ namespace vkengine {
             region.imageExtent = { width, height, 1 };
 
             vkCmdCopyBufferToImage(commandBuffer, buffer, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
+            
+            endSingleTimeCommands(device, commandPool, graphicsQueue, commandBuffer);
+        }
+
+        void copyBufferToImage2(VkDevice device, VkCommandPool commandPool, VkQueue graphicsQueue, VkBuffer buffer, VkImage image, uint32_t width, uint32_t height, std::vector<VkDeviceSize> &sizeArray)
+        {
+
+            VkCommandBuffer commandBuffer = beginSingleTimeCommands(device, commandPool);
+
+            // VKBufferImageCopy 배열을 만든다.
+            std::vector<VkBufferImageCopy> bufferCopyRegions;
+            VkDeviceSize offset = 0;
+
+            for (uint32_t i = 0; i < sizeArray.size(); i++)
+            {
+                VkBufferImageCopy region{};
+                
+                region.bufferOffset = offset;
+                region.bufferRowLength = 0;
+                region.bufferImageHeight = 0;
+                region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+                region.imageSubresource.mipLevel = 0;
+                region.imageSubresource.baseArrayLayer = i;
+                region.imageSubresource.layerCount = 1;
+                region.imageOffset = { 0, 0, 0 };
+                region.imageExtent = { width, height, 1 };
+                
+                bufferCopyRegions.push_back(region);
+                offset += sizeArray[i];
+            }
+
+            vkCmdCopyBufferToImage(
+                commandBuffer,
+                buffer,
+                image,
+                VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                static_cast<uint32_t>(bufferCopyRegions.size()),
+                bufferCopyRegions.data());
 
             endSingleTimeCommands(device, commandPool, graphicsQueue, commandBuffer);
         }
@@ -432,7 +474,7 @@ namespace vkengine {
             allocInfo.commandBufferCount = 1;                                 // 커맨드 버퍼 개수를 설정합니다.
 
             VkCommandBuffer commandBuffer;
-            vkAllocateCommandBuffers(device, &allocInfo, &commandBuffer);     // 커맨드 버퍼를 할당합니다.
+            _VK_CHECK_RESULT_(vkAllocateCommandBuffers(device, &allocInfo, &commandBuffer));     // 커맨드 버퍼를 할당합니다.
 
             VkCommandBufferBeginInfo beginInfo{};
             // VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO : 명령 버퍼의 시작 정보를 설정합니다.
@@ -442,7 +484,7 @@ namespace vkengine {
             beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
 
             // 커맨드 버퍼를 시작합니다.
-            vkBeginCommandBuffer(commandBuffer, &beginInfo);
+            _VK_CHECK_RESULT_(vkBeginCommandBuffer(commandBuffer, &beginInfo));
 
             return commandBuffer;
 
@@ -450,7 +492,7 @@ namespace vkengine {
         void endSingleTimeCommands(VkDevice device, VkCommandPool commandPool, VkQueue graphicsQueue, VkCommandBuffer commandBuffer)
         {   
             // 커맨드 버퍼를 종료합니다.
-            vkEndCommandBuffer(commandBuffer);
+            _VK_CHECK_RESULT_(vkEndCommandBuffer(commandBuffer));
             
             VkSubmitInfo submitInfo{};
             submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -458,10 +500,10 @@ namespace vkengine {
             submitInfo.pCommandBuffers = &commandBuffer; // 커맨드 버퍼를 설정합니다.
             
             // 큐에 커맨드 버퍼를 제출합니다.
-            vkQueueSubmit(graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
+            _VK_CHECK_RESULT_(vkQueueSubmit(graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE));
             
             // 큐가 모든 작업을 완료할 때까지 대기합니다.
-            vkQueueWaitIdle(graphicsQueue);
+            _VK_CHECK_RESULT_(vkQueueWaitIdle(graphicsQueue));
             
             // 커맨드 버퍼를 해제합니다.
             vkFreeCommandBuffers(device, commandPool, 1, &commandBuffer);
@@ -474,7 +516,7 @@ namespace vkengine {
             * 기존 레이아웃(oldLayout)에서 새로운 레이아웃(newLayout)으로 이미지를 변경합니다.
             * 이미지 전환은 단일 시간 명령 버퍼를 사용하여 수행되며, 전환 작업 후 관련 명령 버퍼는
             * 제출되어 완료될 때까지 대기됩니다.
-            * -> 기존 형식에서 다른 형식으로 이미지를 사용하게 다고 할 때 사용한다.
+            * -> 다른 형식으로 이미지를 사용 할 때 이용하는 함수
             *
             * @remark 지원되는 전환은 아래의 3가지 경우입니다:
             *  1) VK_IMAGE_LAYOUT_UNDEFINED -> VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL
@@ -482,33 +524,190 @@ namespace vkengine {
             *  3) VK_IMAGE_LAYOUT_UNDEFINED -> VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL
             *
          */
-        void transitionImageLayout(VkDevice device, VkCommandPool commandPool, VkQueue graphicsQueue, VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout, uint32_t mipLevels)
+        void transitionImageLayout(
+            VkDevice device, 
+            VkCommandPool commandPool, 
+            VkQueue graphicsQueue, 
+            VkImage image, 
+            VkFormat format, 
+            VkImageLayout oldLayout, 
+            VkImageLayout newLayout, 
+            uint32_t mipLevels)
         {
             // 단일 시간 명령 버퍼를 시작합니다.
             VkCommandBuffer commandBuffer = beginSingleTimeCommands(device, commandPool);
 
             // 이미지 메모리 배리어 구조체를 초기화하여 레이아웃 전환 및 접근 권한 변경을 정의합니다.
+            // 기본적으로 색상 정보를 대상으로 하지만, 이후 조건에 따라 수정됩니다.
             VkImageMemoryBarrier barrier{};
             barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER; // 배리어의 구조체 타입 설정
             barrier.oldLayout = oldLayout;                          // 전환 전 이미지 레이아웃
             barrier.newLayout = newLayout;                          // 전환할 이미지 레이아웃
             barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;  // 소스 큐 패밀리 인덱스 무시
             barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;  // 대상 큐 패밀리 인덱스 무시
-
             barrier.image = image; // 전환할 이미지 핸들 설정
-            // 기본적으로 색상 정보를 대상으로 하지만, 이후 조건에 따라 수정됩니다.
             barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
             barrier.subresourceRange.baseMipLevel = 0;       // 첫 번째 미프맵 레벨부터 시작
             barrier.subresourceRange.levelCount = mipLevels; // 적용할 미프맵의 수
             barrier.subresourceRange.baseArrayLayer = 0;     // 첫 번째 배열 레이어부터 시작
             barrier.subresourceRange.layerCount = 1;         // 배열 내 레이어 개수
 
-            VkPipelineStageFlags sourceStage;      // 전환 전 파이프라인 스테이지
-            VkPipelineStageFlags destinationStage; // 전환 후 파이프라인 스테이지
+            VkPipelineStageFlags sourceStage = 0;      // 전환 전 파이프라인 스테이지
+            VkPipelineStageFlags destinationStage = 0; // 전환 후 파이프라인 스테이지
+
+            // 이미지 레이아웃 전환 시, 적절한 액세스 마스크 및 파이프라인 스테이지를 설정합니다.
+            // TODO: switch 문으로 변경
+            switch (oldLayout)
+            {
+            case VK_IMAGE_LAYOUT_UNDEFINED:
+                // 이전 레이아웃이 정의되지 않은 상태이면 어떤 액세스도 보장되지 않습니다.
+                // or 깊이/스텐실 이미지 초기화 경우로, 이전 레이아웃이 사용 불가능한 상태에서 시작함
+                barrier.srcAccessMask = 0;
+                break;
+            case VK_IMAGE_LAYOUT_GENERAL:
+                break;
+            case VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL:
+                break;
+            case VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL:
+                break;
+            case VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL:
+                break;
+            case VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL:
+                break;
+            case VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL:
+                barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+                break;
+            case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL:
+                // 전송 완료 후 셰이더 읽기 전용으로 전환
+                barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+                break;
+            case VK_IMAGE_LAYOUT_PREINITIALIZED:
+                break;
+            case VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_STENCIL_ATTACHMENT_OPTIMAL:
+                break;
+            case VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_STENCIL_READ_ONLY_OPTIMAL:
+                break;
+            case VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL:
+                break;
+            case VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_OPTIMAL:
+                break;
+            case VK_IMAGE_LAYOUT_STENCIL_ATTACHMENT_OPTIMAL:
+                break;
+            case VK_IMAGE_LAYOUT_STENCIL_READ_ONLY_OPTIMAL:
+                break;
+            case VK_IMAGE_LAYOUT_READ_ONLY_OPTIMAL:
+                break;
+            case VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL:
+                break;
+            case VK_IMAGE_LAYOUT_RENDERING_LOCAL_READ:
+                break;
+            case VK_IMAGE_LAYOUT_PRESENT_SRC_KHR:
+                break;
+            case VK_IMAGE_LAYOUT_VIDEO_DECODE_DST_KHR:
+                break;
+            case VK_IMAGE_LAYOUT_VIDEO_DECODE_SRC_KHR:
+                break;
+            case VK_IMAGE_LAYOUT_VIDEO_DECODE_DPB_KHR:
+                break;
+            case VK_IMAGE_LAYOUT_SHARED_PRESENT_KHR:
+                break;
+            case VK_IMAGE_LAYOUT_FRAGMENT_DENSITY_MAP_OPTIMAL_EXT:
+                break;
+            case VK_IMAGE_LAYOUT_FRAGMENT_SHADING_RATE_ATTACHMENT_OPTIMAL_KHR:
+                break;
+            case VK_IMAGE_LAYOUT_VIDEO_ENCODE_DST_KHR:
+                break;
+            case VK_IMAGE_LAYOUT_VIDEO_ENCODE_SRC_KHR:
+                break;
+            case VK_IMAGE_LAYOUT_VIDEO_ENCODE_DPB_KHR:
+                break;
+            case VK_IMAGE_LAYOUT_ATTACHMENT_FEEDBACK_LOOP_OPTIMAL_EXT:
+                break;
+            case VK_IMAGE_LAYOUT_VIDEO_ENCODE_QUANTIZATION_MAP_KHR:
+                break;
+            case VK_IMAGE_LAYOUT_MAX_ENUM:
+                break;
+            default:
+                break;
+            }
+
+            switch (newLayout)
+            {   
+            case VK_IMAGE_LAYOUT_UNDEFINED:
+                break;
+            case VK_IMAGE_LAYOUT_GENERAL:
+                break;
+            case VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL:
+                break;
+            case VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL:
+                barrier.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+                break;
+            case VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL:
+                break;
+            case VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL:
+                // 전송 완료 후 셰이더 읽기 전용으로 전환
+                barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+                break;
+            case VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL:
+                break;
+            case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL:
+                // 전송 쓰기 작업을 위한 쓰기 액세스 허용 설정
+                barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+                break;
+            case VK_IMAGE_LAYOUT_PREINITIALIZED:
+                break;
+            case VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_STENCIL_ATTACHMENT_OPTIMAL:
+                break;
+            case VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_STENCIL_READ_ONLY_OPTIMAL:
+                break;
+            case VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL:
+                break;
+            case VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_OPTIMAL:
+                break;
+            case VK_IMAGE_LAYOUT_STENCIL_ATTACHMENT_OPTIMAL:
+                break;
+            case VK_IMAGE_LAYOUT_STENCIL_READ_ONLY_OPTIMAL:
+                break;
+            case VK_IMAGE_LAYOUT_READ_ONLY_OPTIMAL:
+                break;
+            case VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL:
+                break;
+            case VK_IMAGE_LAYOUT_RENDERING_LOCAL_READ:
+                break;
+            case VK_IMAGE_LAYOUT_PRESENT_SRC_KHR:
+                break;
+            case VK_IMAGE_LAYOUT_VIDEO_DECODE_DST_KHR:
+                break;
+            case VK_IMAGE_LAYOUT_VIDEO_DECODE_SRC_KHR:
+                break;
+            case VK_IMAGE_LAYOUT_VIDEO_DECODE_DPB_KHR:
+                break;
+            case VK_IMAGE_LAYOUT_SHARED_PRESENT_KHR:
+                break;
+            case VK_IMAGE_LAYOUT_FRAGMENT_DENSITY_MAP_OPTIMAL_EXT:
+                break;
+            case VK_IMAGE_LAYOUT_FRAGMENT_SHADING_RATE_ATTACHMENT_OPTIMAL_KHR:
+                break;
+            case VK_IMAGE_LAYOUT_VIDEO_ENCODE_DST_KHR:
+                break;
+            case VK_IMAGE_LAYOUT_VIDEO_ENCODE_SRC_KHR:
+                break;
+            case VK_IMAGE_LAYOUT_VIDEO_ENCODE_DPB_KHR:
+                break;
+            case VK_IMAGE_LAYOUT_ATTACHMENT_FEEDBACK_LOOP_OPTIMAL_EXT:
+                break;
+            case VK_IMAGE_LAYOUT_VIDEO_ENCODE_QUANTIZATION_MAP_KHR:
+                break;
+            case VK_IMAGE_LAYOUT_MAX_ENUM:
+                break;
+            default:
+                break;
+            }
 
             // 새로운 레이아웃이 깊이/스텐실용일 경우 aspectMask를 수정합니다.
             if (newLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL) {
                 barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+
                 // 포맷에 스텐실 컴포넌트가 있다면 추가합니다.
                 if (hasStencilComponent(format))
                 {
@@ -519,36 +718,23 @@ namespace vkengine {
                 barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
             }
 
+
             // 전환 타입에 따른 액세스 마스크 및 파이프라인 스테이지 설정
             if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL) {
-                // 이전 레이아웃이 정의되지 않은 상태이면 어떤 액세스도 보장되지 않습니다.
-                barrier.srcAccessMask = 0;
-                // 전송 쓰기 작업을 위한 쓰기 액세스 허용 설정
-                barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-
                 sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
                 destinationStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
             }
             else if (oldLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
-                // 전송 완료 후 셰이더 읽기 전용으로 전환
-                barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-                barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-
                 sourceStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
                 destinationStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
             }
             else if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL) {
-                // 깊이/스텐실 이미지 초기화 경우로, 이전 레이아웃이 사용 불가능한 상태에서 시작함
-                barrier.srcAccessMask = 0;
-                barrier.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-
                 sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
                 destinationStage = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
             }
             else {
                 // 지원되지 않는 레이아웃 전환 요청시 예외 발생
                 _PRINT_TO_CONSOLE_("Unsupported layout transition!\n");
-                return;
             }
 
             // 파이프라인 배리어를 추가하여 레이아웃 전환 명령을 기록합니다.
@@ -565,27 +751,242 @@ namespace vkengine {
             endSingleTimeCommands(device, commandPool, graphicsQueue, commandBuffer);
         }
 
-        
-        VkFenceCreateInfo fence_create_info(VkFenceCreateFlags flags)
+        void transitionImageLayout2(VkDevice device, VkCommandPool commandPool, VkQueue graphicsQueue, VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout, uint32_t mipLevels, uint32_t layerCount)
         {
-            VkFenceCreateInfo info = {};
-            info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-            info.pNext = nullptr;
+            VkCommandBuffer commandBuffer = beginSingleTimeCommands(device, commandPool);
+            
+            VkImageSubresourceRange subresourceRange{};
 
-            info.flags = flags;
+            subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+            subresourceRange.baseMipLevel = 0;
+            subresourceRange.levelCount = mipLevels;
+            subresourceRange.baseArrayLayer = 0;
+            subresourceRange.layerCount = layerCount;
+            
+            setImageLayout(
+                commandBuffer,
+                image,
+                format,
+                oldLayout,
+                newLayout,
+                subresourceRange);
 
-            return info;
+
+            endSingleTimeCommands(device, commandPool, graphicsQueue, commandBuffer);
         }
 
-        VkSemaphoreCreateInfo semaphore_create_info(VkSemaphoreCreateFlags flags)
+        void setImageLayout(
+            VkCommandBuffer commandBuffer,
+            VkImage image, 
+            VkFormat format,
+            VkImageLayout oldILayout, 
+            VkImageLayout newLayout, 
+            VkImageSubresourceRange subresourceRange
+        )
         {
-            VkSemaphoreCreateInfo info = {};
-            info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-            info.pNext = nullptr;
-            info.flags = flags;
-            return info;
-        }
+            VkImageMemoryBarrier barrier{};
+            barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+            barrier.oldLayout = oldILayout;
+            barrier.newLayout = newLayout;
+            barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+            barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+            barrier.image = image;
+            barrier.subresourceRange = subresourceRange;
 
+            VkPipelineStageFlags sourceStage = 0;
+            VkPipelineStageFlags destinationStage = 0;
+
+            switch (oldILayout)
+            {
+            case VK_IMAGE_LAYOUT_UNDEFINED:
+                // 이전 레이아웃이 정의되지 않은 상태이면 어떤 액세스도 보장되지 않습니다.
+                // or 깊이/스텐실 이미지 초기화 경우로, 이전 레이아웃이 사용 불가능한 상태에서 시작함
+                barrier.srcAccessMask = 0;
+                break;
+            case VK_IMAGE_LAYOUT_GENERAL:
+                break;
+            case VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL:
+                break;
+            case VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL:
+                break;
+            case VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL:
+                break;
+            case VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL:
+                break;
+            case VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL:
+                barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+                break;
+            case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL:
+                // 전송 완료 후 셰이더 읽기 전용으로 전환
+                barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+                break;
+            case VK_IMAGE_LAYOUT_PREINITIALIZED:
+                break;
+            case VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_STENCIL_ATTACHMENT_OPTIMAL:
+                break;
+            case VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_STENCIL_READ_ONLY_OPTIMAL:
+                break;
+            case VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL:
+                break;
+            case VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_OPTIMAL:
+                break;
+            case VK_IMAGE_LAYOUT_STENCIL_ATTACHMENT_OPTIMAL:
+                break;
+            case VK_IMAGE_LAYOUT_STENCIL_READ_ONLY_OPTIMAL:
+                break;
+            case VK_IMAGE_LAYOUT_READ_ONLY_OPTIMAL:
+                break;
+            case VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL:
+                break;
+            case VK_IMAGE_LAYOUT_RENDERING_LOCAL_READ:
+                break;
+            case VK_IMAGE_LAYOUT_PRESENT_SRC_KHR:
+                break;
+            case VK_IMAGE_LAYOUT_VIDEO_DECODE_DST_KHR:
+                break;
+            case VK_IMAGE_LAYOUT_VIDEO_DECODE_SRC_KHR:
+                break;
+            case VK_IMAGE_LAYOUT_VIDEO_DECODE_DPB_KHR:
+                break;
+            case VK_IMAGE_LAYOUT_SHARED_PRESENT_KHR:
+                break;
+            case VK_IMAGE_LAYOUT_FRAGMENT_DENSITY_MAP_OPTIMAL_EXT:
+                break;
+            case VK_IMAGE_LAYOUT_FRAGMENT_SHADING_RATE_ATTACHMENT_OPTIMAL_KHR:
+                break;
+            case VK_IMAGE_LAYOUT_VIDEO_ENCODE_DST_KHR:
+                break;
+            case VK_IMAGE_LAYOUT_VIDEO_ENCODE_SRC_KHR:
+                break;
+            case VK_IMAGE_LAYOUT_VIDEO_ENCODE_DPB_KHR:
+                break;
+            case VK_IMAGE_LAYOUT_ATTACHMENT_FEEDBACK_LOOP_OPTIMAL_EXT:
+                break;
+            case VK_IMAGE_LAYOUT_VIDEO_ENCODE_QUANTIZATION_MAP_KHR:
+                break;
+            case VK_IMAGE_LAYOUT_MAX_ENUM:
+                break;
+            default:
+                break;
+            }
+
+            switch (newLayout)
+            {
+            case VK_IMAGE_LAYOUT_UNDEFINED:
+                break;
+            case VK_IMAGE_LAYOUT_GENERAL:
+                break;
+            case VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL:
+                break;
+            case VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL:
+                barrier.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+                break;
+            case VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL:
+                break;
+            case VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL:
+                // 전송 완료 후 셰이더 읽기 전용으로 전환
+                barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+                break;
+            case VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL:
+                break;
+            case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL:
+                // 전송 쓰기 작업을 위한 쓰기 액세스 허용 설정
+                barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+                break;
+            case VK_IMAGE_LAYOUT_PREINITIALIZED:
+                break;
+            case VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_STENCIL_ATTACHMENT_OPTIMAL:
+                break;
+            case VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_STENCIL_READ_ONLY_OPTIMAL:
+                break;
+            case VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL:
+                break;
+            case VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_OPTIMAL:
+                break;
+            case VK_IMAGE_LAYOUT_STENCIL_ATTACHMENT_OPTIMAL:
+                break;
+            case VK_IMAGE_LAYOUT_STENCIL_READ_ONLY_OPTIMAL:
+                break;
+            case VK_IMAGE_LAYOUT_READ_ONLY_OPTIMAL:
+                break;
+            case VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL:
+                break;
+            case VK_IMAGE_LAYOUT_RENDERING_LOCAL_READ:
+                break;
+            case VK_IMAGE_LAYOUT_PRESENT_SRC_KHR:
+                break;
+            case VK_IMAGE_LAYOUT_VIDEO_DECODE_DST_KHR:
+                break;
+            case VK_IMAGE_LAYOUT_VIDEO_DECODE_SRC_KHR:
+                break;
+            case VK_IMAGE_LAYOUT_VIDEO_DECODE_DPB_KHR:
+                break;
+            case VK_IMAGE_LAYOUT_SHARED_PRESENT_KHR:
+                break;
+            case VK_IMAGE_LAYOUT_FRAGMENT_DENSITY_MAP_OPTIMAL_EXT:
+                break;
+            case VK_IMAGE_LAYOUT_FRAGMENT_SHADING_RATE_ATTACHMENT_OPTIMAL_KHR:
+                break;
+            case VK_IMAGE_LAYOUT_VIDEO_ENCODE_DST_KHR:
+                break;
+            case VK_IMAGE_LAYOUT_VIDEO_ENCODE_SRC_KHR:
+                break;
+            case VK_IMAGE_LAYOUT_VIDEO_ENCODE_DPB_KHR:
+                break;
+            case VK_IMAGE_LAYOUT_ATTACHMENT_FEEDBACK_LOOP_OPTIMAL_EXT:
+                break;
+            case VK_IMAGE_LAYOUT_VIDEO_ENCODE_QUANTIZATION_MAP_KHR:
+                break;
+            case VK_IMAGE_LAYOUT_MAX_ENUM:
+                break;
+            default:
+                break;
+            }
+
+            // 새로운 레이아웃이 깊이/스텐실용일 경우 aspectMask를 수정합니다.
+            if (newLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL) {
+                barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+
+                // 포맷에 스텐실 컴포넌트가 있다면 추가합니다.
+                if (hasStencilComponent(format))
+                {
+                    barrier.subresourceRange.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
+                }
+            }
+            else {
+                barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+            }
+
+
+            if (oldILayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
+            {
+                barrier.srcAccessMask = 0;
+                barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+                sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+                destinationStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+            }
+            else if (oldILayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
+            {
+                barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+                barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+                sourceStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+                destinationStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+            }
+            else
+            {
+                // 지원되지 않는 레이아웃 전환 요청시 예외 발생
+                _PRINT_TO_CONSOLE_("Unsupported layout transition!\n");
+            }
+
+            vkCmdPipelineBarrier(
+                commandBuffer,
+                sourceStage, destinationStage,
+                0,
+                0, nullptr,
+                0, nullptr,
+                1, &barrier
+            );
+        }
 
     }
 }
