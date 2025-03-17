@@ -52,7 +52,7 @@ namespace vkengine
         IndexBuffer VKindexBuffer{};
         std::vector<UniformBuffer> VKuniformBuffer = {};
 
-        Vk2DTexture_ a;
+        Vk2DTexture a;
 
         VkPipeline VKgraphicsPipeline = VK_NULL_HANDLE;                      // 그래픽스 파이프라인 -> 그래픽스 파이프라인을 생성
         VkPipelineLayout VKpipelineLayout{ VK_NULL_HANDLE };

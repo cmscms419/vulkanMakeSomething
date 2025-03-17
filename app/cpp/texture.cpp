@@ -31,9 +31,8 @@ namespace vkengine {
         a.texChannels = texChannels;
         this->a.device = this->VKdevice.get();
         std::string path = this->RootPath + TEST_TEXTURE_PATH;
-        this->a.texPath = path.c_str();
 
-        this->a.createTextureImage(4);
+        this->a.createTextureImage(4, path.c_str());
         this->a.createTextureImageView(VK_FORMAT_R8G8B8A8_SRGB);
         this->a.createTextureSampler();
 
