@@ -63,8 +63,16 @@ bld/
 [Ll]og/
 [Ll]ogs/
 exe/
-source/Texture
 external/basicEngine
+
+source/Texture/512x512/Brick
+source/Texture/512x512/Dirt
+//source/Texture/512x512/Elements
+source/Texture/512x512/Metal
+source/Texture/512x512/Plaster
+source/Texture/512x512/Stone
+source/Texture/512x512/Tile
+source/Texture/512x512/Wood
 
 # Visual Studio 2015/2017 cache/options directory
 .vs/
