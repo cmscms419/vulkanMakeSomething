@@ -22,3 +22,7 @@ Multisampling 챕터까지 완성했습니다.
 [사각형](https://github.com/cmscms419/Vulkan_create_Somthing/tree/master/app/cpp/triangle.h)
 
 [카메라 -> 엔진 기본에 적용 예정](https://github.com/cmscms419/vulkanMakeSomething/blob/master/app/cpp/cameraEngine.h)
+
+[텍스처 입히기](https://github.com/cmscms419/vulkanMakeSomething/blob/master/app/cpp/texture.h)
+
+[텍스처 백열 입히기 -> 육면체 각각면에 서로 다른 텍스처 입히기](https://github.com/cmscms419/vulkanMakeSomething/blob/master/app/cpp/texturearray.h)
