@@ -1,4 +1,4 @@
-﻿#include "texturecube.h"
+﻿#include "texturearray.h"
 
 using namespace vkengine::helper;
 using namespace vkengine::debug;
@@ -6,27 +6,49 @@ using namespace vkengine::debug;
 using vkengine::object::Camera;
 
 namespace vkengine {
-    TextureCubeEngine::TextureCubeEngine(std::string root_path) : VulkanEngine(root_path) {}
-    TextureCubeEngine::~TextureCubeEngine() {}
+    TextureArrayEngine::TextureArrayEngine(std::string root_path) : VulkanEngine(root_path) {}
+    TextureArrayEngine::~TextureArrayEngine() {}
 
-    void TextureCubeEngine::init()
+    void TextureArrayEngine::init()
     {
         VulkanEngine::init();
 
         this->camera = std::make_shared<vkengine::object::Camera>();
     }
 
-    bool TextureCubeEngine::prepare()
+    bool TextureArrayEngine::prepare()
     {
         VulkanEngine::prepare();
         this->init_sync_structures();
+
+        int texWidth = 0;
+        int texHeight = 0;
+        int texChannels = 0;
+        textureArray.texWidth = texWidth;
+        textureArray.texHeight = texHeight;
+        textureArray.texChannels = texChannels;
+        this->textureArray.device = this->VKdevice.get();
+        this->textureArray.device = this->VKdevice.get();
+
+        std::vector<std::string> pathArray = {
+           this->RootPath + TEST_TEXTURE_PATH_ARRAY0,
+           this->RootPath + TEST_TEXTURE_PATH_ARRAY1,
+           this->RootPath + TEST_TEXTURE_PATH_ARRAY2,
+           this->RootPath + TEST_TEXTURE_PATH_ARRAY3,
+           this->RootPath + TEST_TEXTURE_PATH_ARRAY4,
+           this->RootPath + TEST_TEXTURE_PATH_ARRAY5
+        };
+
+        this->textureArray.createTextureArrayImages(4, pathArray);
+        this->textureArray.createTextureImageView(VK_FORMAT_R8G8B8A8_SRGB);
+        this->textureArray.createTextureSampler();
 
         this->createVertexbuffer();
         this->createIndexBuffer();
         this->createUniformBuffers();
 
-        this->createDescriptorSetLayout();
         this->createDescriptorPool();
+        this->createDescriptorSetLayout();
         this->createDescriptorSets();
 
         this->createGraphicsPipeline();
@@ -34,7 +56,7 @@ namespace vkengine {
         return true;
     }
 
-    void TextureCubeEngine::cleanup()
+    void TextureArrayEngine::cleanup()
     {
         if (this->_isInitialized)
         {
@@ -56,6 +78,7 @@ namespace vkengine {
 
             this->VKvertexBuffer.cleanup();
             this->VKindexBuffer.cleanup();
+            this->textureArray.cleanup();
 
             for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
             {
@@ -81,7 +104,7 @@ namespace vkengine {
 
     }
 
-    void TextureCubeEngine::drawFrame()
+    void TextureArrayEngine::drawFrame()
     {
         // 렌더링을 시작하기 전에 프레임을 렌더링할 준비가 되었는지 확인합니다.
         _VK_CHECK_RESULT_(vkWaitForFences(this->VKdevice->logicaldevice, 1, &this->getCurrnetFrameData().VkinFlightFences, VK_TRUE, UINT64_MAX));
@@ -136,7 +159,7 @@ namespace vkengine {
         this->currentFrame = (this->currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
     }
 
-    bool TextureCubeEngine::mainLoop()
+    bool TextureArrayEngine::mainLoop()
     {
         static auto currentTime = std::chrono::high_resolution_clock::now();
         
@@ -162,7 +185,7 @@ namespace vkengine {
         return state;
     }
 
-    void TextureCubeEngine::update(float dt)
+    void TextureArrayEngine::update(float dt)
     {
         if (this->m_keyPressed[GLFW_KEY_W])
         {
@@ -198,7 +221,7 @@ namespace vkengine {
         this->camera->setPerspectiveProjection(45.0f, static_cast<float>(this->VKswapChain->getSwapChainExtent().width / this->VKswapChain->getSwapChainExtent().height), 0.1f, 100.0f);
     }
 
-    bool TextureCubeEngine::init_sync_structures()
+    bool TextureArrayEngine::init_sync_structures()
     {
         VkSemaphoreCreateInfo semaphoreInfo = helper::semaphoreCreateInfo(0);
         VkFenceCreateInfo fenceInfo = helper::fenceCreateInfo(VK_FENCE_CREATE_SIGNALED_BIT);
@@ -212,7 +235,7 @@ namespace vkengine {
         return true;
     }
 
-    void TextureCubeEngine::recordCommandBuffer(FrameData* framedata, uint32_t imageIndex)
+    void TextureArrayEngine::recordCommandBuffer(FrameData* framedata, uint32_t imageIndex)
     {
         // 커맨드 버퍼 기록을 시작합니다.
         VkCommandBufferBeginInfo beginInfo = framedata->commandBufferBeginInfo(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
@@ -221,7 +244,7 @@ namespace vkengine {
 
         // 렌더 패스를 시작하기 위한 클리어 값 설정
         std::array<VkClearValue, 2> clearValues{};
-        clearValues[0].color = { {0.2f, 0.2f, 0.2f, 1.0f} };
+        clearValues[0].color = { {0.1f, 0.1f, 0.1f, 1.0f} };
         clearValues[1].depthStencil = { 1.0f, 0 };
 
         // 렌더 패스 시작 정보 구조체를 초기화합니다.
@@ -274,7 +297,7 @@ namespace vkengine {
         _VK_CHECK_RESULT_(vkEndCommandBuffer(framedata->mainCommandBuffer));
     }
 
-    void TextureCubeEngine::createVertexbuffer()
+    void TextureArrayEngine::createVertexbuffer()
     {
         VkDeviceSize buffersize = sizeof(cube[0]) * cube.size();
 
@@ -313,7 +336,7 @@ namespace vkengine {
         vkFreeMemory(this->VKdevice->logicaldevice, stagingBufferMemory, nullptr);
     }
 
-    void TextureCubeEngine::createIndexBuffer()
+    void TextureArrayEngine::createIndexBuffer()
     {
         VkDeviceSize buffersize = sizeof(cubeindices_[0]) * cubeindices_.size();
 
@@ -352,7 +375,7 @@ namespace vkengine {
         vkFreeMemory(this->VKdevice->logicaldevice, stagingBufferMemory, nullptr);
     }
 
-    void TextureCubeEngine::createUniformBuffers()
+    void TextureArrayEngine::createUniformBuffers()
     {
         VkDeviceSize bufferSize = sizeof(UniformBufferObject);
 
@@ -373,7 +396,7 @@ namespace vkengine {
         }
     }
 
-    void TextureCubeEngine::createDescriptorSetLayout()
+    void TextureArrayEngine::createDescriptorSetLayout()
     {
         // Binding 0: Uniform buffer (Vertex shader)
         VkDescriptorSetLayoutBinding uboLayoutBinding{};
@@ -383,24 +406,34 @@ namespace vkengine {
         uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
         uboLayoutBinding.pImmutableSamplers = nullptr;
 
+        // Binding 1: Texture sampler (Fragment shader)
+        VkDescriptorSetLayoutBinding samplerLayoutBinding{};
+        samplerLayoutBinding.binding = 1;
+        samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        samplerLayoutBinding.descriptorCount = 1;
+        samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+        samplerLayoutBinding.pImmutableSamplers = nullptr;
+
+        std::array< VkDescriptorSetLayoutBinding, 2> bindings = { uboLayoutBinding, samplerLayoutBinding };
+
         // Create the descriptor set layout
         VkDescriptorSetLayoutCreateInfo layoutInfo{};
         layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+        layoutInfo.pBindings = bindings.data();
+        layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());
         layoutInfo.pNext = nullptr;
-        layoutInfo.bindingCount = 1;
-        layoutInfo.pBindings = &uboLayoutBinding;
 
         _VK_CHECK_RESULT_(vkCreateDescriptorSetLayout(this->VKdevice->logicaldevice, &layoutInfo, nullptr, &this->VKdescriptorSetLayout));
     }
 
-    void TextureCubeEngine::createDescriptorPool()
+    void TextureArrayEngine::createDescriptorPool()
     {
         //// 디스크립터 풀 크기를 설정합니다.
-        std::array<VkDescriptorPoolSize, 1> poolSizes{};
+        std::array<VkDescriptorPoolSize, 2> poolSizes{};
         poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
         poolSizes[0].descriptorCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
-        //poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-        //poolSizes[1].descriptorCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
+        poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        poolSizes[1].descriptorCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
 
         // 디스크립터 풀 생성 정보 구조체를 초기화합니다.
         VkDescriptorPoolCreateInfo poolInfo{};
@@ -412,7 +445,7 @@ namespace vkengine {
         _VK_CHECK_RESULT_(vkCreateDescriptorPool(this->VKdevice->logicaldevice, &poolInfo, nullptr, &this->VKdescriptorPool));
     }
 
-    void TextureCubeEngine::createDescriptorSets()
+    void TextureArrayEngine::createDescriptorSets()
     {
         // 디스크립터 세트 레이아웃을 설정합니다.
         std::vector<VkDescriptorSetLayout> layouts(MAX_FRAMES_IN_FLIGHT, this->VKdescriptorSetLayout);
@@ -441,7 +474,12 @@ namespace vkengine {
             bufferInfo.offset = 0;
             bufferInfo.range = sizeof(UniformBufferObject);
 
-            std::array<VkWriteDescriptorSet, 1> descriptorWrites{};
+            VkDescriptorImageInfo imageInfo{};
+            imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+            imageInfo.imageView = this->textureArray.imageView;
+            imageInfo.sampler = this->textureArray.sampler;
+
+            std::array<VkWriteDescriptorSet, 2> descriptorWrites{};
 
             descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
             descriptorWrites[0].dstSet = this->VKdescriptorSets[i];
@@ -451,14 +489,22 @@ namespace vkengine {
             descriptorWrites[0].descriptorCount = 1;
             descriptorWrites[0].pBufferInfo = &bufferInfo;
 
+            descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+            descriptorWrites[1].dstSet = this->VKdescriptorSets[i];
+            descriptorWrites[1].dstBinding = 1;
+            descriptorWrites[1].dstArrayElement = 0;
+            descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+            descriptorWrites[1].descriptorCount = 1;
+            descriptorWrites[1].pImageInfo = &imageInfo;
+
             vkUpdateDescriptorSets(this->VKdevice->logicaldevice, static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
         }
     }
 
-    void TextureCubeEngine::createGraphicsPipeline()
+    void TextureArrayEngine::createGraphicsPipeline()
     {
-        VkShaderModule baseVertshaderModule = this->VKdevice->createShaderModule(this->RootPath + "../../../../../../shader/vertTrinagle00.spv");
-        VkShaderModule baseFragShaderModule = this->VKdevice->createShaderModule(this->RootPath + "../../../../../../shader/fragTrinagle00.spv");
+        VkShaderModule baseVertshaderModule = this->VKdevice->createShaderModule(this->RootPath + "../../../../../../shader/vertCube.spv");
+        VkShaderModule baseFragShaderModule = this->VKdevice->createShaderModule(this->RootPath + "../../../../../../shader/fragCube.spv");
 
         VkPipelineShaderStageCreateInfo vertShaderStageInfo{};
         vertShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -617,7 +663,7 @@ namespace vkengine {
         vkDestroyShaderModule(this->VKdevice->logicaldevice, baseFragShaderModule, nullptr);
     }
 
-    void TextureCubeEngine::updateUniformBuffer(uint32_t currentImage)
+    void TextureArrayEngine::updateUniformBuffer(uint32_t currentImage)
     {
         static auto startTime = std::chrono::high_resolution_clock::now();
         auto currentTime = std::chrono::high_resolution_clock::now();
@@ -633,7 +679,7 @@ namespace vkengine {
         memcpy(this->VKuniformBuffer[currentImage].Mapped, &ubo, sizeof(ubo));
     }
 
-    void TextureCubeEngine::cleanupSwapcChain()
+    void TextureArrayEngine::cleanupSwapcChain()
     {
         this->VKdepthStencill.cleanup(this->VKdevice->logicaldevice);
 

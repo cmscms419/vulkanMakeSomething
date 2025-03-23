@@ -2,26 +2,24 @@
 #define INCLUDE_SOURCE_TEXTURECUBE_H
 
 #include "../source/engine/VKengine.h"
-#include "../source/engine/helper.h"
+#include "../source/engine/VKtexture.h"
 #include "../source/engine/Camera.h"
-#include "../source/engine/Debug.h"
-
-#include "../common/struct.h"
 
 namespace vkengine
 {
 
-    class TextureCubeEngine : public VulkanEngine
+    class TextureArrayEngine : public VulkanEngine
     {
     public:
-        TextureCubeEngine(std::string root_path);
-        ~TextureCubeEngine();
+        TextureArrayEngine(std::string root_path);
+        ~TextureArrayEngine();
 
         virtual void init() override;
         virtual bool prepare() override;
         virtual void cleanup() override;
         virtual void drawFrame() override;
         virtual bool mainLoop() override;
+
         void update(float dt);
     
     protected:
@@ -48,6 +46,7 @@ namespace vkengine
 
         VertexBuffer VKvertexBuffer{};
         IndexBuffer VKindexBuffer{};
+        Vk2DTextureArray textureArray = {};
 
         std::vector<UniformBuffer> VKuniformBuffer = {};
 

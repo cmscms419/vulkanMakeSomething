@@ -5,8 +5,9 @@
 #include "../../app/cpp/cameraEngine.h"
 #include "../../app/cpp/skymap.h"
 #include "../../app/cpp/texture.h"
+#include "../../app/cpp/texturearray.h"
 
-#define SELECTED_ENGINE 3
+#define SELECTED_ENGINE 5
 
 int main(int argc, char* argv[]) {
 
@@ -16,7 +17,6 @@ int main(int argc, char* argv[]) {
     _PRINT_TO_CONSOLE_("User Name: %s\n", UserName.c_str());
     _PRINT_TO_CONSOLE_("\n");
 
-    
     char path[MAX_PATH];
     std::string root_path = "";
 
@@ -40,6 +40,8 @@ int main(int argc, char* argv[]) {
     engine = std::make_unique<vkengine::skycubeEngine>(root_path);
 #elif SELECTED_ENGINE == 4
     engine = std::make_unique<vkengine::TextureEngine>(root_path);
+#elif SELECTED_ENGINE == 5
+    engine = std::make_unique<vkengine::TextureArrayEngine>(root_path);
 #else
     return EXIT_FAILURE;
 #endif

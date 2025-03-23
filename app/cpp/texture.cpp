@@ -22,20 +22,18 @@ namespace vkengine {
         VulkanEngine::prepare();
         this->init_sync_structures();
 
-        // 테스트 코드
         int texWidth = 0;
         int texHeight = 0;
         int texChannels = 0;
-        a.texWidth = texWidth;
-        a.texHeight = texHeight;
-        a.texChannels = texChannels;
-        this->a.device = this->VKdevice.get();
+        testTexture.texWidth = texWidth;
+        testTexture.texHeight = texHeight;
+        testTexture.texChannels = texChannels;
+        this->testTexture.device = this->VKdevice.get();
         std::string path = this->RootPath + TEST_TEXTURE_PATH;
-        this->a.texPath = path.c_str();
 
-        this->a.createTextureImage(4);
-        this->a.createTextureImageView(VK_FORMAT_R8G8B8A8_SRGB);
-        this->a.createTextureSampler();
+        this->testTexture.createTextureImage(4, path.c_str());
+        this->testTexture.createTextureImageView(VK_FORMAT_R8G8B8A8_SRGB);
+        this->testTexture.createTextureSampler();
 
         this->createVertexbuffer();
         this->createIndexBuffer();
@@ -72,7 +70,7 @@ namespace vkengine {
 
             this->VKvertexBuffer2.cleanup();
             this->VKindexBuffer.cleanup();
-            this->a.cleanup();
+            this->testTexture.cleanup();
 
             for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
             {
@@ -475,8 +473,8 @@ namespace vkengine {
             // 디스크립터 이미지 정보를 설정합니다.
             VkDescriptorImageInfo imageInfo{};
             imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-            imageInfo.imageView = this->a.imageView;
-            imageInfo.sampler = this->a.sampler;
+            imageInfo.imageView = this->testTexture.imageView;
+            imageInfo.sampler = this->testTexture.sampler;
 
             descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
             descriptorWrites[0].dstSet = this->VKdescriptorSets[i];

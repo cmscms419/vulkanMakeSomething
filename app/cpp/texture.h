@@ -1,5 +1,5 @@
-﻿#ifndef INCLUDE_SOURCE_TEXTURECUBE_H
-#define INCLUDE_SOURCE_TEXTURECUBE_H
+﻿#ifndef INCLUDE_SOURCE_TEXTURE_H_
+#define INCLUDE_SOURCE_TEXTURE_H_
 
 #include "../source/engine/VKengine.h"
 #include "../source/engine/helper.h"
@@ -52,7 +52,7 @@ namespace vkengine
         IndexBuffer VKindexBuffer{};
         std::vector<UniformBuffer> VKuniformBuffer = {};
 
-        Vk2DTexture_ a;
+        Vk2DTexture testTexture;
 
         VkPipeline VKgraphicsPipeline = VK_NULL_HANDLE;                      // 그래픽스 파이프라인 -> 그래픽스 파이프라인을 생성
         VkPipelineLayout VKpipelineLayout{ VK_NULL_HANDLE };

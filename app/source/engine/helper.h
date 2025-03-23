@@ -123,7 +123,16 @@ namespace vkengine {
             VkImage image,
             VkFormat format,
             VkImageAspectFlags aspectFlags,
-            uint32_t mipLevels);
+            uint32_t mipLevels,
+            uint32_t imageCount = 1);
+
+        VkImageView createArrayImageView(
+            VkDevice device,
+            VkImage image,
+            VkFormat format,
+            VkImageAspectFlags aspectFlags,
+            uint32_t mipLevels,
+            uint32_t imageCount);
 
         // 스텐실 컴포넌트를 가지고 있는지 확인하는 함수
         inline bool hasStencilComponent(VkFormat format)

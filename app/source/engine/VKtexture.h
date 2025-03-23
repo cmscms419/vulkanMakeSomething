@@ -68,11 +68,10 @@ struct Vk2DTextureArray : public VkTexture_ {
 
     uint32_t imageCount = 0; ///< 이미지 개수
 
-    void createTextureImages(int type, std::vector<std::string> &texPath); ///< 텍스처 이미지 생성 함수
-
-    virtual void createTextureImage(int type, const char* texPath); ///< 텍스처 이미지 생성 함수
+    void createTextureArrayImages(int type, std::vector<std::string> &texPath); ///< 텍스처 이미지 생성 함수
     virtual void createTextureImageView(VkFormat format); ///< 텍스처 이미지 뷰 생성 함수
     virtual void createTextureSampler(); ///< 텍스처 샘플러 생성 함수
+    virtual void createTextureImage(int type, const char* texPath); ///< 텍스처 이미지 생성 함수
 };
 
 
