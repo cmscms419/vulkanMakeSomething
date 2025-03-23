@@ -8,7 +8,7 @@
 ## 프로젝트를 실행하는데 필요한 것
 - [visual studio 2022 버전 필요](https://visualstudio.microsoft.com/ko/vs/)
 - [cuda toolkit 설치 12.6 버전](https://developer.nvidia.com/cuda-12-6-0-download-archive?target_os=Windows&target_arch=x86_64&target_version=11&target_type=exe_network)
-- [vulkan SDK](https://visualstudio.microsoft.com/ko/vs/)
+- [vulkan SDK](https://www.lunarg.com/vulkan-sdk/)
 - windows 11(windows 11에서만 실행 됨됨)
 
 ## 정리한 개인자료: https://www.notion.so/Vulkan-Tutorial-18118a41dc6f80c7adc7d7ba3f95542e?pvs=4
