@@ -2,17 +2,11 @@
 #define INCLUDE_SKYMAP_H_
 
 #include "../source/engine/VKengine.h"
-#include "../source/engine/helper.h"
+#include "../source/engine/VKtexture.h"
 #include "../source/engine/Camera.h"
-#include "../source/engine/Debug.h"
-
-#include "../common/struct.h"
 
 namespace vkengine
 {
-    namespace gui {
-        class vkGUI;
-    }
 
     class skycubeEngine : public VulkanEngine
     {
@@ -35,7 +29,12 @@ namespace vkengine
         // 각 3d 모델을 생성하기 위한 함수
         void createVertexbuffer();
         void createIndexBuffer();
+
+        void createVertexbuffer2();
+        void createIndexBuffer2();
+
         void createUniformBuffers();
+        void createUniformBuffers2();
 
         // Descriptor의 set, pool, layout을 생성하기 위한 함수들
         void createDescriptorSetLayout();
@@ -44,6 +43,7 @@ namespace vkengine
 
         // grapics pipeline을 생성하기 위한 함수
         void createGraphicsPipeline();
+        void createGraphicsPipeline2();
 
         void updateUniformBuffer(uint32_t currentImage);
 
@@ -52,9 +52,18 @@ namespace vkengine
         VertexBuffer VKvertexBuffer{};
         IndexBuffer VKindexBuffer{};
 
+        VertexBuffer VKvertexBuffer2{};
+        IndexBuffer VKindexBuffer2{};
+
+        Vk2DTextureArray cubeTextureArray = {};
+        VKcubeMap cubeMap = {};
+
         std::vector<UniformBuffer> VKuniformBuffer = {};
+        std::vector<UniformBuffer> VKuniformBuffer2 = {};
 
         VkPipeline VKgraphicsPipeline = VK_NULL_HANDLE;                      // 그래픽스 파이프라인 -> 그래픽스 파이프라인을 생성
+        VkPipeline VKCubeMapPipeline = VK_NULL_HANDLE;                       // 큐브맵 파이프라인 -> 큐브맵 파이프라인을 생성
+        
         VkPipelineLayout VKpipelineLayout{ VK_NULL_HANDLE };
     };
 }

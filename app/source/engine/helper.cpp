@@ -40,7 +40,7 @@ namespace vkengine {
             return indices_.isComplete() && extensionsSupported && swapChainAdequate && supportedFeatures.samplerAnisotropy;
         }
 
-        const QueueFamilyIndices findQueueFamilies(VkPhysicalDevice &device, VkSurfaceKHR &VKsurface)
+        const QueueFamilyIndices findQueueFamilies(VkPhysicalDevice& device, VkSurfaceKHR& VKsurface)
         {
             QueueFamilyIndices indices; // 큐 패밀리의 개수를 저장할 변수를 초기화
             QueueFamilyIndices target; // 큐 패밀리의 개수를 저장할 변수를 초기화
@@ -48,11 +48,11 @@ namespace vkengine {
             // 주어진 물리 장치에서 큐 패밀리 속성을 가져옴 (첫 번째 호출은 개수만 가져옴)
             uint32_t queueFamilyCount = 0;
             vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);
-            
+
             // 주어진 물리 장치에서 큐 패밀리 속성을 가져옴 (두 번째 호출은 실제 속성을 가져옴)
             std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
             vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, queueFamilies.data());
-            
+
 #ifdef DEBUG_
             getPyhsicalDeviceProperties(device);
 #endif // DEBUG_
@@ -78,7 +78,7 @@ namespace vkengine {
                         indices.setgraphicsAndComputeFamily(i);
                     }
                 }
-                
+
                 VkBool32 presentSupport = false;
                 vkGetPhysicalDeviceSurfaceSupportKHR(device, i, VKsurface, &presentSupport);
 
@@ -92,7 +92,7 @@ namespace vkengine {
                 }
 
                 if (indices.isComplete()) {
-                    
+
                     if (!selected)
                     {
                         indices.queueFamilyProperties = queueFamily;
@@ -124,17 +124,48 @@ namespace vkengine {
             imageInfo.usage = usage;
             imageInfo.samples = numSamples;
             imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-            
+
             _VK_CHECK_RESULT_(vkCreateImage(VKdevice, &imageInfo, nullptr, &image));
-            
+
             VkMemoryRequirements memRequirements;
             vkGetImageMemoryRequirements(VKdevice, image, &memRequirements);
-            
+
             VkMemoryAllocateInfo allocInfo{};
             allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
             allocInfo.allocationSize = memRequirements.size;
             allocInfo.memoryTypeIndex = findMemoryType(VKphysicalDevice, memRequirements.memoryTypeBits, properties);
+
+            _VK_CHECK_RESULT_(vkAllocateMemory(VKdevice, &allocInfo, nullptr, &imageMemory));
+            _VK_CHECK_RESULT_(vkBindImageMemory(VKdevice, image, imageMemory, 0));
+        }
+
+        void createImage2(VkDevice VKdevice, VkPhysicalDevice VKphysicalDevice, uint32_t width, uint32_t height, uint32_t mipLevels, VkSampleCountFlagBits numSamples, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory, uint32_t arrayLayer, VkImageCreateFlagBits flag)
+        {
+            VkImageCreateInfo imageInfo{};
+            imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+            imageInfo.imageType = VK_IMAGE_TYPE_2D;
+            imageInfo.extent = { width, height, 1 };
+            imageInfo.mipLevels = mipLevels;
+            imageInfo.arrayLayers = arrayLayer;
+            imageInfo.format = format;
+            imageInfo.tiling = tiling;
+            imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+            imageInfo.usage = usage;
+            imageInfo.samples = numSamples;
+            imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
             
+            if (flag == VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT)
+                imageInfo.flags = flag;
+            else
+                imageInfo.flags = 0;
+
+            _VK_CHECK_RESULT_(vkCreateImage(VKdevice, &imageInfo, nullptr, &image));
+            VkMemoryRequirements memRequirements;
+            vkGetImageMemoryRequirements(VKdevice, image, &memRequirements);
+            VkMemoryAllocateInfo allocInfo{};
+            allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+            allocInfo.allocationSize = memRequirements.size;
+            allocInfo.memoryTypeIndex = findMemoryType(VKphysicalDevice, memRequirements.memoryTypeBits, properties);
             _VK_CHECK_RESULT_(vkAllocateMemory(VKdevice, &allocInfo, nullptr, &imageMemory));
             _VK_CHECK_RESULT_(vkBindImageMemory(VKdevice, image, imageMemory, 0));
         }
@@ -142,11 +173,11 @@ namespace vkengine {
         void copyBuffer(VkDevice VKdevice, VkCommandPool VKcommandPool, VkQueue graphicsVKQueue, VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size)
         {
             VkCommandBuffer commandBuffer = beginSingleTimeCommands(VKdevice, VKcommandPool);
-            
+
             VkBufferCopy copyRegion{};
             copyRegion.size = size;
             vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
-            
+
             endSingleTimeCommands(VKdevice, VKcommandPool, graphicsVKQueue, commandBuffer);
         }
 
@@ -165,7 +196,7 @@ namespace vkengine {
         {
             // 버퍼 생성 정보를 담은 구조체를 초기화한다.
             VkBufferCreateInfo bufferInfo{};
-            
+
             bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;        // 구조체 타입을 지정한다.
             bufferInfo.size = size;                                         // 생성할 버퍼의 크기를 설정한다.
             bufferInfo.usage = usage;                                       // 버퍼 사용 목적을 지정한다 (예: vertex, index 등).
@@ -180,22 +211,22 @@ namespace vkengine {
 
             // 메모리 할당 정보를 담은 구조체를 초기화한다.
             VkMemoryAllocateInfo allocInfo{};
-            
+
             allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;                                                   // 구조체 타입을 지정한다.    
             allocInfo.allocationSize = memRequirements.size;                                                            // 버퍼를 위한 메모리 크기를 설정한다.
             allocInfo.memoryTypeIndex = findMemoryType(physicalDevice, memRequirements.memoryTypeBits, properties);     // 요구사항에 맞는 메모리 타입 인덱스를 찾아서 지정한다.
-            
+
             _VK_CHECK_RESULT_(vkAllocateMemory(device, &allocInfo, nullptr, &bufferMemory));  // 위 정보를 바탕으로 메모리를 할당하고 성공 여부를 검사한다.
             _VK_CHECK_RESULT_(vkBindBufferMemory(device, buffer, bufferMemory, 0));           // 할당된 메모리를 버퍼와 바인딩하여 GPU에서 사용할 수 있게 한다.
         }
 
         void copyBufferToImage(
-            VkDevice device, 
-            VkCommandPool commandPool, 
-            VkQueue graphicsQueue, 
-            VkBuffer buffer, 
-            VkImage image, 
-            uint32_t width, 
+            VkDevice device,
+            VkCommandPool commandPool,
+            VkQueue graphicsQueue,
+            VkBuffer buffer,
+            VkImage image,
+            uint32_t width,
             uint32_t height)
         {
             VkCommandBuffer commandBuffer = beginSingleTimeCommands(device, commandPool);
@@ -214,11 +245,11 @@ namespace vkengine {
             region.imageExtent = { width, height, 1 };
 
             vkCmdCopyBufferToImage(commandBuffer, buffer, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
-            
+
             endSingleTimeCommands(device, commandPool, graphicsQueue, commandBuffer);
         }
 
-        void copyBufferToImage2(VkDevice device, VkCommandPool commandPool, VkQueue graphicsQueue, VkBuffer buffer, VkImage image, uint32_t width, uint32_t height, std::vector<VkDeviceSize> &sizeArray)
+        void copyBufferToImage2(VkDevice device, VkCommandPool commandPool, VkQueue graphicsQueue, VkBuffer buffer, VkImage image, uint32_t width, uint32_t height, std::vector<VkDeviceSize>& sizeArray)
         {
 
             VkCommandBuffer commandBuffer = beginSingleTimeCommands(device, commandPool);
@@ -230,7 +261,7 @@ namespace vkengine {
             for (uint32_t i = 0; i < sizeArray.size(); i++)
             {
                 VkBufferImageCopy region{};
-                
+
                 region.bufferOffset = offset;
                 region.bufferRowLength = 0;
                 region.bufferImageHeight = 0;
@@ -240,7 +271,7 @@ namespace vkengine {
                 region.imageSubresource.layerCount = 1;
                 region.imageOffset = { 0, 0, 0 };
                 region.imageExtent = { width, height, 1 };
-                
+
                 bufferCopyRegions.push_back(region);
                 offset += sizeArray[i];
             }
@@ -315,7 +346,7 @@ namespace vkengine {
             _PRINT_TO_CONSOLE_("DeviceProperties.deviceType: %d\n", deviceProperties.deviceType);
             _PRINT_TO_CONSOLE_("Device Name: %s\n", deviceProperties.deviceName);
             _PRINT_TO_CONSOLE_("\n");
-            
+
             return score;
         }
 
@@ -413,7 +444,7 @@ namespace vkengine {
             viewInfo.subresourceRange.baseArrayLayer = 0;
             viewInfo.subresourceRange.layerCount = imageCount;
 
-            VkImageView imageView{VK_NULL_HANDLE};
+            VkImageView imageView{ VK_NULL_HANDLE };
 
             _VK_CHECK_RESULT_(vkCreateImageView(device, &viewInfo, nullptr, &imageView));
 
@@ -440,6 +471,229 @@ namespace vkengine {
             return imageView;
         }
 
+        VkImageView createCubeImageView(VkDevice device, VkImage image, VkFormat format, VkImageAspectFlags aspectFlags, uint32_t mipLevels)
+        {
+            VkImageViewCreateInfo viewInfo{};
+            viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+            viewInfo.image = image;
+            viewInfo.viewType = VK_IMAGE_VIEW_TYPE_CUBE;
+            viewInfo.format = format;
+            viewInfo.subresourceRange.aspectMask = aspectFlags;
+            viewInfo.subresourceRange.baseMipLevel = 0;
+            viewInfo.subresourceRange.levelCount = mipLevels;
+            viewInfo.subresourceRange.baseArrayLayer = 0;
+            viewInfo.subresourceRange.layerCount = 6;
+
+            VkImageView imageView{ VK_NULL_HANDLE };
+
+            _VK_CHECK_RESULT_(vkCreateImageView(device, &viewInfo, nullptr, &imageView));
+
+            return imageView;
+        }
+
+        void generateMipmaps(VkPhysicalDevice physicalDevice, VkDevice device, VkCommandPool commandPool, VkQueue graphicsQueue, VkImage image, VkFormat imageFormat, int32_t texWidth, int32_t texHeight, uint32_t mipLevels)
+        {
+            // Check if image format supports linear blitting
+            VkFormatProperties formatProperties;
+            vkGetPhysicalDeviceFormatProperties(physicalDevice, imageFormat, &formatProperties);
+
+            _CHECK_RESULT_(!(formatProperties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT))
+
+                VkCommandBuffer commandBuffer = beginSingleTimeCommands(device, commandPool);
+            VkImageMemoryBarrier barrier{};
+            barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+            barrier.image = image;
+            barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+            barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+            barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+            barrier.subresourceRange.baseArrayLayer = 0;
+            barrier.subresourceRange.layerCount = 1;
+            barrier.subresourceRange.levelCount = 1;
+            int32_t mipWidth = texWidth;
+            int32_t mipHeight = texHeight;
+
+            for (uint32_t i = 1; i < mipLevels; i++) {
+
+                barrier.subresourceRange.baseMipLevel = i - 1;
+                barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+                barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+                barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+                barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+
+                vkCmdPipelineBarrier(commandBuffer,
+                    VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0,
+                    0, nullptr,
+                    0, nullptr,
+                    1, &barrier);
+
+                VkImageBlit blit{};
+
+                blit.srcOffsets[0] = { 0, 0, 0 };
+                blit.srcOffsets[1] = { mipWidth, mipHeight, 1 };
+                blit.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+                blit.srcSubresource.mipLevel = i - 1;
+                blit.srcSubresource.baseArrayLayer = 0;
+                blit.srcSubresource.layerCount = 1;
+
+                blit.dstOffsets[0] = { 0, 0, 0 };
+                blit.dstOffsets[1] = { mipWidth > 1 ? mipWidth / 2 : 1, mipHeight > 1 ? mipHeight / 2 : 1, 1 };
+                blit.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+                blit.dstSubresource.mipLevel = i;
+                blit.dstSubresource.baseArrayLayer = 0;
+                blit.dstSubresource.layerCount = 1;
+
+                vkCmdBlitImage(commandBuffer,
+                    image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+                    image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                    1, &blit,
+                    VK_FILTER_LINEAR);
+
+                barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+                barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+                barrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+                barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+
+                vkCmdPipelineBarrier(commandBuffer,
+                    VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0,
+                    0, nullptr,
+                    0, nullptr,
+                    1, &barrier);
+
+                if (mipWidth > 1)
+                {
+                    mipWidth /= 2;
+                }
+
+                if (mipHeight > 1)
+                {
+                    mipHeight /= 2;
+                }
+            }
+
+            barrier.subresourceRange.baseMipLevel = mipLevels - 1;
+            barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+            barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+            barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+            barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+
+            vkCmdPipelineBarrier(commandBuffer,
+                VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0,
+                0, nullptr,
+                0, nullptr,
+                1, &barrier);
+
+            endSingleTimeCommands(device, commandPool, graphicsQueue, commandBuffer);
+
+        }
+
+        void generateMipmapsCubeMap(VkPhysicalDevice physicalDevice, VkDevice device, VkCommandPool commandPool, VkQueue graphicsQueue, VkImage image, VkFormat imageFormat, int32_t texWidth, int32_t texHeight, uint32_t mipLevels)
+        {
+            // Check if image format supports linear blitting
+            VkFormatProperties formatProperties;
+            vkGetPhysicalDeviceFormatProperties(physicalDevice, imageFormat, &formatProperties);
+
+            if (!(formatProperties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT))
+            {
+                return;
+            }
+
+            VkCommandBuffer commandBuffer = beginSingleTimeCommands(device, commandPool);
+            VkImageMemoryBarrier barrier{};
+
+            barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+            barrier.image = image;
+            barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+            barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+            barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+            barrier.subresourceRange.baseArrayLayer = 0;
+            barrier.subresourceRange.layerCount = 1; // Cube map has 6 layers
+            barrier.subresourceRange.levelCount = 1;
+
+            int32_t mipWidth = texWidth;
+            int32_t mipHeight = texHeight;
+
+            for (uint32_t i = 1; i < mipLevels; i++)
+            {
+                for (uint32_t face = 0; face < 6; face++)
+                {
+                    barrier.subresourceRange.baseMipLevel = i - 1;
+                    barrier.subresourceRange.baseArrayLayer = face;
+                    barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+                    barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+                    barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+                    barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+
+                    vkCmdPipelineBarrier(commandBuffer,
+                        VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0,
+                        0, nullptr,
+                        0, nullptr,
+                        1, &barrier);
+
+                    VkImageBlit blit{};
+
+                    blit.srcOffsets[0] = { 0, 0, 0 };
+                    blit.srcOffsets[1] = { mipWidth, mipHeight, 1 };
+                    blit.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+                    blit.srcSubresource.mipLevel = i - 1;
+                    blit.srcSubresource.baseArrayLayer = face;
+                    blit.srcSubresource.layerCount = 1;
+
+                    blit.dstOffsets[0] = { 0, 0, 0 };
+                    blit.dstOffsets[1] = { mipWidth > 1 ? mipWidth / 2 : 1, mipHeight > 1 ? mipHeight / 2 : 1, 1 };
+                    blit.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+                    blit.dstSubresource.mipLevel = i;
+                    blit.dstSubresource.baseArrayLayer = face;
+                    blit.dstSubresource.layerCount = 1;
+
+                    vkCmdBlitImage(commandBuffer,
+                        image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+                        image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                        1, &blit,
+                        VK_FILTER_LINEAR);
+
+                    barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+                    barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+                    barrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+                    barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+
+                    vkCmdPipelineBarrier(commandBuffer,
+                        VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0,
+                        0, nullptr,
+                        0, nullptr,
+                        1, &barrier);
+                }
+
+                if (mipWidth > 1)
+                {
+                    mipWidth /= 2;
+                }
+
+                if (mipHeight > 1)
+                {
+                    mipHeight /= 2;
+                }
+            }
+
+            barrier.subresourceRange.baseMipLevel = mipLevels - 1;
+            barrier.subresourceRange.baseArrayLayer = 0;
+            barrier.subresourceRange.layerCount = 1; // 각 레이어에 대해 개별적으로 전환
+            barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+            barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+            barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+            barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+
+            for (uint32_t i = 0; i < 6; i++) {
+                barrier.subresourceRange.baseArrayLayer = i;
+                vkCmdPipelineBarrier(commandBuffer,
+                    VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0,
+                    0, nullptr,
+                    0, nullptr,
+                    1, &barrier);
+            }
+
+            endSingleTimeCommands(device, commandPool, graphicsQueue, commandBuffer);
+
+        }
 
         VkCommandPoolCreateInfo commandPoolCreateInfo(uint32_t queueFamilyIndex, VkCommandPoolCreateFlags flags)
         {
@@ -458,7 +712,7 @@ namespace vkengine {
             info.commandPool = pool;
             info.commandBufferCount = count;
             info.level = level;
-            
+
             return info;
         }
         VkFenceCreateInfo fenceCreateInfo(VkFenceCreateFlags flags)
@@ -485,7 +739,7 @@ namespace vkengine {
         {
             VkCommandBufferAllocateInfo allocInfo{};                          // 커맨드 버퍼 할당 정보 구조체를 초기화합니다.
             allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO; // 구조체 타입을 설정합니다.
-            
+
             // 커맨드 버퍼 레벨을 설정합니다.
             // VK_COMMAND_BUFFER_LEVEL_PRIMARY: 기본 커맨드 버퍼
             // VK_COMMAND_BUFFER_LEVEL_SECONDARY: 보조 커맨드 버퍼
@@ -499,7 +753,7 @@ namespace vkengine {
             VkCommandBufferBeginInfo beginInfo{};
             // VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO : 명령 버퍼의 시작 정보를 설정합니다.
             beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-            
+
             // VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT : 커맨드 버퍼를 한 번만 사용하려는 경우 사용합니다.
             beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
 
@@ -510,21 +764,21 @@ namespace vkengine {
 
         }
         void endSingleTimeCommands(VkDevice device, VkCommandPool commandPool, VkQueue graphicsQueue, VkCommandBuffer commandBuffer)
-        {   
+        {
             // 커맨드 버퍼를 종료합니다.
             _VK_CHECK_RESULT_(vkEndCommandBuffer(commandBuffer));
-            
+
             VkSubmitInfo submitInfo{};
             submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
             submitInfo.commandBufferCount = 1; // 커맨드 버퍼 개수를 설정합니다.
             submitInfo.pCommandBuffers = &commandBuffer; // 커맨드 버퍼를 설정합니다.
-            
+
             // 큐에 커맨드 버퍼를 제출합니다.
             _VK_CHECK_RESULT_(vkQueueSubmit(graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE));
-            
+
             // 큐가 모든 작업을 완료할 때까지 대기합니다.
             _VK_CHECK_RESULT_(vkQueueWaitIdle(graphicsQueue));
-            
+
             // 커맨드 버퍼를 해제합니다.
             vkFreeCommandBuffers(device, commandPool, 1, &commandBuffer);
         }
@@ -545,13 +799,13 @@ namespace vkengine {
             *
          */
         void transitionImageLayout(
-            VkDevice device, 
-            VkCommandPool commandPool, 
-            VkQueue graphicsQueue, 
-            VkImage image, 
-            VkFormat format, 
-            VkImageLayout oldLayout, 
-            VkImageLayout newLayout, 
+            VkDevice device,
+            VkCommandPool commandPool,
+            VkQueue graphicsQueue,
+            VkImage image,
+            VkFormat format,
+            VkImageLayout oldLayout,
+            VkImageLayout newLayout,
             uint32_t mipLevels)
         {
             // 단일 시간 명령 버퍼를 시작합니다.
@@ -652,7 +906,7 @@ namespace vkengine {
             }
 
             switch (newLayout)
-            {   
+            {
             case VK_IMAGE_LAYOUT_UNDEFINED:
                 break;
             case VK_IMAGE_LAYOUT_GENERAL:
@@ -774,7 +1028,7 @@ namespace vkengine {
         void transitionImageLayout2(VkDevice device, VkCommandPool commandPool, VkQueue graphicsQueue, VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout, uint32_t mipLevels, uint32_t layerCount)
         {
             VkCommandBuffer commandBuffer = beginSingleTimeCommands(device, commandPool);
-            
+
             VkImageSubresourceRange subresourceRange{};
 
             subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
@@ -782,7 +1036,7 @@ namespace vkengine {
             subresourceRange.levelCount = mipLevels;
             subresourceRange.baseArrayLayer = 0;
             subresourceRange.layerCount = layerCount;
-            
+
             setImageLayout(
                 commandBuffer,
                 image,
@@ -795,12 +1049,32 @@ namespace vkengine {
             endSingleTimeCommands(device, commandPool, graphicsQueue, commandBuffer);
         }
 
+        void transitionImageLayout3(VkDevice device, VkCommandPool commandPool, VkQueue graphicsQueue, VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout, uint32_t mipLevels, uint32_t layerCount, VkImageAspectFlags srcStageMask, VkImageAspectFlags dstStageMask)
+        {
+            VkCommandBuffer commandBuffer = beginSingleTimeCommands(device, commandPool);
+            
+            VkImageSubresourceRange subresourceRange{};
+            subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+            subresourceRange.baseMipLevel = 0;
+            subresourceRange.levelCount = mipLevels;
+            subresourceRange.baseArrayLayer = 0;
+            subresourceRange.layerCount = layerCount;
+
+            setImageLayout(
+                commandBuffer,
+                image,
+                format,
+                oldLayout,
+                newLayout,
+                subresourceRange);
+        }
+
         void setImageLayout(
             VkCommandBuffer commandBuffer,
-            VkImage image, 
+            VkImage image,
             VkFormat format,
-            VkImageLayout oldILayout, 
-            VkImageLayout newLayout, 
+            VkImageLayout oldILayout,
+            VkImageLayout newLayout,
             VkImageSubresourceRange subresourceRange
         )
         {

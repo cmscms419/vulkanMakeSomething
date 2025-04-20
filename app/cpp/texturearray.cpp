@@ -24,19 +24,21 @@ namespace vkengine {
         int texWidth = 0;
         int texHeight = 0;
         int texChannels = 0;
+
         textureArray.texWidth = texWidth;
         textureArray.texHeight = texHeight;
         textureArray.texChannels = texChannels;
         this->textureArray.device = this->VKdevice.get();
         this->textureArray.device = this->VKdevice.get();
+        this->textureArray.VKmipLevels = 1;
 
         std::vector<std::string> pathArray = {
-           this->RootPath + TEST_TEXTURE_PATH_ARRAY0,
-           this->RootPath + TEST_TEXTURE_PATH_ARRAY1,
-           this->RootPath + TEST_TEXTURE_PATH_ARRAY2,
-           this->RootPath + TEST_TEXTURE_PATH_ARRAY3,
-           this->RootPath + TEST_TEXTURE_PATH_ARRAY4,
-           this->RootPath + TEST_TEXTURE_PATH_ARRAY5
+           this->RootPath + RESOURSE_PATH + TEST_TEXTURE_PATH_ARRAY0,
+           this->RootPath + RESOURSE_PATH + TEST_TEXTURE_PATH_ARRAY1,
+           this->RootPath + RESOURSE_PATH + TEST_TEXTURE_PATH_ARRAY2,
+           this->RootPath + RESOURSE_PATH + TEST_TEXTURE_PATH_ARRAY3,
+           this->RootPath + RESOURSE_PATH + TEST_TEXTURE_PATH_ARRAY4,
+           this->RootPath + RESOURSE_PATH + TEST_TEXTURE_PATH_ARRAY5
         };
 
         this->textureArray.createTextureArrayImages(4, pathArray);

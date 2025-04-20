@@ -42,6 +42,22 @@ namespace vkengine {
             VkDeviceMemory& imageMemory,
             uint32_t arrayLayer = 1);
 
+        void createImage2(
+            VkDevice VKdevice,
+            VkPhysicalDevice VKphysicalDevice,
+            uint32_t width,
+            uint32_t height,
+            uint32_t mipLevels,
+            VkSampleCountFlagBits numSamples,
+            VkFormat format,
+            VkImageTiling tiling,
+            VkImageUsageFlags usage,
+            VkMemoryPropertyFlags properties,
+            VkImage& image,
+            VkDeviceMemory& imageMemory,
+            uint32_t arrayLayer,
+            VkImageCreateFlagBits flag);
+
 
         // 버퍼를 복사하는 함수
         void copyBuffer(
@@ -134,6 +150,9 @@ namespace vkengine {
             uint32_t mipLevels,
             uint32_t imageCount);
 
+        VkImageView createCubeImageView(
+            VkDevice device, VkImage image, VkFormat format, VkImageAspectFlags aspectFlags, uint32_t mipLevels);
+
         // 스텐실 컴포넌트를 가지고 있는지 확인하는 함수
         inline bool hasStencilComponent(VkFormat format)
         {
@@ -141,7 +160,8 @@ namespace vkengine {
         }
 
         // Mipmaps을 생성하는 함수
-        /*void generateMipmaps(
+        // 이미지를 생성하고 이미지 레이아웃을 변경한 다음 이미지를 복사 -> 단일 이미지에 대한 mipmap 생성
+        void generateMipmaps(
             VkPhysicalDevice physicalDevice,
             VkDevice device,
             VkCommandPool commandPool,
@@ -150,7 +170,19 @@ namespace vkengine {
             VkFormat imageFormat,
             int32_t texWidth,
             int32_t texHeight,
-            uint32_t mipLevels);*/
+            uint32_t mipLevels);
+
+        // CubeMap에 대한 mipmap을 생성하는 함수
+        void generateMipmapsCubeMap(
+            VkPhysicalDevice physicalDevice,
+            VkDevice device,
+            VkCommandPool commandPool,
+            VkQueue graphicsQueue,
+            VkImage image,
+            VkFormat imageFormat,
+            int32_t texWidth,
+            int32_t texHeight,
+            uint32_t mipLevels);
 
         // 최대 사용 가능한 샘플링 수를 반환하는 함수
 
@@ -209,6 +241,19 @@ namespace vkengine {
             VkImageLayout newLayout,
             uint32_t mipLevels,
             uint32_t layerCount);
+
+        void transitionImageLayout3(
+            VkDevice device,
+            VkCommandPool commandPool,
+            VkQueue graphicsQueue,
+            VkImage image,
+            VkFormat format,
+            VkImageLayout oldLayout,
+            VkImageLayout newLayout,
+            uint32_t mipLevels,
+            uint32_t layerCount,
+            VkImageAspectFlags srcStageMask,
+            VkImageAspectFlags dstStageMask);
 
         void setImageLayout(
             VkCommandBuffer cmdbuffer,

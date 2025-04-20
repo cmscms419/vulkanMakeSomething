@@ -21,15 +21,60 @@ namespace vkengine {
         VulkanEngine::prepare();
         this->init_sync_structures();
 
-        this->createVertexbuffer();
-        this->createIndexBuffer();
+        int texWidth = 0;
+        int texHeight = 0;
+        int texChannels = 0;
+        this->cubeTextureArray.texWidth = texWidth;
+        this->cubeTextureArray.texHeight = texHeight;
+        this->cubeTextureArray.texChannels = texChannels;
+        this->cubeTextureArray.device = this->VKdevice.get();
+        this->cubeTextureArray.VKmipLevels = 1;
+
+        std::vector<std::string> pathArray = {
+           this->RootPath + RESOURSE_PATH + TEST_TEXTURE_PATH_ARRAY0,
+           this->RootPath + RESOURSE_PATH + TEST_TEXTURE_PATH_ARRAY1,
+           this->RootPath + RESOURSE_PATH + TEST_TEXTURE_PATH_ARRAY2,
+           this->RootPath + RESOURSE_PATH + TEST_TEXTURE_PATH_ARRAY3,
+           this->RootPath + RESOURSE_PATH + TEST_TEXTURE_PATH_ARRAY4,
+           this->RootPath + RESOURSE_PATH + TEST_TEXTURE_PATH_ARRAY5
+        };
+
+        this->cubeTextureArray.createTextureArrayImages(4, pathArray);
+        this->cubeTextureArray.createTextureImageView(VK_FORMAT_R8G8B8A8_SRGB);
+        this->cubeTextureArray.createTextureSampler();
+
+        this->cubeMap.texWidth = texWidth;
+        this->cubeMap.texHeight = texHeight;
+        this->cubeMap.texChannels = texChannels;
+        this->cubeMap.device = this->VKdevice.get();
+
+        std::vector<std::string> pathCubeArray = {
+           this->RootPath + RESOURSE_PATH + CUBE_TEXTURE_PATH + "/left.png",
+           this->RootPath + RESOURSE_PATH + CUBE_TEXTURE_PATH + "/right.png",
+           this->RootPath + RESOURSE_PATH + CUBE_TEXTURE_PATH + "/top.png",
+           this->RootPath + RESOURSE_PATH + CUBE_TEXTURE_PATH + "/bottom.png",
+           this->RootPath + RESOURSE_PATH + CUBE_TEXTURE_PATH + "/back.png",
+           this->RootPath + RESOURSE_PATH + CUBE_TEXTURE_PATH + "/front.png"
+        };
+
+        this->cubeMap.createTextureCubeImages(4, pathCubeArray);
+        this->cubeMap.createTextureImageView(VK_FORMAT_R8G8B8A8_SRGB);
+        this->cubeMap.createTextureSampler();
+
+        // this->createVertexbuffer();
+        // this->createIndexBuffer();
+
+        this->createVertexbuffer2();
+        this->createIndexBuffer2();
+        
         this->createUniformBuffers();
 
         this->createDescriptorSetLayout();
         this->createDescriptorPool();
         this->createDescriptorSets();
 
-        this->createGraphicsPipeline();
+        //this->createGraphicsPipeline();
+        this->createGraphicsPipeline2();
 
         return true;
     }
@@ -56,6 +101,7 @@ namespace vkengine {
 
             this->VKvertexBuffer.cleanup();
             this->VKindexBuffer.cleanup();
+            this->cubeTextureArray.cleanup();
 
             for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
             {
@@ -238,7 +284,7 @@ namespace vkengine {
         vkCmdBeginRenderPass(framedata->mainCommandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
         {
             // 그래픽 파이프라인을 바인딩합니다.
-            vkCmdBindPipeline(framedata->mainCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->VKgraphicsPipeline);
+            vkCmdBindPipeline(framedata->mainCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->VKCubeMapPipeline);
 
             VkViewport viewport{};
             viewport.x = 0.0f;
@@ -255,17 +301,23 @@ namespace vkengine {
             vkCmdSetScissor(framedata->mainCommandBuffer, 0, 1, &scissor);
 
             // 버텍스 버퍼를 바인딩합니다.
-            VkBuffer vertexBuffers[] = { this->VKvertexBuffer.buffer };
+            VkBuffer vertexBuffers[] = { this->VKvertexBuffer2.buffer };
             VkDeviceSize offsets[] = { 0 };
             vkCmdBindVertexBuffers(framedata->mainCommandBuffer, 0, 1, vertexBuffers, offsets);
 
             // 인덱스 버퍼를 바인딩합니다.
-            vkCmdBindIndexBuffer(framedata->mainCommandBuffer, this->VKindexBuffer.buffer, 0, VK_INDEX_TYPE_UINT16);
+            vkCmdBindIndexBuffer(framedata->mainCommandBuffer, this->VKindexBuffer2.buffer, 0, VK_INDEX_TYPE_UINT16);
 
             // 디스크립터 세트를 바인딩합니다.
             vkCmdBindDescriptorSets(framedata->mainCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->VKpipelineLayout, 0, 1, &this->VKdescriptorSets[this->currentFrame], 0, nullptr);
+            
+            // skybox를 그립니다.
+            vkCmdBindPipeline(framedata->mainCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->VKCubeMapPipeline);
+            
+            vkCmdDrawIndexed(framedata->mainCommandBuffer, static_cast<uint32_t>(skyboxIndices.size()), 1, 0, 0, 0);
+            
             // 렌더 패스를 종료합니다.
-            vkCmdDrawIndexed(framedata->mainCommandBuffer, static_cast<uint32_t>(cubeindices_.size()), 1, 0, 0, 0);
+            //vkCmdDrawIndexed(framedata->mainCommandBuffer, static_cast<uint32_t>(cubeindices_.size()), 1, 0, 0, 0);
         }
 
         vkCmdEndRenderPass(framedata->mainCommandBuffer);
@@ -352,6 +404,84 @@ namespace vkengine {
         vkFreeMemory(this->VKdevice->logicaldevice, stagingBufferMemory, nullptr);
     }
 
+    void skycubeEngine::createVertexbuffer2()
+    {
+        VkDeviceSize buffersize = sizeof(skyboxVertices[0]) * skyboxVertices.size();
+
+        VkBuffer stagingBuffer;
+        VkDeviceMemory stagingBufferMemory;
+
+        helper::createBuffer(
+            this->VKdevice->logicaldevice,
+            this->VKdevice->physicalDevice,
+            buffersize,
+            VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+            stagingBuffer,
+            stagingBufferMemory);
+
+        helper::copyToDeviceMemory(
+            this->VKdevice->logicaldevice,
+            skyboxVertices.data(),
+            stagingBufferMemory,
+            buffersize);
+        this->VKvertexBuffer2.device = this->VKdevice->logicaldevice;
+        this->VKvertexBuffer2.size = buffersize;
+        this->VKvertexBuffer2.usageFlags = VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+        this->VKvertexBuffer2.memoryPropertyFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
+
+        this->VKvertexBuffer2.createBuffer(this->VKdevice->physicalDevice);
+        helper::copyBuffer2(
+            *this->VKdevice,
+            stagingBuffer,
+            this->VKvertexBuffer2.buffer,
+            buffersize);
+        // 버퍼 생성이 끝나면 스테이징 버퍼를 제거합니다.
+        vkDestroyBuffer(this->VKdevice->logicaldevice, stagingBuffer, nullptr);
+        vkFreeMemory(this->VKdevice->logicaldevice, stagingBufferMemory, nullptr);
+
+
+    }
+
+    void skycubeEngine::createIndexBuffer2()
+    {
+        VkDeviceSize buffersize = sizeof(skyboxIndices[0]) * skyboxIndices.size();
+
+        VkBuffer stagingBuffer;
+        VkDeviceMemory stagingBufferMemory;
+        
+        helper::createBuffer(
+            this->VKdevice->logicaldevice,
+            this->VKdevice->physicalDevice,
+            buffersize,
+            VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+            stagingBuffer,
+            stagingBufferMemory);
+        
+        helper::copyToDeviceMemory(
+            this->VKdevice->logicaldevice,
+            skyboxIndices.data(),
+            stagingBufferMemory,
+            buffersize);
+
+        this->VKindexBuffer2.device = this->VKdevice->logicaldevice;
+        this->VKindexBuffer2.size = buffersize;
+        this->VKindexBuffer2.usageFlags = VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
+        this->VKindexBuffer2.memoryPropertyFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
+        this->VKindexBuffer2.createBuffer(this->VKdevice->physicalDevice);
+
+        helper::copyBuffer2(
+            *this->VKdevice,
+            stagingBuffer,
+            this->VKindexBuffer2.buffer,
+            buffersize);
+
+        // 버퍼 생성이 끝나면 스테이징 버퍼를 제거합니다.
+        vkDestroyBuffer(this->VKdevice->logicaldevice, stagingBuffer, nullptr);
+        vkFreeMemory(this->VKdevice->logicaldevice, stagingBufferMemory, nullptr);
+    }
+
     void skycubeEngine::createUniformBuffers()
     {
         VkDeviceSize bufferSize = sizeof(UniformBufferObject);
@@ -373,6 +503,24 @@ namespace vkengine {
         }
     }
 
+    void skycubeEngine::createUniformBuffers2()
+    {
+        VkDeviceSize bufferSize = sizeof(UniformBufferObject);
+        this->VKuniformBuffer2.resize(MAX_FRAMES_IN_FLIGHT);
+        for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+        {
+            helper::createBuffer(
+                this->VKdevice->logicaldevice,
+                this->VKdevice->physicalDevice,
+                bufferSize,
+                VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+                this->VKuniformBuffer2[i].buffer,
+                this->VKuniformBuffer2[i].memory);
+            vkMapMemory(this->VKdevice->logicaldevice, this->VKuniformBuffer2[i].memory, 0, bufferSize, 0, &this->VKuniformBuffer2[i].Mapped);
+        }
+    }
+
     void skycubeEngine::createDescriptorSetLayout()
     {
         // Binding 0: Uniform buffer (Vertex shader)
@@ -380,15 +528,25 @@ namespace vkengine {
         uboLayoutBinding.binding = 0;
         uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
         uboLayoutBinding.descriptorCount = 1;
-        uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+        uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
         uboLayoutBinding.pImmutableSamplers = nullptr;
+
+        // Binding 1: Texture sampler (cube map Fragment shader)
+        VkDescriptorSetLayoutBinding samplerLayoutBinding{};
+        samplerLayoutBinding.binding = 1;
+        samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        samplerLayoutBinding.descriptorCount = 1;
+        samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+        samplerLayoutBinding.pImmutableSamplers = nullptr;
+
+        std::array< VkDescriptorSetLayoutBinding, 2> bindings = { uboLayoutBinding, samplerLayoutBinding };
 
         // Create the descriptor set layout
         VkDescriptorSetLayoutCreateInfo layoutInfo{};
         layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+        layoutInfo.pBindings = bindings.data();
+        layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());
         layoutInfo.pNext = nullptr;
-        layoutInfo.bindingCount = 1;
-        layoutInfo.pBindings = &uboLayoutBinding;
 
         _VK_CHECK_RESULT_(vkCreateDescriptorSetLayout(this->VKdevice->logicaldevice, &layoutInfo, nullptr, &this->VKdescriptorSetLayout));
     }
@@ -396,9 +554,11 @@ namespace vkengine {
     void skycubeEngine::createDescriptorPool()
     {
         //// 디스크립터 풀 크기를 설정합니다.
-        std::array<VkDescriptorPoolSize, 1> poolSizes{};
+        std::array<VkDescriptorPoolSize, 2> poolSizes{};
         poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
         poolSizes[0].descriptorCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
+        poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        poolSizes[1].descriptorCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
 
         // 디스크립터 풀 생성 정보 구조체를 초기화합니다.
         VkDescriptorPoolCreateInfo poolInfo{};
@@ -439,7 +599,12 @@ namespace vkengine {
             bufferInfo.offset = 0;
             bufferInfo.range = sizeof(UniformBufferObject);
 
-            std::array<VkWriteDescriptorSet, 1> descriptorWrites{};
+            VkDescriptorImageInfo imageInfo{};
+            imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+            imageInfo.imageView = this->cubeMap.imageView;
+            imageInfo.sampler = this->cubeMap.sampler;
+
+            std::array<VkWriteDescriptorSet, 2> descriptorWrites{};
 
             descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
             descriptorWrites[0].dstSet = this->VKdescriptorSets[i];
@@ -448,6 +613,14 @@ namespace vkengine {
             descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
             descriptorWrites[0].descriptorCount = 1;
             descriptorWrites[0].pBufferInfo = &bufferInfo;
+
+            descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+            descriptorWrites[1].dstSet = this->VKdescriptorSets[i];
+            descriptorWrites[1].dstBinding = 1;
+            descriptorWrites[1].dstArrayElement = 0;
+            descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+            descriptorWrites[1].descriptorCount = 1;
+            descriptorWrites[1].pImageInfo = &imageInfo;
 
             vkUpdateDescriptorSets(this->VKdevice->logicaldevice, static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
         }
@@ -613,6 +786,170 @@ namespace vkengine {
 
         vkDestroyShaderModule(this->VKdevice->logicaldevice, baseVertshaderModule, nullptr);
         vkDestroyShaderModule(this->VKdevice->logicaldevice, baseFragShaderModule, nullptr);
+    }
+
+    void skycubeEngine::createGraphicsPipeline2()
+    {
+        VkShaderModule baseVertshaderModule = this->VKdevice->createShaderModule(this->RootPath + "../../../../../../shader/vertskybox.spv");
+        VkShaderModule baseFragShaderModule = this->VKdevice->createShaderModule(this->RootPath + "../../../../../../shader/fragskybox.spv");
+
+        VkPipelineShaderStageCreateInfo vertShaderStageInfo{};
+        vertShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+        vertShaderStageInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
+        vertShaderStageInfo.module = baseVertshaderModule;
+        vertShaderStageInfo.pName = "main";
+
+        VkPipelineShaderStageCreateInfo fragShaderStageInfo{};
+        fragShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+        fragShaderStageInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
+        fragShaderStageInfo.module = baseFragShaderModule;
+        fragShaderStageInfo.pName = "main";
+
+        VkPipelineShaderStageCreateInfo shaderStages[] = { vertShaderStageInfo, fragShaderStageInfo };
+
+        // vertex input
+        auto bindingDescription = SkyboxVertex::getBindingDescription();
+        auto attributeDescriptions = SkyboxVertex::getAttributeDescriptions();
+
+        // 그래픽 파이프라인 레이아웃을 생성합니다.
+        VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
+        vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+        vertexInputInfo.vertexBindingDescriptionCount = 1;
+        vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
+        vertexInputInfo.pVertexBindingDescriptions = &bindingDescription;
+        vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
+
+        // 입력 데이터를 어떤 형태로 조립할 것인지 결정합니다.
+        VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
+        inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
+        inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST; // 삼각형 리스트로 설정
+        inputAssembly.primitiveRestartEnable = VK_FALSE; // 프리미티브 재시작 비활성화
+
+        VkViewport viewpport{};
+        viewpport.x = 0.0f;
+        viewpport.y = 0.0f;
+        viewpport.width = (float)this->VKswapChain->getSwapChainExtent().width;
+        viewpport.height = (float)this->VKswapChain->getSwapChainExtent().height;
+        viewpport.minDepth = 0.0f;
+        viewpport.maxDepth = 1.0f;
+
+        VkRect2D scissor{};
+        scissor.offset = { 0, 0 };
+        scissor.extent = VKswapChain->getSwapChainExtent();
+
+        // 뷰포트 설정
+        VkPipelineViewportStateCreateInfo viewportState{};
+        viewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
+        viewportState.viewportCount = 1;
+        viewportState.pViewports = &viewpport;
+        viewportState.scissorCount = 1;
+        viewportState.pScissors = &scissor;
+
+        // 래스터화 설정 -> 레스터화는 그래픽 파이프라인의 일부로 정점을 픽셀로 변환하는 프로세스입니다.
+        VkPipelineRasterizationStateCreateInfo rasterizer{};
+        rasterizer.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
+        rasterizer.depthClampEnable = VK_FALSE;                   // 깊이 클램핑 비활성화
+        rasterizer.rasterizerDiscardEnable = VK_FALSE;            // 래스터화 버림 비활성화
+        rasterizer.polygonMode = VK_POLYGON_MODE_FILL;            // 다각형 모드를 채우기로 설정
+        rasterizer.lineWidth = 1.0f;                              // 라인 너비를 1.0f로 설정
+        rasterizer.cullMode = VK_CULL_MODE_FRONT_BIT;             // skybox는 앞면을 제거
+        rasterizer.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;   // 전면 면을 반시계 방향으로 설정
+        rasterizer.depthBiasEnable = VK_FALSE;                    // 깊이 바이어스 비활성화
+        rasterizer.depthBiasConstantFactor = 0.0f;              // 깊이 바이어스 상수 요소를 0.0f로 설정
+        rasterizer.depthBiasClamp = 0.0f;                       // 깊이 바이어스 클램프를 0.0f로 설정
+        rasterizer.depthBiasSlopeFactor = 0.0f;                 // 깊이 바이어스 슬로프 요소를 0.0f로 설정
+
+        // 다중 샘플링 설정
+        VkPipelineMultisampleStateCreateInfo multisampling{};
+        multisampling.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO; //
+        multisampling.sampleShadingEnable = VK_FALSE;               // 샘플링 쉐이딩 비활성화
+        multisampling.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT; // 래스터화 샘플 수를 1비트로 설정
+        multisampling.minSampleShading = 1.0f;                      // 최소 샘플링을 1.0f로 설정 -> option
+        multisampling.pSampleMask = nullptr;                        // 샘플 마스크를 nullptr로 설정 -> option
+        multisampling.alphaToCoverageEnable = VK_FALSE;             // 알파 커버리지 비활성화 -> option
+        multisampling.alphaToOneEnable = VK_FALSE;                  // 알파 원 비활성화 -> option
+
+        // 깊이 스텐실 테스트 설정
+        VkPipelineDepthStencilStateCreateInfo depthStencil{};
+        depthStencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+        depthStencil.depthTestEnable = VK_TRUE;
+        depthStencil.depthWriteEnable = VK_TRUE;
+        depthStencil.depthCompareOp = VK_COMPARE_OP_LESS;
+        depthStencil.depthBoundsTestEnable = VK_FALSE;
+        depthStencil.stencilTestEnable = VK_FALSE;
+        depthStencil.minDepthBounds = 0.0f; // Optional
+        depthStencil.maxDepthBounds = 1.0f; // Optional
+        depthStencil.stencilTestEnable = VK_FALSE;
+        depthStencil.front = {}; // Optional
+        depthStencil.back = {}; // Optional
+
+        // 컬러 블렌딩 설정
+        VkPipelineColorBlendAttachmentState colorBlendAttachment{};
+        colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT |
+            VK_COLOR_COMPONENT_G_BIT |
+            VK_COLOR_COMPONENT_B_BIT |
+            VK_COLOR_COMPONENT_A_BIT;     // 컬러 쓰기 마스크를 설정
+        colorBlendAttachment.blendEnable = VK_FALSE;                        // 블렌딩을 비활성화
+        colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_ONE;     // 소스 컬러 블렌딩 팩터를 설정
+        colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO;    // 대상 컬러 블렌딩 팩터를 설정
+        colorBlendAttachment.colorBlendOp = VK_BLEND_OP_ADD;                // 컬러 블렌딩 연산을 설정
+        colorBlendAttachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;     // 소스 알파 블렌딩 팩터를 설정
+        colorBlendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;    // 대상 알파 블렌딩 팩터를 설정
+        colorBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD;                // 알파 블렌딩 연산을 설정
+
+        // 컬러 블렌딩 상태 생성 정보 구조체를 초기화합니다.
+        VkPipelineColorBlendStateCreateInfo colorBlending{};
+        colorBlending.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO; // 구조체 타입을 설정
+        colorBlending.logicOpEnable = VK_FALSE;                                       // 논리 연산을 비활성화
+        colorBlending.logicOp = VK_LOGIC_OP_COPY;                                     // 논리 연산을 설정
+        colorBlending.attachmentCount = 1;                                            // 컬러 블렌딩 첨부 개수를 설정
+        colorBlending.pAttachments = &colorBlendAttachment;                           // 컬러 블렌딩 첨부 포인터를 설정
+        colorBlending.blendConstants[0] = 0.0f;                                       // 블렌딩 상수를 설정
+        colorBlending.blendConstants[1] = 0.0f;                                       // 블렌딩 상수를 설정
+        colorBlending.blendConstants[2] = 0.0f;                                       // 블렌딩 상수를 설정
+        colorBlending.blendConstants[3] = 0.0f;                                       // 블렌딩 상수를 설정
+
+        // 다이나믹 상태 설정 -> 레스터화 상태를 동적으로 변경할 수 있습니다.
+        VkPipelineDynamicStateCreateInfo dynamicState{};
+        dynamicState.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
+        dynamicState.dynamicStateCount = static_cast<uint32_t>(dynamicStates.size());
+        dynamicState.pDynamicStates = dynamicStates.data();
+
+        // 그래픽 파이프라인 레이아웃을 생성합니다.
+        VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
+        pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO; // 구조체 타입을 설정
+        pipelineLayoutInfo.setLayoutCount = 1;                                    // 레이아웃 개수를 설정
+        pipelineLayoutInfo.pSetLayouts = &this->VKdescriptorSetLayout;            // 레이아웃 포인터를 설정
+        pipelineLayoutInfo.pushConstantRangeCount = 0;                            // 푸시 상수 범위 개수를 설정
+        pipelineLayoutInfo.pPushConstantRanges = nullptr;                         // 푸시 상수 범위 포인터를 설정
+
+        _VK_CHECK_RESULT_(vkCreatePipelineLayout(this->VKdevice->logicaldevice, &pipelineLayoutInfo, nullptr, &this->VKpipelineLayout));
+
+        // 그래픽 파이프라인 생성 정보 구조체를 초기화합니다.
+        VkGraphicsPipelineCreateInfo pipelineInfo{};
+        pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+        pipelineInfo.stageCount = 2;
+        pipelineInfo.pStages = shaderStages;
+        pipelineInfo.pVertexInputState = &vertexInputInfo;
+        pipelineInfo.pInputAssemblyState = &inputAssembly;
+        pipelineInfo.pViewportState = &viewportState;
+        pipelineInfo.pRasterizationState = &rasterizer;
+        pipelineInfo.pMultisampleState = &multisampling;
+        pipelineInfo.pDepthStencilState = &depthStencil; // Optional
+        pipelineInfo.pColorBlendState = &colorBlending;
+        pipelineInfo.pDynamicState = &dynamicState; // Optional
+        pipelineInfo.layout = this->VKpipelineLayout;
+        pipelineInfo.renderPass = *this->VKrenderPass.get();
+        pipelineInfo.subpass = 0;
+        pipelineInfo.basePipelineHandle = VK_NULL_HANDLE; // Optional
+        pipelineInfo.basePipelineIndex = -1; // Optional
+
+        _VK_CHECK_RESULT_(vkCreateGraphicsPipelines(this->VKdevice->logicaldevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &this->VKCubeMapPipeline));
+
+        vkDestroyShaderModule(this->VKdevice->logicaldevice, baseVertshaderModule, nullptr);
+        vkDestroyShaderModule(this->VKdevice->logicaldevice, baseFragShaderModule, nullptr);
+
+
     }
 
     void skycubeEngine::updateUniformBuffer(uint32_t currentImage)

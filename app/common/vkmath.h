@@ -54,9 +54,9 @@ namespace vkMath
 
         return rotationZ;
     }
-    
+
     const glm::mat4 CreateRotation(float yaw, float pitch, float roll);
-    
+
     const glm::vec3 RotationQuat(const glm::quat q, const glm::vec3 dir);
 
 }

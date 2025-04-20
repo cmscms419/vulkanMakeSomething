@@ -4,4 +4,6 @@ C:/VulkanSDK/1.4.304.0/Bin/glslangValidator.exe -e main -gVS -V -o vertTrinagle.
 C:/VulkanSDK/1.4.304.0/Bin/glslangValidator.exe -e main -gVS -V -o fragTrinagle.spv trinagle.frag
 C:/VulkanSDK/1.4.304.0/Bin/glslangValidator.exe -e main -gVS -V -o vertCube.spv Cube.vert
 C:/VulkanSDK/1.4.304.0/Bin/glslangValidator.exe -e main -gVS -V -o fragCube.spv Cube.frag
+C:/VulkanSDK/1.4.304.0/Bin/glslangValidator.exe -e main -gVS -V -o vertskybox.spv skybox.vert
+C:/VulkanSDK/1.4.304.0/Bin/glslangValidator.exe -e main -gVS -V -o fragskybox.spv skybox.frag
 pause

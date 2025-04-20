@@ -33,6 +33,7 @@ namespace vkengine
     extern const std::vector<const char*> validationLayers;
     extern const std::vector<const char*> deviceExtensions;
     extern const std::vector<VkDynamicState> dynamicStates;
+    extern const std::string RESOURSE_PATH;
     extern const std::string MODEL_PATH;
     extern const std::string TEXTURE_PATH;
     extern const std::string TEST_TEXTURE_PATH;
@@ -42,6 +43,7 @@ namespace vkengine
     extern const std::string TEST_TEXTURE_PATH_ARRAY3;
     extern const std::string TEST_TEXTURE_PATH_ARRAY4;
     extern const std::string TEST_TEXTURE_PATH_ARRAY5;
+    extern const std::string CUBE_TEXTURE_PATH;
     extern const bool enableValidationLayers;
 
 } // namespace vkengine

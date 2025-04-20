@@ -40,7 +40,7 @@
     <ClCompile Include="..\..\app\source\engine\Camera.cpp">
       <Filter>component</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\app\cpp\texturecube.cpp">
+    <ClCompile Include="..\..\app\cpp\texturearray.cpp">
       <Filter>app\texture</Filter>
     </ClCompile>
   </ItemGroup>
@@ -80,21 +80,6 @@
     <None Include="..\..\shader\cube.vert">
       <Filter>shader</Filter>
     </None>
-    <None Include="..\..\shader\vertTrinagle.spv">
-      <Filter>shader</Filter>
-    </None>
-    <None Include="..\..\shader\vertCube.spv">
-      <Filter>shader</Filter>
-    </None>
-    <None Include="..\..\shader\vert.spv">
-      <Filter>shader</Filter>
-    </None>
-    <None Include="..\..\shader\fragTrinagle.spv">
-      <Filter>shader</Filter>
-    </None>
-    <None Include="..\..\shader\frag.spv">
-      <Filter>shader</Filter>
-    </None>
     <None Include="..\..\shader\trinagle.frag">
       <Filter>shader</Filter>
     </None>
@@ -104,7 +89,10 @@
     <None Include="..\..\shader\cube.frag">
       <Filter>shader</Filter>
     </None>
-    <None Include="..\..\shader\fragCube.spv">
+    <None Include="..\..\shader\skybox.vert">
+      <Filter>shader</Filter>
+    </None>
+    <None Include="..\..\shader\skybox.frag">
       <Filter>shader</Filter>
     </None>
   </ItemGroup>
