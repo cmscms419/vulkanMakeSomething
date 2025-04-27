@@ -49,12 +49,12 @@ namespace vkengine {
         this->cubeMap.device = this->VKdevice.get();
 
         std::vector<std::string> pathCubeArray = {
-           this->RootPath + RESOURSE_PATH + CUBE_TEXTURE_PATH + "/left.png",
            this->RootPath + RESOURSE_PATH + CUBE_TEXTURE_PATH + "/right.png",
+           this->RootPath + RESOURSE_PATH + CUBE_TEXTURE_PATH + "/left.png",
            this->RootPath + RESOURSE_PATH + CUBE_TEXTURE_PATH + "/top.png",
            this->RootPath + RESOURSE_PATH + CUBE_TEXTURE_PATH + "/bottom.png",
-           this->RootPath + RESOURSE_PATH + CUBE_TEXTURE_PATH + "/back.png",
-           this->RootPath + RESOURSE_PATH + CUBE_TEXTURE_PATH + "/front.png"
+           this->RootPath + RESOURSE_PATH + CUBE_TEXTURE_PATH + "/front.png",
+           this->RootPath + RESOURSE_PATH + CUBE_TEXTURE_PATH + "/back.png"
         };
 
         this->cubeMap.createTextureCubeImages(4, pathCubeArray);
@@ -86,6 +86,8 @@ namespace vkengine {
             this->cleanupSwapcChain();
 
             vkDestroyPipeline(this->VKdevice->logicaldevice, this->VKgraphicsPipeline, nullptr);
+            vkDestroyPipeline(this->VKdevice->logicaldevice, this->VKCubeMapPipeline, nullptr);
+
             vkDestroyPipelineLayout(this->VKdevice->logicaldevice, this->VKpipelineLayout, nullptr);
             vkDestroyRenderPass(this->VKdevice->logicaldevice, *this->VKrenderPass.get(), nullptr);
 
@@ -102,6 +104,11 @@ namespace vkengine {
             this->VKvertexBuffer.cleanup();
             this->VKindexBuffer.cleanup();
             this->cubeTextureArray.cleanup();
+
+            this->VKvertexBuffer2.cleanup();
+            this->VKindexBuffer2.cleanup();
+            this->cubeMap.cleanup();
+            
 
             for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
             {

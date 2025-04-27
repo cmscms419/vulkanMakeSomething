@@ -15,13 +15,8 @@ layout (location = 0) out vec3 outUVW;
 void main() 
 {
 	outUVW = inPos;
-	// Convert cubemap coordinates into Vulkan coordinate space
-	//outUVW.xy *= -1.0;
-	// Remove translation from view matrix
 
-	mat4 viewWithoutTranslation = mat4(
-        mat3(ubo.view) // 3x3 회전 부분만 추출
-    );
+	mat4 viewWithoutTranslation = mat4(mat3(ubo.view));  // 3x3 회전 부분만 추출
     
     gl_Position = ubo.proj * viewWithoutTranslation * vec4(inPos.xyz, 1.0);
 }
