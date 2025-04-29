@@ -131,6 +131,8 @@
     <None Include="..\..\shader\compile_debug.bat" />
     <None Include="..\..\shader\cube.frag" />
     <None Include="..\..\shader\cube.vert" />
+    <None Include="..\..\shader\reflect.frag" />
+    <None Include="..\..\shader\reflect.vert" />
     <None Include="..\..\shader\shader.frag" />
     <None Include="..\..\shader\shader.vert" />
     <None Include="..\..\shader\skybox.frag" />

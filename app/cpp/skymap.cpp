@@ -21,6 +21,7 @@ namespace vkengine {
         VulkanEngine::prepare();
         this->init_sync_structures();
 
+        // CubeTextureArray
         int texWidth = 0;
         int texHeight = 0;
         int texChannels = 0;
@@ -43,6 +44,7 @@ namespace vkengine {
         this->cubeTextureArray.createTextureImageView(VK_FORMAT_R8G8B8A8_SRGB);
         this->cubeTextureArray.createTextureSampler();
 
+        // CubeMap
         this->cubeMap.texWidth = texWidth;
         this->cubeMap.texHeight = texHeight;
         this->cubeMap.texChannels = texChannels;
@@ -61,19 +63,20 @@ namespace vkengine {
         this->cubeMap.createTextureImageView(VK_FORMAT_R8G8B8A8_SRGB);
         this->cubeMap.createTextureSampler();
 
-        // this->createVertexbuffer();
-        // this->createIndexBuffer();
+        this->createVertexbuffer();
+        this->createIndexBuffer();
 
         this->createVertexbuffer2();
         this->createIndexBuffer2();
         
         this->createUniformBuffers();
+        //this->createUniformBuffers2();
 
         this->createDescriptorSetLayout();
         this->createDescriptorPool();
         this->createDescriptorSets();
 
-        //this->createGraphicsPipeline();
+        this->createGraphicsPipeline();
         this->createGraphicsPipeline2();
 
         return true;
@@ -101,14 +104,13 @@ namespace vkengine {
             vkDestroyDescriptorPool(this->VKdevice->logicaldevice, this->VKdescriptorPool, nullptr);
             vkDestroyDescriptorSetLayout(this->VKdevice->logicaldevice, this->VKdescriptorSetLayout, nullptr);
 
-            this->VKvertexBuffer.cleanup();
-            this->VKindexBuffer.cleanup();
-            this->cubeTextureArray.cleanup();
-
             this->VKvertexBuffer2.cleanup();
             this->VKindexBuffer2.cleanup();
             this->cubeMap.cleanup();
-            
+
+            this->VKvertexBuffer.cleanup();
+            this->VKindexBuffer.cleanup();
+            this->cubeTextureArray.cleanup();
 
             for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
             {
@@ -248,7 +250,8 @@ namespace vkengine {
 
         //this->camera->setViewDirection(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(-1.0f, -1.0f, -1.0f), glm::vec3(0.0f, 0.0f, 1.0f));
         this->camera->update();
-        this->camera->setPerspectiveProjection(45.0f, static_cast<float>(this->VKswapChain->getSwapChainExtent().width / this->VKswapChain->getSwapChainExtent().height), 0.1f, 100.0f);
+        float aspectRatio = static_cast<float>(this->VKswapChain->getSwapChainExtent().width) / static_cast<float>(VKswapChain->getSwapChainExtent().height);
+        this->camera->setPerspectiveProjection(45.0f, aspectRatio, 0.1f, 100.0f);
     }
 
     bool skycubeEngine::init_sync_structures()
@@ -290,8 +293,6 @@ namespace vkengine {
         // 렌더 패스를 시작합니다.
         vkCmdBeginRenderPass(framedata->mainCommandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
         {
-            // 그래픽 파이프라인을 바인딩합니다.
-            vkCmdBindPipeline(framedata->mainCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->VKCubeMapPipeline);
 
             VkViewport viewport{};
             viewport.x = 0.0f;
@@ -310,21 +311,23 @@ namespace vkengine {
             // 버텍스 버퍼를 바인딩합니다.
             VkBuffer vertexBuffers[] = { this->VKvertexBuffer2.buffer };
             VkDeviceSize offsets[] = { 0 };
-            vkCmdBindVertexBuffers(framedata->mainCommandBuffer, 0, 1, vertexBuffers, offsets);
 
-            // 인덱스 버퍼를 바인딩합니다.
-            vkCmdBindIndexBuffer(framedata->mainCommandBuffer, this->VKindexBuffer2.buffer, 0, VK_INDEX_TYPE_UINT16);
-
-            // 디스크립터 세트를 바인딩합니다.
+            VkBuffer vertexBuffers2[] = { this->VKvertexBuffer.buffer };
+            VkDeviceSize offsets2[] = { 0 };
+            
+            
             vkCmdBindDescriptorSets(framedata->mainCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->VKpipelineLayout, 0, 1, &this->VKdescriptorSets[this->currentFrame], 0, nullptr);
-            
-            // skybox를 그립니다.
+
             vkCmdBindPipeline(framedata->mainCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->VKCubeMapPipeline);
-            
+            vkCmdBindVertexBuffers(framedata->mainCommandBuffer, 0, 1, vertexBuffers, offsets);
+            vkCmdBindIndexBuffer(framedata->mainCommandBuffer, this->VKindexBuffer2.buffer, 0, VK_INDEX_TYPE_UINT16);
             vkCmdDrawIndexed(framedata->mainCommandBuffer, static_cast<uint32_t>(skyboxIndices.size()), 1, 0, 0, 0);
             
-            // 렌더 패스를 종료합니다.
-            //vkCmdDrawIndexed(framedata->mainCommandBuffer, static_cast<uint32_t>(cubeindices_.size()), 1, 0, 0, 0);
+            vkCmdBindPipeline(framedata->mainCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->VKgraphicsPipeline);
+            vkCmdBindVertexBuffers(framedata->mainCommandBuffer, 0, 1, vertexBuffers2, offsets2);
+            vkCmdBindIndexBuffer(framedata->mainCommandBuffer, this->VKindexBuffer.buffer, 0, VK_INDEX_TYPE_UINT16);
+            vkCmdDrawIndexed(framedata->mainCommandBuffer, static_cast<uint32_t>(cubeindices_.size()), 1, 0, 0, 0);
+            
         }
 
         vkCmdEndRenderPass(framedata->mainCommandBuffer);
@@ -546,7 +549,15 @@ namespace vkengine {
         samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
         samplerLayoutBinding.pImmutableSamplers = nullptr;
 
-        std::array< VkDescriptorSetLayoutBinding, 2> bindings = { uboLayoutBinding, samplerLayoutBinding };
+        // Binding 2: Texture sampler (textureArray Fragment shader)
+        VkDescriptorSetLayoutBinding samplerLayoutBinding2{};
+        samplerLayoutBinding2.binding = 2;
+        samplerLayoutBinding2.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        samplerLayoutBinding2.descriptorCount = 1;
+        samplerLayoutBinding2.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+        samplerLayoutBinding2.pImmutableSamplers = nullptr;
+
+        std::array< VkDescriptorSetLayoutBinding, 3> bindings = { uboLayoutBinding, samplerLayoutBinding, samplerLayoutBinding2 };
 
         // Create the descriptor set layout
         VkDescriptorSetLayoutCreateInfo layoutInfo{};
@@ -557,15 +568,17 @@ namespace vkengine {
 
         _VK_CHECK_RESULT_(vkCreateDescriptorSetLayout(this->VKdevice->logicaldevice, &layoutInfo, nullptr, &this->VKdescriptorSetLayout));
     }
-
+    
     void skycubeEngine::createDescriptorPool()
     {
         //// 디스크립터 풀 크기를 설정합니다.
-        std::array<VkDescriptorPoolSize, 2> poolSizes{};
+        std::array<VkDescriptorPoolSize, 3> poolSizes{};
         poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
         poolSizes[0].descriptorCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
         poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
         poolSizes[1].descriptorCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
+        poolSizes[2].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        poolSizes[2].descriptorCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
 
         // 디스크립터 풀 생성 정보 구조체를 초기화합니다.
         VkDescriptorPoolCreateInfo poolInfo{};
@@ -611,7 +624,12 @@ namespace vkengine {
             imageInfo.imageView = this->cubeMap.imageView;
             imageInfo.sampler = this->cubeMap.sampler;
 
-            std::array<VkWriteDescriptorSet, 2> descriptorWrites{};
+            VkDescriptorImageInfo imageInfo2{};
+            imageInfo2.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+            imageInfo2.imageView = this->cubeTextureArray.imageView;
+            imageInfo2.sampler = this->cubeTextureArray.sampler;
+
+            std::array<VkWriteDescriptorSet, 3> descriptorWrites{};
 
             descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
             descriptorWrites[0].dstSet = this->VKdescriptorSets[i];
@@ -629,14 +647,23 @@ namespace vkengine {
             descriptorWrites[1].descriptorCount = 1;
             descriptorWrites[1].pImageInfo = &imageInfo;
 
+            descriptorWrites[2].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+            descriptorWrites[2].dstSet = this->VKdescriptorSets[i];
+            descriptorWrites[2].dstBinding = 2;
+            descriptorWrites[2].dstArrayElement = 0;
+            descriptorWrites[2].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+            descriptorWrites[2].descriptorCount = 1;
+            descriptorWrites[2].pImageInfo = &imageInfo2;
+
+
             vkUpdateDescriptorSets(this->VKdevice->logicaldevice, static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
         }
     }
 
     void skycubeEngine::createGraphicsPipeline()
     {
-        VkShaderModule baseVertshaderModule = this->VKdevice->createShaderModule(this->RootPath + "../../../../../../shader/vertCube.spv");
-        VkShaderModule baseFragShaderModule = this->VKdevice->createShaderModule(this->RootPath + "../../../../../../shader/fragCube.spv");
+        VkShaderModule baseVertshaderModule = this->VKdevice->createShaderModule(this->RootPath + "../../../../../../shader/vertReflect.spv");
+        VkShaderModule baseFragShaderModule = this->VKdevice->createShaderModule(this->RootPath + "../../../../../../shader/fragReflect.spv");
 
         VkPipelineShaderStageCreateInfo vertShaderStageInfo{};
         vertShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -880,8 +907,8 @@ namespace vkengine {
         VkPipelineDepthStencilStateCreateInfo depthStencil{};
         depthStencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
         depthStencil.depthTestEnable = VK_TRUE;
-        depthStencil.depthWriteEnable = VK_TRUE;
-        depthStencil.depthCompareOp = VK_COMPARE_OP_LESS;
+        depthStencil.depthWriteEnable = VK_FALSE; // 깊이 쓰기 비활성화
+        depthStencil.depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
         depthStencil.depthBoundsTestEnable = VK_FALSE;
         depthStencil.stencilTestEnable = VK_FALSE;
         depthStencil.minDepthBounds = 0.0f; // Optional
@@ -930,8 +957,6 @@ namespace vkengine {
         pipelineLayoutInfo.pushConstantRangeCount = 0;                            // 푸시 상수 범위 개수를 설정
         pipelineLayoutInfo.pPushConstantRanges = nullptr;                         // 푸시 상수 범위 포인터를 설정
 
-        _VK_CHECK_RESULT_(vkCreatePipelineLayout(this->VKdevice->logicaldevice, &pipelineLayoutInfo, nullptr, &this->VKpipelineLayout));
-
         // 그래픽 파이프라인 생성 정보 구조체를 초기화합니다.
         VkGraphicsPipelineCreateInfo pipelineInfo{};
         pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
@@ -961,9 +986,9 @@ namespace vkengine {
 
     void skycubeEngine::updateUniformBuffer(uint32_t currentImage)
     {
-        static auto startTime = std::chrono::high_resolution_clock::now();
+        /*static auto startTime = std::chrono::high_resolution_clock::now();
         auto currentTime = std::chrono::high_resolution_clock::now();
-        float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
+        float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();*/
 
         UniformBufferObject ubo{};
 

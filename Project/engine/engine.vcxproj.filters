@@ -95,5 +95,11 @@
     <None Include="..\..\shader\skybox.frag">
       <Filter>shader</Filter>
     </None>
+    <None Include="..\..\shader\reflect.vert">
+      <Filter>shader</Filter>
+    </None>
+    <None Include="..\..\shader\reflect.frag">
+      <Filter>shader</Filter>
+    </None>
   </ItemGroup>
 </Project>
