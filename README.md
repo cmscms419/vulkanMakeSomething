@@ -27,7 +27,7 @@ Multisampling 챕터까지 완성했습니다.
 
 [텍스처 백열 입히기 -> 육면체 각각면에 서로 다른 텍스처 입히기](https://github.com/cmscms419/vulkanMakeSomething/blob/master/app/cpp/texturearray.h)
 
-[skymap](https://github.com/cmscms419/vulkanMakeSomethig/blob/master/app/cpp/skymap.cpp)
+[skymap](https://github.com/cmscms419/vulkanMakeSomethig/blob/master/app/cpp/skymap.h)
 
 -> top, bottom에 사용한 원본 텍스처를 180회전시켜서 적용
 
