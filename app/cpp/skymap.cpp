@@ -315,7 +315,6 @@ namespace vkengine {
             VkBuffer vertexBuffers2[] = { this->VKvertexBuffer.buffer };
             VkDeviceSize offsets2[] = { 0 };
             
-            
             vkCmdBindDescriptorSets(framedata->mainCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->VKpipelineLayout, 0, 1, &this->VKdescriptorSets[this->currentFrame], 0, nullptr);
 
             vkCmdBindPipeline(framedata->mainCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->VKCubeMapPipeline);
