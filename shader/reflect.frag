@@ -21,7 +21,7 @@ void main() {
 
 	vec3 cI = normalize (inPos);
     vec3 cR = reflect (cI, normalize(inNormal));
-	cR = vec3(ubo.model * vec4(cR, 0.0));
+	cR = vec3(ubo.view * vec4(cR, 0.0));
 
 	// Convert cubemap coordinates into Vulkan coordinate space
 	
