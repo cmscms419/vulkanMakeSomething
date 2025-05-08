@@ -25,6 +25,11 @@ struct VkBufferObject {
     void createBuffer(VkPhysicalDevice physicalDevice); ///< 버퍼 생성 함수
 };
 
+struct SkyboxBuffer : public VkBufferObject
+{
+    SkyboxVertex vertexBuffer{};
+};
+
 struct VertexBuffer : public VkBufferObject
 {
     Vertex vertexBuffer{}; ///< 버텍스 버퍼

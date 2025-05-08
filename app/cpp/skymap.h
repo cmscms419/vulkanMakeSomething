@@ -3,7 +3,10 @@
 
 #include "../source/engine/VKengine.h"
 #include "../source/engine/VKtexture.h"
+
+#include "../source/engine/object3D.h"
 #include "../source/engine/Camera.h"
+#include "../source/engine/skybox.h"
 
 namespace vkengine
 {
@@ -49,14 +52,13 @@ namespace vkengine
 
         void cleanupSwapcChain();
 
-        VertexBuffer VKvertexBuffer{};
-        IndexBuffer VKindexBuffer{};
-
-        VertexBuffer VKvertexBuffer2{};
-        IndexBuffer VKindexBuffer2{};
-
+        // 3d object
+        object::Object3D cubeObject;
         Vk2DTextureArray cubeTextureArray = {};
-        VKcubeMap cubeMap = {};
+
+        // skybox
+        object::Skybox cubeSkybox;
+
 
         std::vector<UniformBuffer> VKuniformBuffer = {};
         std::vector<UniformBuffer> VKuniformBuffer2 = {};

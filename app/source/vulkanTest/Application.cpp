@@ -724,8 +724,8 @@ namespace vkutil {
 
     void Application::createGraphicsPipeline()
     {
-        auto vertShaderCode = helper_::readFile(this->RootPath + "../../../../../../shader/vert.spv");
-        auto fragShaderCode = helper_::readFile(this->RootPath + "../../../../../../shader/frag.spv");
+        auto vertShaderCode = helper_::readFile(this->RootPath + "../../../../../../shader/vertshader.spv");
+        auto fragShaderCode = helper_::readFile(this->RootPath + "../../../../../../shader/fragshader.spv");
 
         VkShaderModule baseVertshaderModule = createShaderModule(vertShaderCode);
         VkShaderModule baseFragShaderModule = createShaderModule(fragShaderCode);

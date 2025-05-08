@@ -39,6 +39,7 @@
     <ClInclude Include="..\..\app\common\object_data.h" />
     <ClInclude Include="..\..\app\common\resourseload.h" />
     <ClInclude Include="..\..\app\common\struct.h" />
+    <ClInclude Include="..\..\app\common\VectorCMS.h" />
     <ClInclude Include="..\..\app\common\vkmath.h" />
     <ClInclude Include="..\..\app\source\engine\Debug.h" />
     <ClInclude Include="..\..\app\source\engine\helper.h" />

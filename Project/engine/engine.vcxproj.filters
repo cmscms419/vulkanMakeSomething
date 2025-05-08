@@ -31,9 +31,6 @@
     <ClCompile Include="..\..\app\cpp\cameraEngine.cpp">
       <Filter>app\camera</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\app\cpp\skymap.cpp">
-      <Filter>app\skymap</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\app\cpp\texture.cpp">
       <Filter>app\texture</Filter>
     </ClCompile>
@@ -43,6 +40,15 @@
     <ClCompile Include="..\..\app\cpp\texturearray.cpp">
       <Filter>app\texture</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\app\source\engine\object3D.cpp">
+      <Filter>component</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\source\engine\skybox.cpp">
+      <Filter>component</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\cpp\skymap.cpp">
+      <Filter>app\skymap</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\app\cpp\triangle.h">
@@ -50,9 +56,6 @@
     </ClInclude>
     <ClInclude Include="..\..\app\cpp\cameraEngine.h">
       <Filter>app\camera</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\app\cpp\skymap.h">
-      <Filter>app\skymap</Filter>
     </ClInclude>
     <ClInclude Include="..\..\app\cpp\texture.h">
       <Filter>app\texture</Filter>
@@ -62,6 +65,15 @@
     </ClInclude>
     <ClInclude Include="..\..\app\cpp\texturearray.h">
       <Filter>app\texture</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\app\source\engine\object3D.h">
+      <Filter>component</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\app\source\engine\skybox.h">
+      <Filter>component</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\app\cpp\skymap.h">
+      <Filter>app\skymap</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

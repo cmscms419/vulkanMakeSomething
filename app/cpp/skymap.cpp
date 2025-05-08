@@ -44,12 +44,6 @@ namespace vkengine {
         this->cubeTextureArray.createTextureImageView(VK_FORMAT_R8G8B8A8_SRGB);
         this->cubeTextureArray.createTextureSampler();
 
-        // CubeMap
-        this->cubeMap.texWidth = texWidth;
-        this->cubeMap.texHeight = texHeight;
-        this->cubeMap.texChannels = texChannels;
-        this->cubeMap.device = this->VKdevice.get();
-
         std::vector<std::string> pathCubeArray = {
            this->RootPath + RESOURSE_PATH + CUBE_TEXTURE_PATH + "/right.png",
            this->RootPath + RESOURSE_PATH + CUBE_TEXTURE_PATH + "/left.png",
@@ -59,9 +53,7 @@ namespace vkengine {
            this->RootPath + RESOURSE_PATH + CUBE_TEXTURE_PATH + "/back.png"
         };
 
-        this->cubeMap.createTextureCubeImages(4, pathCubeArray);
-        this->cubeMap.createTextureImageView(VK_FORMAT_R8G8B8A8_SRGB);
-        this->cubeMap.createTextureSampler();
+        this->cubeSkybox.createCubeMap(pathCubeArray);
 
         this->createVertexbuffer();
         this->createIndexBuffer();
@@ -104,12 +96,9 @@ namespace vkengine {
             vkDestroyDescriptorPool(this->VKdevice->logicaldevice, this->VKdescriptorPool, nullptr);
             vkDestroyDescriptorSetLayout(this->VKdevice->logicaldevice, this->VKdescriptorSetLayout, nullptr);
 
-            this->VKvertexBuffer2.cleanup();
-            this->VKindexBuffer2.cleanup();
-            this->cubeMap.cleanup();
+            this->cubeSkybox.cleanup();
+            this->cubeObject.cleanup();
 
-            this->VKvertexBuffer.cleanup();
-            this->VKindexBuffer.cleanup();
             this->cubeTextureArray.cleanup();
 
             for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
@@ -308,24 +297,13 @@ namespace vkengine {
             scissor.extent = this->VKswapChain->getSwapChainExtent();
             vkCmdSetScissor(framedata->mainCommandBuffer, 0, 1, &scissor);
 
-            // 버텍스 버퍼를 바인딩합니다.
-            VkBuffer vertexBuffers[] = { this->VKvertexBuffer2.buffer };
-            VkDeviceSize offsets[] = { 0 };
-
-            VkBuffer vertexBuffers2[] = { this->VKvertexBuffer.buffer };
-            VkDeviceSize offsets2[] = { 0 };
-            
             vkCmdBindDescriptorSets(framedata->mainCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->VKpipelineLayout, 0, 1, &this->VKdescriptorSets[this->currentFrame], 0, nullptr);
 
             vkCmdBindPipeline(framedata->mainCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->VKCubeMapPipeline);
-            vkCmdBindVertexBuffers(framedata->mainCommandBuffer, 0, 1, vertexBuffers, offsets);
-            vkCmdBindIndexBuffer(framedata->mainCommandBuffer, this->VKindexBuffer2.buffer, 0, VK_INDEX_TYPE_UINT16);
-            vkCmdDrawIndexed(framedata->mainCommandBuffer, static_cast<uint32_t>(skyboxIndices.size()), 1, 0, 0, 0);
+            this->cubeSkybox.draw(framedata->mainCommandBuffer, this->currentFrame);
             
             vkCmdBindPipeline(framedata->mainCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->VKgraphicsPipeline);
-            vkCmdBindVertexBuffers(framedata->mainCommandBuffer, 0, 1, vertexBuffers2, offsets2);
-            vkCmdBindIndexBuffer(framedata->mainCommandBuffer, this->VKindexBuffer.buffer, 0, VK_INDEX_TYPE_UINT16);
-            vkCmdDrawIndexed(framedata->mainCommandBuffer, static_cast<uint32_t>(cubeindices_.size()), 1, 0, 0, 0);
+            this->cubeObject.draw(framedata->mainCommandBuffer, this->currentFrame);
             
         }
 
@@ -337,158 +315,22 @@ namespace vkengine {
 
     void skycubeEngine::createVertexbuffer()
     {
-        VkDeviceSize buffersize = sizeof(cube[0]) * cube.size();
-
-        VkBuffer stagingBuffer;
-        VkDeviceMemory stagingBufferMemory;
-
-        helper::createBuffer(
-            this->VKdevice->logicaldevice,
-            this->VKdevice->physicalDevice,
-            buffersize,
-            VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-            stagingBuffer,
-            stagingBufferMemory);
-
-        helper::copyToDeviceMemory(
-            this->VKdevice->logicaldevice,
-            cube.data(),
-            stagingBufferMemory,
-            buffersize);
-
-        this->VKvertexBuffer.device = this->VKdevice->logicaldevice;
-        this->VKvertexBuffer.size = buffersize;
-        this->VKvertexBuffer.usageFlags = VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
-        this->VKvertexBuffer.memoryPropertyFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
-        this->VKvertexBuffer.createBuffer(this->VKdevice->physicalDevice);
-
-        helper::copyBuffer2(
-            *this->VKdevice,
-            stagingBuffer,
-            this->VKvertexBuffer.buffer,
-            buffersize);
-
-        // 버퍼 생성이 끝나면 스테이징 버퍼를 제거합니다.
-        vkDestroyBuffer(this->VKdevice->logicaldevice, stagingBuffer, nullptr);
-        vkFreeMemory(this->VKdevice->logicaldevice, stagingBufferMemory, nullptr);
+        this->cubeObject.createVertexBuffer(cube);
     }
 
     void skycubeEngine::createIndexBuffer()
     {
-        VkDeviceSize buffersize = sizeof(cubeindices_[0]) * cubeindices_.size();
-
-        VkBuffer stagingBuffer;
-        VkDeviceMemory stagingBufferMemory;
-
-        helper::createBuffer(
-            this->VKdevice->logicaldevice,
-            this->VKdevice->physicalDevice,
-            buffersize,
-            VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-            stagingBuffer,
-            stagingBufferMemory);
-
-        helper::copyToDeviceMemory(
-            this->VKdevice->logicaldevice,
-            cubeindices_.data(),
-            stagingBufferMemory,
-            buffersize);
-
-        this->VKindexBuffer.device = this->VKdevice->logicaldevice;
-        this->VKindexBuffer.size = buffersize;
-        this->VKindexBuffer.usageFlags = VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
-        this->VKindexBuffer.memoryPropertyFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
-        this->VKindexBuffer.createBuffer(this->VKdevice->physicalDevice);
-
-        helper::copyBuffer2(
-            *this->VKdevice,
-            stagingBuffer,
-            this->VKindexBuffer.buffer,
-            buffersize);
-
-        // 버퍼 생성이 끝나면 스테이징 버퍼를 제거합니다.
-        vkDestroyBuffer(this->VKdevice->logicaldevice, stagingBuffer, nullptr);
-        vkFreeMemory(this->VKdevice->logicaldevice, stagingBufferMemory, nullptr);
+        this->cubeObject.createIndexBuffer(cubeindices_);
     }
 
     void skycubeEngine::createVertexbuffer2()
     {
-        VkDeviceSize buffersize = sizeof(skyboxVertices[0]) * skyboxVertices.size();
-
-        VkBuffer stagingBuffer;
-        VkDeviceMemory stagingBufferMemory;
-
-        helper::createBuffer(
-            this->VKdevice->logicaldevice,
-            this->VKdevice->physicalDevice,
-            buffersize,
-            VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-            stagingBuffer,
-            stagingBufferMemory);
-
-        helper::copyToDeviceMemory(
-            this->VKdevice->logicaldevice,
-            skyboxVertices.data(),
-            stagingBufferMemory,
-            buffersize);
-        this->VKvertexBuffer2.device = this->VKdevice->logicaldevice;
-        this->VKvertexBuffer2.size = buffersize;
-        this->VKvertexBuffer2.usageFlags = VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
-        this->VKvertexBuffer2.memoryPropertyFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
-
-        this->VKvertexBuffer2.createBuffer(this->VKdevice->physicalDevice);
-        helper::copyBuffer2(
-            *this->VKdevice,
-            stagingBuffer,
-            this->VKvertexBuffer2.buffer,
-            buffersize);
-        // 버퍼 생성이 끝나면 스테이징 버퍼를 제거합니다.
-        vkDestroyBuffer(this->VKdevice->logicaldevice, stagingBuffer, nullptr);
-        vkFreeMemory(this->VKdevice->logicaldevice, stagingBufferMemory, nullptr);
-
-
+        this->cubeSkybox.createVertexBuffer(skyboxVertices);
     }
 
     void skycubeEngine::createIndexBuffer2()
     {
-        VkDeviceSize buffersize = sizeof(skyboxIndices[0]) * skyboxIndices.size();
-
-        VkBuffer stagingBuffer;
-        VkDeviceMemory stagingBufferMemory;
-        
-        helper::createBuffer(
-            this->VKdevice->logicaldevice,
-            this->VKdevice->physicalDevice,
-            buffersize,
-            VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-            stagingBuffer,
-            stagingBufferMemory);
-        
-        helper::copyToDeviceMemory(
-            this->VKdevice->logicaldevice,
-            skyboxIndices.data(),
-            stagingBufferMemory,
-            buffersize);
-
-        this->VKindexBuffer2.device = this->VKdevice->logicaldevice;
-        this->VKindexBuffer2.size = buffersize;
-        this->VKindexBuffer2.usageFlags = VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
-        this->VKindexBuffer2.memoryPropertyFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
-        this->VKindexBuffer2.createBuffer(this->VKdevice->physicalDevice);
-
-        helper::copyBuffer2(
-            *this->VKdevice,
-            stagingBuffer,
-            this->VKindexBuffer2.buffer,
-            buffersize);
-
-        // 버퍼 생성이 끝나면 스테이징 버퍼를 제거합니다.
-        vkDestroyBuffer(this->VKdevice->logicaldevice, stagingBuffer, nullptr);
-        vkFreeMemory(this->VKdevice->logicaldevice, stagingBufferMemory, nullptr);
+        this->cubeSkybox.createIndexBuffer(skyboxIndices);
     }
 
     void skycubeEngine::createUniformBuffers()
@@ -620,8 +462,8 @@ namespace vkengine {
 
             VkDescriptorImageInfo imageInfo{};
             imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-            imageInfo.imageView = this->cubeMap.imageView;
-            imageInfo.sampler = this->cubeMap.sampler;
+            imageInfo.imageView = this->cubeSkybox.getCubeMap().imageView;
+            imageInfo.sampler = this->cubeSkybox.getCubeMap().sampler;
 
             VkDescriptorImageInfo imageInfo2{};
             imageInfo2.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;

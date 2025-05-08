@@ -116,6 +116,10 @@
     <ClCompile Include="..\..\app\cpp\texturearray.cpp" />
     <ClCompile Include="..\..\app\cpp\triangle.cpp" />
     <ClCompile Include="..\..\app\source\engine\Camera.cpp" />
+    <ClCompile Include="..\..\app\source\engine\object3D.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\app\source\engine\skybox.cpp" />
     <ClCompile Include="..\..\app\source\main_engine.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -125,6 +129,10 @@
     <ClInclude Include="..\..\app\cpp\texturearray.h" />
     <ClInclude Include="..\..\app\cpp\triangle.h" />
     <ClInclude Include="..\..\app\source\engine\Camera.h" />
+    <ClInclude Include="..\..\app\source\engine\object3D.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="..\..\app\source\engine\skybox.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\shader\compile.bat" />

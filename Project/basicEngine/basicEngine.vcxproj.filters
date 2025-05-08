@@ -12,9 +12,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\app\source\engine\VKbuffer.cpp">
-      <Filter>source</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\app\source\engine\VKdevice.cpp">
       <Filter>source</Filter>
     </ClCompile>
@@ -75,6 +72,9 @@
     <ClCompile Include="..\..\app\source\engine\helper.cpp">
       <Filter>source\common</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\app\source\engine\VKbuffer.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\app\source\engine\VKbuffer.h">
@@ -124,6 +124,9 @@
     </ClInclude>
     <ClInclude Include="..\..\app\source\engine\VKmemoryAlloc.h">
       <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\app\common\VectorCMS.h">
+      <Filter>source\common</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
