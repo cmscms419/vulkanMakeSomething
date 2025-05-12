@@ -6,8 +6,9 @@
 #include "../../app/cpp/skymap.h"
 #include "../../app/cpp/texture.h"
 #include "../../app/cpp/texturearray.h"
+#include "../../app/cpp/imgui_skymap.h"
 
-#define SELECTED_ENGINE 5
+#define SELECTED_ENGINE 6
 
 int main(int argc, char* argv[]) {
 
@@ -42,6 +43,8 @@ int main(int argc, char* argv[]) {
     engine = std::make_unique<vkengine::TextureArrayEngine>(root_path);
 #elif SELECTED_ENGINE == 5
     engine = std::make_unique<vkengine::skycubeEngine>(root_path);
+#elif SELECTED_ENGINE == 6
+    engine = std::make_unique<vkengine::imguiEngine>(root_path);
 #else
     return EXIT_FAILURE;
 #endif

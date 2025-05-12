@@ -21,16 +21,6 @@ namespace vkengine {
         VulkanEngine::prepare();
         this->init_sync_structures();
 
-        // CubeTextureArray
-        int texWidth = 0;
-        int texHeight = 0;
-        int texChannels = 0;
-        this->cubeTextureArray.texWidth = texWidth;
-        this->cubeTextureArray.texHeight = texHeight;
-        this->cubeTextureArray.texChannels = texChannels;
-        this->cubeTextureArray.device = this->VKdevice.get();
-        this->cubeTextureArray.VKmipLevels = 1;
-
         std::vector<std::string> pathArray = {
            this->RootPath + RESOURSE_PATH + TEST_TEXTURE_PATH_ARRAY0,
            this->RootPath + RESOURSE_PATH + TEST_TEXTURE_PATH_ARRAY1,
@@ -40,9 +30,7 @@ namespace vkengine {
            this->RootPath + RESOURSE_PATH + TEST_TEXTURE_PATH_ARRAY5
         };
 
-        this->cubeTextureArray.createTextureArrayImages(4, pathArray);
-        this->cubeTextureArray.createTextureImageView(VK_FORMAT_R8G8B8A8_SRGB);
-        this->cubeTextureArray.createTextureSampler();
+        this->cubeObject.createCubeTexture(pathArray);
 
         std::vector<std::string> pathCubeArray = {
            this->RootPath + RESOURSE_PATH + CUBE_TEXTURE_PATH + "/right.png",
@@ -57,12 +45,7 @@ namespace vkengine {
 
         this->createVertexbuffer();
         this->createIndexBuffer();
-
-        this->createVertexbuffer2();
-        this->createIndexBuffer2();
-        
         this->createUniformBuffers();
-        //this->createUniformBuffers2();
 
         this->createDescriptorSetLayout();
         this->createDescriptorPool();
@@ -98,8 +81,6 @@ namespace vkengine {
 
             this->cubeSkybox.cleanup();
             this->cubeObject.cleanup();
-
-            this->cubeTextureArray.cleanup();
 
             for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
             {
@@ -316,20 +297,12 @@ namespace vkengine {
     void skycubeEngine::createVertexbuffer()
     {
         this->cubeObject.createVertexBuffer(cube);
+        this->cubeSkybox.createVertexBuffer(skyboxVertices);
     }
 
     void skycubeEngine::createIndexBuffer()
     {
         this->cubeObject.createIndexBuffer(cubeindices_);
-    }
-
-    void skycubeEngine::createVertexbuffer2()
-    {
-        this->cubeSkybox.createVertexBuffer(skyboxVertices);
-    }
-
-    void skycubeEngine::createIndexBuffer2()
-    {
         this->cubeSkybox.createIndexBuffer(skyboxIndices);
     }
 
@@ -351,24 +324,6 @@ namespace vkengine {
                 this->VKuniformBuffer[i].memory);
 
             vkMapMemory(this->VKdevice->logicaldevice, this->VKuniformBuffer[i].memory, 0, bufferSize, 0, &this->VKuniformBuffer[i].Mapped);
-        }
-    }
-
-    void skycubeEngine::createUniformBuffers2()
-    {
-        VkDeviceSize bufferSize = sizeof(UniformBufferObject);
-        this->VKuniformBuffer2.resize(MAX_FRAMES_IN_FLIGHT);
-        for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
-        {
-            helper::createBuffer(
-                this->VKdevice->logicaldevice,
-                this->VKdevice->physicalDevice,
-                bufferSize,
-                VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-                this->VKuniformBuffer2[i].buffer,
-                this->VKuniformBuffer2[i].memory);
-            vkMapMemory(this->VKdevice->logicaldevice, this->VKuniformBuffer2[i].memory, 0, bufferSize, 0, &this->VKuniformBuffer2[i].Mapped);
         }
     }
 
@@ -467,8 +422,8 @@ namespace vkengine {
 
             VkDescriptorImageInfo imageInfo2{};
             imageInfo2.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-            imageInfo2.imageView = this->cubeTextureArray.imageView;
-            imageInfo2.sampler = this->cubeTextureArray.sampler;
+            imageInfo2.imageView = this->cubeObject.getCubeTexture().imageView;
+            imageInfo2.sampler = this->cubeObject.getCubeTexture().sampler;
 
             std::array<VkWriteDescriptorSet, 3> descriptorWrites{};
 
@@ -683,8 +638,8 @@ namespace vkengine {
         VkPipelineShaderStageCreateInfo shaderStages[] = { vertShaderStageInfo, fragShaderStageInfo };
 
         // vertex input
-        auto bindingDescription = SkyboxVertex::getBindingDescription();
-        auto attributeDescriptions = SkyboxVertex::getAttributeDescriptions();
+        auto bindingDescription = Vertex::getBindingDescription();
+        auto attributeDescriptions = Vertex::getAttributeDescriptions();
 
         // 그래픽 파이프라인 레이아웃을 생성합니다.
         VkPipelineVertexInputStateCreateInfo vertexInputInfo{};

@@ -22,6 +22,12 @@
     <Filter Include="component">
       <UniqueIdentifier>{a4a6a9a9-4dc9-4f78-9994-2566696d3f8d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="app\imgui">
+      <UniqueIdentifier>{2dd76b5f-fcd6-4ba9-b133-82e47f614703}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="component\imgui">
+      <UniqueIdentifier>{5ccf4538-2d61-4a31-aeb3-42e23cbf0661}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\app\source\main_engine.cpp" />
@@ -34,20 +40,44 @@
     <ClCompile Include="..\..\app\cpp\texture.cpp">
       <Filter>app\texture</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\app\source\engine\Camera.cpp">
-      <Filter>component</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\app\cpp\texturearray.cpp">
       <Filter>app\texture</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\app\source\engine\object3D.cpp">
-      <Filter>component</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\app\source\engine\skybox.cpp">
-      <Filter>component</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\app\cpp\skymap.cpp">
       <Filter>app\skymap</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\cpp\imgui_skymap.cpp">
+      <Filter>app\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\source\engine\component\object3D.cpp">
+      <Filter>component</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\source\engine\component\Camera.cpp">
+      <Filter>component</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\source\engine\component\VKimgui.cpp">
+      <Filter>component</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\source\engine\imgui.cpp">
+      <Filter>component\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\source\engine\imgui_demo.cpp">
+      <Filter>component\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\source\engine\imgui_draw.cpp">
+      <Filter>component\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\source\engine\imgui_impl_glfw.cpp">
+      <Filter>component\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\source\engine\imgui_impl_vulkan.cpp">
+      <Filter>component\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\source\engine\imgui_tables.cpp">
+      <Filter>component\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\source\engine\imgui_widgets.cpp">
+      <Filter>component\imgui</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -60,20 +90,23 @@
     <ClInclude Include="..\..\app\cpp\texture.h">
       <Filter>app\texture</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\app\source\engine\Camera.h">
-      <Filter>component</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\app\cpp\texturearray.h">
       <Filter>app\texture</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\app\source\engine\object3D.h">
-      <Filter>component</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\app\source\engine\skybox.h">
-      <Filter>component</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\app\cpp\skymap.h">
       <Filter>app\skymap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\app\cpp\imgui_skymap.h">
+      <Filter>app\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\app\source\engine\component\Camera.h">
+      <Filter>component</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\app\source\engine\component\object3D.h">
+      <Filter>component</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\app\source\engine\component\VKimgui.h">
+      <Filter>component</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

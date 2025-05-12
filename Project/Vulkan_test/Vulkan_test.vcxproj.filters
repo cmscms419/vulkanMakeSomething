@@ -34,6 +34,12 @@
       <Filter>app\source</Filter>
     </ClCompile>
     <ClCompile Include="..\..\app\source\main_vulkanTest.cpp" />
+    <ClCompile Include="..\..\app\source\vulkanTest\common\TestCommon.cpp">
+      <Filter>app\common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\source\vulkanTest\common\vkmath.cpp">
+      <Filter>app\common</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\app\source\engine\imgui.cpp">
       <Filter>app\imgui</Filter>
     </ClCompile>
@@ -54,12 +60,6 @@
     </ClCompile>
     <ClCompile Include="..\..\app\source\engine\imgui_widgets.cpp">
       <Filter>app\imgui</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\app\source\vulkanTest\common\TestCommon.cpp">
-      <Filter>app\common</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\app\source\vulkanTest\common\vkmath.cpp">
-      <Filter>app\common</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

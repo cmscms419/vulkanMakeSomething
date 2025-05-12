@@ -1,6 +1,6 @@
 #include "VKinputEvent.h"
 #include "VKengine.h"
-#include "Camera.h"
+#include "component/Camera.h"
 
 using vkengine::VulkanEngine;
 using vkengine::object::Camera;

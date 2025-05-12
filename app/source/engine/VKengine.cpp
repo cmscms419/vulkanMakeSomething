@@ -190,6 +190,23 @@ namespace vkengine
         }
     }
 
+    void VulkanEngine::CreateDescriptorPool2(uint32_t maxFrames)
+    {
+        for (auto& iter : this->VKdescriptorPoolSize)
+        {
+            iter.descriptorCount = maxFrames;
+        }
+
+        VkDescriptorPoolCreateInfo poolInfo{};
+        poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+        poolInfo.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
+        poolInfo.poolSizeCount = static_cast<uint32_t>(this->VKdescriptorPoolSize.size());
+        poolInfo.pPoolSizes = this->VKdescriptorPoolSize.data();
+        poolInfo.maxSets = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT_UI_VERSION);
+
+        _VK_CHECK_RESULT_(vkCreateDescriptorPool(this->VKdevice->logicaldevice, &poolInfo, nullptr, &this->VKdescriptorPool));
+    }
+
     bool VulkanEngine::initVulkan()
     {
         if (glfwVulkanSupported() == GLFW_FALSE) {

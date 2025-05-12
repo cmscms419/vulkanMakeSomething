@@ -4,9 +4,8 @@
 #include "../source/engine/VKengine.h"
 #include "../source/engine/VKtexture.h"
 
-#include "../source/engine/object3D.h"
-#include "../source/engine/Camera.h"
-#include "../source/engine/skybox.h"
+#include "../source/engine/component/Camera.h"
+#include "../source/engine/component/object3D.h"
 
 namespace vkengine
 {
@@ -32,13 +31,8 @@ namespace vkengine
         // 각 3d 모델을 생성하기 위한 함수
         void createVertexbuffer();
         void createIndexBuffer();
-
-        void createVertexbuffer2();
-        void createIndexBuffer2();
-
         void createUniformBuffers();
-        void createUniformBuffers2();
-
+        
         // Descriptor의 set, pool, layout을 생성하기 위한 함수들
         void createDescriptorSetLayout();
         void createDescriptorPool();
@@ -53,12 +47,10 @@ namespace vkengine
         void cleanupSwapcChain();
 
         // 3d object
-        object::Object3D cubeObject;
-        Vk2DTextureArray cubeTextureArray = {};
+        object::TextureArrayObject3D cubeObject;
 
         // skybox
-        object::Skybox cubeSkybox;
-
+        object::SkyBox cubeSkybox;
 
         std::vector<UniformBuffer> VKuniformBuffer = {};
         std::vector<UniformBuffer> VKuniformBuffer2 = {};

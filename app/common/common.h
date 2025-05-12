@@ -26,6 +26,7 @@ constexpr int WIDTH = 1280;
 constexpr int HEIGHT = 720;
 constexpr int MAX_FRAMES = 4;
 constexpr int MAX_FRAMES_IN_FLIGHT = 2;
+constexpr int MAX_FRAMES_IN_FLIGHT_UI_VERSION = 3;
 constexpr int CREATESURFACE_VKWIN32SURFACECREATEINFOKHR = 0;
 
 namespace vkengine

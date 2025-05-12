@@ -62,6 +62,8 @@ namespace vkengine {
         // present frame -> 화면에 렌더링된 이미지를 표시
         void presentFrame(uint32_t* imageIndex);
 
+        void CreateDescriptorPool2(uint32_t maxFrames);
+
     public:
         bool isInitialized() const { return _isInitialized; }
         bool isStopRendering() const { return stop_rendering; }
@@ -130,6 +132,7 @@ namespace vkengine {
 
         VkDescriptorPool VKdescriptorPool{ VK_NULL_HANDLE };
         VkDescriptorSetLayout VKdescriptorSetLayout{ VK_NULL_HANDLE };
+        std::vector<VkDescriptorPoolSize> VKdescriptorPoolSize = {}; // 디스크립터 풀 사이즈 -> 디스크립터 풀의 크기를 정의하는 구조체
         std::vector<VkDescriptorSet> VKdescriptorSets = {};
 
         std::shared_ptr<vkengine::object::Camera> camera = nullptr;  // 카메라 -> 카메라 클래스
