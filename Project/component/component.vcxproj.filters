@@ -1,0 +1,69 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="component">
+      <UniqueIdentifier>{bf54fa4c-660c-4eee-a24d-66da47850772}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="component\imgui">
+      <UniqueIdentifier>{20ce2f52-de04-475b-9bd5-8bf00e6a5f75}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\app\component\Camera.cpp">
+      <Filter>component</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\component\object3D.cpp">
+      <Filter>component</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\component\VKimgui.cpp">
+      <Filter>component</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\component\imgui\imgui_impl_glfw.cpp">
+      <Filter>component\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\component\imgui\imgui_impl_vulkan.cpp">
+      <Filter>component\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\component\imgui\imgui_tables.cpp">
+      <Filter>component\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\component\imgui\imgui_widgets.cpp">
+      <Filter>component\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\component\imgui\imgui.cpp">
+      <Filter>component\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\component\imgui\imgui_demo.cpp">
+      <Filter>component\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\component\imgui\imgui_draw.cpp">
+      <Filter>component\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\source\engine\VKinputEvent.cpp">
+      <Filter>component</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\include\component\VKimgui.h">
+      <Filter>component</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\component\object3D.h">
+      <Filter>component</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\component\Camera.h">
+      <Filter>component</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\source\engine\VKinputEvent.h">
+      <Filter>component</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\app\component\imgui\imstb_rectpack.h">
+      <Filter>component\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\app\component\imgui\imstb_textedit.h">
+      <Filter>component\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\app\component\imgui\imstb_truetype.h">
+      <Filter>component\imgui</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

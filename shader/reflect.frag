@@ -1,6 +1,6 @@
 #version 450
 
-layout (binding = 1) uniform samplerCube texSampler;
+layout (binding = 1) uniform samplerCube samplerCubeMap;
 
 layout (binding = 0) uniform UBO
 {
@@ -27,7 +27,7 @@ void main() {
 	
 	//cR.xy *= -1.0;
 
-	vec4 color = texture(texSampler, cR, 0);
+	vec4 color = texture(samplerCubeMap, cR, 0);
 
 	vec3 N = normalize(inNormal);
 	vec3 L = normalize(inLightVec);

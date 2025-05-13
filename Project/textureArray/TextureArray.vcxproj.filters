@@ -1,0 +1,23 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="shader">
+      <UniqueIdentifier>{d600757d-7a33-439c-9c96-d86b08f838aa}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\app\source\textureArray\main_engine.cpp" />
+    <ClCompile Include="..\..\app\source\textureArray\texturearray.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\app\source\textureArray\texturearray.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\shader\cube.vert">
+      <Filter>shader</Filter>
+    </None>
+    <None Include="..\..\shader\cube.frag">
+      <Filter>shader</Filter>
+    </None>
+  </ItemGroup>
+</Project>

@@ -1,7 +1,6 @@
 
 #include "engine/VKengine.h"
 
-#include "../../app/cpp/triangle.h"
 #include "../../app/cpp/cameraEngine.h"
 #include "../../app/cpp/skymap.h"
 #include "../../app/cpp/texture.h"
