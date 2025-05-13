@@ -11,29 +11,19 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\app\source\engine\imgui.cpp" />
-    <ClCompile Include="..\..\app\source\engine\imgui_demo.cpp" />
-    <ClCompile Include="..\..\app\source\engine\imgui_draw.cpp" />
-    <ClCompile Include="..\..\app\source\engine\imgui_impl_glfw.cpp" />
-    <ClCompile Include="..\..\app\source\engine\imgui_impl_vulkan.cpp" />
-    <ClCompile Include="..\..\app\source\engine\imgui_tables.cpp" />
-    <ClCompile Include="..\..\app\source\engine\imgui_widgets.cpp" />
+    <ClCompile Include="..\..\app\component\imgui\imgui.cpp" />
+    <ClCompile Include="..\..\app\component\imgui\imgui_demo.cpp" />
+    <ClCompile Include="..\..\app\component\imgui\imgui_draw.cpp" />
+    <ClCompile Include="..\..\app\component\imgui\imgui_impl_glfw.cpp" />
+    <ClCompile Include="..\..\app\component\imgui\imgui_impl_vulkan.cpp" />
+    <ClCompile Include="..\..\app\component\imgui\imgui_tables.cpp" />
+    <ClCompile Include="..\..\app\component\imgui\imgui_widgets.cpp" />
     <ClCompile Include="..\..\app\source\main_vulkanTest.cpp" />
     <ClCompile Include="..\..\app\source\vulkanTest\Application.cpp" />
     <ClCompile Include="..\..\app\source\vulkanTest\Camera.cpp" />
     <ClCompile Include="..\..\app\source\vulkanTest\common\TestCommon.cpp" />
     <ClCompile Include="..\..\app\source\vulkanTest\common\vkmath.cpp" />
     <ClCompile Include="..\..\app\source\vulkanTest\DebugFunction.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="..\..\app\source\engine\VKimgui.h" />
-    <ClInclude Include="..\..\app\source\object_data.h" />
-    <ClInclude Include="..\..\app\source\vulkanTest\Application.h" />
-    <ClInclude Include="..\..\app\source\vulkanTest\Camera.h" />
-    <ClInclude Include="..\..\app\source\vulkanTest\common\struct.h" />
-    <ClInclude Include="..\..\app\source\vulkanTest\common\TestCommon.h" />
-    <ClInclude Include="..\..\app\source\vulkanTest\common\vkmath.h" />
-    <ClInclude Include="..\..\app\source\vulkanTest\DebugFunction.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\shader\compile.bat" />
@@ -46,6 +36,15 @@
     <None Include="..\..\shader\trinagle00.vert" />
     <None Include="..\..\shader\vert.spv" />
     <None Include="..\..\shader\vertTrinagle00.spv" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\include\source\vulkanTest\Application.h" />
+    <ClInclude Include="..\..\include\source\vulkanTest\Application_computershader.h" />
+    <ClInclude Include="..\..\include\source\vulkanTest\Camera.h" />
+    <ClInclude Include="..\..\include\source\vulkanTest\common\struct.h" />
+    <ClInclude Include="..\..\include\source\vulkanTest\common\TestCommon.h" />
+    <ClInclude Include="..\..\include\source\vulkanTest\common\vkmath.h" />
+    <ClInclude Include="..\..\include\source\vulkanTest\DebugFunction.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{961CB7AD-D855-4611-8025-A94BC31029F5}</ProjectGuid>
@@ -101,7 +100,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>DEBUG_;WIN32;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>./;$(CudaToolkitDir)/include;$(VULKAN_SDK)/include;../../external/imgui;../../external/GLFW/include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>./;$(CudaToolkitDir)/include;$(VULKAN_SDK)/include;../../external/imgui;../../external/GLFW/include;../../include/source/vulkanTest;../../include/source/vulkanTest/common</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <SDLCheck>true</SDLCheck>
     </ClCompile>
@@ -129,7 +128,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>./;$(CudaToolkitDir)/include;$(VULKAN_SDK)/include;../../external/imgui;../../external/GLFW/include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>./;$(CudaToolkitDir)/include;$(VULKAN_SDK)/include;../../external/imgui;../../external/GLFW/include;../../include/source/vulkanTest;../../include/source/vulkanTest/common</AdditionalIncludeDirectories>
       <SDLCheck>true</SDLCheck>
     </ClCompile>
     <Link>
