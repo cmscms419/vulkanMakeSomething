@@ -62,8 +62,11 @@ bld/
 [Oo]bj/
 [Ll]og/
 [Ll]ogs/
+
 exe/
-external/basicEngine
+external/basicEngine/
+external/component/
+
 
 source/Texture/512x512/Brick
 source/Texture/512x512/Dirt
