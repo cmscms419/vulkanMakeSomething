@@ -121,6 +121,8 @@ namespace vkengine
         glfwSetFramebufferSizeCallback(this->VKwindow, framebufferResizeCallback);
         glfwSetKeyCallback(this->VKwindow, vkengine::input::key_callback);  // 키 입력 콜백 설정
         glfwSetCursorPosCallback(this->VKwindow, vkengine::input::cursorPositionCallback); // 마우스 입력 콜백 설정
+        glfwSetMouseButtonCallback(this->VKwindow, vkengine::input::mouseButtonCallback); // 마우스 버튼 콜백 설정
+        glfwSetScrollCallback(this->VKwindow, vkengine::input::scroll_callback); // 스크롤 콜백 설정
     }
 
     bool VulkanEngine::prepare()

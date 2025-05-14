@@ -37,28 +37,69 @@ namespace vkengine
         {
             VulkanEngine* app = reinterpret_cast<VulkanEngine*>(glfwGetWindowUserPointer(window));
             if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
-             //   app->setMousePressed(GLFW_MOUSE_BUTTON_LEFT, true);
+                app->setMousePressed(GLFW_MOUSE_BUTTON_LEFT, true);
             }
             else if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE) {
-               // app->setMousePressed(GLFW_MOUSE_BUTTON_LEFT, false);
+                app->setMousePressed(GLFW_MOUSE_BUTTON_LEFT, false);
             }
             else if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS) {
-                //app->setMousePressed(GLFW_MOUSE_BUTTON_RIGHT, true);
+                app->setMousePressed(GLFW_MOUSE_BUTTON_RIGHT, true);
             }
             else if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_RELEASE) {
-               // app->setMousePressed(GLFW_MOUSE_BUTTON_RIGHT, false);
+                app->setMousePressed(GLFW_MOUSE_BUTTON_RIGHT, false);
+                app->setCameraMoveCheck(false);
             }
+            //else if (button == )
         }
         void cursorPositionCallback(GLFWwindow* window, double xpos, double ypos)
         {
-            
             glfwGetCursorPos(window, &xpos, &ypos);
             
             int windowWidth, windowHeight;
             glfwGetWindowSize(window, &windowWidth, &windowHeight);
 
             VulkanEngine* app = reinterpret_cast<VulkanEngine*>(glfwGetWindowUserPointer(window));
-            app->getCamera()->MoveRotate(static_cast<int>(xpos), static_cast<int>(ypos), windowWidth, windowHeight);
+
+            if (app->getCameraMoveStyle())
+            {
+                app->getCamera()->RotateScreenStandard(xpos, ypos, windowWidth, windowHeight);
+            }
+            else
+            {
+            if (app->getMousePressed(GLFW_MOUSE_BUTTON_RIGHT)) {
+
+                if (!app->getCameraMoveCheck())
+                {
+                    app->setMousePosition(static_cast<float>(xpos), static_cast<float>(ypos));
+                    app->setCameraMoveCheck(true);
+                    return;
+                }
+
+                float xoffset = app->getLastMouseX() - static_cast<float>(xpos);
+                float yoffset = app->getLastMouseY() - static_cast<float>(ypos);
+
+                glm::vec3 force = glm::vec3(xoffset, yoffset, 0.0f);
+                app->getCamera()->RotateDeltaRotation(force);
+
+                app->setMousePosition(static_cast<float>(xpos), static_cast<float>(ypos));
+
+            }
+
+            }
+
+        }
+        void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
+        {
+            VulkanEngine* app = reinterpret_cast<VulkanEngine*>(glfwGetWindowUserPointer(window));
+
+            if (yoffset > 0) {
+                float fov = app->getCamera()->getFov() - 1.0f;
+                app->getCamera()->setFov(fov);
+            }
+            else if (yoffset < 0) {
+                float fov = app->getCamera()->getFov() + 1.0f;
+                app->getCamera()->setFov(fov);
+            }
         }
     }
 }

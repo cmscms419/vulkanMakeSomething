@@ -37,6 +37,7 @@ namespace vkengine {
         void Camera::update() {
             // Implementation here
             this->setViewDirection(pos, dir, up);
+
             //_PRINT_TO_CONSOLE_("\rCamera Position: %f %f %f", this->pos.x, this->pos.y, this->pos.z);
             //_PRINT_TO_CONSOLE_("\rCamera Direction: %f %f %f", this->dir.x, this->dir.y, this->dir.z);
         }
@@ -56,7 +57,7 @@ namespace vkengine {
             this->pos += this->up * this->speed * deltaTime;
         }
 
-        void Camera::MoveRotate(int xpos, int ypos, int windowWidth, int windowHeight)
+        void Camera::RotateScreenStandard(float xpos, float ypos, int windowWidth, int windowHeight)
         {
             // 마우스 커서의 위치를 NDC로 변환
             // 마우스 커서는 좌측 상단 (0, 0), 우측 하단(width-1, height-1)
@@ -66,8 +67,8 @@ namespace vkengine {
 
             // 커서가 화면 밖으로 나갔을 경우 범위 조절
             // 게임에서는 클램프를 안할 수도 있습니다.
-            x = glm::clamp(x, -1.0f, 1.0f);
-            y = glm::clamp(y, -1.0f, 1.0f);
+            //x = glm::clamp(x, -1.0f, 1.0f);
+            //y = glm::clamp(y, -1.0f, 1.0f);
 
             this->yaw = x * vkMath::XM_PI; // 0 ~ 180도 마우스 회전 -> Y축 기준으로 회전
             this->pitch = y * vkMath::XM_PIDIV4; // 0 ~ 180도 마우스 회전 -> X축 기준으로 회전
@@ -89,6 +90,36 @@ namespace vkengine {
             this->dir = glm::normalize(dirction);
             this->right = glm::normalize(glm::cross(this->dir, this->up));
 
+        }
+
+        void Camera::RotateDeltaRotation(const glm::vec3& force, bool constrainPitch)
+        {
+            float yawDelta = force.x * this->sensitivity;
+            float pitchDelta = force.y * this->sensitivity;
+
+            this->yaw += yawDelta;
+            this->pitch += pitchDelta;
+            
+            // 제한된 피치 각도
+            if (constrainPitch)
+            {
+                this->pitch = glm::clamp(this->pitch, -MAX_PITCH_VALUE, MAX_PITCH_VALUE);
+            }
+
+            glm::quat qYaw = glm::angleAxis(this->yaw, glm::vec3(0.0f, 1.0f, 0.0f)); // Y축
+            glm::quat qPitch = glm::angleAxis(this->pitch, glm::vec3(1.0f, 0.0f, 0.0f)); // X축
+
+            glm::vec3 dirction(0.0f, 0.0f, -1.0f);
+
+            glm::quat Result = qYaw * qPitch;
+            dirction = vkMath::RotationQuat(Result, dirction);
+
+            // dirction.x = cos(glm::radians(this->yaw)) * cos(glm::radians(this->pitch));
+            // dirction.y = sin(glm::radians(this->pitch));
+            // dirction.z = sin(glm::radians(this->yaw)) * cos(glm::radians(this->pitch));
+            
+            this->dir = glm::normalize(dirction);
+            this->right = glm::normalize(glm::cross(this->dir, this->up));
         }
 
         void Camera::setPerspectiveProjection(float fov, float aspect, float nearP, float farP)
@@ -165,7 +196,5 @@ namespace vkengine {
             viewMatrix[3][1] = -glm::dot(v, pos);
             viewMatrix[3][2] = -glm::dot(w, pos);
         }
-
-
     }
 }

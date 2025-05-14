@@ -9,6 +9,7 @@
 #include "vkmath.h"
 #include "macros.h"
 
+#define MAX_PITCH_VALUE 1.1f
 
 namespace vkengine {
     namespace object {
@@ -18,18 +19,29 @@ namespace vkengine {
         public:
             explicit Camera();
             explicit Camera(glm::vec3 pos, glm::vec3 up, glm::vec3 dir);
-
             ~Camera();
+
             void update();
 
             void setPos(glm::vec3 pos);
             const glm::vec3 getTarget() { return this->target; }
             const glm::vec3 getPos() { return this->pos; }
+            const float getYaw() { return this->yaw; }
+            const float getPitch() { return this->pitch; }
+            const float getFov() { return this->fov; }
+            const float getAspect() { return this->aspect; }
+            const float getNearP() { return this->nearP; }
+            const float getFarP() { return this->farP; }
 
+            void setYaw(float yaw) { this->yaw = yaw; }
+            void setPitch(float pitch) { this->pitch = pitch; }
+            void setFov(float fov) { this->fov = fov; }
             void MoveForward(float deltaTime);
             void MoveRight(float deltaTime);
             void MoveUp(float deltaTime);
-            void MoveRotate(int xpos, int ypos, int windowWidth, int windowHeight);
+
+            void RotateScreenStandard(float xpos, float ypos, int windowWidth, int windowHeight);
+            void RotateDeltaRotation(const glm::vec3& force, bool constrainPitch = true);
 
             void setPerspectiveProjection(float fov, float aspect, float nearP, float farP);
 
@@ -54,7 +66,7 @@ namespace vkengine {
             float nearP{ 0.1f };
             float farP{ 1000.0f };
             float speed{ 2.5f };;
-            float sensitivity{ 0.1f };
+            float sensitivity{ 0.001f };
 
             glm::mat4 viewMatrix{ 1.f };
             glm::mat4 projectionMatrix{ 1.f };

@@ -140,11 +140,5 @@
     <ClInclude Include="..\..\include\common\vkmath.h">
       <Filter>common</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\common\zconf.h">
-      <Filter>common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\common\zlib.h">
-      <Filter>common</Filter>
-    </ClInclude>
   </ItemGroup>
 </Project>

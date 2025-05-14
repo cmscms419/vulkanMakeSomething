@@ -48,8 +48,6 @@
     <ClInclude Include="..\..\include\common\tiny_obj_loader.h" />
     <ClInclude Include="..\..\include\common\VectorCMS.h" />
     <ClInclude Include="..\..\include\common\vkmath.h" />
-    <ClInclude Include="..\..\include\common\zconf.h" />
-    <ClInclude Include="..\..\include\common\zlib.h" />
     <ClInclude Include="..\..\include\source\engine\Debug.h" />
     <ClInclude Include="..\..\include\source\engine\helper.h" />
     <ClInclude Include="..\..\include\source\engine\VKbuffer.h" />

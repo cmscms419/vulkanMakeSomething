@@ -88,7 +88,19 @@ namespace vkengine {
         void setWindowWidth(int width) { windowWidth = width; }
         void setWindowHeight(int height) { windowHeight = height; }
         std::shared_ptr<vkengine::object::Camera> getCamera() { return camera; }
+        
         void setKeyPressed(int key, bool value) { m_keyPressed[key] = value; }
+        bool getKeyPressed(int key) { return m_keyPressed[key]; }
+        void setMousePressed(int button, bool value) { m_mousePressed[button] = value; }
+        bool getMousePressed(int button) { return m_mousePressed[button]; }
+        
+        void setMousePosition(float x, float y) { lastMouseX = x; lastMouseY = y; }
+        float getLastMouseX() { return lastMouseX; }
+        float getLastMouseY() { return lastMouseY; }
+        void setCameraMoveCheck(bool check) { this->cameraMove = check; }
+        bool getCameraMoveCheck() { return this->cameraMove; }
+        void setCameraMoveStyle(bool style) { this->cameraMoveStyle = style; }
+        bool getCameraMoveStyle() { return this->cameraMoveStyle; }
 
     protected:
 
@@ -152,8 +164,19 @@ namespace vkengine {
         };
 
         // 마우스 커서 위치
-        int currnetX = 0;
-        int currnetY = 0;
+        float lastMouseX = 0;
+        float lastMouseY = 0;
+
+        bool m_mousePressed[3] = {
+            false, // 왼쪽 버튼
+            false, // 오른쪽 버튼
+            false, // 가운데 버튼
+        };
+
+        // Camera Move 여부
+        bool cameraMove = false;
+        bool cameraMoveStyle = false; // 카메라 이동 스타일
+
     };
 
 }

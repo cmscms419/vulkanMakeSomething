@@ -19,4 +19,11 @@
       <Filter>shader</Filter>
     </None>
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\app\source\mouse\main_engine.cpp" />
+    <ClCompile Include="..\..\app\source\mouse\mouse.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\app\source\mouse\mouse.h" />
+  </ItemGroup>
 </Project>
