@@ -2,13 +2,22 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="source">
-      <UniqueIdentifier>{a454d12e-1aec-4426-9c77-26d3418f3940}</UniqueIdentifier>
+      <UniqueIdentifier>{ddaa6905-34d3-491e-801f-49ca25bc1284}</UniqueIdentifier>
     </Filter>
-    <Filter Include="common">
+    <Filter Include="external">
       <UniqueIdentifier>{6d4bdeae-2764-436e-ba73-fb09cc907caf}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\include\common\tiny_obj_loader.cc">
+      <Filter>external</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\include\common\resourseload.c">
+      <Filter>external</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\source\engine\VKbuffer.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\app\source\engine\VKdevice.cpp">
       <Filter>source</Filter>
     </ClCompile>
@@ -21,35 +30,77 @@
     <ClCompile Include="..\..\app\source\engine\VKtexture.cpp">
       <Filter>source</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\app\common\common.cpp">
-      <Filter>common</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\app\common\macros.cpp">
-      <Filter>common</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\app\common\struct.cpp">
-      <Filter>common</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\app\common\vkmath.cpp">
-      <Filter>common</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\app\source\engine\Debug.cpp">
-      <Filter>common</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\app\source\engine\helper.cpp">
-      <Filter>common</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\app\source\engine\VKbuffer.cpp">
       <Filter>source</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\include\common\tiny_obj_loader.cc">
-      <Filter>common</Filter>
+    <ClCompile Include="..\..\app\source\engine\Debug.cpp">
+      <Filter>source</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\include\common\resourseload.c">
-      <Filter>common</Filter>
+    <ClCompile Include="..\..\app\common\macros.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\common\struct.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\common\vkmath.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\common\common.cpp">
+      <Filter>source</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\include\common\exception.h">
+      <Filter>external</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\common\helper_cuda.h">
+      <Filter>external</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\common\helper_math.h">
+      <Filter>external</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\common\helper_string.h">
+      <Filter>external</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\common\helper_timer.h">
+      <Filter>external</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\common\linmath.h">
+      <Filter>external</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\common\object_data.h">
+      <Filter>external</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\common\png.h">
+      <Filter>external</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\common\pngconf.h">
+      <Filter>external</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\common\pngdebug.h">
+      <Filter>external</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\common\pnginfo.h">
+      <Filter>external</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\common\pnglibconf.h">
+      <Filter>external</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\common\pngpriv.h">
+      <Filter>external</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\common\pngstruct.h">
+      <Filter>external</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\common\resourseload.h">
+      <Filter>external</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\common\stb_image.h">
+      <Filter>external</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\common\tiny_obj_loader.h">
+      <Filter>external</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\include\source\engine\Debug.h">
       <Filter>source</Filter>
     </ClInclude>
@@ -74,71 +125,20 @@
     <ClInclude Include="..\..\include\source\engine\VKtexture.h">
       <Filter>source</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\common\common.h">
-      <Filter>common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\common\exception.h">
-      <Filter>common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\common\helper_cuda.h">
-      <Filter>common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\common\helper_math.h">
-      <Filter>common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\common\helper_string.h">
-      <Filter>common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\common\helper_timer.h">
-      <Filter>common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\common\linmath.h">
-      <Filter>common</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\include\common\macros.h">
-      <Filter>common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\common\object_data.h">
-      <Filter>common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\common\png.h">
-      <Filter>common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\common\pngconf.h">
-      <Filter>common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\common\pngdebug.h">
-      <Filter>common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\common\pnginfo.h">
-      <Filter>common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\common\pnglibconf.h">
-      <Filter>common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\common\pngpriv.h">
-      <Filter>common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\common\pngstruct.h">
-      <Filter>common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\common\resourseload.h">
-      <Filter>common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\common\stb_image.h">
-      <Filter>common</Filter>
+      <Filter>source</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\common\struct.h">
-      <Filter>common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\common\tiny_obj_loader.h">
-      <Filter>common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\common\VectorCMS.h">
-      <Filter>common</Filter>
+      <Filter>source</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\common\vkmath.h">
-      <Filter>common</Filter>
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\common\VectorCMS.h">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\common\common.h">
+      <Filter>source</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

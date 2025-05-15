@@ -21,6 +21,7 @@
     <ClCompile Include="..\..\app\component\imgui\imgui_widgets.cpp" />
     <ClCompile Include="..\..\app\component\object3D.cpp" />
     <ClCompile Include="..\..\app\component\VKimgui.cpp" />
+    <ClCompile Include="..\..\app\component\VKLoadModel.cpp" />
     <ClCompile Include="..\..\app\source\engine\VKinputEvent.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -30,6 +31,7 @@
     <ClInclude Include="..\..\include\component\Camera.h" />
     <ClInclude Include="..\..\include\component\object3D.h" />
     <ClInclude Include="..\..\include\component\VKimgui.h" />
+    <ClInclude Include="..\..\include\component\VKLoadModel.h" />
     <ClInclude Include="..\..\include\source\engine\VKinputEvent.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

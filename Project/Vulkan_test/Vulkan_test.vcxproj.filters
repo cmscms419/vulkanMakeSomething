@@ -21,40 +21,15 @@
     <ClCompile Include="..\..\app\component\imgui\imgui_widgets.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\shader\compile.bat">
-      <Filter>shader</Filter>
-    </None>
-    <None Include="..\..\shader\compile_debug.bat">
-      <Filter>shader</Filter>
-    </None>
-    <None Include="..\..\shader\frag.spv">
-      <Filter>shader</Filter>
-    </None>
     <None Include="..\..\shader\shader.frag">
       <Filter>shader</Filter>
     </None>
     <None Include="..\..\shader\shader.vert">
       <Filter>shader</Filter>
     </None>
-    <None Include="..\..\shader\vert.spv">
-      <Filter>shader</Filter>
-    </None>
-    <None Include="..\..\shader\trinagle00.frag">
-      <Filter>shader</Filter>
-    </None>
-    <None Include="..\..\shader\trinagle00.vert">
-      <Filter>shader</Filter>
-    </None>
-    <None Include="..\..\shader\vertTrinagle00.spv">
-      <Filter>shader</Filter>
-    </None>
-    <None Include="..\..\shader\fragTrinagle00.spv">
-      <Filter>shader</Filter>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\include\source\vulkanTest\Application.h" />
-    <ClInclude Include="..\..\include\source\vulkanTest\Application_computershader.h" />
     <ClInclude Include="..\..\include\source\vulkanTest\Camera.h" />
     <ClInclude Include="..\..\include\source\vulkanTest\DebugFunction.h" />
     <ClInclude Include="..\..\include\source\vulkanTest\common\struct.h" />

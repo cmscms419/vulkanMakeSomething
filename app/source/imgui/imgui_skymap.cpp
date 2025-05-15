@@ -28,7 +28,7 @@ namespace vkengine {
            this->RootPath + RESOURSE_PATH + TEST_TEXTURE_PATH_ARRAY5
         };
 
-        this->cubeObject.createCubeTexture(pathArray);
+        this->cubeObject.createTextureArray(pathArray);
 
         std::vector<std::string> pathCubeArray = {
            this->RootPath + RESOURSE_PATH + CUBE_TEXTURE_PATH + "/right.png",

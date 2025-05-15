@@ -15,8 +15,8 @@ void Vk2DTexture::createTextureImage(int type, const char* texPath)
 
     VkDeviceSize imageSize = texWidth * texHeight * 4;
     
-    //this->VKmipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(texWidth, texHeight)))) + 1;
-    this->VKmipLevels = 1;
+    this->VKmipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(texWidth, texHeight)))) + 1;
+    //this->VKmipLevels = 1;
 
     VkBuffer stagingBuffer;
     VkDeviceMemory stagingBufferMemory;
@@ -71,19 +71,21 @@ void Vk2DTexture::createTextureImage(int type, const char* texPath)
         this->image,
         static_cast<uint32_t>(texWidth),
         static_cast<uint32_t>(texHeight));
-    
-    vkengine::helper::transitionImageLayout(
+
+    vkDestroyBuffer(this->device->logicaldevice, stagingBuffer, nullptr);
+    vkFreeMemory(this->device->logicaldevice, stagingBufferMemory, nullptr);
+
+    vkengine::helper::generateMipmaps(
+        this->device->physicalDevice,
         this->device->logicaldevice,
         this->device->commandPool,
         this->device->graphicsVKQueue,
         this->image,
         VK_FORMAT_R8G8B8A8_SRGB,
-        VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-        VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+        texWidth,
+        texHeight,
         this->VKmipLevels);
 
-    vkDestroyBuffer(this->device->logicaldevice, stagingBuffer, nullptr);
-    vkFreeMemory(this->device->logicaldevice, stagingBufferMemory, nullptr);
 }
 
 void Vk2DTexture::createTextureImageView(VkFormat format)

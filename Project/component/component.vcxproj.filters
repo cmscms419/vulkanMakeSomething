@@ -42,6 +42,9 @@
     <ClCompile Include="..\..\app\source\engine\VKinputEvent.cpp">
       <Filter>component</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\app\component\VKLoadModel.cpp">
+      <Filter>component</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\include\component\VKimgui.h">
@@ -63,6 +66,9 @@
       <Filter>component\imgui</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\source\engine\VKinputEvent.h">
+      <Filter>component</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\component\VKLoadModel.h">
       <Filter>component</Filter>
     </ClInclude>
   </ItemGroup>

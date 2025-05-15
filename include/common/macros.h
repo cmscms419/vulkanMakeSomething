@@ -8,9 +8,9 @@
 #include <string>
 
 #include <vulkan/vulkan.h>
+#define UNIQUE_VERTEXTYPE 1
 
 constexpr const char* DEBUG_USER_NAME_0 = "alstj";
-constexpr int UNIQUE_VERTEXTYPE = 1;
 
 namespace vkengine {
     extern const bool enableValidationLayers;

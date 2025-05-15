@@ -497,9 +497,9 @@ namespace vkengine {
             VkFormatProperties formatProperties;
             vkGetPhysicalDeviceFormatProperties(physicalDevice, imageFormat, &formatProperties);
 
-            _CHECK_RESULT_(!(formatProperties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT))
+            _CHECK_RESULT_((formatProperties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT))
 
-                VkCommandBuffer commandBuffer = beginSingleTimeCommands(device, commandPool);
+            VkCommandBuffer commandBuffer = beginSingleTimeCommands(device, commandPool);
             VkImageMemoryBarrier barrier{};
             barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
             barrier.image = image;
@@ -592,10 +592,7 @@ namespace vkengine {
             VkFormatProperties formatProperties;
             vkGetPhysicalDeviceFormatProperties(physicalDevice, imageFormat, &formatProperties);
 
-            if (!(formatProperties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT))
-            {
-                return;
-            }
+            _CHECK_RESULT_((formatProperties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT));
 
             VkCommandBuffer commandBuffer = beginSingleTimeCommands(device, commandPool);
             VkImageMemoryBarrier barrier{};

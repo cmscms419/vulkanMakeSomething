@@ -64,9 +64,6 @@ bld/
 [Ll]ogs/
 
 exe/
-external/basicEngine/*
-external/component/*
-
 
 source/Texture/512x512/Brick
 source/Texture/512x512/Dirt
@@ -439,6 +436,15 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+
+external/basicEngine/x64/Debug/basicEngine.lib
+external/basicEngine/x64/Release/basicEngine.lib
+external/basicEngine/x64/Debug/basicEngine.idb
+external/basicEngine/x64/Release/basicEngine.idb
+external/component/x64/Debug/component.lib
+external/component/x64/Release/component.lib
+external/component/x64/Debug/component.idb
+external/component/x64/Release/component.idb
 
 ### VisualStudio Patch ###
 # Additional files built by Visual Studio

@@ -1,7 +1,7 @@
 #ifndef INCLUDE_VK_INPUT_EVENT_H_
 #define INCLUDE_VK_INPUT_EVENT_H_
 
-#include "../../common/common.h"
+#include "../common/common.h"
 #include <GLFW/glfw3.h>
 
 namespace vkengine {

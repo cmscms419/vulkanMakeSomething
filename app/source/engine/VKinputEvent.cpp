@@ -33,6 +33,7 @@ namespace vkengine
 
             }
         }
+        
         void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods)
         {
             VulkanEngine* app = reinterpret_cast<VulkanEngine*>(glfwGetWindowUserPointer(window));
@@ -51,6 +52,7 @@ namespace vkengine
             }
             //else if (button == )
         }
+        
         void cursorPositionCallback(GLFWwindow* window, double xpos, double ypos)
         {
             glfwGetCursorPos(window, &xpos, &ypos);
@@ -62,7 +64,7 @@ namespace vkengine
 
             if (app->getCameraMoveStyle())
             {
-                app->getCamera()->RotateScreenStandard(xpos, ypos, windowWidth, windowHeight);
+                app->getCamera()->RotateScreenStandard(static_cast<float>(xpos), static_cast<float>(ypos), windowWidth, windowHeight);
             }
             else
             {
@@ -88,6 +90,7 @@ namespace vkengine
             }
 
         }
+        
         void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
         {
             VulkanEngine* app = reinterpret_cast<VulkanEngine*>(glfwGetWindowUserPointer(window));

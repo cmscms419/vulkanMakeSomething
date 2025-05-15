@@ -1,8 +1,5 @@
 #include "object3D.h"
 
-#include "helper.h"
-#include "VKengine.h"
-
 namespace vkengine {
     namespace object {
 
@@ -96,6 +93,23 @@ namespace vkengine {
             vkCmdDrawIndexed(commandBuffer, this->indexBuffer.indexCount, 1, 0, 0, 0);
         }
 
+        void Object::RotationAngle(float angle, glm::vec3 axis)
+        {
+            this->rotation = glm::angleAxis(glm::radians(angle), axis);
+        }
+
+        void Object::updateMatrix()
+        {
+            glm::mat4 updateMatrix = glm::mat4(1.0f);
+
+            glm::mat4 T = glm::translate(glm::mat4(1.0f), this->position);
+            glm::mat4 R = vkMath::fromQuatToMatrix(this->rotation);
+            glm::mat4 S = glm::scale(glm::mat4(1.0f), this->scale);
+            updateMatrix = updateMatrix * T * R * S;
+
+            this->matrix = updateMatrix;
+        }
+
         void SkyBox::createCubeMap(std::vector<std::string> faces, VKDevice_& device)
         {
             this->cubeMap.texWidth = 0;
@@ -108,7 +122,7 @@ namespace vkengine {
             this->cubeMap.createTextureSampler();
         };
 
-        void TextureArrayObject3D::createCubeTexture(std::vector<std::string> faces)
+        void TextureArrayObject3D::createTextureArray(std::vector<std::string> faces)
         {
             this->cubeTextureArray.texWidth = 0;
             this->cubeTextureArray.texHeight = 0;
@@ -119,6 +133,32 @@ namespace vkengine {
             this->cubeTextureArray.createTextureArrayImages(4, faces);
             this->cubeTextureArray.createTextureImageView(VK_FORMAT_R8G8B8A8_SRGB);
             this->cubeTextureArray.createTextureSampler();
+        }
+
+        void TextureObject3D::createTexture(std::string path)
+        {
+            this->texture.texWidth = 0;
+            this->texture.texHeight = 0;
+            this->texture.texChannels = 0;
+
+            this->texture.device = vkengine::VulkanEngine::Get().getDevice();
+            this->texture.VKmipLevels = 1;
+
+            this->texture.createTextureImage(4, path.c_str());
+            this->texture.createTextureImageView(VK_FORMAT_R8G8B8A8_SRGB);
+            this->texture.createTextureSampler();
+        }
+
+        void ModelObject::createTexture(std::string path)
+        {
+            this->texture.texWidth = 0;
+            this->texture.texHeight = 0;
+            this->texture.texChannels = 0;
+            this->texture.device = vkengine::VulkanEngine::Get().getDevice();
+
+            this->texture.createTextureImage(4, path.c_str());
+            this->texture.createTextureImageView(VK_FORMAT_R8G8B8A8_SRGB);
+            this->texture.createTextureSampler();
         }
 
     }

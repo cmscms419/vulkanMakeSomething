@@ -55,6 +55,16 @@ namespace vkMath
         return rotationZ;
     }
 
+    inline const glm::mat4 fromQuatToMatrix(glm::quat quat)
+    {
+        return glm::mat4(
+            1.0f - 2.0f * (quat.y * quat.y + quat.z * quat.z), 2.0f * (quat.x * quat.y - quat.w * quat.z), 2.0f * (quat.x * quat.z + quat.w * quat.y), 0.0f,
+            2.0f * (quat.x * quat.y + quat.w * quat.z), 1.0f - 2.0f * (quat.x * quat.x + quat.z * quat.z), 2.0f * (quat.y * quat.z - quat.w * quat.x), 0.0f,
+            2.0f * (quat.x * quat.z - quat.w * quat.y), 2.0f * (quat.y * quat.z + quat.w * quat.x), 1.0f - 2.0f * (quat.x * quat.x + quat.y * quat.y), 0.0f,
+            0.0f, 0.0f, 0.0f, 1.0f
+        );
+    }
+
     const glm::mat4 CreateRotation(float yaw, float pitch, float roll);
 
     const glm::vec3 RotationQuat(const glm::quat q, const glm::vec3 dir);

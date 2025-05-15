@@ -1,9 +1,9 @@
 #ifndef INCLUDE_VULKANENGINE_H_
 #define INCLUDE_VULKANENGINE_H_
 
-#include "../../common/common.h"
-#include "../../common/struct.h"
-#include "../../common/macros.h"
+#include "common.h"
+#include "struct.h"
+#include "macros.h"
 
 #define GLFW_INCLUDE_VULKAN
 #define GLFW_EXPOSE_NATIVE_WIN32
