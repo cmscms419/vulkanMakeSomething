@@ -13,4 +13,11 @@
       <Filter>shader</Filter>
     </None>
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\app\source\camera\cameraEngine.cpp" />
+    <ClCompile Include="..\..\app\source\camera\main_engine.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\app\source\camera\cameraEngine.h" />
+  </ItemGroup>
 </Project>

@@ -78,6 +78,7 @@ namespace vkengine {
                 vkFreeMemory(this->VKdevice->logicaldevice, this->VKuniformBuffer[i].memory, nullptr);
             }
 
+            vkDestroyDescriptorPool(this->VKdevice->logicaldevice, this->VKdescriptorPoolMouse, nullptr);
             vkDestroyDescriptorPool(this->VKdevice->logicaldevice, this->VKdescriptorPool, nullptr);
             vkDestroyDescriptorSetLayout(this->VKdevice->logicaldevice, this->VKdescriptorSetLayout, nullptr);
 
@@ -372,18 +373,24 @@ namespace vkengine {
 
     void imguiEngine::createDescriptorPool()
     {
-        //// 디스크립터 풀 크기를 설정합니다.
+        // 디스크립터 풀 크기를 설정합니다.
         std::array<VkDescriptorPoolSize, MAX_FRAMES_IN_FLIGHT_UI_VERSION> poolSizes{};
 
         poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+        poolSizes[0].descriptorCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
         poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        poolSizes[1].descriptorCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
         poolSizes[2].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        poolSizes[2].descriptorCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
 
-        this->VKdescriptorPoolSize.push_back(poolSizes[0]);
-        this->VKdescriptorPoolSize.push_back(poolSizes[1]);
-        this->VKdescriptorPoolSize.push_back(poolSizes[2]);
+        // 디스크립터 풀 생성 정보 구조체를 초기화합니다.
+        VkDescriptorPoolCreateInfo poolInfo{};
+        poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+        poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
+        poolInfo.pPoolSizes = poolSizes.data();
+        poolInfo.maxSets = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
 
-       this->CreateDescriptorPool2(static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT_UI_VERSION));
+        _VK_CHECK_RESULT_(vkCreateDescriptorPool(this->VKdevice->logicaldevice, &poolInfo, nullptr, &this->VKdescriptorPoolMouse));
     }
 
     void imguiEngine::createDescriptorSets()
@@ -396,7 +403,7 @@ namespace vkengine {
 
         // 디스크립터 세트 할당 정보 구조체에 디스크립터 풀과 디스크립터 세트 개수를 설정합니다.
         allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-        allocInfo.descriptorPool = this->VKdescriptorPool;
+        allocInfo.descriptorPool = this->VKdescriptorPoolMouse;
         allocInfo.descriptorSetCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
         allocInfo.pSetLayouts = layouts.data();
 

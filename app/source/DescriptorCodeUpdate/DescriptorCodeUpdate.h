@@ -38,7 +38,6 @@ namespace vkengine
         void createIndexBuffer();
         void createUniformBuffers();
 
-        void createDescriptorPool();
         void createDescriptorSets2();
 
         // grapics pipeline을 생성하기 위한 함수

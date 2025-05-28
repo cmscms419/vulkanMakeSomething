@@ -64,6 +64,7 @@ namespace vkengine
         VkPipeline VKCubeMapPipeline = VK_NULL_HANDLE;                       // 큐브맵 파이프라인 -> 큐브맵 파이프라인을 생성
 
         VkPipelineLayout VKpipelineLayout{ VK_NULL_HANDLE };
+        VkDescriptorPool VKdescriptorPoolMouse{ VK_NULL_HANDLE };
     };
 }
 

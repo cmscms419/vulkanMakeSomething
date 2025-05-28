@@ -13,4 +13,11 @@
       <Filter>shader</Filter>
     </None>
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\app\source\texture\main_engine.cpp" />
+    <ClCompile Include="..\..\app\source\texture\texture.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\app\source\texture\texture.h" />
+  </ItemGroup>
 </Project>

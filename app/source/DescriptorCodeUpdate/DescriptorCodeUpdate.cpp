@@ -79,8 +79,6 @@ namespace vkengine {
         this->skyMapModelDescriptor->createDescriptorSets(false);
         this->skyMapModelDescriptor->updateDescriptorSets();
 
-
-
         this->createGraphicsPipeline();
         this->createGraphicsPipeline2();
         this->createGraphicsPipeline_skymap();
@@ -407,21 +405,6 @@ namespace vkengine {
         this->cubeSkybox.getModelViewProjUniformBuffer(0)->createDescriptorBufferInfo();
         this->cubeSkybox.getModelViewProjUniformBuffer(1)->createDescriptorBufferInfo();
 
-    }
-
-    void DescriptorCodeUpdateEngine::createDescriptorPool()
-    {
-        std::array<VkDescriptorPoolSize, MAX_FRAMES_IN_FLIGHT_UI_VERSION> poolSizes{};
-
-        poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-        poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-        poolSizes[2].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-
-        this->VKdescriptorPoolSize.push_back(poolSizes[0]);
-        this->VKdescriptorPoolSize.push_back(poolSizes[1]);
-        this->VKdescriptorPoolSize.push_back(poolSizes[2]);
-
-        this->CreateDescriptorPool2(static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT_UI_VERSION));
     }
 
     void DescriptorCodeUpdateEngine::createDescriptorSets2()
