@@ -50,7 +50,7 @@ namespace vkengine
 
         VertexBuffer VKvertexBuffer2{}; // 정사각형 -> texture 부착
         IndexBuffer VKindexBuffer{};
-        std::vector<UniformBuffer> VKuniformBuffer = {};
+        std::vector<subUniformBuffer> VKuniformBuffer = {};
 
         Vk2DTexture testTexture;
 

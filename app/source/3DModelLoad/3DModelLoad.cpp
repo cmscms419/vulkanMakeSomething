@@ -42,12 +42,12 @@ namespace vkengine {
            this->RootPath + RESOURSE_PATH + CUBE_TEXTURE_PATH + "/back.png"
         };
 
-        this->cubeSkybox.createCubeMap(pathCubeArray, *this->getDevice());
+        this->cubeSkybox.createCubeMap(pathCubeArray);
         this->vkGUI = new vkengine::vkGUI(this);
 
         this->modelObject.createTexture(this->RootPath + RESOURSE_PATH + TEXTURE_PATH);
-        helper::loadModel::loadModel(this->RootPath, *this->modelObject.getVertices(), *this->modelObject.getIndices());
         this->modelObject.RotationAngle(90.0f, glm::vec3(1.0f, 0.0f, 0.0f));
+        helper::loadModel::loadModel(this->RootPath, *this->modelObject.getVertices(), *this->modelObject.getIndices());
 
         this->createVertexbuffer();
         this->createIndexBuffer();
@@ -77,7 +77,6 @@ namespace vkengine {
             vkDestroyPipeline(this->VKdevice->logicaldevice, this->VKgraphicsPipeline, nullptr);
             vkDestroyPipeline(this->VKdevice->logicaldevice, this->VKCubeMapPipeline, nullptr);
 
-            vkDestroyPipelineLayout(this->VKdevice->logicaldevice, this->VKpipelineLayout, nullptr);
             vkDestroyRenderPass(this->VKdevice->logicaldevice, *this->VKrenderPass.get(), nullptr);
 
             // 추가적인 부분
@@ -89,13 +88,12 @@ namespace vkengine {
                 vkFreeMemory(this->VKdevice->logicaldevice, this->VKuniformBuffer2[i].memory, nullptr);
             }
 
+            vkDestroyPipelineLayout(this->VKdevice->logicaldevice, this->VKpipelineLayout, nullptr);
             vkDestroyDescriptorPool(this->VKdevice->logicaldevice, this->VKdescriptorPool, nullptr);
             vkDestroyDescriptorSetLayout(this->VKdevice->logicaldevice, this->VKdescriptorSetLayout, nullptr);
-            
 
             this->cubeSkybox.cleanup();
             this->modelObject.cleanup();
-            //this->cubeObject.cleanup();
 
             for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
             {
@@ -305,11 +303,11 @@ namespace vkengine {
 
             vkCmdBindDescriptorSets(framedata->mainCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->VKpipelineLayout, 0, 1, &this->VKdescriptorSets[this->currentFrame], 0, nullptr);
             vkCmdBindPipeline(framedata->mainCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->VKCubeMapPipeline);
-            this->cubeSkybox.draw(framedata->mainCommandBuffer, this->currentFrame);
+            this->cubeSkybox.draw(framedata->mainCommandBuffer, static_cast<uint32_t>(this->currentFrame));
 
             vkCmdBindDescriptorSets(framedata->mainCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->VKpipelineLayout, 0, 1, &this->VKdescriptorLoadModelSets[this->currentFrame], 0, nullptr);
             vkCmdBindPipeline(framedata->mainCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->VKgraphicsPipeline);
-            this->modelObject.draw(framedata->mainCommandBuffer, this->currentFrame);
+            this->modelObject.draw(framedata->mainCommandBuffer, static_cast<uint32_t>(this->currentFrame));
 
             this->vkGUI->begin();
             this->vkGUI->update();
@@ -337,14 +335,14 @@ namespace vkengine {
     {
         //this->cubeObject.createVertexBuffer(cube);
         this->modelObject.createVertexBuffer(*this->modelObject.getVertices());
-        this->cubeSkybox.createVertexBuffer(skyboxVertices);
+        this->cubeSkybox.createVertexBuffer(const_cast<std::vector<Vertex>&>(skyboxVertices));
     }
 
     void Load3DModelEngine::createIndexBuffer()
     {
         //this->cubeObject.createIndexBuffer(cubeindices_);
         this->modelObject.createIndexBuffer(*this->modelObject.getIndices());
-        this->cubeSkybox.createIndexBuffer(skyboxIndices);
+        this->cubeSkybox.createIndexBuffer(const_cast<std::vector<uint16_t>&>(skyboxIndices));
     }
 
     void Load3DModelEngine::createUniformBuffers()
@@ -420,7 +418,7 @@ namespace vkengine {
 
     void Load3DModelEngine::createDescriptorPool()
     {
-        this->createDescriptorPool2_(static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT * 2)); // 충분한 descriptor set을 위해 2배
+        this->createDescriptorPool2_(static_cast<uint32_t>(3)); // 충분한 descriptor set을 위해 2배
     }
 
     void Load3DModelEngine::createDescriptorSets()
@@ -454,13 +452,13 @@ namespace vkengine {
 
             VkDescriptorImageInfo imageInfo{};
             imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-            imageInfo.imageView = this->cubeSkybox.getCubeMap().imageView;
-            imageInfo.sampler = this->cubeSkybox.getCubeMap().sampler;
+            imageInfo.imageView = this->cubeSkybox.getCubeMap()->imageView;
+            imageInfo.sampler = this->cubeSkybox.getCubeMap()->sampler;
 
             VkDescriptorImageInfo imageInfo2{};
             imageInfo2.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-            imageInfo2.imageView = this->modelObject.getTexture().imageView;
-            imageInfo2.sampler = this->modelObject.getTexture().sampler;
+            imageInfo2.imageView = this->modelObject.getTexture()->imageView;
+            imageInfo2.sampler = this->modelObject.getTexture()->sampler;
             /*imageInfo2.imageView = this->cubeObject.getCubeTexture().imageView;
             imageInfo2.sampler = this->cubeObject.getCubeTexture().sampler;*/
 
@@ -500,13 +498,13 @@ namespace vkengine {
         // 각 타입별로 descriptor 수를 설정합니다
         std::vector<VkDescriptorPoolSize> poolSizes;
 
-        // UNIFORM_BUFFER 타입 (각 프레임마다 2개씩)
+        // UNIFORM_BUFFER 타입 (각 프레임마다 2개씩) -> 모델과 스카이박스에 각각 1개의 uniform buffer가 필요
         VkDescriptorPoolSize uniformPoolSize{};
         uniformPoolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
         uniformPoolSize.descriptorCount = max_sets * 2;  // 두 세트의 파이프라인을 위한 충분한 개수
         poolSizes.push_back(uniformPoolSize);
 
-        // COMBINED_IMAGE_SAMPLER 타입 (각 프레임마다 4개씩)
+        // COMBINED_IMAGE_SAMPLER 타입 (각 프레임마다 4개씩) -> 모델과 스카이박스에 각각 2개의 combined image sampler가 필요
         VkDescriptorPoolSize samplerPoolSize{};
         samplerPoolSize.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
         samplerPoolSize.descriptorCount = max_sets * 4;  // 두 세트의 파이프라인을 위한 충분한 개수
@@ -557,13 +555,13 @@ namespace vkengine {
 
             VkDescriptorImageInfo imageInfo{};
             imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-            imageInfo.imageView = this->cubeSkybox.getCubeMap().imageView;
-            imageInfo.sampler = this->cubeSkybox.getCubeMap().sampler;
+            imageInfo.imageView = this->cubeSkybox.getCubeMap()->imageView;
+            imageInfo.sampler = this->cubeSkybox.getCubeMap()->sampler;
 
             VkDescriptorImageInfo imageInfo2{};
             imageInfo2.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-            imageInfo2.imageView = this->modelObject.getTexture().imageView;
-            imageInfo2.sampler = this->modelObject.getTexture().sampler;
+            imageInfo2.imageView = this->modelObject.getTexture()->imageView;
+            imageInfo2.sampler = this->modelObject.getTexture()->sampler;
 
             std::array<VkWriteDescriptorSet, 3> descriptorWrites{};
 

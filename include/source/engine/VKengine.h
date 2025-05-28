@@ -63,6 +63,7 @@ namespace vkengine {
         void presentFrame(uint32_t* imageIndex);
 
         void CreateDescriptorPool2(uint32_t maxFrames);
+        void CreateDescriptorPool_ImGui();
 
     public:
         bool isInitialized() const { return _isInitialized; }
@@ -154,9 +155,9 @@ namespace vkengine {
 
         std::string RootPath = "";                          // 루트 경로
         size_t currentFrame = 0;                            // 현재 프레임 인덱스
-        bool state = false;                                         // 프로그램 상태 
-        int windowWidth = WIDTH;                                  // 윈도우 너비
-        int windowHeight = HEIGHT;                                // 윈도우 높이
+        bool state = false;                                 // 프로그램 상태 
+        int windowWidth = WIDTH;                            // 윈도우 너비
+        int windowHeight = HEIGHT;                          // 윈도우 높이
 
         // 현재 키보드가 눌렸는지 상태를 저장하는 배열
         bool m_keyPressed[256] = {

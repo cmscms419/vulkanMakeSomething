@@ -48,6 +48,9 @@
     <ClCompile Include="..\..\app\common\common.cpp">
       <Filter>source</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\app\source\engine\VKDescriptor.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\include\common\exception.h">
@@ -138,6 +141,9 @@
       <Filter>source</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\common\common.h">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\source\engine\VKDescriptor.h">
       <Filter>source</Filter>
     </ClInclude>
   </ItemGroup>

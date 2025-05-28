@@ -115,7 +115,7 @@ struct Vertex {
 
 };
 
-struct UniformBuffer {
+struct subUniformBuffer {
     VkBuffer buffer;
     VkDeviceMemory memory;
     void* Mapped;
@@ -207,8 +207,8 @@ extern const std::vector<Vertex> DepthTestVertices;
 extern const std::vector<Vertex> SquareTestVertices;
 extern const std::vector<uint16_t> DepthTestIndices;
 extern const std::vector<uint16_t> SquareTestIndices_;
-extern const std::vector<Vertex> cube;
-extern const std::vector<uint16_t> cubeindices_;
+const extern std::vector<Vertex> cube;
+const extern std::vector<uint16_t> cubeindices_;
 extern const std::vector<Vertex> skyboxVertices;
 extern const std::vector<uint16_t> skyboxIndices;
 

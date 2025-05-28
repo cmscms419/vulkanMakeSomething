@@ -10,6 +10,9 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Square", "triangle\triangle.vcxproj", "{0FAD5E8C-62D8-453E-93C9-A54638022170}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "component", "component\component.vcxproj", "{FDB36B85-8C84-47B3-A5AE-65DF4EE936C9}"
+	ProjectSection(ProjectDependencies) = postProject
+		{4C2DB017-DA5B-1C63-CFD9-6700B8C045BA} = {4C2DB017-DA5B-1C63-CFD9-6700B8C045BA}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Camera", "camera\Camera.vcxproj", "{AC67A5AB-6173-4E03-B314-E9C3EBB94545}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -42,6 +45,8 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Vulkan_test", "Vulkan_test\Vulkan_test.vcxproj", "{961CB7AD-D855-4611-8025-A94BC31029F5}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BasicProject", "contentBasicProject\basicProject.vcxproj", "{722A8DC8-412C-4542-89CA-FB9BD3CD9937}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DescriptorCodeUpdate", "DescriptorCodeUpdate\DescriptorCodeUpdate.vcxproj", "{B58EDB0E-4D3B-4F61-9CEC-DACCCB023AA1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -101,6 +106,10 @@ Global
 		{722A8DC8-412C-4542-89CA-FB9BD3CD9937}.Debug|x64.Build.0 = Debug|x64
 		{722A8DC8-412C-4542-89CA-FB9BD3CD9937}.Release|x64.ActiveCfg = Release|x64
 		{722A8DC8-412C-4542-89CA-FB9BD3CD9937}.Release|x64.Build.0 = Release|x64
+		{B58EDB0E-4D3B-4F61-9CEC-DACCCB023AA1}.Debug|x64.ActiveCfg = Debug|x64
+		{B58EDB0E-4D3B-4F61-9CEC-DACCCB023AA1}.Debug|x64.Build.0 = Debug|x64
+		{B58EDB0E-4D3B-4F61-9CEC-DACCCB023AA1}.Release|x64.ActiveCfg = Release|x64
+		{B58EDB0E-4D3B-4F61-9CEC-DACCCB023AA1}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -116,6 +125,7 @@ Global
 		{10842EED-72DC-430B-97C9-82D0117FFDCD} = {C8D5274F-AC00-46C7-1F8D-E88E81087A52}
 		{96BD3106-5090-46E9-89BF-4EC610A14A02} = {C8D5274F-AC00-46C7-1F8D-E88E81087A52}
 		{722A8DC8-412C-4542-89CA-FB9BD3CD9937} = {C8D5274F-AC00-46C7-1F8D-E88E81087A52}
+		{B58EDB0E-4D3B-4F61-9CEC-DACCCB023AA1} = {C8D5274F-AC00-46C7-1F8D-E88E81087A52}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {46E572E5-9639-4EE0-9508-072778161B66}

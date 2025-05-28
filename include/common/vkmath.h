@@ -69,6 +69,8 @@ namespace vkMath
 
     const glm::vec3 RotationQuat(const glm::quat q, const glm::vec3 dir);
 
+    const glm::mat4 convertQuatToMatrix(const glm::quat q);
+
 }
 
 #endif // !INCLUDE_MATH_H_

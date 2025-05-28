@@ -52,8 +52,8 @@ namespace vkengine
         // skybox
         object::SkyBox cubeSkybox;
 
-        std::vector<UniformBuffer> VKuniformBuffer = {};
-        std::vector<UniformBuffer> VKuniformBuffer2 = {};
+        std::vector<subUniformBuffer> VKuniformBuffer = {};
+        std::vector<subUniformBuffer> VKuniformBuffer2 = {};
 
         VkPipeline VKgraphicsPipeline = VK_NULL_HANDLE;                      // 그래픽스 파이프라인 -> 그래픽스 파이프라인을 생성
         VkPipeline VKCubeMapPipeline = VK_NULL_HANDLE;                       // 큐브맵 파이프라인 -> 큐브맵 파이프라인을 생성

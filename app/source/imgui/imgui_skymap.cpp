@@ -39,7 +39,7 @@ namespace vkengine {
            this->RootPath + RESOURSE_PATH + CUBE_TEXTURE_PATH + "/back.png"
         };
 
-        this->cubeSkybox.createCubeMap(pathCubeArray, *this->getDevice());
+        this->cubeSkybox.createCubeMap(pathCubeArray);
         this->vkGUI = new vkengine::vkGUI(this);
 
         this->createVertexbuffer();
@@ -301,14 +301,14 @@ namespace vkengine {
 
     void imguiEngine::createVertexbuffer()
     {
-        this->cubeObject.createVertexBuffer(cube);
-        this->cubeSkybox.createVertexBuffer(skyboxVertices);
+        this->cubeObject.createVertexBuffer(const_cast<std::vector<Vertex>&>(cube));
+        this->cubeSkybox.createVertexBuffer(const_cast<std::vector<Vertex>&>(skyboxVertices));
     }
 
     void imguiEngine::createIndexBuffer()
     {
-        this->cubeObject.createIndexBuffer(cubeindices_);
-        this->cubeSkybox.createIndexBuffer(skyboxIndices);
+        this->cubeObject.createIndexBuffer(const_cast<std::vector<uint16_t>&>(cubeindices_));
+        this->cubeSkybox.createIndexBuffer(const_cast<std::vector<uint16_t>&>(skyboxIndices));
     }
 
     void imguiEngine::createUniformBuffers()
@@ -417,8 +417,8 @@ namespace vkengine {
 
             VkDescriptorImageInfo imageInfo{};
             imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-            imageInfo.imageView = this->cubeSkybox.getCubeMap().imageView;
-            imageInfo.sampler = this->cubeSkybox.getCubeMap().sampler;
+            imageInfo.imageView = this->cubeSkybox.getCubeMap()->imageView;
+            imageInfo.sampler = this->cubeSkybox.getCubeMap()->sampler;
 
             VkDescriptorImageInfo imageInfo2{};
             imageInfo2.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;

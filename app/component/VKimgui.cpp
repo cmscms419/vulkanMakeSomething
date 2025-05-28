@@ -11,7 +11,7 @@ namespace vkengine
     }
 
     void vkGUI::init(float width, float height) {
-
+        engine->CreateDescriptorPool_ImGui();
     }
 
     void vkGUI::initResources(VkRenderPass renderPass, VkQueue copyQueue, const std::string& shadersPath)

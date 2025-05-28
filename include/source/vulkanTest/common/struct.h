@@ -170,7 +170,7 @@ struct VertexBuffer {
     }
 };
 
-struct UniformBuffer {
+struct subUniformBuffer {
     VkBuffer buffer;
     VkDeviceMemory memory;
     void* Mapped;

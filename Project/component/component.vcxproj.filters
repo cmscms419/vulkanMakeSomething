@@ -45,6 +45,12 @@
     <ClCompile Include="..\..\app\component\VKLoadModel.cpp">
       <Filter>component</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\app\component\VKmodelDescriptor.cpp">
+      <Filter>component</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\component\VKSkymapModelDescriptor.cpp">
+      <Filter>component</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\include\component\VKimgui.h">
@@ -69,6 +75,12 @@
       <Filter>component</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\component\VKLoadModel.h">
+      <Filter>component</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\component\VKmodelDescriptor.h">
+      <Filter>component</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\component\VKSkymapModelDescriptor.h">
       <Filter>component</Filter>
     </ClInclude>
   </ItemGroup>
