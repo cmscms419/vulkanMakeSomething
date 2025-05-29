@@ -11,7 +11,7 @@ namespace vkengine
     }
 
     void vkGUI::init(float width, float height) {
-        engine->CreateDescriptorPool_ImGui();
+        engine->createDescriptorPoolImGui();
     }
 
     void vkGUI::initResources(VkRenderPass renderPass, VkQueue copyQueue, const std::string& shadersPath)
@@ -59,6 +59,14 @@ namespace vkengine
         // Display the camera position using ImGui
         ImGui::Text("Camera Position:");
         ImGui::Text("X: %.4f, Y: %.4f, Z: %.4f", position.x, position.y, position.z);
+
+#if DEBUG_
+
+        ImGui::Text("Program Run Time: %.2f ms", this->engine->getProgramRunTime());
+        ImGui::Text("current delta Time: %.5f ms", this->engine->getCalulateDeltaTime());
+
+#endif // DEBUG
+
     }
     void vkengine::vkGUI::begin()
     {
@@ -72,6 +80,9 @@ namespace vkengine
     void vkengine::vkGUI::end()
     {
         ImGui::End();
+    }
+    void vkGUI::render()
+    {
         ImGui::Render();
         
         ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), VulkanEngine::Get().getCurrnetFrameData().mainCommandBuffer);

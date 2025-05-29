@@ -29,6 +29,8 @@ namespace vkengine
         {
             this->VKframeData[i] = FrameData();
         }
+        this->startTime = std::chrono::high_resolution_clock::now();
+        this->currentTime = this->startTime;
     }
 
     VulkanEngine::~VulkanEngine() {}
@@ -192,7 +194,7 @@ namespace vkengine
         }
     }
 
-    void VulkanEngine::CreateDescriptorPool_ImGui()
+    void VulkanEngine::createDescriptorPoolImGui()
     {
         VkDescriptorPoolSize pool_sizes[] =
         { { VK_DESCRIPTOR_TYPE_SAMPLER, 1000 },
@@ -219,8 +221,10 @@ namespace vkengine
 
     bool VulkanEngine::initVulkan()
     {
+        bool check = false;
+
         if (glfwVulkanSupported() == GLFW_FALSE) {
-            return false;
+            return check;
         }
 
         this->createInstance();
@@ -230,10 +234,10 @@ namespace vkengine
             this->setupDebugCallback();
         }
 
-        this->createSurface();
-        this->createDevice();
+        check = this->createSurface();
+        check = this->createDevice();
 
-        return true;
+        return check;
     }
 
     bool VulkanEngine::init_swapchain()
@@ -270,7 +274,7 @@ namespace vkengine
         return true;
     }
 
-    void VulkanEngine::createInstance()
+    bool VulkanEngine::createInstance()
     {
         if (enableValidationLayers && !checkValidationLayerSupport()) {
             throw std::runtime_error("validation layers requested, but not available!");
@@ -314,17 +318,20 @@ namespace vkengine
         _VK_CHECK_RESULT_(vkCreateInstance(&createInfo, nullptr, &this->VKinstance));
         _PRINT_TO_CONSOLE_("create instance\n");
 
+        return true;
     }
-
-    void VulkanEngine::setupDebugCallback()
+    
+    bool VulkanEngine::setupDebugCallback()
     {
         VkDebugUtilsMessengerCreateInfoEXT createInfo;
         populateDebugMessengerCreateInfo(createInfo);
 
         _VK_CHECK_RESULT_(CreateDebugUtilsMessengerEXT(this->VKinstance, &createInfo, nullptr, &this->VKdebugUtilsMessenger));
-    }
 
-    void VulkanEngine::createSurface()
+        return true;
+    }
+    
+    bool VulkanEngine::createSurface()
     {
 #if CREATESURFACE_VKWIN32SURFACECREATEINFOKHR == 0
         VkWin32SurfaceCreateInfoKHR createInfo{};
@@ -333,17 +340,22 @@ namespace vkengine
         createInfo.hinstance = GetModuleHandle(nullptr);
 
         if (vkCreateWin32SurfaceKHR(this->VKinstance, &createInfo, nullptr, &this->VKsurface) != VK_SUCCESS) {
-            throw std::runtime_error("failed to create window surface!");
+            
+            _PRINT_TO_CONSOLE_("failed to create window surface!");
+            return false;
         }
+
+        return true;
 #else
         if (glfwCreateWindowSurface(this->VKinstance, this->VKwindow, nullptr, &this->VKsurface) != VK_SUCCESS) {
-            throw std::runtime_error("failed to create window surface!");
+            _PRINT_TO_CONSOLE_("failed to create window surface!");
+            return false;
         }
 #endif
         //this->VKswapChain = new vkengine::VKSwapChain(this->VKdevice->VKphysicalDevice, this->VKdevice->VKdevice, this->VKsurface, &this->VKinstance);
     }
-
-    void VulkanEngine::createDevice()
+    
+    bool VulkanEngine::createDevice()
     {
         // 물리 디바이스 목록을 가져옵니다.
         uint32_t deviceCount = 0;
@@ -388,7 +400,8 @@ namespace vkengine
 
         if (Score == 0)
         {
-            throw std::runtime_error("failed to find a suitable GPU!");
+            _PRINT_TO_CONSOLE_("failed to find a suitable GPU!");
+            return false;
         }
 
         this->VKdevice = std::make_unique<VKDevice_>(pdevice, indices[selectQueueFamilyIndeices]);
@@ -406,9 +419,11 @@ namespace vkengine
 
         // depth format을 가져옵니다.
         this->VKdepthStencill.depthFormat = helper::findDepthFormat(this->VKdevice->physicalDevice);
-    }
 
-    void VulkanEngine::createDepthStencilResources()
+        return true;
+    }
+    
+    bool VulkanEngine::createDepthStencilResources()
     {
         // 깊이 이미지 생성 정보 구조체를 초기화합니다.
         this->VKdevice->createimageview(
@@ -445,9 +460,11 @@ namespace vkengine
         //    VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
         //    1
         //);
-    }
 
-    void VulkanEngine::createRenderPass()
+        return true;
+    }
+    
+    bool VulkanEngine::createRenderPass()
     {
         // 렌더 패스 생성 정보 구조체를 초기화합니다.
         VkAttachmentDescription colorAttachment{};
@@ -538,17 +555,21 @@ namespace vkengine
         renderPassInfo.pDependencies = &dependency;
 
         _VK_CHECK_RESULT_(vkCreateRenderPass(this->VKdevice->logicaldevice, &renderPassInfo, nullptr, this->VKrenderPass.get()));
-    }
 
-    void VulkanEngine::createPipelineCache()
+        return true;
+    }
+    
+    bool VulkanEngine::createPipelineCache()
     {
         VkPipelineCacheCreateInfo pipelineCacheCreateInfo{};
         pipelineCacheCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO;
 
         _VK_CHECK_RESULT_(vkCreatePipelineCache(this->VKdevice->logicaldevice, &pipelineCacheCreateInfo, nullptr, &this->VKpipelineCache));
-    }
 
-    void VulkanEngine::createFramebuffers()
+        return true;
+    }
+    
+    bool VulkanEngine::createFramebuffers()
     {
         this->VKswapChainFramebuffers.resize(this->VKswapChain->getSwapChainImages().size());
 
@@ -572,9 +593,11 @@ namespace vkengine
 
             _VK_CHECK_RESULT_(vkCreateFramebuffer(this->VKdevice->logicaldevice, &framebufferInfo, nullptr, &this->VKswapChainFramebuffers[i]));
         }
-    }
 
-    void VulkanEngine::recreateSwapChain()
+        return true;
+    }
+    
+    bool VulkanEngine::recreateSwapChain()
     {
         int width = 0, height = 0;
         glfwGetFramebufferSize(this->VKwindow, &width, &height);
@@ -594,11 +617,12 @@ namespace vkengine
         }
         
         this->VKswapChain->cleanupSwapChain();
-
         this->VKswapChain->createSwapChain(&this->VKdevice->queueFamilyIndices);  // 스왑 체인을 생성합니다.
         this->VKswapChain->createImageViews(); // 이미지 뷰를 생성합니다.
         VulkanEngine::createDepthStencilResources(); // 깊이 스텐실 리소스를 생성합니다.
         this->createFramebuffers(); // 렌더 패스를 생성합니다.
+
+        return true;
     }
 
     bool VulkanEngine::createCommandBuffer()
@@ -616,7 +640,6 @@ namespace vkengine
 
     void VulkanEngine::recordCommandBuffer(FrameData* framedata, uint32_t imageIndex)
     {
-
     }
 
     bool VulkanEngine::checkValidationLayerSupport()

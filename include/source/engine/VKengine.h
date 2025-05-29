@@ -32,7 +32,7 @@ namespace vkengine {
 
         bool _isInitialized{ false };
         bool stop_rendering{ false };
-        bool framebufferResized{ false };        // 프레임 버퍼 크기 조정 여부
+        bool framebufferResized{ false };   // 프레임 버퍼 크기 조정 여부
 
         FrameData& getCurrnetFrameData();
 
@@ -62,9 +62,23 @@ namespace vkengine {
         // present frame -> 화면에 렌더링된 이미지를 표시
         void presentFrame(uint32_t* imageIndex);
 
-        void CreateDescriptorPool_ImGui();
+        void createDescriptorPoolImGui();
 
-    public:
+        float getCalulateDeltaTime() {
+            auto newTime = std::chrono::high_resolution_clock::now();
+            float deltaTime = std::chrono::duration<float, std::chrono::seconds::period>(newTime - currentTime).count();
+            currentTime = newTime;
+
+            return deltaTime;
+        }
+
+        float getProgramRunTime() {
+            auto currentTime = std::chrono::high_resolution_clock::now();
+            float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
+
+            return time;
+        }
+
         bool isInitialized() const { return _isInitialized; }
         bool isStopRendering() const { return stop_rendering; }
         bool isFramebufferResized() const { return framebufferResized; }
@@ -110,15 +124,15 @@ namespace vkengine {
         virtual bool init_sync_structures();
 
         // 엔진 초기화
-        virtual void createInstance();                             // 인스턴스 생성
-        virtual void setupDebugCallback();                         // 디버그 메신저 생성
-        virtual void createSurface();                              // 서피스 생성
-        virtual void createDevice();                               // 디바이스(logical, pysical) 생성
-        virtual void createDepthStencilResources();                // 깊이 스텐실 생성
-        virtual void createRenderPass();                           // 렌더 패스 생성
-        virtual void createPipelineCache();                        // 파이프라인 캐시 생성
-        virtual void createFramebuffers();                         // 프레임 버퍼 생성
-        virtual void recreateSwapChain();                          // 스왑 체인 재생성
+        virtual bool createInstance();                             // 인스턴스 생성
+        virtual bool setupDebugCallback();                         // 디버그 메신저 생성
+        virtual bool createSurface();                              // 서피스 생성
+        virtual bool createDevice();                               // 디바이스(logical, pysical) 생성
+        virtual bool createDepthStencilResources();                // 깊이 스텐실 생성
+        virtual bool createRenderPass();                           // 렌더 패스 생성
+        virtual bool createPipelineCache();                        // 파이프라인 캐시 생성
+        virtual bool createFramebuffers();                         // 프레임 버퍼 생성
+        virtual bool recreateSwapChain();                          // 스왑 체인 재생성
         virtual bool createCommandBuffer();                        // 커맨드 버퍼 생성
 
         virtual void recordCommandBuffer(FrameData* framedata, uint32_t imageIndex);    // 커맨드 버퍼 레코드
@@ -139,8 +153,8 @@ namespace vkengine {
 
         std::unique_ptr<VKSwapChain> VKswapChain;  // 스왑 체인 -> 스왑 체인 클래스
         std::unique_ptr<VKDevice_> VKdevice{};  // 디바이스 -> GPU Logical,Physical struct Handle
-        VkSampleCountFlagBits VKmsaaSamples = VK_SAMPLE_COUNT_1_BIT; // MSAA 샘플 -> MSAA 샘플 수
         VkPipelineCache VKpipelineCache{ VK_NULL_HANDLE }; // 파이프라인 캐시 -> 파이프라인 캐시를 생성
+        VkSampleCountFlagBits VKmsaaSamples = VK_SAMPLE_COUNT_1_BIT; // MSAA 샘플 -> MSAA 샘플 수
 
         VkDescriptorPool VKdescriptorPool{ VK_NULL_HANDLE };
         VkDescriptorSetLayout VKdescriptorSetLayout{ VK_NULL_HANDLE };
@@ -176,6 +190,12 @@ namespace vkengine {
         bool cameraMove = false;
         bool cameraMoveStyle = false; // 카메라 이동 스타일
 
+        // 현재 시간
+        std::chrono::high_resolution_clock::time_point currentTime;
+        std::chrono::high_resolution_clock::time_point startTime;
+
+        // 최대 프레임 수
+        uint16_t frames = MAX_FRAMES_IN_FLIGHT;
     };
 
 }

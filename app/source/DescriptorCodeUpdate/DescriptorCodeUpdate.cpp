@@ -1,6 +1,6 @@
 #include "DescriptorCodeUpdate.h"
 
-#define MOVESPEED 0.001f
+#define MOVESPEED 1.2f
 
 using namespace vkengine::helper;
 using namespace vkengine::debug;
@@ -58,11 +58,11 @@ namespace vkengine {
         this->modelObject2.setPosition(glm::vec3(3.0f, 0.0f, 0.0f));
         helper::loadModel::loadModel(this->RootPath, *this->modelObject2.getVertices(), *this->modelObject2.getIndices());
 
-        this->modelObjectDescriptor = new vkengine::VK3DModelDescriptor(this->getDevice()->logicaldevice);
+        this->modelObjectDescriptor = new vkengine::VK3DModelDescriptor(this->getDevice()->logicaldevice, this->frames);
         this->modelObjectDescriptor->setObject(&this->modelObject);
         this->modelObjectDescriptor->setObject(&this->modelObject2);
 
-        this->skyMapModelDescriptor = new vkengine::VKSkyMapModelDescriptor(this->getDevice()->logicaldevice);
+        this->skyMapModelDescriptor = new vkengine::VKSkyMapModelDescriptor(this->getDevice()->logicaldevice, this->frames);
         this->skyMapModelDescriptor->setObject(&this->cubeSkybox);
 
         this->createVertexbuffer();
@@ -103,6 +103,8 @@ namespace vkengine {
 
             this->modelObjectDescriptor->destroyDescriptor();
             this->skyMapModelDescriptor->destroyDescriptor();
+
+            vkDestroyDescriptorPool(this->VKdevice->logicaldevice, this->VKdescriptorPool, nullptr);
 
             this->cubeSkybox.cleanup();
             this->modelObject.cleanup();
@@ -196,19 +198,27 @@ namespace vkengine {
 
     bool DescriptorCodeUpdateEngine::mainLoop()
     {
-        static auto currentTime = std::chrono::high_resolution_clock::now();
-
         while (!glfwWindowShouldClose(this->VKwindow)) {
             glfwPollEvents();
-
-            static auto startTime = std::chrono::high_resolution_clock::now();
-            auto currentTime = std::chrono::high_resolution_clock::now();
-            float time =
-                std::chrono::duration<float, std::chrono::seconds::period>(
-                    currentTime - startTime)
-                    .count();
+            float time = this->getProgramRunTime();
 
             this->update(time);
+
+            this->vkGUI->begin();
+            this->vkGUI->update();
+
+            ImGui::Text("Camera Yaw, Pitch");
+            ImGui::Text("Yaw: %.4f, Pitch: %.4f", this->getCamera()->getYaw(), this->getCamera()->getPitch());
+
+            bool check = this->getCameraMoveStyle();
+            ImGui::Checkbox("Camera Move Style", &check);
+            this->setCameraMoveStyle(check);
+
+            float fov = this->getCamera()->getFov();
+            ImGui::Text("Camera Fov: %.4f", fov);
+
+            this->vkGUI->end();
+
             drawFrame();
 
 #ifdef DEBUG_
@@ -225,34 +235,36 @@ namespace vkengine {
 
     void DescriptorCodeUpdateEngine::update(float dt)
     {
+        float frameTime = this->getCalulateDeltaTime();
+
         if (this->m_keyPressed[GLFW_KEY_W])
         {
-            this->camera->MoveForward(MOVESPEED);
+            this->camera->MoveForward(frameTime * MOVESPEED);
         }
 
         if (this->m_keyPressed[GLFW_KEY_S])
         {
-          this->camera->MoveForward(-MOVESPEED);
+          this->camera->MoveForward(-frameTime * MOVESPEED);
         }
 
         if (this->m_keyPressed[GLFW_KEY_A])
         {
-          this->camera->MoveRight(-MOVESPEED);
+          this->camera->MoveRight(-frameTime * MOVESPEED);
         }
 
         if (this->m_keyPressed[GLFW_KEY_D])
         {
-          this->camera->MoveRight(MOVESPEED);
+          this->camera->MoveRight(frameTime * MOVESPEED);
         }
 
         if (this->m_keyPressed[GLFW_KEY_Q])
         {
-          this->camera->MoveUp(-MOVESPEED);
+          this->camera->MoveUp(-frameTime * MOVESPEED);
         }
 
         if (this->m_keyPressed[GLFW_KEY_E])
         {
-          this->camera->MoveUp(MOVESPEED);
+          this->camera->MoveUp(frameTime * MOVESPEED);
         }
 
         this->camera->update();
@@ -349,22 +361,8 @@ namespace vkengine {
             this->modelObjectDescriptor->BindDescriptorSets(framedata->mainCommandBuffer, this->currentFrame, 1);
             vkCmdBindPipeline(framedata->mainCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->VKgraphicsPipeline2);
             this->modelObject2.draw(framedata->mainCommandBuffer, this->currentFrame);
-            
 
-            this->vkGUI->begin();
-            this->vkGUI->update();
-
-            ImGui::Text("Camera Yaw, Pitch");
-            ImGui::Text("Yaw: %.4f, Pitch: %.4f", this->getCamera()->getYaw(), this->getCamera()->getPitch());
-
-            bool check = this->getCameraMoveStyle();
-            ImGui::Checkbox("Camera Move Style", &check);
-            this->setCameraMoveStyle(check);
-
-            float fov = this->getCamera()->getFov();
-            ImGui::Text("Camera Fov: %.4f", fov);
-            
-            this->vkGUI->end();
+            this->vkGUI->render();
         }
 
         vkCmdEndRenderPass(framedata->mainCommandBuffer);
@@ -405,75 +403,6 @@ namespace vkengine {
         this->cubeSkybox.getModelViewProjUniformBuffer(0)->createDescriptorBufferInfo();
         this->cubeSkybox.getModelViewProjUniformBuffer(1)->createDescriptorBufferInfo();
 
-    }
-
-    void DescriptorCodeUpdateEngine::createDescriptorSets2()
-    {
-        // 디스크립터 세트 레이아웃을 설정합니다.
-        std::vector<VkDescriptorSetLayout> layouts(this->frames, this->VKdescriptorSetLayout);
-
-        // 디스크립터 세트 할당 정보 구조체를 초기화합니다.
-        VkDescriptorSetAllocateInfo allocInfo{};
-
-        // 디스크립터 세트 할당 정보 구조체에 디스크립터 풀과 디스크립터 세트 개수를 설정합니다.
-        allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-        allocInfo.descriptorPool = this->VKdescriptorPool;
-        allocInfo.descriptorSetCount = static_cast<uint32_t>(this->frames);
-        allocInfo.pSetLayouts = layouts.data();
-
-        // 디스크립터 세트를 생성합니다.
-        this->VKdescriptorLoadModelSets.resize(this->frames);
-
-        // 디스크립터 세트를 할당합니다.
-        _VK_CHECK_RESULT_(vkAllocateDescriptorSets(this->VKdevice->logicaldevice, &allocInfo, this->VKdescriptorLoadModelSets.data()));
-
-        // 디스크립터 세트를 설정합니다.
-        for (size_t i = 0; i < this->frames; i++)
-        {
-            // 디스크립터 버퍼 정보를 설정합니다.
-            VkDescriptorBufferInfo bufferInfo{};
-            //bufferInfo.buffer = this->VKuniformBuffer[i].buffer;
-            bufferInfo.offset = 0;
-            bufferInfo.range = sizeof(UniformBufferObject);
-
-            VkDescriptorImageInfo imageInfo{};
-            imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-            //imageInfo.imageView = this->cubeSkybox.getCubeMap().imageView;
-            //imageInfo.sampler = this->cubeSkybox.getCubeMap().sampler;
-
-            VkDescriptorImageInfo imageInfo2{};
-            imageInfo2.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-            imageInfo2.imageView = this->modelObject.getTexture()->imageView;
-            imageInfo2.sampler = this->modelObject.getTexture()->sampler;
-
-            std::array<VkWriteDescriptorSet, 3> descriptorWrites{};
-
-            descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-            descriptorWrites[0].dstSet = this->VKdescriptorLoadModelSets[i];
-            descriptorWrites[0].dstBinding = 0;
-            descriptorWrites[0].dstArrayElement = 0;
-            descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-            descriptorWrites[0].descriptorCount = 1;
-            descriptorWrites[0].pBufferInfo = &bufferInfo;
-
-            descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-            descriptorWrites[1].dstSet = this->VKdescriptorLoadModelSets[i];
-            descriptorWrites[1].dstBinding = 1;
-            descriptorWrites[1].dstArrayElement = 0;
-            descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-            descriptorWrites[1].descriptorCount = 1;
-            descriptorWrites[1].pImageInfo = &imageInfo;
-
-            descriptorWrites[2].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-            descriptorWrites[2].dstSet = this->VKdescriptorLoadModelSets[i];
-            descriptorWrites[2].dstBinding = 2;
-            descriptorWrites[2].dstArrayElement = 0;
-            descriptorWrites[2].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-            descriptorWrites[2].descriptorCount = 1;
-            descriptorWrites[2].pImageInfo = &imageInfo2;
-
-            vkUpdateDescriptorSets(this->VKdevice->logicaldevice, static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
-        }
     }
 
     void DescriptorCodeUpdateEngine::createGraphicsPipeline()
@@ -603,15 +532,6 @@ namespace vkengine {
         dynamicState.dynamicStateCount = static_cast<uint32_t>(dynamicStates.size());
         dynamicState.pDynamicStates = dynamicStates.data();
 
-        // 그래픽 파이프라인 레이아웃을 생성합니다.
-        //VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
-        //pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO; // 구조체 타입을 설정
-        //pipelineLayoutInfo.setLayoutCount = 1;                                    // 레이아웃 개수를 설정
-        //pipelineLayoutInfo.pSetLayouts = &this->VKdescriptorSetLayout;            // 레이아웃 포인터를 설정
-        //pipelineLayoutInfo.pushConstantRangeCount = 0;                            // 푸시 상수 범위 개수를 설정
-        //pipelineLayoutInfo.pPushConstantRanges = nullptr;                         // 푸시 상수 범위 포인터를 설정
-
-        //_VK_CHECK_RESULT_(vkCreatePipelineLayout(this->VKdevice->logicaldevice, &pipelineLayoutInfo, nullptr, &this->VKpipelineLayout));
         this->modelObjectDescriptor->createPipelineLayout();
 
         // 그래픽 파이프라인 생성 정보 구조체를 초기화합니다.
@@ -928,14 +848,6 @@ namespace vkengine {
         dynamicState.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
         dynamicState.dynamicStateCount = static_cast<uint32_t>(dynamicStates.size());
         dynamicState.pDynamicStates = dynamicStates.data();
-
-        // 그래픽 파이프라인 레이아웃을 생성합니다.
-        //VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
-        //pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO; // 구조체 타입을 설정
-        //pipelineLayoutInfo.setLayoutCount = 1;                                    // 레이아웃 개수를 설정
-        //pipelineLayoutInfo.pSetLayouts = &this->VKdescriptorSetLayout;            // 레이아웃 포인터를 설정
-        //pipelineLayoutInfo.pushConstantRangeCount = 0;                            // 푸시 상수 범위 개수를 설정
-        //pipelineLayoutInfo.pPushConstantRanges = nullptr;                         // 푸시 상수 범위 포인터를 설정
 
         this->skyMapModelDescriptor->createPipelineLayout();
 

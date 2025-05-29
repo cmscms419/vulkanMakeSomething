@@ -27,7 +27,7 @@
     <ProjectGuid>{8c4b8696-dbb5-41b8-b6db-f7f6e5b98b57}</ProjectGuid>
     <RootNamespace>Mouse</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
-    <ProjectName>Mouse</ProjectName>
+    <ProjectName>05.Mouse</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">

@@ -27,7 +27,7 @@
     <ProjectGuid>{7CBE4E43-0826-4705-9DDE-11A7B13E96C8}</ProjectGuid>
     <RootNamespace>triangle</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
-    <ProjectName>Skymap</ProjectName>
+    <ProjectName>04.Skymap</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">

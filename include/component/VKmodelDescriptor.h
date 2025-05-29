@@ -15,13 +15,13 @@ namespace vkengine {
     struct VK3DModelDescriptor : public VKDescriptor
     {
     public:
-        VK3DModelDescriptor(VkDevice device = VK_NULL_HANDLE) : VKDescriptor(device) {};
+        VK3DModelDescriptor(VkDevice device = VK_NULL_HANDLE, uint16_t frames = 0) : VKDescriptor(device, frames) {};
 
         virtual void createDescriptorSetLayout(bool useTexture) override;
 
-        /// <summary>
-        /// descriptorCount는 디스크립터 풀의 개수를 의미합니다. 풀에 몇 개의 uniform buffer 디스크립터를 만들 수 있는지를 지정하는 값입니다.
-        /// </summary>
+        // <summary>
+        // descriptorCount는 디스크립터 풀의 개수를 의미합니다. 풀에 몇 개의 uniform buffer 디스크립터를 만들 수 있는지를 지정하는 값입니다.
+        // </summary>
         virtual void createDescriptorPool(bool useTexture) override;
 
         virtual void createDescriptorSets(bool useTexture) override;
@@ -34,9 +34,8 @@ namespace vkengine {
 
         void setObject(object::Object* object) { this->objects.push_back(object); }
 
-        size_t getDescriptorCount() { return this->objects.size(); } // 디스크립터 개수 반환
-        VkPipelineLayout getPipelineLayout() { return this->VKpipelineLayout; } // 파이프라인 레이아웃 반환
-
+        virtual uint16_t getDescriptorCount() { return this->objects.size(); } // 디스크립터 개수 반환
+        virtual VkPipelineLayout getPipelineLayout() { return this->VKpipelineLayout; } // 파이프라인 레이아웃 반환
 
     private:
         // 0: Uniform buffer (Vertex shader)

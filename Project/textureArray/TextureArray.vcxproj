@@ -25,7 +25,7 @@
     <ProjectGuid>{F02F74BF-D376-4767-9A90-104C93961A8A}</ProjectGuid>
     <RootNamespace>triangle</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
-    <ProjectName>TextureArray</ProjectName>
+    <ProjectName>03.TextureArray</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">

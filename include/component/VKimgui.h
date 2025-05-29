@@ -20,6 +20,7 @@ namespace vkengine
         void update();
         void begin();
         void end();
+        void render();
         void cleanup();
     private:
         VulkanEngine* engine;

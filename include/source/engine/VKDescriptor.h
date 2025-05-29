@@ -15,7 +15,7 @@ namespace vkengine {
     {
 
     public:
-        VKDescriptor(VkDevice device = VK_NULL_HANDLE) : logicaldevice(device) {};
+        VKDescriptor(VkDevice device = VK_NULL_HANDLE, uint16_t frames = 0) : logicaldevice(device), frames(frames) {};
 
         void destroyDescriptor();
 
@@ -29,12 +29,16 @@ namespace vkengine {
         void buildDescriptorPool();
         void buildDescriptorSets();
 
-    protected:
+        virtual uint16_t getDescriptorCount() = 0;
+        virtual VkPipelineLayout getPipelineLayout() = 0;
 
+    private:
         void destroyDescriptorSetLayout();
         void destroyDescriptorSets();
         void destroyDescriptorPool();
         void destroyPipelineLayouts();
+
+    protected:
 
         VkPipelineLayout VKpipelineLayout{ VK_NULL_HANDLE }; // 파이프라인 레이아웃 -> 파이프라인 레이아웃을 생성
 
@@ -48,6 +52,7 @@ namespace vkengine {
         VkDescriptorSetAllocateInfo allocInfo{};
 
         VkDevice logicaldevice{ VK_NULL_HANDLE };
+        uint16_t frames = 0; // 프레임 수
     };
 
 }

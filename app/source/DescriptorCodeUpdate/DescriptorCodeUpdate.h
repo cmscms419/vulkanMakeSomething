@@ -38,8 +38,6 @@ namespace vkengine
         void createIndexBuffer();
         void createUniformBuffers();
 
-        void createDescriptorSets2();
-
         // grapics pipeline을 생성하기 위한 함수
         void createGraphicsPipeline();
         void createGraphicsPipeline2();
@@ -50,6 +48,7 @@ namespace vkengine
         // imgui 관련
         void initUI();
         vkGUI* vkGUI = nullptr;
+
         VK3DModelDescriptor* modelObjectDescriptor = nullptr;
         VKSkyMapModelDescriptor* skyMapModelDescriptor = nullptr;
 
@@ -69,7 +68,6 @@ namespace vkengine
         std::vector<VkDescriptorSet> VKdescriptorLoadModelSets = {};
 
         VkPipelineLayout VKpipelineLayout{ VK_NULL_HANDLE };
-        uint16_t frames = MAX_FRAMES_IN_FLIGHT;
     };
 }
 

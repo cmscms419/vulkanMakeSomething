@@ -62,6 +62,17 @@ unsigned char* load_png_rgba(const char* filename, uint32_t* width, uint32_t* he
     png_bytep* row_pointers = (png_bytep*)malloc(sizeof(png_bytep) * (*height));
     unsigned char* image_data = (unsigned char*)malloc((*width) * (*height) * 4);
 
+    if (row_pointers == NULL || image_data == NULL) {
+        png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
+
+        fclose(fp);
+
+        if (row_pointers) free(row_pointers);
+        if (image_data) free(image_data);
+
+        return NULL;
+    }
+
     for (int y = 0; y < (*height); y++) {
         row_pointers[y] = image_data + y * (*width) * 4;
     }

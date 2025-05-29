@@ -14,6 +14,7 @@ namespace vkengine {
         VulkanEngine::init();
         this->camera = std::make_shared<vkengine::object::Camera>();
     }
+
     bool imguiEngine::prepare()
     {
         VulkanEngine::prepare();
@@ -176,10 +177,26 @@ namespace vkengine {
             currentTime = newTime;
 
             this->update(frameTime);
+
+            this->vkGUI->begin();
+            this->vkGUI->update();
+
+            ImGui::Text("Camera Yaw, Pitch");
+            ImGui::Text("Yaw: %.4f, Pitch: %.4f", this->getCamera()->getYaw(), this->getCamera()->getPitch());
+
+            bool check = this->getCameraMoveStyle();
+            ImGui::Checkbox("Camera Move Style", &check);
+            this->setCameraMoveStyle(check);
+
+            float fov = this->getCamera()->getFov();
+            ImGui::Text("Camera Fov: %.4f", fov);
+
+            this->vkGUI->end();
+
             drawFrame();
 
 #ifdef DEBUG_
-            //printf("update\n");
+            
 #endif // DEBUG_
 
         }
@@ -289,9 +306,7 @@ namespace vkengine {
             vkCmdBindPipeline(framedata->mainCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->VKgraphicsPipeline);
             this->cubeObject.draw(framedata->mainCommandBuffer, this->currentFrame);
 
-            this->vkGUI->begin();
-            this->vkGUI->update();
-            this->vkGUI->end();
+            this->vkGUI->render();
         }
 
         vkCmdEndRenderPass(framedata->mainCommandBuffer);
@@ -814,6 +829,7 @@ namespace vkengine {
 
         this->VKswapChain->cleanupSwapChain();
     }
+
     void imguiEngine::initUI()
     {
         this->vkGUI->init(200, 200);

@@ -27,7 +27,7 @@
     <ProjectGuid>{96bd3106-5090-46e9-89bf-4ec610a14a02}</ProjectGuid>
     <RootNamespace>_3DModelLoad</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
-    <ProjectName>3DModelLoad</ProjectName>
+    <ProjectName>08.3DModelLoad</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">

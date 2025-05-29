@@ -48,6 +48,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BasicProject", "contentBasi
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DescriptorCodeUpdate", "DescriptorCodeUpdate\DescriptorCodeUpdate.vcxproj", "{B58EDB0E-4D3B-4F61-9CEC-DACCCB023AA1}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TextureLoadCodeUpdate", "TextureLoadCodeUpdate\TextureLoadCodeUpdate.vcxproj", "{44F21023-94E9-469E-9DB6-F6BBDE226916}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -110,6 +112,10 @@ Global
 		{B58EDB0E-4D3B-4F61-9CEC-DACCCB023AA1}.Debug|x64.Build.0 = Debug|x64
 		{B58EDB0E-4D3B-4F61-9CEC-DACCCB023AA1}.Release|x64.ActiveCfg = Release|x64
 		{B58EDB0E-4D3B-4F61-9CEC-DACCCB023AA1}.Release|x64.Build.0 = Release|x64
+		{44F21023-94E9-469E-9DB6-F6BBDE226916}.Debug|x64.ActiveCfg = Debug|x64
+		{44F21023-94E9-469E-9DB6-F6BBDE226916}.Debug|x64.Build.0 = Debug|x64
+		{44F21023-94E9-469E-9DB6-F6BBDE226916}.Release|x64.ActiveCfg = Release|x64
+		{44F21023-94E9-469E-9DB6-F6BBDE226916}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -126,6 +132,7 @@ Global
 		{96BD3106-5090-46E9-89BF-4EC610A14A02} = {C8D5274F-AC00-46C7-1F8D-E88E81087A52}
 		{722A8DC8-412C-4542-89CA-FB9BD3CD9937} = {C8D5274F-AC00-46C7-1F8D-E88E81087A52}
 		{B58EDB0E-4D3B-4F61-9CEC-DACCCB023AA1} = {C8D5274F-AC00-46C7-1F8D-E88E81087A52}
+		{44F21023-94E9-469E-9DB6-F6BBDE226916} = {C8D5274F-AC00-46C7-1F8D-E88E81087A52}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {46E572E5-9639-4EE0-9508-072778161B66}

@@ -14,7 +14,7 @@
     <ProjectGuid>{0FAD5E8C-62D8-453E-93C9-A54638022170}</ProjectGuid>
     <RootNamespace>triangle</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
-    <ProjectName>Square</ProjectName>
+    <ProjectName>01.Square</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">

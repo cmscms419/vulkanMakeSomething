@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="..\..\app\source\10.TextureLoadCodeUpdate\main_engine.cpp" />
+    <ClCompile Include="..\..\app\source\10.TextureLoadCodeUpdate\TextureLoadCodeUpdate.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\app\source\10.TextureLoadCodeUpdate\TextureLoadCodeUpdate.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="shader">
+      <UniqueIdentifier>{08c5dc89-c77d-4cb8-89a7-309ca78b709c}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
