@@ -7,28 +7,28 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "basicEngine", "basicEngine\
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "content", "content", "{C8D5274F-AC00-46C7-1F8D-E88E81087A52}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Square", "triangle\triangle.vcxproj", "{0FAD5E8C-62D8-453E-93C9-A54638022170}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "01.Square", "triangle\triangle.vcxproj", "{0FAD5E8C-62D8-453E-93C9-A54638022170}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "component", "component\component.vcxproj", "{FDB36B85-8C84-47B3-A5AE-65DF4EE936C9}"
 	ProjectSection(ProjectDependencies) = postProject
 		{4C2DB017-DA5B-1C63-CFD9-6700B8C045BA} = {4C2DB017-DA5B-1C63-CFD9-6700B8C045BA}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Camera", "camera\Camera.vcxproj", "{AC67A5AB-6173-4E03-B314-E9C3EBB94545}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "07.Camera", "camera\Camera.vcxproj", "{AC67A5AB-6173-4E03-B314-E9C3EBB94545}"
 	ProjectSection(ProjectDependencies) = postProject
 		{4C2DB017-DA5B-1C63-CFD9-6700B8C045BA} = {4C2DB017-DA5B-1C63-CFD9-6700B8C045BA}
 		{FDB36B85-8C84-47B3-A5AE-65DF4EE936C9} = {FDB36B85-8C84-47B3-A5AE-65DF4EE936C9}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Texture", "texture\texture.vcxproj", "{A851EF9E-3F29-488C-AFA4-564071568A75}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "02.Texture", "texture\texture.vcxproj", "{A851EF9E-3F29-488C-AFA4-564071568A75}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TextureArray", "textureArray\TextureArray.vcxproj", "{F02F74BF-D376-4767-9A90-104C93961A8A}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "03.TextureArray", "textureArray\TextureArray.vcxproj", "{F02F74BF-D376-4767-9A90-104C93961A8A}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Skymap", "skymap\skymap.vcxproj", "{7CBE4E43-0826-4705-9DDE-11A7B13E96C8}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "04.Skymap", "skymap\skymap.vcxproj", "{7CBE4E43-0826-4705-9DDE-11A7B13E96C8}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Imgui", "imgui\imgui.vcxproj", "{A71D6CA1-C738-4B5D-B4D7-8F85AA47712B}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "06.Imgui", "imgui\imgui.vcxproj", "{A71D6CA1-C738-4B5D-B4D7-8F85AA47712B}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Mouse", "Mouse\Mouse.vcxproj", "{8C4B8696-DBB5-41B8-B6DB-F7F6E5B98B57}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "05.Mouse", "Mouse\Mouse.vcxproj", "{8C4B8696-DBB5-41B8-B6DB-F7F6E5B98B57}"
 	ProjectSection(ProjectDependencies) = postProject
 		{4C2DB017-DA5B-1C63-CFD9-6700B8C045BA} = {4C2DB017-DA5B-1C63-CFD9-6700B8C045BA}
 		{FDB36B85-8C84-47B3-A5AE-65DF4EE936C9} = {FDB36B85-8C84-47B3-A5AE-65DF4EE936C9}
@@ -40,15 +40,13 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Light", "Light\Light.vcxpro
 		{FDB36B85-8C84-47B3-A5AE-65DF4EE936C9} = {FDB36B85-8C84-47B3-A5AE-65DF4EE936C9}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "3DModelLoad", "3DModelLoad\3DModelLoad.vcxproj", "{96BD3106-5090-46E9-89BF-4EC610A14A02}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "08.3DModelLoad", "3DModelLoad\3DModelLoad.vcxproj", "{96BD3106-5090-46E9-89BF-4EC610A14A02}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Vulkan_test", "Vulkan_test\Vulkan_test.vcxproj", "{961CB7AD-D855-4611-8025-A94BC31029F5}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BasicProject", "contentBasicProject\basicProject.vcxproj", "{722A8DC8-412C-4542-89CA-FB9BD3CD9937}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "00.BasicProject", "contentBasicProject\basicProject.vcxproj", "{722A8DC8-412C-4542-89CA-FB9BD3CD9937}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DescriptorCodeUpdate", "DescriptorCodeUpdate\DescriptorCodeUpdate.vcxproj", "{B58EDB0E-4D3B-4F61-9CEC-DACCCB023AA1}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TextureLoadCodeUpdate", "TextureLoadCodeUpdate\TextureLoadCodeUpdate.vcxproj", "{44F21023-94E9-469E-9DB6-F6BBDE226916}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "09.DescriptorCodeUpdate", "DescriptorCodeUpdate\DescriptorCodeUpdate.vcxproj", "{B58EDB0E-4D3B-4F61-9CEC-DACCCB023AA1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -112,10 +110,6 @@ Global
 		{B58EDB0E-4D3B-4F61-9CEC-DACCCB023AA1}.Debug|x64.Build.0 = Debug|x64
 		{B58EDB0E-4D3B-4F61-9CEC-DACCCB023AA1}.Release|x64.ActiveCfg = Release|x64
 		{B58EDB0E-4D3B-4F61-9CEC-DACCCB023AA1}.Release|x64.Build.0 = Release|x64
-		{44F21023-94E9-469E-9DB6-F6BBDE226916}.Debug|x64.ActiveCfg = Debug|x64
-		{44F21023-94E9-469E-9DB6-F6BBDE226916}.Debug|x64.Build.0 = Debug|x64
-		{44F21023-94E9-469E-9DB6-F6BBDE226916}.Release|x64.ActiveCfg = Release|x64
-		{44F21023-94E9-469E-9DB6-F6BBDE226916}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -132,7 +126,6 @@ Global
 		{96BD3106-5090-46E9-89BF-4EC610A14A02} = {C8D5274F-AC00-46C7-1F8D-E88E81087A52}
 		{722A8DC8-412C-4542-89CA-FB9BD3CD9937} = {C8D5274F-AC00-46C7-1F8D-E88E81087A52}
 		{B58EDB0E-4D3B-4F61-9CEC-DACCCB023AA1} = {C8D5274F-AC00-46C7-1F8D-E88E81087A52}
-		{44F21023-94E9-469E-9DB6-F6BBDE226916} = {C8D5274F-AC00-46C7-1F8D-E88E81087A52}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {46E572E5-9639-4EE0-9508-072778161B66}

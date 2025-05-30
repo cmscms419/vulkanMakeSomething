@@ -11,6 +11,8 @@
 
 namespace vkengine
 {
+
+    // VKdescriptorLoadModelSets가 제대로 해제가 안되는 문제 발생
     class Load3DModelEngine : public VulkanEngine
     {
     public:
@@ -37,11 +39,8 @@ namespace vkengine
 
         // Descriptor의 set, pool, layout을 생성하기 위한 함수들
         void createDescriptorSetLayout();
-        void createDescriptorPool();
-        void createDescriptorSets();
-
         void createDescriptorPool2_(uint32_t max_sets);
-        void createDescriptorSets2();
+        void createDescriptorSets();
 
         // grapics pipeline을 생성하기 위한 함수
         void createGraphicsPipeline();
@@ -54,7 +53,6 @@ namespace vkengine
 
         // imgui 관련
         void initUI();
-        vkGUI* vkGUI = nullptr;
 
         // 3d 모델을 위한 vertex, index buffer
         object::ModelObject modelObject; // viking_room
@@ -66,12 +64,9 @@ namespace vkengine
         object::SkyBox cubeSkybox;
 
         std::vector<subUniformBuffer> VKuniformBuffer = {};
-        std::vector<subUniformBuffer> VKuniformBuffer2 = {};
 
         VkPipeline VKgraphicsPipeline = VK_NULL_HANDLE;                      // 그래픽스 파이프라인 -> 그래픽스 파이프라인을 생성
         VkPipeline VKCubeMapPipeline = VK_NULL_HANDLE;                       // 큐브맵 파이프라인 -> 큐브맵 파이프라인을 생성
-
-        std::vector<VkDescriptorSet> VKdescriptorLoadModelSets = {};
 
         VkPipelineLayout VKpipelineLayout{ VK_NULL_HANDLE };
     };

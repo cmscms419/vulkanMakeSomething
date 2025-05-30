@@ -170,12 +170,25 @@ namespace vkengine {
 
         while (!glfwWindowShouldClose(this->VKwindow)) {
             glfwPollEvents();
+            float time = this->getProgramRunTime();
 
-            auto newTime = std::chrono::high_resolution_clock::now();
-            float frameTime = std::chrono::duration<float, std::chrono::seconds::period>(newTime - currentTime).count();
-            currentTime = newTime;
+            this->update(time);
 
-            this->update(frameTime);
+            this->vkGUI->begin();
+            this->vkGUI->update();
+
+            ImGui::Text("Camera Yaw, Pitch");
+            ImGui::Text("Yaw: %.4f, Pitch: %.4f", this->getCamera()->getYaw(), this->getCamera()->getPitch());
+
+            bool check = this->getCameraMoveStyle();
+            ImGui::Checkbox("Camera Move Style", &check);
+            this->setCameraMoveStyle(check);
+
+            float fov = this->getCamera()->getFov();
+            ImGui::Text("Camera Fov: %.4f", fov);
+
+            this->vkGUI->end();
+
             drawFrame();
 
 #ifdef DEBUG_
@@ -294,20 +307,7 @@ namespace vkengine {
             vkCmdBindPipeline(framedata->mainCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->VKgraphicsPipeline);
             this->cubeObject.draw(framedata->mainCommandBuffer, this->currentFrame);
 
-            this->vkGUI->begin();
-            this->vkGUI->update();
-
-            ImGui::Text("Camera Yaw, Pitch");
-            ImGui::Text("Yaw: %.4f, Pitch: %.4f", this->getCamera()->getYaw(), this->getCamera()->getPitch());
-
-            bool check = this->getCameraMoveStyle();
-            ImGui::Checkbox("Camera Move Style", &check);
-            this->setCameraMoveStyle(check);
-
-            float fov = this->getCamera()->getFov();
-            ImGui::Text("Camera Fov: %.4f", fov);
-            
-            this->vkGUI->end();
+            this->vkGUI->render();
         }
 
         vkCmdEndRenderPass(framedata->mainCommandBuffer);

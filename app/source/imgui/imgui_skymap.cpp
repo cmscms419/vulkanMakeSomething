@@ -167,16 +167,11 @@ namespace vkengine {
 
     bool imguiEngine::mainLoop()
     {
-        static auto currentTime = std::chrono::high_resolution_clock::now();
-
         while (!glfwWindowShouldClose(this->VKwindow)) {
             glfwPollEvents();
+            float time = this->getProgramRunTime();
 
-            auto newTime = std::chrono::high_resolution_clock::now();
-            float frameTime = std::chrono::duration<float, std::chrono::seconds::period>(newTime - currentTime).count();
-            currentTime = newTime;
-
-            this->update(frameTime);
+            this->update(time);
 
             this->vkGUI->begin();
             this->vkGUI->update();

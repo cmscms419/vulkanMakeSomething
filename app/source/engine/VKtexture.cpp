@@ -3,7 +3,7 @@
 
 #define _IMAGE_LOAD_TYPE_ 0
 
-#include "../../common/resourseload.h"
+#include "resourseload.h"
 
 namespace vkengine {
 

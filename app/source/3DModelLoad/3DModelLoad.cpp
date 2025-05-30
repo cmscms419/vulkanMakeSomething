@@ -1,5 +1,7 @@
 #include "3DModelLoad.h"
 
+#define MOVESPEED 1.2f
+
 using namespace vkengine::helper;
 using namespace vkengine::debug;
 
@@ -43,7 +45,6 @@ namespace vkengine {
         };
 
         this->cubeSkybox.createCubeMap(pathCubeArray);
-        this->vkGUI = new vkengine::vkGUI(this);
 
         this->modelObject.createTexture(this->RootPath + RESOURSE_PATH + TEXTURE_PATH);
         this->modelObject.RotationAngle(90.0f, glm::vec3(1.0f, 0.0f, 0.0f));
@@ -54,10 +55,8 @@ namespace vkengine {
         this->createUniformBuffers();
 
         this->createDescriptorSetLayout();
-        this->createDescriptorPool();
+        this->createDescriptorPool2_(static_cast<uint32_t>(2)); // 충분한 descriptor set을 위해 2배
         this->createDescriptorSets();
-
-        this->createDescriptorSets2();
 
         this->createGraphicsPipeline();
         this->createGraphicsPipeline2();
@@ -71,7 +70,6 @@ namespace vkengine {
     {
         if (this->_isInitialized)
         {
-            this->vkGUI->cleanup();
             this->cleanupSwapcChain();
 
             vkDestroyPipeline(this->VKdevice->logicaldevice, this->VKgraphicsPipeline, nullptr);
@@ -84,13 +82,13 @@ namespace vkengine {
             {
                 vkDestroyBuffer(this->VKdevice->logicaldevice, this->VKuniformBuffer[i].buffer, nullptr);
                 vkFreeMemory(this->VKdevice->logicaldevice, this->VKuniformBuffer[i].memory, nullptr);
-                vkDestroyBuffer(this->VKdevice->logicaldevice, this->VKuniformBuffer2[i].buffer, nullptr);
-                vkFreeMemory(this->VKdevice->logicaldevice, this->VKuniformBuffer2[i].memory, nullptr);
             }
 
             vkDestroyPipelineLayout(this->VKdevice->logicaldevice, this->VKpipelineLayout, nullptr);
-            vkDestroyDescriptorPool(this->VKdevice->logicaldevice, this->VKdescriptorPool, nullptr);
             vkDestroyDescriptorSetLayout(this->VKdevice->logicaldevice, this->VKdescriptorSetLayout, nullptr);
+            //vkFreeDescriptorSets(this->VKdevice->logicaldevice, this->VKdescriptorPool, static_cast<uint32_t>(this->VKdescriptorSets.size()), this->VKdescriptorSets.data());
+            
+            vkDestroyDescriptorPool(this->VKdevice->logicaldevice, this->VKdescriptorPool, nullptr);
 
             this->cubeSkybox.cleanup();
             this->modelObject.cleanup();
@@ -179,16 +177,11 @@ namespace vkengine {
 
     bool Load3DModelEngine::mainLoop()
     {
-        static auto currentTime = std::chrono::high_resolution_clock::now();
-
         while (!glfwWindowShouldClose(this->VKwindow)) {
             glfwPollEvents();
+            float time = this->getProgramRunTime();
 
-            auto newTime = std::chrono::high_resolution_clock::now();
-            float frameTime = std::chrono::duration<float, std::chrono::seconds::period>(newTime - currentTime).count();
-            currentTime = newTime;
-
-            this->update(frameTime);
+            this->update(time);
             drawFrame();
 
 #ifdef DEBUG_
@@ -205,34 +198,36 @@ namespace vkengine {
 
     void Load3DModelEngine::update(float dt)
     {
+        float frameTime = this->getCalulateDeltaTime();
+
         if (this->m_keyPressed[GLFW_KEY_W])
         {
-            this->camera->MoveForward(dt);
+            this->camera->MoveForward(frameTime * MOVESPEED);
         }
 
         if (this->m_keyPressed[GLFW_KEY_S])
         {
-            this->camera->MoveForward(-dt);
+            this->camera->MoveForward(-frameTime * MOVESPEED);
         }
 
         if (this->m_keyPressed[GLFW_KEY_A])
         {
-            this->camera->MoveRight(-dt);
+            this->camera->MoveRight(-frameTime * MOVESPEED);
         }
 
         if (this->m_keyPressed[GLFW_KEY_D])
         {
-            this->camera->MoveRight(dt);
+            this->camera->MoveRight(frameTime * MOVESPEED);
         }
 
         if (this->m_keyPressed[GLFW_KEY_Q])
         {
-            this->camera->MoveUp(-dt);
+            this->camera->MoveUp(-frameTime * MOVESPEED);
         }
 
         if (this->m_keyPressed[GLFW_KEY_E])
         {
-            this->camera->MoveUp(dt);
+            this->camera->MoveUp(frameTime * MOVESPEED);
         }
 
         this->camera->update();
@@ -305,24 +300,9 @@ namespace vkengine {
             vkCmdBindPipeline(framedata->mainCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->VKCubeMapPipeline);
             this->cubeSkybox.draw(framedata->mainCommandBuffer, static_cast<uint32_t>(this->currentFrame));
 
-            vkCmdBindDescriptorSets(framedata->mainCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->VKpipelineLayout, 0, 1, &this->VKdescriptorLoadModelSets[this->currentFrame], 0, nullptr);
             vkCmdBindPipeline(framedata->mainCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->VKgraphicsPipeline);
             this->modelObject.draw(framedata->mainCommandBuffer, static_cast<uint32_t>(this->currentFrame));
 
-            this->vkGUI->begin();
-            this->vkGUI->update();
-
-            ImGui::Text("Camera Yaw, Pitch");
-            ImGui::Text("Yaw: %.4f, Pitch: %.4f", this->getCamera()->getYaw(), this->getCamera()->getPitch());
-
-            bool check = this->getCameraMoveStyle();
-            ImGui::Checkbox("Camera Move Style", &check);
-            this->setCameraMoveStyle(check);
-
-            float fov = this->getCamera()->getFov();
-            ImGui::Text("Camera Fov: %.4f", fov);
-            
-            this->vkGUI->end();
         }
 
         vkCmdEndRenderPass(framedata->mainCommandBuffer);
@@ -350,7 +330,6 @@ namespace vkengine {
         VkDeviceSize bufferSize = sizeof(UniformBufferObject);
 
         this->VKuniformBuffer.resize(MAX_FRAMES_IN_FLIGHT);
-        this->VKuniformBuffer2.resize(MAX_FRAMES_IN_FLIGHT);
 
         for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
         {
@@ -363,18 +342,7 @@ namespace vkengine {
                 this->VKuniformBuffer[i].buffer,
                 this->VKuniformBuffer[i].memory);
 
-            helper::createBuffer(
-                this->VKdevice->logicaldevice,
-                this->VKdevice->physicalDevice,
-                bufferSize,
-                VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-                this->VKuniformBuffer2[i].buffer,
-                this->VKuniformBuffer2[i].memory);
-
             vkMapMemory(this->VKdevice->logicaldevice, this->VKuniformBuffer[i].memory, 0, bufferSize, 0, &this->VKuniformBuffer[i].Mapped);
-
-            vkMapMemory(this->VKdevice->logicaldevice, this->VKuniformBuffer2[i].memory, 0, bufferSize, 0, &this->VKuniformBuffer2[i].Mapped);
         }
     }
 
@@ -416,11 +384,6 @@ namespace vkengine {
         _VK_CHECK_RESULT_(vkCreateDescriptorSetLayout(this->VKdevice->logicaldevice, &layoutInfo, nullptr, &this->VKdescriptorSetLayout));
     }
 
-    void Load3DModelEngine::createDescriptorPool()
-    {
-        this->createDescriptorPool2_(static_cast<uint32_t>(3)); // 충분한 descriptor set을 위해 2배
-    }
-
     void Load3DModelEngine::createDescriptorSets()
     {
         // 디스크립터 세트 레이아웃을 설정합니다.
@@ -459,8 +422,6 @@ namespace vkengine {
             imageInfo2.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
             imageInfo2.imageView = this->modelObject.getTexture()->imageView;
             imageInfo2.sampler = this->modelObject.getTexture()->sampler;
-            /*imageInfo2.imageView = this->cubeObject.getCubeTexture().imageView;
-            imageInfo2.sampler = this->cubeObject.getCubeTexture().sampler;*/
 
             std::array<VkWriteDescriptorSet, 3> descriptorWrites{};
 
@@ -495,103 +456,24 @@ namespace vkengine {
 
     void Load3DModelEngine::createDescriptorPool2_(uint32_t max_sets)
     {
-        // 각 타입별로 descriptor 수를 설정합니다
-        std::vector<VkDescriptorPoolSize> poolSizes;
+        // 디스크립터 풀 크기를 설정합니다.
+        std::array<VkDescriptorPoolSize, MAX_FRAMES_IN_FLIGHT_UI_VERSION> poolSizes{};
 
-        // UNIFORM_BUFFER 타입 (각 프레임마다 2개씩) -> 모델과 스카이박스에 각각 1개의 uniform buffer가 필요
-        VkDescriptorPoolSize uniformPoolSize{};
-        uniformPoolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-        uniformPoolSize.descriptorCount = max_sets * 2;  // 두 세트의 파이프라인을 위한 충분한 개수
-        poolSizes.push_back(uniformPoolSize);
+        poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+        poolSizes[0].descriptorCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
+        poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        poolSizes[1].descriptorCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
+        poolSizes[2].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        poolSizes[2].descriptorCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
 
-        // COMBINED_IMAGE_SAMPLER 타입 (각 프레임마다 4개씩) -> 모델과 스카이박스에 각각 2개의 combined image sampler가 필요
-        VkDescriptorPoolSize samplerPoolSize{};
-        samplerPoolSize.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-        samplerPoolSize.descriptorCount = max_sets * 4;  // 두 세트의 파이프라인을 위한 충분한 개수
-        poolSizes.push_back(samplerPoolSize);
-
-        // 디스크립터 풀 생성 정보를 설정합니다.
+        // 디스크립터 풀 생성 정보 구조체를 초기화합니다.
         VkDescriptorPoolCreateInfo poolInfo{};
         poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
         poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
         poolInfo.pPoolSizes = poolSizes.data();
-        poolInfo.maxSets = max_sets * 2;  // 2개의 descriptor set을 위한 공간 확보 (skybox + model)
+        poolInfo.maxSets = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
 
-        // VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT 필요하면 추가
-        poolInfo.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
-
-        // 디스크립터 풀 생성
         _VK_CHECK_RESULT_(vkCreateDescriptorPool(this->VKdevice->logicaldevice, &poolInfo, nullptr, &this->VKdescriptorPool));
-    }
-
-    void Load3DModelEngine::createDescriptorSets2()
-    {
-        // 디스크립터 세트 레이아웃을 설정합니다.
-        std::vector<VkDescriptorSetLayout> layouts(MAX_FRAMES_IN_FLIGHT, this->VKdescriptorSetLayout);
-
-        // 디스크립터 세트 할당 정보 구조체를 초기화합니다.
-        VkDescriptorSetAllocateInfo allocInfo{};
-
-        // 디스크립터 세트 할당 정보 구조체에 디스크립터 풀과 디스크립터 세트 개수를 설정합니다.
-        allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-        allocInfo.descriptorPool = this->VKdescriptorPool;
-        allocInfo.descriptorSetCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
-        allocInfo.pSetLayouts = layouts.data();
-
-        // 디스크립터 세트를 생성합니다.
-        this->VKdescriptorLoadModelSets.resize(MAX_FRAMES_IN_FLIGHT);
-
-        // 디스크립터 세트를 할당합니다.
-        _VK_CHECK_RESULT_(vkAllocateDescriptorSets(this->VKdevice->logicaldevice, &allocInfo, this->VKdescriptorLoadModelSets.data()));
-
-        // 디스크립터 세트를 설정합니다.
-        for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
-        {
-            // 디스크립터 버퍼 정보를 설정합니다.
-            VkDescriptorBufferInfo bufferInfo{};
-            bufferInfo.buffer = this->VKuniformBuffer[i].buffer;
-            bufferInfo.offset = 0;
-            bufferInfo.range = sizeof(UniformBufferObject);
-
-            VkDescriptorImageInfo imageInfo{};
-            imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-            imageInfo.imageView = this->cubeSkybox.getCubeMap()->imageView;
-            imageInfo.sampler = this->cubeSkybox.getCubeMap()->sampler;
-
-            VkDescriptorImageInfo imageInfo2{};
-            imageInfo2.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-            imageInfo2.imageView = this->modelObject.getTexture()->imageView;
-            imageInfo2.sampler = this->modelObject.getTexture()->sampler;
-
-            std::array<VkWriteDescriptorSet, 3> descriptorWrites{};
-
-            descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-            descriptorWrites[0].dstSet = this->VKdescriptorLoadModelSets[i];
-            descriptorWrites[0].dstBinding = 0;
-            descriptorWrites[0].dstArrayElement = 0;
-            descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-            descriptorWrites[0].descriptorCount = 1;
-            descriptorWrites[0].pBufferInfo = &bufferInfo;
-
-            descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-            descriptorWrites[1].dstSet = this->VKdescriptorLoadModelSets[i];
-            descriptorWrites[1].dstBinding = 1;
-            descriptorWrites[1].dstArrayElement = 0;
-            descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-            descriptorWrites[1].descriptorCount = 1;
-            descriptorWrites[1].pImageInfo = &imageInfo;
-
-            descriptorWrites[2].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-            descriptorWrites[2].dstSet = this->VKdescriptorLoadModelSets[i];
-            descriptorWrites[2].dstBinding = 2;
-            descriptorWrites[2].dstArrayElement = 0;
-            descriptorWrites[2].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-            descriptorWrites[2].descriptorCount = 1;
-            descriptorWrites[2].pImageInfo = &imageInfo2;
-
-
-            vkUpdateDescriptorSets(this->VKdevice->logicaldevice, static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
-        }
     }
 
     void Load3DModelEngine::createGraphicsPipeline()
@@ -963,7 +845,5 @@ namespace vkengine {
 
     void Load3DModelEngine::initUI()
     {
-        this->vkGUI->init(200, 200);
-        this->vkGUI->initResources(this->getRenderPass(), this->getDevice()->graphicsVKQueue, this->getRootPath());
     }
 }
