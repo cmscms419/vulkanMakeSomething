@@ -44,7 +44,7 @@ namespace vkengine {
                 return false;
             }
 
-            this->cubeSkybox->setResource(resource);
+            this->cubeSkybox->setTexture(resource);
 
         }
         this->cubeSkybox->createTexture(VK_FORMAT_R8G8B8A8_SRGB);
@@ -58,7 +58,9 @@ namespace vkengine {
         this->modelObject->setName("Viking Room");
         this->modelObject->RotationAngle(90.0f, glm::vec3(1.0f, 0.0f, 0.0f));
         helper::loadModel::loadModel(this->RootPath, *this->modelObject->getVertices(), *this->modelObject->getIndices());
-        this->modelObject->setResource(vikingRoomTexture);
+
+        this->modelObject->setTexture(vikingRoomTexture);
+        this->modelObject->getTexture()->setMipLevels(static_cast<uint32_t>(std::floor(std::log2(std::max(vikingRoomTexture->texWidth, vikingRoomTexture->texHeight)))) + 1); // Mipmap 레벨 설정
         this->modelObject->createTexture(VK_FORMAT_R8G8B8A8_SRGB);
 
         this->modelObject2 = new object::ModelObject(this->getDevice());
@@ -66,7 +68,9 @@ namespace vkengine {
         this->modelObject2->RotationAngle(90.0f, glm::vec3(1.0f, 0.0f, 0.0f));
         this->modelObject2->setPosition(glm::vec3(3.0f, 0.0f, 0.0f));
         helper::loadModel::loadModel(this->RootPath, *this->modelObject2->getVertices(), *this->modelObject2->getIndices());
-        this->modelObject2->setResource(vikingRoomTexture);
+
+        this->modelObject2->setTexture(vikingRoomTexture);
+        this->modelObject2->getTexture()->setMipLevels(static_cast<uint32_t>(std::floor(std::log2(std::max(vikingRoomTexture->texWidth, vikingRoomTexture->texHeight)))) + 1); // Mipmap 레벨 설정
         this->modelObject2->createTexture(VK_FORMAT_R8G8B8A8_SRGB);
 
         this->modelObjectDescriptor = new vkengine::VK3DModelDescriptor(this->getDevice()->logicaldevice, this->frames);

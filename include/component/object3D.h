@@ -66,10 +66,7 @@ namespace vkengine {
             void setRotation(cQuat rotation) { this->rotation = rotation; }
             void setScale(cVec3 scale) { this->scale = scale; }
             void setMatrix(cMat4 matrix) { this->matrix = matrix; }
-            void setResource(TextureResource* resource)
-            {
-                this->texture->setResource(resource);
-            }
+            void setTexture(TextureResource* resource) { this->texture->setResource(resource); }
 
             void CaluateRotation(cQuat rotation)
             {

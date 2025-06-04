@@ -37,6 +37,7 @@ namespace vkengine {
         virtual void createTextureSampler() = 0; ///< 텍스처 샘플러 생성 함수
         void setResource(TextureResource* resource); ///< 리소스 설정 함수
         void setDevice(vkengine::VKDevice_* device) { this->device = device; } ///< 디바이스 설정 함수
+        void setMipLevels(uint32_t mipLevels) { this->VKmipLevels = mipLevels; } ///< Mipmap 레벨 설정 함수
 
         ///< 텍스처 이미지 정보 생성 함수
         void createDescriptorImageInfo()

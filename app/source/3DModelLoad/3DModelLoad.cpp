@@ -60,7 +60,7 @@ namespace vkengine {
                 return false;
             }
 
-            this->cubeSkybox->setResource(resource);
+            this->cubeSkybox->setTexture(resource);
 
         }
 
@@ -70,7 +70,7 @@ namespace vkengine {
         TextureResource* resource = new TextureResource();
         resource->createResource(modelPath);
 
-        this->modelObject->setResource(resource);
+        this->modelObject->setTexture(resource);
         this->modelObject->RotationAngle(90.0f, glm::vec3(1.0f, 0.0f, 0.0f));
 
         helper::loadModel::loadModel(this->RootPath, *this->modelObject->getVertices(), *this->modelObject->getIndices());

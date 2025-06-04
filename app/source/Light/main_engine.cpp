@@ -17,7 +17,7 @@ int main(int argc, char* argv[]) {
         std::cerr << "경로를 가져오는 데 실패했습니다." << std::endl;
     }
 
-    /*std::unique_ptr<vkengine::VulkanEngine> engine;
+    std::unique_ptr<vkengine::VulkanEngine> engine;
 
     engine = std::make_unique<vkengine::LightEngine>(root_path);
 
@@ -27,7 +27,7 @@ int main(int argc, char* argv[]) {
 
     engine->mainLoop();
 
-    engine->cleanup();*/
+    engine->cleanup();
 
     return EXIT_SUCCESS;
 }

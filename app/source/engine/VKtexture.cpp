@@ -442,7 +442,6 @@ namespace vkengine {
 
         if (this->imageCount == 0) {
             this->imageCount = 1; // 첫 번째 리소스만 설정
-            this->VKmipLevels = 1; // Mipmap 레벨을 1로 설정
             this->resource = (TextureResource*)calloc(this->imageCount, sizeof(TextureResource));
 
             if (this->resource == nullptr) {
