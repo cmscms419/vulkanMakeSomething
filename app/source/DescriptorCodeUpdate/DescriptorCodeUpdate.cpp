@@ -1,6 +1,5 @@
 #include "DescriptorCodeUpdate.h"
 
-#define MOVESPEED 1.2f
 
 using namespace vkengine::helper;
 using namespace vkengine::debug;
@@ -24,6 +23,8 @@ namespace vkengine {
         VulkanEngine::prepare();
         this->init_sync_structures();
 
+        this->cubeSkybox = new object::SkyBox(this->getDevice());
+
         std::vector<std::string> pathCubeArray = {
            this->RootPath + RESOURSE_PATH + CUBE_TEXTURE_PATH + "/right.png",
            this->RootPath + RESOURSE_PATH + CUBE_TEXTURE_PATH + "/left.png",
@@ -33,51 +34,52 @@ namespace vkengine {
            this->RootPath + RESOURSE_PATH + CUBE_TEXTURE_PATH + "/back.png"
         };
 
-        this->cubeSkybox.createCubeMap(pathCubeArray);
+        for (auto& path : pathCubeArray)
+        {
+            TextureResource* resource = new TextureResource();
+            resource->createResource(path);
+
+            if (resource->data == nullptr) {
+                _PRINT_TO_CONSOLE_("Failed to load texture from %s\n", path.c_str());
+                return false;
+            }
+
+            this->cubeSkybox->setResource(resource);
+
+        }
+        this->cubeSkybox->createTexture(VK_FORMAT_R8G8B8A8_SRGB);
+
         this->vkGUI = new vkengine::vkGUI(this);
 
-        std::vector<std::string> pathArray = {
-           this->RootPath + RESOURSE_PATH + TEST_TEXTURE_PATH_ARRAY0,
-           this->RootPath + RESOURSE_PATH + TEST_TEXTURE_PATH_ARRAY1,
-           this->RootPath + RESOURSE_PATH + TEST_TEXTURE_PATH_ARRAY2,
-           this->RootPath + RESOURSE_PATH + TEST_TEXTURE_PATH_ARRAY3,
-           this->RootPath + RESOURSE_PATH + TEST_TEXTURE_PATH_ARRAY4,
-           this->RootPath + RESOURSE_PATH + TEST_TEXTURE_PATH_ARRAY5
-        };
+        TextureResource* vikingRoomTexture = new TextureResource();
+        vikingRoomTexture->createResource(this->RootPath + RESOURSE_PATH + TEXTURE_PATH);
         
-        this->modelObject = object::ModelObject();
-        this->modelObject.setName("Viking Room");
-        this->modelObject.createTexture(this->RootPath + RESOURSE_PATH + TEXTURE_PATH);
-        this->modelObject.RotationAngle(90.0f, glm::vec3(1.0f, 0.0f, 0.0f));
-        helper::loadModel::loadModel(this->RootPath, *this->modelObject.getVertices(), *this->modelObject.getIndices());
+        this->modelObject = new object::ModelObject(this->getDevice());
+        this->modelObject->setName("Viking Room");
+        this->modelObject->RotationAngle(90.0f, glm::vec3(1.0f, 0.0f, 0.0f));
+        helper::loadModel::loadModel(this->RootPath, *this->modelObject->getVertices(), *this->modelObject->getIndices());
+        this->modelObject->setResource(vikingRoomTexture);
+        this->modelObject->createTexture(VK_FORMAT_R8G8B8A8_SRGB);
 
-        this->modelObject2 = object::ModelObject();
-        this->modelObject2.setName("Viking Room2");
-        this->modelObject2.createTexture(this->RootPath + RESOURSE_PATH + TEXTURE_PATH);
-        this->modelObject2.RotationAngle(90.0f, glm::vec3(1.0f, 0.0f, 0.0f));
-        this->modelObject2.setPosition(glm::vec3(3.0f, 0.0f, 0.0f));
-        helper::loadModel::loadModel(this->RootPath, *this->modelObject2.getVertices(), *this->modelObject2.getIndices());
+        this->modelObject2 = new object::ModelObject(this->getDevice());
+        this->modelObject2->setName("Viking Room2");
+        this->modelObject2->RotationAngle(90.0f, glm::vec3(1.0f, 0.0f, 0.0f));
+        this->modelObject2->setPosition(glm::vec3(3.0f, 0.0f, 0.0f));
+        helper::loadModel::loadModel(this->RootPath, *this->modelObject2->getVertices(), *this->modelObject2->getIndices());
+        this->modelObject2->setResource(vikingRoomTexture);
+        this->modelObject2->createTexture(VK_FORMAT_R8G8B8A8_SRGB);
 
         this->modelObjectDescriptor = new vkengine::VK3DModelDescriptor(this->getDevice()->logicaldevice, this->frames);
-        this->modelObjectDescriptor->setObject(&this->modelObject);
-        this->modelObjectDescriptor->setObject(&this->modelObject2);
+        this->modelObjectDescriptor->setObject(this->modelObject);
+        this->modelObjectDescriptor->setObject(this->modelObject2);
 
         this->skyMapModelDescriptor = new vkengine::VKSkyMapModelDescriptor(this->getDevice()->logicaldevice, this->frames);
-        this->skyMapModelDescriptor->setObject(&this->cubeSkybox);
+        this->skyMapModelDescriptor->setObject(this->cubeSkybox);
 
         this->createVertexbuffer();
         this->createIndexBuffer();
         this->createUniformBuffers();
-
-        this->modelObjectDescriptor->createDescriptorSetLayout(true);
-        this->modelObjectDescriptor->createDescriptorPool(true);
-        this->modelObjectDescriptor->createDescriptorSets(true);
-        this->modelObjectDescriptor->updateDescriptorSets();
-
-        this->skyMapModelDescriptor->createDescriptorSetLayout(false);
-        this->skyMapModelDescriptor->createDescriptorPool(false);
-        this->skyMapModelDescriptor->createDescriptorSets(false);
-        this->skyMapModelDescriptor->updateDescriptorSets();
+        this->createDescriptor();
 
         this->createGraphicsPipeline();
         this->createGraphicsPipeline2();
@@ -106,9 +108,9 @@ namespace vkengine {
 
             vkDestroyDescriptorPool(this->VKdevice->logicaldevice, this->VKdescriptorPool, nullptr);
 
-            this->cubeSkybox.cleanup();
-            this->modelObject.cleanup();
-            this->modelObject2.cleanup();
+            this->cubeSkybox->cleanup();
+            this->modelObject->cleanup();
+            this->modelObject2->cleanup();
 
             for (size_t i = 0; i < this->frames; i++)
             {
@@ -145,13 +147,13 @@ namespace vkengine {
         uint32_t imageIndex = 0;
         VulkanEngine::prepareFame(&imageIndex);
 
-        this->modelObject.updateUniformBuffer(
+        this->modelObject->updateUniformBuffer(
             static_cast<uint32_t>(this->currentFrame), this->worldMatrix,
             this->camera.get());
-        this->modelObject2.updateUniformBuffer(
+        this->modelObject2->updateUniformBuffer(
             static_cast<uint32_t>(this->currentFrame), this->worldMatrix,
             this->camera.get());
-        this->cubeSkybox.updateUniformBuffer(
+        this->cubeSkybox->updateUniformBuffer(
             static_cast<uint32_t>(this->currentFrame), this->camera.get());
 
 
@@ -290,10 +292,10 @@ namespace vkengine {
 
         this->worldMatrix = rotationMatrix * glm::mat4(1.0f);
 
-        this->modelObject2.setRotation(rotation3 * rotation2);
+        this->modelObject2->setRotation(rotation3 * rotation2);
         
-        this->modelObject.updateMatrix();
-        this->modelObject2.updateMatrix();
+        this->modelObject->updateMatrix();
+        this->modelObject2->updateMatrix();
 
     }
 
@@ -352,15 +354,15 @@ namespace vkengine {
 
             this->skyMapModelDescriptor->BindDescriptorSets(framedata->mainCommandBuffer, this->currentFrame, 0);
             vkCmdBindPipeline(framedata->mainCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->VKSkyMapPipeline);
-            this->cubeSkybox.draw(framedata->mainCommandBuffer, this->currentFrame);
+            this->cubeSkybox->draw(framedata->mainCommandBuffer, this->currentFrame);
 
             this->modelObjectDescriptor->BindDescriptorSets(framedata->mainCommandBuffer, this->currentFrame, 0);
             vkCmdBindPipeline(framedata->mainCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->VKgraphicsPipeline);
-            this->modelObject.draw(framedata->mainCommandBuffer, this->currentFrame);
+            this->modelObject->draw(framedata->mainCommandBuffer, this->currentFrame);
             
             this->modelObjectDescriptor->BindDescriptorSets(framedata->mainCommandBuffer, this->currentFrame, 1);
             vkCmdBindPipeline(framedata->mainCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->VKgraphicsPipeline2);
-            this->modelObject2.draw(framedata->mainCommandBuffer, this->currentFrame);
+            this->modelObject2->draw(framedata->mainCommandBuffer, this->currentFrame);
 
             this->vkGUI->render();
         }
@@ -373,36 +375,49 @@ namespace vkengine {
 
     void DescriptorCodeUpdateEngine::createVertexbuffer()
     {
-        this->modelObject.createVertexBuffer(*this->modelObject.getVertices());
-        this->modelObject2.createVertexBuffer(*this->modelObject2.getVertices());
-        this->cubeSkybox.createVertexBuffer(const_cast<std::vector<Vertex>&>(skyboxVertices));
+        this->modelObject->createVertexBuffer(*this->modelObject->getVertices());
+        this->modelObject2->createVertexBuffer(*this->modelObject2->getVertices());
+        this->cubeSkybox->createVertexBuffer(const_cast<std::vector<Vertex>&>(skyboxVertices));
     }
 
     void DescriptorCodeUpdateEngine::createIndexBuffer()
     {
-        this->modelObject.createIndexBuffer(*this->modelObject.getIndices());
-        this->modelObject2.createIndexBuffer(*this->modelObject2.getIndices());
-        this->cubeSkybox.createIndexBuffer(const_cast<std::vector<uint16_t>&>(skyboxIndices));
+        this->modelObject->createIndexBuffer(*this->modelObject->getIndices());
+        this->modelObject2->createIndexBuffer(*this->modelObject2->getIndices());
+        this->cubeSkybox->createIndexBuffer(const_cast<std::vector<uint16_t>&>(skyboxIndices));
     }
 
     void DescriptorCodeUpdateEngine::createUniformBuffers()
     {
-        this->modelObject.createModelViewProjBuffers();
-        this->modelObject2.createModelViewProjBuffers();
-        this->cubeSkybox.createModelViewProjBuffers();
+        this->modelObject->createModelViewProjBuffers();
+        this->modelObject2->createModelViewProjBuffers();
+        this->cubeSkybox->createModelViewProjBuffers();
 
-        this->modelObject.getTexture()->createDescriptorImageInfo();
-        this->modelObject.getModelViewProjUniformBuffer(0)->createDescriptorBufferInfo();
-        this->modelObject.getModelViewProjUniformBuffer(1)->createDescriptorBufferInfo();
+        this->modelObject->getTexture()->createDescriptorImageInfo();
+        this->modelObject->getModelViewProjUniformBuffer(0)->createDescriptorBufferInfo();
+        this->modelObject->getModelViewProjUniformBuffer(1)->createDescriptorBufferInfo();
 
-        this->modelObject2.getTexture()->createDescriptorImageInfo();
-        this->modelObject2.getModelViewProjUniformBuffer(0)->createDescriptorBufferInfo();
-        this->modelObject2.getModelViewProjUniformBuffer(1)->createDescriptorBufferInfo();
+        this->modelObject2->getTexture()->createDescriptorImageInfo();
+        this->modelObject2->getModelViewProjUniformBuffer(0)->createDescriptorBufferInfo();
+        this->modelObject2->getModelViewProjUniformBuffer(1)->createDescriptorBufferInfo();
 
-        this->cubeSkybox.getCubeMap()->createDescriptorImageInfo();
-        this->cubeSkybox.getModelViewProjUniformBuffer(0)->createDescriptorBufferInfo();
-        this->cubeSkybox.getModelViewProjUniformBuffer(1)->createDescriptorBufferInfo();
+        this->cubeSkybox->getTexture()->createDescriptorImageInfo();
+        this->cubeSkybox->getModelViewProjUniformBuffer(0)->createDescriptorBufferInfo();
+        this->cubeSkybox->getModelViewProjUniformBuffer(1)->createDescriptorBufferInfo();
 
+    }
+
+    void DescriptorCodeUpdateEngine::createDescriptor()
+    {
+        this->modelObjectDescriptor->createDescriptorSetLayout(true);
+        this->modelObjectDescriptor->createDescriptorPool(true);
+        this->modelObjectDescriptor->createDescriptorSets(true);
+        this->modelObjectDescriptor->updateDescriptorSets();
+
+        this->skyMapModelDescriptor->createDescriptorSetLayout(false);
+        this->skyMapModelDescriptor->createDescriptorPool(false);
+        this->skyMapModelDescriptor->createDescriptorSets(false);
+        this->skyMapModelDescriptor->updateDescriptorSets();
     }
 
     void DescriptorCodeUpdateEngine::createGraphicsPipeline()

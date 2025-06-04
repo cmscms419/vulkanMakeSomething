@@ -217,7 +217,7 @@ public:
     }
 
     // 크기 관련 함수들
-    bool empty() const {
+    cBool empty() const {
         return m_size == 0;
     }
 

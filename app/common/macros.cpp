@@ -1,14 +1,14 @@
 #include "macros.h"
 
-const std::string UserName = []()
+const cString UserName = []()
 {
-    char username[UNLEN + 1];
+    cChar username[UNLEN + 1];
     DWORD username_len = UNLEN + 1;
     GetUserName(username, &username_len);
 
 #if DEBUG_
 
-    if (std::string(username) != DEBUG_USER_NAME_0) 
+    if (cString(username) != DEBUG_USER_NAME_0) 
     {
         username[0] = '\0';
     }
@@ -19,5 +19,5 @@ const std::string UserName = []()
 
 #endif // DEBUG_
 
-    return std::string(username);
+    return cString(username);
 }();

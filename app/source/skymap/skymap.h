@@ -47,10 +47,10 @@ namespace vkengine
         void cleanupSwapcChain();
 
         // 3d object
-        object::TextureArrayObject3D cubeObject;
+        object::TextureArrayObject3D* cubeObject;
 
         // skybox
-        object::SkyBox cubeSkybox;
+        object::SkyBox* cubeSkybox;
 
         std::vector<subUniformBuffer> VKuniformBuffer = {};
         std::vector<subUniformBuffer> VKuniformBuffer2 = {};

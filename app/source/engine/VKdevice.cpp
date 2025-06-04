@@ -53,7 +53,7 @@ namespace vkengine {
             this->queueFamilyIndices.presentFamily
         };
 
-        float queuePriority = 1.0f;                                                                    // 큐의 우선순위를 설정합니다.
+        cFloat queuePriority = 1.0f;                                                                    // 큐의 우선순위를 설정합니다.
         
         for (uint32_t queueFamily : uniqueQueueFamilies) {
             VkDeviceQueueCreateInfo queueCreateInfo{};

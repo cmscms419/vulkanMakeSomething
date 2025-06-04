@@ -21,16 +21,12 @@ namespace vkengine {
         VulkanEngine::prepare();
         this->init_sync_structures();
 
-        int texWidth = 0;
-        int texHeight = 0;
+        uint32_t texWidth = 0;
+        uint32_t texHeight = 0;
         int texChannels = 0;
 
-        textureArray.texWidth = texWidth;
-        textureArray.texHeight = texHeight;
-        textureArray.texChannels = texChannels;
-        this->textureArray.device = this->VKdevice.get();
-        this->textureArray.device = this->VKdevice.get();
-        this->textureArray.VKmipLevels = 1;
+        this->textureArray = Vk2DTextureArray();
+        this->textureArray.setDevice(this->VKdevice.get());
 
         std::vector<std::string> pathArray = {
            this->RootPath + RESOURSE_PATH + TEST_TEXTURE_PATH_ARRAY0,
@@ -41,7 +37,21 @@ namespace vkengine {
            this->RootPath + RESOURSE_PATH + TEST_TEXTURE_PATH_ARRAY5
         };
 
-        this->textureArray.createTextureArrayImages(4, pathArray);
+        for (auto& path : pathArray)
+        {
+            TextureResource* resource = new TextureResource();
+            resource->createResource(path);
+
+            if (resource->data == nullptr) {
+                _PRINT_TO_CONSOLE_("Failed to load texture from %s\n", path.c_str());
+                return false;
+            }
+
+            this->textureArray.setResource(resource);
+
+        }
+
+        this->textureArray.createTextureImage();
         this->textureArray.createTextureImageView(VK_FORMAT_R8G8B8A8_SRGB);
         this->textureArray.createTextureSampler();
 
@@ -479,8 +489,8 @@ namespace vkengine {
 
             VkDescriptorImageInfo imageInfo{};
             imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-            imageInfo.imageView = this->textureArray.imageView;
-            imageInfo.sampler = this->textureArray.sampler;
+            imageInfo.imageView = this->textureArray.getImageView();
+            imageInfo.sampler = this->textureArray.getSampler();
 
             std::array<VkWriteDescriptorSet, 2> descriptorWrites{};
 

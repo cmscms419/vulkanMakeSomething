@@ -38,6 +38,8 @@ namespace vkengine
         void createIndexBuffer();
         void createUniformBuffers();
 
+        void createDescriptor();
+
         // grapics pipeline을 생성하기 위한 함수
         void createGraphicsPipeline();
         void createGraphicsPipeline2();
@@ -53,13 +55,13 @@ namespace vkengine
         VKSkyMapModelDescriptor* skyMapModelDescriptor = nullptr;
 
         // 3d 모델을 위한 vertex, index buffer
-        object::ModelObject modelObject;  // viking_room
-        object::ModelObject modelObject2; // viking_room
+        object::ModelObject* modelObject;  // viking_room
+        object::ModelObject* modelObject2; // viking_room
 
         glm::mat4 worldMatrix = glm::mat4(1.0f); // 월드 매트릭스
 
         // skybox
-        object::SkyBox cubeSkybox;
+        object::SkyBox* cubeSkybox;
 
         VkPipeline VKgraphicsPipeline = VK_NULL_HANDLE;                      // 그래픽스 파이프라인 -> 그래픽스 파이프라인을 생성
         VkPipeline VKgraphicsPipeline2 = VK_NULL_HANDLE;                     // 그래픽스 파이프라인2 -> cube 파이프라인을 생성

@@ -22,18 +22,15 @@ namespace vkengine {
         VulkanEngine::prepare();
         this->init_sync_structures();
 
-        int texWidth = 0;
-        int texHeight = 0;
-        int texChannels = 0;
-
-        testTexture.texWidth = texWidth;
-        testTexture.texHeight = texHeight;
-        testTexture.texChannels = texChannels;
-        this->testTexture.device = this->VKdevice.get();
-        
         std::string path = this->RootPath + RESOURSE_PATH + TEST_TEXTURE_PATH;
+        TextureResource* resource = new TextureResource();
+        resource->createResource(path);
 
-        this->testTexture.createTextureImage(4, path.c_str());
+        this->testTexture = Vk2DTexture();
+        this->testTexture.setDevice(this->VKdevice.get());
+        this->testTexture.setResource(resource);
+
+        this->testTexture.createTextureImage();
         this->testTexture.createTextureImageView(VK_FORMAT_R8G8B8A8_SRGB);
         this->testTexture.createTextureSampler();
 
@@ -476,8 +473,8 @@ namespace vkengine {
             // 디스크립터 이미지 정보를 설정합니다.
             VkDescriptorImageInfo imageInfo{};
             imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-            imageInfo.imageView = this->testTexture.imageView;
-            imageInfo.sampler = this->testTexture.sampler;
+            imageInfo.imageView = this->testTexture.getImageView();
+            imageInfo.sampler = this->testTexture.getSampler();
 
             descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
             descriptorWrites[0].dstSet = this->VKdescriptorSets[i];

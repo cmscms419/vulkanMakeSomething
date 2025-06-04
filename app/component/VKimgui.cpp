@@ -54,7 +54,7 @@ namespace vkengine
         ImGui::Text("Hello, world!");
         // Access the camera position from the engine
         std::shared_ptr<vkengine::object::Camera> camera = engine->getCamera();
-        glm::vec3 position = camera->getPos();
+        cVec3 position = camera->getPos();
 
         // Display the camera position using ImGui
         ImGui::Text("Camera Position:");

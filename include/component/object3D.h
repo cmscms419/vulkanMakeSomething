@@ -18,16 +18,28 @@ namespace vkengine {
 
         class Object {
         public:
-            Object() {};
+            Object(VKDevice_* device) : device(device) {};
             ~Object() {};
             void createVertexBuffer(std::vector<Vertex>& vertices = std::vector<Vertex>());
-            void createIndexBuffer(std::vector<uint16_t>& indices = std::vector<uint16_t>());
+            void createIndexBuffer(std::vector<cUint16_t>& indices = std::vector<cUint16_t>());
             void createModelViewProjBuffers();
-            
+            void createTexture(VkFormat format = VK_FORMAT_R8G8B8A8_SRGB)
+            {
+                this->texture->createTextureImage();
+                this->texture->createTextureImageView(format);
+                this->texture->createTextureSampler();
+            };
+
             virtual void draw(VkCommandBuffer commandBuffer, uint32_t imageIndex);
             virtual void cleanup() {
                 this->vertexBuffer.cleanup();
                 this->indexBuffer.cleanup();
+                if (this->texture) {
+                    this->texture->cleanup();
+                    if (this->texture->getResource()) {
+                        delete this->texture->getResource(); // Replace direct destructor call with delete  
+                    }
+                }
 
                 for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
                 {
@@ -37,103 +49,96 @@ namespace vkengine {
             
             VertexBuffer* getVertexBuffer() { return &this->vertexBuffer; }
             IndexBuffer* getIndexBuffer() { return &this->indexBuffer; }
-            std::string getName() { return this->name; }
+            UniformBuffer* getModelViewProjUniformBuffer(cUint16_t currentImage) { return &this->modelviewprojUniformBuffer[currentImage]; }
+            cString getName() { return this->name; }
+            VkTextureBase* getTexture() { return this->texture; } // 텍스처 객체 반환
             std::vector<Vertex>* getVertices() { return &this->vertexBuffer.vertices; }
-            std::vector<uint16_t>* getIndices() { return &this->indexBuffer.indices; }
-            glm::vec3 getPosition() { return this->position; }
-            glm::quat getRotation() { return this->rotation; }
-            glm::vec3 getScale() { return this->scale; }
-            glm::mat4 getMatrix() { return this->matrix; }
-            UniformBuffer* getModelViewProjUniformBuffer(uint16_t currentImage) { return &this->modelviewprojUniformBuffer[currentImage]; }
+            std::vector<cUint16_t>* getIndices() { return &this->indexBuffer.indices; }
+            cVec3 getPosition() { return this->position; }
+            cQuat getRotation() { return this->rotation; }
+            cVec3 getScale() { return this->scale; }
+            cMat4 getMatrix() { return this->matrix; }
 
-            void setName(std::string name) { this->name = name; }
+            void setName(cString name) { this->name = name; }
             void setVertices(std::vector<Vertex>& vertices) { this->vertexBuffer.vertices = vertices; }
-            void setIndices(std::vector<uint16_t>& indices) { this->indexBuffer.indices = indices; }
-            void setPosition(glm::vec3 position) { this->position = position; }
-            void setRotation(glm::quat rotation) { this->rotation = rotation; }
-            void setScale(glm::vec3 scale) { this->scale = scale; }
-            void setMatrix(glm::mat4 matrix) { this->matrix = matrix; }
+            void setIndices(std::vector<cUint16_t>& indices) { this->indexBuffer.indices = indices; }
+            void setPosition(cVec3 position) { this->position = position; }
+            void setRotation(cQuat rotation) { this->rotation = rotation; }
+            void setScale(cVec3 scale) { this->scale = scale; }
+            void setMatrix(cMat4 matrix) { this->matrix = matrix; }
+            void setResource(TextureResource* resource)
+            {
+                this->texture->setResource(resource);
+            }
 
-            void CaluateRotation(glm::quat rotation)
+            void CaluateRotation(cQuat rotation)
             {
               this->rotation *= rotation;
             }
-
-            void RotationAngle(float angle, glm::vec3 axis);
+            void RotationAngle(float angle, cVec3 axis);
             void updateMatrix();
 
         protected:
+
             VertexBuffer vertexBuffer;
             IndexBuffer indexBuffer;
             UniformBuffer modelviewprojUniformBuffer[MAX_FRAMES_IN_FLIGHT]; // swapChain image 개수만큼 uniform buffer 생성
-            std::string name = "";
+            VkTextureBase* texture = nullptr; // 텍스처 객체
+            VKDevice_* device = nullptr; // VKDevice 포인터
+            cString name = "";
 
-            glm::vec3 position = { 0.0f, 0.0f, 0.0f };
-            glm::quat rotation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
-            glm::vec3 scale = { 1.0f, 1.0f, 1.0f };
-            glm::mat4 matrix = glm::mat4(1.0f);
+            cVec3 position = { 0.0f, 0.0f, 0.0f };
+            cQuat rotation = cQuat(1.0f, 0.0f, 0.0f, 0.0f);
+            cVec3 scale = { 1.0f, 1.0f, 1.0f };
+            cMat4 matrix = cMat4(1.0f);
 
-        };
-
-        class Texture3DObject : public Object
-        {
-        public:
-            void createTexture(std::string path);
-            virtual void cleanup() {
-                Object::cleanup();
-                this->texture.cleanup();
-            };
-        private:
-            Vk2DTexture texture = {};
         };
 
         class TextureArrayObject3D : public Object
         {
         public:
-            void createTextureArray(std::vector<std::string> faces);
+            TextureArrayObject3D(VKDevice_* device) : Object(device) {
+                this->texture = new Vk2DTextureArray();
+                this->texture->setDevice(this->device);
+            };
             virtual void cleanup() {
                 Object::cleanup();
-                this->cubeTextureArray.cleanup();
             };
-            Vk2DTextureArray getCubeTexture() { return this->cubeTextureArray; }
         private:
-            Vk2DTextureArray cubeTextureArray = {};
         };
 
         class SkyBox : public Object
         {
         public:
-            void createCubeMap(std::vector<std::string> faces);
+
+            SkyBox(VKDevice_* device) : Object(device) {
+                this->texture = new VKcubeMap();
+                this->texture->setDevice(this->device);
+            };
+
             void updateUniformBuffer(uint32_t currentImage, Camera* camera);
 
             virtual void cleanup() {
                 Object::cleanup();
-
-                this->cubeMap.cleanup();
             };
-
-            VKcubeMap* getCubeMap() { return &this->cubeMap; }
-
         private:
-            VKcubeMap cubeMap = {};
-             
         };
 
         class ModelObject : public Object
         {
         public:
-            void createTexture(std::string path);
-            void updateUniformBuffer(uint32_t currentImage, glm::mat4 world, Camera* camera);
+            ModelObject(VKDevice_* device) : Object(device) {
+                this->texture = new Vk2DTexture();
+                this->texture->setDevice(this->device);
+            };
 
-            Vk2DTexture* getTexture() { return &this->texture; }
-            
+            void updateUniformBuffer(uint32_t currentImage, cMat4 world, Camera* camera);
+
             virtual void cleanup() {
                 Object::cleanup();
-                this->texture.cleanup();
             };
 
         private:
-            Vk2DTexture texture = {};
         };
 
     }

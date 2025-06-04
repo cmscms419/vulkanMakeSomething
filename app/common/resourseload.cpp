@@ -2,7 +2,7 @@
 
 namespace vkengine {
 
-    unsigned char* load_png_rgba(const char* filename, uint32_t* width, uint32_t* height, int type)
+    cUChar* load_png_rgba(const cChar* filename, cUint32_t* width, cUint32_t* height, cInt type)
     {
         FILE* fp = NULL;
         fopen_s(&fp, filename, "rb");
@@ -45,7 +45,7 @@ namespace vkengine {
 
         // 데이터 읽기
         png_bytep* row_pointers = (png_bytep*)malloc(sizeof(png_bytep) * (*height));
-        unsigned char* image_data = (unsigned char*)malloc((*width) * (*height) * 4);
+        cUChar* image_data = (cUChar*)malloc((*width) * (*height) * 4);
 
         if (row_pointers == NULL || image_data == NULL) {
             png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
@@ -70,7 +70,8 @@ namespace vkengine {
 
         return image_data;
     }
-    void GetTextureSize(const char* filename, uint32_t* width, uint32_t* height)
+    
+    void GetTextureSize(const cChar* filename, cUint32_t* width, cUint32_t* height)
     {
         FILE* fp = NULL;
         fopen_s(&fp, filename, "rb");

@@ -1,23 +1,20 @@
 #include "VKtexture.h"
 #include "helper.h"
 
-#define _IMAGE_LOAD_TYPE_ 0
-
-#include "resourseload.h"
-
 namespace vkengine {
 
-    void Vk2DTexture::createTextureImage(int type, const char* texPath)
+    void Vk2DTexture::createTextureImage()
     {
-        unsigned char* pixels = load_png_rgba(texPath, &texWidth, &texHeight, type);
+        uint32_t texWidth = this->resource->texWidth;
+        uint32_t texHeight = this->resource->texHeight;
+        uint32_t texChannels = this->resource->texChannels;
+        cUChar* pixels = this->resource->data;
 
-        _CHECK_RESULT_((pixels != nullptr));
+        if (texWidth == 0 || texHeight == 0) {
+            return;
+        }
 
-
-        VkDeviceSize imageSize = texWidth * texHeight * 4;
-
-        this->VKmipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(texWidth, texHeight)))) + 1;
-        //this->VKmipLevels = 1;
+        VkDeviceSize imageSize = texWidth * texHeight * texChannels;
 
         VkBuffer stagingBuffer;
         VkDeviceMemory stagingBufferMemory;
@@ -37,8 +34,6 @@ namespace vkengine {
             pixels,
             stagingBufferMemory,
             imageSize);
-
-        free(pixels);
 
         vkengine::helper::createImage(
             this->device->logicaldevice,
@@ -70,8 +65,8 @@ namespace vkengine {
             this->device->graphicsVKQueue,
             stagingBuffer,
             this->image,
-            static_cast<uint32_t>(texWidth),
-            static_cast<uint32_t>(texHeight));
+            texWidth,
+            texHeight);
 
         vkDestroyBuffer(this->device->logicaldevice, stagingBuffer, nullptr);
         vkFreeMemory(this->device->logicaldevice, stagingBufferMemory, nullptr);
@@ -86,7 +81,6 @@ namespace vkengine {
             texWidth,
             texHeight,
             this->VKmipLevels);
-
     }
 
     void Vk2DTexture::createTextureImageView(VkFormat format)
@@ -128,13 +122,10 @@ namespace vkengine {
     // https://github.com/SaschaWillems/Vulkan 이 사이트에서 texturearray 참고
     // 해당 예제는 리소스가 배열 형태로 되어 있어서, 배열 형태로 텍스처를 로드하는 예제이다.
     // 이 예제는 단일 리소스 여러개를 가져오는 형태로 여러번 리소스를 가져온다.
-    void Vk2DTextureArray::createTextureArrayImages(int type, std::vector<std::string>& texPath)
+    void Vk2DTextureArray::createTextureImage()
     {
-        this->imageCount = static_cast<uint32_t>(texPath.size());
-
         std::vector<VkBuffer> stagingBuffers;
         std::vector<VkDeviceMemory> stagingBufferMemorys;
-        this->VKmipLevels = 1;
 
         stagingBuffers.resize(this->imageCount);
         stagingBufferMemorys.resize(this->imageCount);
@@ -146,9 +137,8 @@ namespace vkengine {
         std::vector<VkDeviceSize> imageSizes(this->imageCount);
 
         for (size_t i = 0; i < this->imageCount; i++) {
-            // 임시로 이미지를 로드하여 크기를 얻습니다.
-            GetTextureSize(texPath[i].c_str(), &texWidth, &texHeight);
-            VkDeviceSize imageSize = texWidth * texHeight * 4;
+            TextureResource& resource = this->resource[i];
+            VkDeviceSize imageSize = resource.texWidth * resource.texHeight * resource.texChannels;
             imageSizes[i] = imageSize;
             totalImageSize += imageSize;
         }
@@ -169,28 +159,34 @@ namespace vkengine {
         // 3. 각 이미지 데이터를 단일 버퍼에 연속적으로 복사합니다.
         for (size_t i = 0; i < this->imageCount; i++)
         {
-            unsigned char* pixels = load_png_rgba(texPath[i].c_str(), &texWidth, &texHeight, type);
-            _CHECK_RESULT_((pixels != nullptr));
+            TextureResource& resource = this->resource[i];
+
+            _CHECK_RESULT_((resource.data != nullptr));
 
             // imageSizes[i]는 현재 이미지의 크기입니다.
             vkengine::helper::copyToDeviceMemory(
                 this->device->logicaldevice,
-                pixels,
+                resource.data,
                 stagingBufferMemory,
                 imageSizes[i],
                 offset);
 
-            free(pixels);
             offset += imageSizes[i];
         }
+
+        // 가정 : 모든 이미지가 동일한 포맷과 크기를 가지고 있다고 가정합니다.
+        // 이 예제에서는 VK_FORMAT_R8G8B8A8_SRGB 포맷을 사용합니다.
+        uint32_t width = this->resource[0].texWidth;
+        uint32_t height = this->resource[0].texHeight;
+        uint32_t channels = this->resource[0].texChannels;
 
         // 4. 이미지 메모리 생성  
         vkengine::helper::createImage(
             this->device->logicaldevice,
             this->device->physicalDevice,
-            texWidth,
-            texHeight,
-            this->VKmipLevels,
+            width,
+            height,
+            channels,
             VK_SAMPLE_COUNT_1_BIT,
             VK_FORMAT_R8G8B8A8_SRGB,
             VK_IMAGE_TILING_OPTIMAL,
@@ -217,8 +213,8 @@ namespace vkengine {
             this->device->graphicsVKQueue,
             stagingBuffer,
             this->image,
-            static_cast<uint32_t>(texWidth),
-            static_cast<uint32_t>(texHeight),
+            width,
+            height,
             imageSizes);
 
         vkengine::helper::transitionImageLayout2(
@@ -274,10 +270,14 @@ namespace vkengine {
         _VK_CHECK_RESULT_(vkCreateSampler(this->device->logicaldevice, &samplerInfo, nullptr, &this->sampler));
     }
 
-    void VKcubeMap::createTextureCubeImages(int type, std::vector<std::string>& texPath)
+    void VKcubeMap::createTextureImage()
     {
         // cube map texture = 6개의 이미지를 가지고 있어야 한다.
-        uint32_t imageCount = 6;
+        if (this->imageCount != 6)
+        {
+            _PRINT_TO_CONSOLE_("Cube map texture must have 6 images.");
+            return;
+        }
 
         std::vector<VkBuffer> stagingBuffers;
         std::vector<VkDeviceMemory> stagingBufferMemorys;
@@ -293,12 +293,12 @@ namespace vkengine {
 
         for (size_t i = 0; i < imageCount; i++) {
             // 임시로 이미지를 로드하여 크기를 얻습니다.
-            GetTextureSize(texPath[i].c_str(), &texWidth, &texHeight);
-            VkDeviceSize imageSize = texWidth * texHeight * 4;
+            TextureResource& resource = this->resource[i];
+            VkDeviceSize imageSize = resource.texWidth * resource.texHeight * resource.texChannels;
             imageSizes[i] = imageSize;
             totalImageSize += imageSize;
         }
-        this->VKmipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(texWidth, texHeight)))) + 1;
+
 
         // 2. 전체 크기를 기준으로 단일 스테이징 버퍼 생성
         VkBuffer stagingBuffer;
@@ -316,27 +316,33 @@ namespace vkengine {
         // 3. 각 이미지 데이터를 단일 버퍼에 연속적으로 복사합니다.
         for (size_t i = 0; i < imageCount; i++)
         {
-            unsigned char* pixels = load_png_rgba(texPath[i].c_str(), &texWidth, &texHeight, type);
-            _CHECK_RESULT_((pixels != nullptr));
+            TextureResource& resource = this->resource[i];
+
+            _CHECK_RESULT_((resource.data != nullptr));
 
             // imageSizes[i]는 현재 이미지의 크기입니다.
             vkengine::helper::copyToDeviceMemory(
                 this->device->logicaldevice,
-                pixels,
+                resource.data,
                 stagingBufferMemory,
                 imageSizes[i],
                 offset);
 
-            free(pixels);
             offset += imageSizes[i];
         }
+
+        // 가정 : 모든 이미지가 동일한 포맷과 크기를 가지고 있다고 가정합니다.
+        // 이 예제에서는 VK_FORMAT_R8G8B8A8_SRGB 포맷을 사용합니다.
+        uint32_t width = this->resource[0].texWidth;
+        uint32_t height = this->resource[0].texHeight;
+        uint32_t channels = this->resource[0].texChannels;
 
         // 4. 이미지 메모리 생성  
         vkengine::helper::createImage2(
             this->device->logicaldevice,
             this->device->physicalDevice,
-            texWidth,
-            texHeight,
+            width,
+            height,
             this->VKmipLevels,
             VK_SAMPLE_COUNT_1_BIT,
             VK_FORMAT_R8G8B8A8_SRGB,
@@ -366,8 +372,8 @@ namespace vkengine {
             this->device->graphicsVKQueue,
             stagingBuffer,
             this->image,
-            static_cast<uint32_t>(texWidth),
-            static_cast<uint32_t>(texHeight),
+            width,
+            height,
             imageSizes);
 
         vkengine::helper::generateMipmapsCubeMap(
@@ -377,12 +383,13 @@ namespace vkengine {
             this->device->graphicsVKQueue,
             this->image,
             VK_FORMAT_R8G8B8A8_SRGB,
-            texWidth,
-            texHeight,
+            width,
+            height,
             this->VKmipLevels);
 
         vkDestroyBuffer(this->device->logicaldevice, stagingBuffer, nullptr);
         vkFreeMemory(this->device->logicaldevice, stagingBufferMemory, nullptr);
+
     }
 
     void VKcubeMap::createTextureImageView(VkFormat format)
@@ -421,4 +428,49 @@ namespace vkengine {
         _VK_CHECK_RESULT_(vkCreateSampler(this->device->logicaldevice, &samplerInfo, nullptr, &this->sampler));
     }
 
+    void VkTextureBase::setResource(TextureResource* resource)
+    {
+        if (resource == nullptr) {
+            _PRINT_TO_CONSOLE_("Resource is null.");
+            return;
+        }
+
+        if (this->imageCount >= 6) {
+            _PRINT_TO_CONSOLE_("Cube map texture can only have 6 images.");
+            return;
+        }
+
+        if (this->imageCount == 0) {
+            this->imageCount = 1; // 첫 번째 리소스만 설정
+            this->VKmipLevels = 1; // Mipmap 레벨을 1로 설정
+            this->resource = (TextureResource*)calloc(this->imageCount, sizeof(TextureResource));
+
+            if (this->resource == nullptr) {
+                _PRINT_TO_CONSOLE_("Failed to allocate memory for resource.");
+                return;
+            }
+
+            this->resource[0] = *resource;
+
+            //this->VKmipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(texWidth, texHeight)))) + 1;
+        }
+        else {
+
+            TextureResource* newData = (TextureResource*)calloc(this->imageCount + 1, sizeof(TextureResource));
+
+            if (newData == nullptr) {
+                _PRINT_TO_CONSOLE_("Failed to allocate memory for new resource.");
+                return;
+            }
+
+            for (size_t i = 0; i < this->imageCount; i++) {
+                newData[i] = this->resource[i];
+            }
+
+            newData[this->imageCount] = *resource; // 마지막에 새로운 리소스 추가
+            free(this->resource); // Free the old resource array
+            this->resource = newData; // 새로운 리소스로 교체
+            this->imageCount++;
+        }
+    }
 }

@@ -9,7 +9,10 @@ using vkengine::object::Camera;
 
 namespace vkengine {
 
-    Load3DModelEngine::Load3DModelEngine(std::string root_path) : VulkanEngine(root_path) {}
+    Load3DModelEngine::Load3DModelEngine(std::string root_path) : VulkanEngine(root_path) {
+        this->cubeSkybox = nullptr;
+        this->modelObject = nullptr;
+    }
 
     Load3DModelEngine::~Load3DModelEngine() {}
 
@@ -24,14 +27,17 @@ namespace vkengine {
         VulkanEngine::prepare();
         this->init_sync_structures();
 
-        std::vector<std::string> pathArray = {
-           this->RootPath + RESOURSE_PATH + TEST_TEXTURE_PATH_ARRAY0,
-           this->RootPath + RESOURSE_PATH + TEST_TEXTURE_PATH_ARRAY1,
-           this->RootPath + RESOURSE_PATH + TEST_TEXTURE_PATH_ARRAY2,
-           this->RootPath + RESOURSE_PATH + TEST_TEXTURE_PATH_ARRAY3,
-           this->RootPath + RESOURSE_PATH + TEST_TEXTURE_PATH_ARRAY4,
-           this->RootPath + RESOURSE_PATH + TEST_TEXTURE_PATH_ARRAY5
-        };
+        this->cubeSkybox = new object::SkyBox(this->getDevice());
+        this->modelObject = new object::ModelObject(this->getDevice());
+
+        //std::vector<std::string> pathArray = {
+        //   this->RootPath + RESOURSE_PATH + TEST_TEXTURE_PATH_ARRAY0,
+        //   this->RootPath + RESOURSE_PATH + TEST_TEXTURE_PATH_ARRAY1,
+        //   this->RootPath + RESOURSE_PATH + TEST_TEXTURE_PATH_ARRAY2,
+        //   this->RootPath + RESOURSE_PATH + TEST_TEXTURE_PATH_ARRAY3,
+        //   this->RootPath + RESOURSE_PATH + TEST_TEXTURE_PATH_ARRAY4,
+        //   this->RootPath + RESOURSE_PATH + TEST_TEXTURE_PATH_ARRAY5
+        //};
 
         //this->cubeObject.createTextureArray(pathArray);
 
@@ -44,11 +50,31 @@ namespace vkengine {
            this->RootPath + RESOURSE_PATH + CUBE_TEXTURE_PATH + "/back.png"
         };
 
-        this->cubeSkybox.createCubeMap(pathCubeArray);
+        for (auto& path : pathCubeArray)
+        {
+            TextureResource* resource = new TextureResource();
+            resource->createResource(path);
 
-        this->modelObject.createTexture(this->RootPath + RESOURSE_PATH + TEXTURE_PATH);
-        this->modelObject.RotationAngle(90.0f, glm::vec3(1.0f, 0.0f, 0.0f));
-        helper::loadModel::loadModel(this->RootPath, *this->modelObject.getVertices(), *this->modelObject.getIndices());
+            if (resource->data == nullptr) {
+                _PRINT_TO_CONSOLE_("Failed to load texture from %s\n", path.c_str());
+                return false;
+            }
+
+            this->cubeSkybox->setResource(resource);
+
+        }
+
+        this->cubeSkybox->createTexture(VK_FORMAT_R8G8B8A8_SRGB);
+
+        cString modelPath = this->RootPath + RESOURSE_PATH + TEXTURE_PATH;
+        TextureResource* resource = new TextureResource();
+        resource->createResource(modelPath);
+
+        this->modelObject->setResource(resource);
+        this->modelObject->RotationAngle(90.0f, glm::vec3(1.0f, 0.0f, 0.0f));
+
+        helper::loadModel::loadModel(this->RootPath, *this->modelObject->getVertices(), *this->modelObject->getIndices());
+        this->modelObject->createTexture(VK_FORMAT_R8G8B8A8_SRGB);
 
         this->createVertexbuffer();
         this->createIndexBuffer();
@@ -86,12 +112,10 @@ namespace vkengine {
 
             vkDestroyPipelineLayout(this->VKdevice->logicaldevice, this->VKpipelineLayout, nullptr);
             vkDestroyDescriptorSetLayout(this->VKdevice->logicaldevice, this->VKdescriptorSetLayout, nullptr);
-            //vkFreeDescriptorSets(this->VKdevice->logicaldevice, this->VKdescriptorPool, static_cast<uint32_t>(this->VKdescriptorSets.size()), this->VKdescriptorSets.data());
-            
             vkDestroyDescriptorPool(this->VKdevice->logicaldevice, this->VKdescriptorPool, nullptr);
 
-            this->cubeSkybox.cleanup();
-            this->modelObject.cleanup();
+            this->cubeSkybox->cleanup();
+            this->modelObject->cleanup();
 
             for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
             {
@@ -129,10 +153,10 @@ namespace vkengine {
         VulkanEngine::prepareFame(&imageIndex);
 
         // uniform 버퍼를 업데이트합니다.
-        this->modelObject.updateMatrix();
+        this->modelObject->updateMatrix();
 
         this->updateUniformBuffer(static_cast<uint32_t>(this->currentFrame));
-        this->updateUniformBuffer2(static_cast<uint32_t>(this->currentFrame), this->modelObject.getMatrix());
+        this->updateUniformBuffer2(static_cast<uint32_t>(this->currentFrame), this->modelObject->getMatrix());
 
         // 플래그를 재설정합니다. -> 렌더링이 끝나면 플래그를 재설정합니다.
         vkResetFences(this->VKdevice->logicaldevice, 1, &this->getCurrnetFrameData().VkinFlightFences);
@@ -239,7 +263,7 @@ namespace vkengine {
 
         this->camera->setPerspectiveProjection(glm::radians(fov), aspectRatio, nearP, farP);
 
-        this->modelObject.updateMatrix();
+        this->modelObject->updateMatrix();
     }
 
     bool Load3DModelEngine::init_sync_structures()
@@ -298,10 +322,10 @@ namespace vkengine {
 
             vkCmdBindDescriptorSets(framedata->mainCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->VKpipelineLayout, 0, 1, &this->VKdescriptorSets[this->currentFrame], 0, nullptr);
             vkCmdBindPipeline(framedata->mainCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->VKCubeMapPipeline);
-            this->cubeSkybox.draw(framedata->mainCommandBuffer, static_cast<uint32_t>(this->currentFrame));
+            this->cubeSkybox->draw(framedata->mainCommandBuffer, static_cast<uint32_t>(this->currentFrame));
 
             vkCmdBindPipeline(framedata->mainCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->VKgraphicsPipeline);
-            this->modelObject.draw(framedata->mainCommandBuffer, static_cast<uint32_t>(this->currentFrame));
+            this->modelObject->draw(framedata->mainCommandBuffer, static_cast<uint32_t>(this->currentFrame));
 
         }
 
@@ -314,15 +338,15 @@ namespace vkengine {
     void Load3DModelEngine::createVertexbuffer()
     {
         //this->cubeObject.createVertexBuffer(cube);
-        this->modelObject.createVertexBuffer(*this->modelObject.getVertices());
-        this->cubeSkybox.createVertexBuffer(const_cast<std::vector<Vertex>&>(skyboxVertices));
+        this->modelObject->createVertexBuffer(*this->modelObject->getVertices());
+        this->cubeSkybox->createVertexBuffer(const_cast<std::vector<Vertex>&>(skyboxVertices));
     }
 
     void Load3DModelEngine::createIndexBuffer()
     {
         //this->cubeObject.createIndexBuffer(cubeindices_);
-        this->modelObject.createIndexBuffer(*this->modelObject.getIndices());
-        this->cubeSkybox.createIndexBuffer(const_cast<std::vector<uint16_t>&>(skyboxIndices));
+        this->modelObject->createIndexBuffer(*this->modelObject->getIndices());
+        this->cubeSkybox->createIndexBuffer(const_cast<std::vector<uint16_t>&>(skyboxIndices));
     }
 
     void Load3DModelEngine::createUniformBuffers()
@@ -415,13 +439,13 @@ namespace vkengine {
 
             VkDescriptorImageInfo imageInfo{};
             imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-            imageInfo.imageView = this->cubeSkybox.getCubeMap()->imageView;
-            imageInfo.sampler = this->cubeSkybox.getCubeMap()->sampler;
+            imageInfo.imageView = this->cubeSkybox->getTexture()->getImageView();
+            imageInfo.sampler = this->cubeSkybox->getTexture()->getSampler();
 
             VkDescriptorImageInfo imageInfo2{};
             imageInfo2.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-            imageInfo2.imageView = this->modelObject.getTexture()->imageView;
-            imageInfo2.sampler = this->modelObject.getTexture()->sampler;
+            imageInfo2.imageView = this->modelObject->getTexture()->getImageView();
+            imageInfo2.sampler = this->modelObject->getTexture()->getSampler();
 
             std::array<VkWriteDescriptorSet, 3> descriptorWrites{};
 

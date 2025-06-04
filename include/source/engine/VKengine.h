@@ -19,6 +19,8 @@
 #include "Debug.h"
 #include "helper.h"
 
+#define MOVESPEED 1.2f
+
 namespace vkengine {
 
     namespace object {
@@ -30,9 +32,9 @@ namespace vkengine {
         VulkanEngine(std::string root_path);
         ~VulkanEngine();
 
-        bool _isInitialized{ false };
-        bool stop_rendering{ false };
-        bool framebufferResized{ false };   // 프레임 버퍼 크기 조정 여부
+        cBool _isInitialized{ false };
+        cBool stop_rendering{ false };
+        cBool framebufferResized{ false };   // 프레임 버퍼 크기 조정 여부
 
         FrameData& getCurrnetFrameData();
 
@@ -45,13 +47,13 @@ namespace vkengine {
         virtual void cleanup();
 
         //mainLoop
-        virtual bool mainLoop();
+        virtual cBool mainLoop();
 
         // create window
         virtual void initWindow();
 
         // prepare
-        virtual bool prepare();
+        virtual cBool prepare();
 
         // drawFrame
         virtual void drawFrame() = 0;
@@ -64,24 +66,24 @@ namespace vkengine {
 
         void createDescriptorPoolImGui();
 
-        float getCalulateDeltaTime() {
+        cFloat getCalulateDeltaTime() {
             auto newTime = std::chrono::high_resolution_clock::now();
-            float deltaTime = std::chrono::duration<float, std::chrono::seconds::period>(newTime - currentTime).count();
+            cFloat deltaTime = std::chrono::duration<cFloat, std::chrono::seconds::period>(newTime - currentTime).count();
             currentTime = newTime;
 
             return deltaTime;
         }
 
-        float getProgramRunTime() {
+        cFloat getProgramRunTime() {
             auto currentTime = std::chrono::high_resolution_clock::now();
-            float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
+            cFloat time = std::chrono::duration<cFloat, std::chrono::seconds::period>(currentTime - startTime).count();
 
             return time;
         }
 
-        bool isInitialized() const { return _isInitialized; }
-        bool isStopRendering() const { return stop_rendering; }
-        bool isFramebufferResized() const { return framebufferResized; }
+        cBool isInitialized() const { return _isInitialized; }
+        cBool isStopRendering() const { return stop_rendering; }
+        cBool isFramebufferResized() const { return framebufferResized; }
         GLFWwindow* getWindow() const { return VKwindow; }
         VkInstance getInstance() const { return VKinstance; }
         VkDebugUtilsMessengerEXT getDebugUtilsMessenger() const { return VKdebugUtilsMessenger; }
@@ -96,50 +98,50 @@ namespace vkengine {
         VkPipelineCache getPipelineCache() const { return VKpipelineCache; }
         std::string getRootPath() const { return RootPath; }
         size_t getCurrentFrame() const { return currentFrame; }
-        bool getState() const { return state; }
+        cBool getState() const { return state; }
         VkDescriptorPool getDescriptorPool() const { return VKdescriptorPool; }
         VkDescriptorSetLayout getDescriptorSetLayout() const { return VKdescriptorSetLayout; }
         void setWindowWidth(int width) { windowWidth = width; }
         void setWindowHeight(int height) { windowHeight = height; }
         std::shared_ptr<vkengine::object::Camera> getCamera() { return camera; }
         
-        void setKeyPressed(int key, bool value) { m_keyPressed[key] = value; }
-        bool getKeyPressed(int key) { return m_keyPressed[key]; }
-        void setMousePressed(int button, bool value) { m_mousePressed[button] = value; }
-        bool getMousePressed(int button) { return m_mousePressed[button]; }
+        void setKeyPressed(int key, cBool value) { m_keyPressed[key] = value; }
+        cBool getKeyPressed(int key) { return m_keyPressed[key]; }
+        void setMousePressed(int button, cBool value) { m_mousePressed[button] = value; }
+        cBool getMousePressed(int button) { return m_mousePressed[button]; }
         
-        void setMousePosition(float x, float y) { lastMouseX = x; lastMouseY = y; }
-        float getLastMouseX() { return lastMouseX; }
-        float getLastMouseY() { return lastMouseY; }
-        void setCameraMoveCheck(bool check) { this->cameraMove = check; }
-        bool getCameraMoveCheck() { return this->cameraMove; }
-        void setCameraMoveStyle(bool style) { this->cameraMoveStyle = style; }
-        bool getCameraMoveStyle() { return this->cameraMoveStyle; }
+        void setMousePosition(cFloat x, cFloat y) { lastMouseX = x; lastMouseY = y; }
+        cFloat getLastMouseX() { return lastMouseX; }
+        cFloat getLastMouseY() { return lastMouseY; }
+        void setCameraMoveCheck(cBool check) { this->cameraMove = check; }
+        cBool getCameraMoveCheck() { return this->cameraMove; }
+        void setCameraMoveStyle(cBool style) { this->cameraMoveStyle = style; }
+        cBool getCameraMoveStyle() { return this->cameraMoveStyle; }
 
     protected:
 
-        virtual bool initVulkan();
-        virtual bool init_swapchain();
-        virtual bool init_command_pool();
-        virtual bool init_sync_structures();
+        virtual cBool initVulkan();
+        virtual cBool init_swapchain();
+        virtual cBool init_command_pool();
+        virtual cBool init_sync_structures();
 
         // 엔진 초기화
-        virtual bool createInstance();                             // 인스턴스 생성
-        virtual bool setupDebugCallback();                         // 디버그 메신저 생성
-        virtual bool createSurface();                              // 서피스 생성
-        virtual bool createDevice();                               // 디바이스(logical, pysical) 생성
-        virtual bool createDepthStencilResources();                // 깊이 스텐실 생성
-        virtual bool createRenderPass();                           // 렌더 패스 생성
-        virtual bool createPipelineCache();                        // 파이프라인 캐시 생성
-        virtual bool createFramebuffers();                         // 프레임 버퍼 생성
-        virtual bool recreateSwapChain();                          // 스왑 체인 재생성
-        virtual bool createCommandBuffer();                        // 커맨드 버퍼 생성
+        virtual cBool createInstance();                             // 인스턴스 생성
+        virtual cBool setupDebugCallback();                         // 디버그 메신저 생성
+        virtual cBool createSurface();                              // 서피스 생성
+        virtual cBool createDevice();                               // 디바이스(logical, pysical) 생성
+        virtual cBool createDepthStencilResources();                // 깊이 스텐실 생성
+        virtual cBool createRenderPass();                           // 렌더 패스 생성
+        virtual cBool createPipelineCache();                        // 파이프라인 캐시 생성
+        virtual cBool createFramebuffers();                         // 프레임 버퍼 생성
+        virtual cBool recreateSwapChain();                          // 스왑 체인 재생성
+        virtual cBool createCommandBuffer();                        // 커맨드 버퍼 생성
 
         virtual void recordCommandBuffer(FrameData* framedata, uint32_t imageIndex);    // 커맨드 버퍼 레코드
 
         // 도구
-        bool checkValidationLayerSupport();               // 검증 레이어 지원 확인
-        std::vector<const char*> getRequiredExtensions(); // 필요한 확장 목록 가져오기
+        cBool checkValidationLayerSupport();               // 검증 레이어 지원 확인
+        std::vector<const cChar*> getRequiredExtensions(); // 필요한 확장 목록 가져오기
 
         GLFWwindow* VKwindow{ nullptr };  // GLFW 윈도우 핸들 -> GLFW 윈도우 핸들을 저장
         VkInstance VKinstance{};                              // Vulkan 인스턴스 -> Vulkan API를 사용하기 위한 인스턴스
@@ -167,28 +169,28 @@ namespace vkengine {
 
         std::string RootPath = "";                          // 루트 경로
         size_t currentFrame = 0;                            // 현재 프레임 인덱스
-        bool state = false;                                 // 프로그램 상태 
+        cBool state = false;                                 // 프로그램 상태 
         int windowWidth = WIDTH;                            // 윈도우 너비
         int windowHeight = HEIGHT;                          // 윈도우 높이
 
         // 현재 키보드가 눌렸는지 상태를 저장하는 배열
-        bool m_keyPressed[256] = {
+        cBool m_keyPressed[256] = {
             false,
         };
 
         // 마우스 커서 위치
-        float lastMouseX = 0;
-        float lastMouseY = 0;
+        cFloat lastMouseX = 0;
+        cFloat lastMouseY = 0;
 
-        bool m_mousePressed[3] = {
+        cBool m_mousePressed[3] = {
             false, // 왼쪽 버튼
             false, // 오른쪽 버튼
             false, // 가운데 버튼
         };
 
         // Camera Move 여부
-        bool cameraMove = false;
-        bool cameraMoveStyle = false; // 카메라 이동 스타일
+        cBool cameraMove = false;
+        cBool cameraMoveStyle = false; // 카메라 이동 스타일
 
         // 현재 시간
         std::chrono::high_resolution_clock::time_point currentTime;

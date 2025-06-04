@@ -8,7 +8,9 @@ using vkengine::object::Camera;
 namespace vkengine {
 
     imguiEngine::imguiEngine(std::string root_path) : VulkanEngine(root_path) {}
+
     imguiEngine::~imguiEngine() {}
+
     void imguiEngine::init()
     {
         VulkanEngine::init();
@@ -20,6 +22,10 @@ namespace vkengine {
         VulkanEngine::prepare();
         this->init_sync_structures();
 
+
+        this->cubeObject = new object::TextureArrayObject3D(this->getDevice());
+        this->cubeSkybox = new object::SkyBox(this->getDevice());
+
         std::vector<std::string> pathArray = {
            this->RootPath + RESOURSE_PATH + TEST_TEXTURE_PATH_ARRAY0,
            this->RootPath + RESOURSE_PATH + TEST_TEXTURE_PATH_ARRAY1,
@@ -29,7 +35,21 @@ namespace vkengine {
            this->RootPath + RESOURSE_PATH + TEST_TEXTURE_PATH_ARRAY5
         };
 
-        this->cubeObject.createTextureArray(pathArray);
+        for (auto& path : pathArray)
+        {
+            TextureResource* resource = new TextureResource();
+            resource->createResource(path);
+
+            if (resource->data == nullptr) {
+                _PRINT_TO_CONSOLE_("Failed to load texture from %s\n", path.c_str());
+                return false;
+            }
+
+            this->cubeObject->setResource(resource);
+
+        }
+
+        this->cubeObject->createTexture(VK_FORMAT_R8G8B8A8_SRGB);
 
         std::vector<std::string> pathCubeArray = {
            this->RootPath + RESOURSE_PATH + CUBE_TEXTURE_PATH + "/right.png",
@@ -40,7 +60,21 @@ namespace vkengine {
            this->RootPath + RESOURSE_PATH + CUBE_TEXTURE_PATH + "/back.png"
         };
 
-        this->cubeSkybox.createCubeMap(pathCubeArray);
+
+        for (auto& path : pathCubeArray)
+        {
+            TextureResource* resource = new TextureResource();
+            resource->createResource(path);
+
+            if (resource->data == nullptr) {
+                _PRINT_TO_CONSOLE_("Failed to load texture from %s\n", path.c_str());
+                return false;
+            }
+
+            this->cubeSkybox->setResource(resource);
+
+        }
+        this->cubeSkybox->createTexture(VK_FORMAT_R8G8B8A8_SRGB);
         this->vkGUI = new vkengine::vkGUI(this);
 
         this->createVertexbuffer();
@@ -83,8 +117,8 @@ namespace vkengine {
             vkDestroyDescriptorPool(this->VKdevice->logicaldevice, this->VKdescriptorPool, nullptr);
             vkDestroyDescriptorSetLayout(this->VKdevice->logicaldevice, this->VKdescriptorSetLayout, nullptr);
 
-            this->cubeSkybox.cleanup();
-            this->cubeObject.cleanup();
+            this->cubeSkybox->cleanup();
+            this->cubeObject->cleanup();
 
             for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
             {
@@ -204,33 +238,36 @@ namespace vkengine {
 
     void imguiEngine::update(float dt)
     {
+        float frameTime = this->getCalulateDeltaTime();
+
         if (this->m_keyPressed[GLFW_KEY_W])
         {
-            this->camera->MoveForward(dt);
+            this->camera->MoveForward(frameTime * MOVESPEED);
         }
 
         if (this->m_keyPressed[GLFW_KEY_S])
         {
-            this->camera->MoveForward(-dt);
+            this->camera->MoveForward(-frameTime * MOVESPEED);
         }
 
         if (this->m_keyPressed[GLFW_KEY_A])
         {
-            this->camera->MoveRight(-dt);
+            this->camera->MoveRight(-frameTime * MOVESPEED);
         }
 
         if (this->m_keyPressed[GLFW_KEY_D])
         {
-            this->camera->MoveRight(dt);
+            this->camera->MoveRight(frameTime * MOVESPEED);
         }
 
         if (this->m_keyPressed[GLFW_KEY_Q])
         {
-            this->camera->MoveUp(-dt);
+            this->camera->MoveUp(-frameTime * MOVESPEED);
         }
+
         if (this->m_keyPressed[GLFW_KEY_E])
         {
-            this->camera->MoveUp(dt);
+            this->camera->MoveUp(frameTime * MOVESPEED);
         }
 
         //this->camera->setViewDirection(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(-1.0f, -1.0f, -1.0f), glm::vec3(0.0f, 0.0f, 1.0f));
@@ -296,10 +333,10 @@ namespace vkengine {
             vkCmdBindDescriptorSets(framedata->mainCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->VKpipelineLayout, 0, 1, &this->VKdescriptorSets[this->currentFrame], 0, nullptr);
 
             vkCmdBindPipeline(framedata->mainCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->VKCubeMapPipeline);
-            this->cubeSkybox.draw(framedata->mainCommandBuffer, this->currentFrame);
+            this->cubeSkybox->draw(framedata->mainCommandBuffer, this->currentFrame);
 
             vkCmdBindPipeline(framedata->mainCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->VKgraphicsPipeline);
-            this->cubeObject.draw(framedata->mainCommandBuffer, this->currentFrame);
+            this->cubeObject->draw(framedata->mainCommandBuffer, this->currentFrame);
 
             this->vkGUI->render();
         }
@@ -312,14 +349,14 @@ namespace vkengine {
 
     void imguiEngine::createVertexbuffer()
     {
-        this->cubeObject.createVertexBuffer(const_cast<std::vector<Vertex>&>(cube));
-        this->cubeSkybox.createVertexBuffer(const_cast<std::vector<Vertex>&>(skyboxVertices));
+        this->cubeObject->createVertexBuffer(const_cast<std::vector<Vertex>&>(cube));
+        this->cubeSkybox->createVertexBuffer(const_cast<std::vector<Vertex>&>(skyboxVertices));
     }
 
     void imguiEngine::createIndexBuffer()
     {
-        this->cubeObject.createIndexBuffer(const_cast<std::vector<uint16_t>&>(cubeindices_));
-        this->cubeSkybox.createIndexBuffer(const_cast<std::vector<uint16_t>&>(skyboxIndices));
+        this->cubeObject->createIndexBuffer(const_cast<std::vector<uint16_t>&>(cubeindices_));
+        this->cubeSkybox->createIndexBuffer(const_cast<std::vector<uint16_t>&>(skyboxIndices));
     }
 
     void imguiEngine::createUniformBuffers()
@@ -434,13 +471,13 @@ namespace vkengine {
 
             VkDescriptorImageInfo imageInfo{};
             imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-            imageInfo.imageView = this->cubeSkybox.getCubeMap()->imageView;
-            imageInfo.sampler = this->cubeSkybox.getCubeMap()->sampler;
+            imageInfo.imageView = this->cubeSkybox->getTexture()->getImageView();
+            imageInfo.sampler = this->cubeSkybox->getTexture()->getSampler();
 
             VkDescriptorImageInfo imageInfo2{};
             imageInfo2.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-            imageInfo2.imageView = this->cubeObject.getCubeTexture().imageView;
-            imageInfo2.sampler = this->cubeObject.getCubeTexture().sampler;
+            imageInfo2.imageView = this->cubeObject->getTexture()->getImageView();
+            imageInfo2.sampler = this->cubeObject->getTexture()->getSampler();
 
             std::array<VkWriteDescriptorSet, 3> descriptorWrites{};
 

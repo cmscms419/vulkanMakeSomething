@@ -48,14 +48,13 @@ namespace vkengine
         void cleanupSwapcChain();
 
         // imgui ฐüทร
-        void initUI();
-        vkGUI* vkGUI = nullptr;
+        //void initUI();
 
         // 3d object
-        object::TextureArrayObject3D cubeObject;
+        object::TextureArrayObject3D* cubeObject;
 
         // skybox
-        object::SkyBox cubeSkybox;
+        object::SkyBox* cubeSkybox;
 
         std::vector<subUniformBuffer> VKuniformBuffer = {};
         std::vector<subUniformBuffer> VKuniformBuffer2 = {};

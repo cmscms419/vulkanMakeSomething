@@ -8,7 +8,7 @@ using namespace vkengine::debug;
 
 namespace vkengine
 {
-    constexpr bool bUseValidationLayers = false;
+    constexpr cBool bUseValidationLayers = false;
     VulkanEngine* loadedEngine = nullptr;
 
     static void framebufferResizeCallback(GLFWwindow* window, int width, int height) {
@@ -95,7 +95,7 @@ namespace vkengine
         loadedEngine = nullptr;
     }
 
-    bool VulkanEngine::mainLoop()
+    cBool VulkanEngine::mainLoop()
     {
         while (!glfwWindowShouldClose(this->VKwindow)) {
             glfwPollEvents();
@@ -127,7 +127,7 @@ namespace vkengine
         glfwSetScrollCallback(this->VKwindow, vkengine::input::scroll_callback); // 스크롤 콜백 설정
     }
 
-    bool VulkanEngine::prepare()
+    cBool VulkanEngine::prepare()
     {
         VulkanEngine::init_command_pool();
 
@@ -219,9 +219,9 @@ namespace vkengine
         _VK_CHECK_RESULT_(vkCreateDescriptorPool(this->VKdevice->logicaldevice, &pool_info, nullptr, &this->VKdescriptorPool));
     }
 
-    bool VulkanEngine::initVulkan()
+    cBool VulkanEngine::initVulkan()
     {
-        bool check = false;
+        cBool check = false;
 
         if (glfwVulkanSupported() == GLFW_FALSE) {
             return check;
@@ -240,7 +240,7 @@ namespace vkengine
         return check;
     }
 
-    bool VulkanEngine::init_swapchain()
+    cBool VulkanEngine::init_swapchain()
     {
         this->VKswapChain = std::make_unique<VKSwapChain>(this->VKdevice->physicalDevice, this->VKdevice->logicaldevice, this->VKsurface, &this->VKinstance);
         this->VKswapChain->createSwapChain(&this->VKdevice->queueFamilyIndices);
@@ -249,7 +249,7 @@ namespace vkengine
         return true;
     }
 
-    bool VulkanEngine::init_command_pool()
+    cBool VulkanEngine::init_command_pool()
     {
         // command pool create and command buffer create
         QueueFamilyIndices queueFamilyIndices = this->VKdevice->queueFamilyIndices;
@@ -262,7 +262,7 @@ namespace vkengine
         return true;
     }
 
-    bool VulkanEngine::init_sync_structures()
+    cBool VulkanEngine::init_sync_structures()
     {
         VkFenceCreateInfo fenceInfo = helper::fenceCreateInfo(VK_FENCE_CREATE_SIGNALED_BIT);
 
@@ -274,7 +274,7 @@ namespace vkengine
         return true;
     }
 
-    bool VulkanEngine::createInstance()
+    cBool VulkanEngine::createInstance()
     {
         if (enableValidationLayers && !checkValidationLayerSupport()) {
             throw std::runtime_error("validation layers requested, but not available!");
@@ -295,7 +295,7 @@ namespace vkengine
         createInfo.pApplicationInfo = &appInfo;                    // VkApplicationInfo 구조체를 참조합니다.
 
         uint32_t glfwExtensionCount = 0;
-        std::vector<const char*> extensions = this->getRequiredExtensions();     // 확장 목록을 저장할 변수를 선언합니다.
+        std::vector<const cChar*> extensions = this->getRequiredExtensions();     // 확장 목록을 저장할 변수를 선언합니다.
         glfwExtensionCount = static_cast<uint32_t>(extensions.size());           // 확장 개수를 저장합니다.
         createInfo.enabledExtensionCount = glfwExtensionCount;                   // 활성화할 확장 개수를 지정합니다.
         createInfo.ppEnabledExtensionNames = extensions.data();                  // 활성화할 확장 목록을 지정합니다.
@@ -321,7 +321,7 @@ namespace vkengine
         return true;
     }
     
-    bool VulkanEngine::setupDebugCallback()
+    cBool VulkanEngine::setupDebugCallback()
     {
         VkDebugUtilsMessengerCreateInfoEXT createInfo;
         populateDebugMessengerCreateInfo(createInfo);
@@ -331,7 +331,7 @@ namespace vkengine
         return true;
     }
     
-    bool VulkanEngine::createSurface()
+    cBool VulkanEngine::createSurface()
     {
 #if CREATESURFACE_VKWIN32SURFACECREATEINFOKHR == 0
         VkWin32SurfaceCreateInfoKHR createInfo{};
@@ -355,7 +355,7 @@ namespace vkengine
         //this->VKswapChain = new vkengine::VKSwapChain(this->VKdevice->VKphysicalDevice, this->VKdevice->VKdevice, this->VKsurface, &this->VKinstance);
     }
     
-    bool VulkanEngine::createDevice()
+    cBool VulkanEngine::createDevice()
     {
         // 물리 디바이스 목록을 가져옵니다.
         uint32_t deviceCount = 0;
@@ -423,7 +423,7 @@ namespace vkengine
         return true;
     }
     
-    bool VulkanEngine::createDepthStencilResources()
+    cBool VulkanEngine::createDepthStencilResources()
     {
         // 깊이 이미지 생성 정보 구조체를 초기화합니다.
         this->VKdevice->createimageview(
@@ -464,7 +464,7 @@ namespace vkengine
         return true;
     }
     
-    bool VulkanEngine::createRenderPass()
+    cBool VulkanEngine::createRenderPass()
     {
         // 렌더 패스 생성 정보 구조체를 초기화합니다.
         VkAttachmentDescription colorAttachment{};
@@ -559,7 +559,7 @@ namespace vkengine
         return true;
     }
     
-    bool VulkanEngine::createPipelineCache()
+    cBool VulkanEngine::createPipelineCache()
     {
         VkPipelineCacheCreateInfo pipelineCacheCreateInfo{};
         pipelineCacheCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO;
@@ -569,7 +569,7 @@ namespace vkengine
         return true;
     }
     
-    bool VulkanEngine::createFramebuffers()
+    cBool VulkanEngine::createFramebuffers()
     {
         this->VKswapChainFramebuffers.resize(this->VKswapChain->getSwapChainImages().size());
 
@@ -597,7 +597,7 @@ namespace vkengine
         return true;
     }
     
-    bool VulkanEngine::recreateSwapChain()
+    cBool VulkanEngine::recreateSwapChain()
     {
         int width = 0, height = 0;
         glfwGetFramebufferSize(this->VKwindow, &width, &height);
@@ -625,7 +625,7 @@ namespace vkengine
         return true;
     }
 
-    bool VulkanEngine::createCommandBuffer()
+    cBool VulkanEngine::createCommandBuffer()
     {
         VkCommandBufferAllocateInfo allocInfo = helper::commandBufferAllocateInfo(this->VKdevice->commandPool, 1, VK_COMMAND_BUFFER_LEVEL_PRIMARY);
         
@@ -642,7 +642,7 @@ namespace vkengine
     {
     }
 
-    bool VulkanEngine::checkValidationLayerSupport()
+    cBool VulkanEngine::checkValidationLayerSupport()
     {
         uint32_t layerCount;
         vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
@@ -650,8 +650,8 @@ namespace vkengine
         std::vector<VkLayerProperties> availableLayers(layerCount);
         vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
 
-        for (const char* layerName : validationLayers) {
-            bool layerFound = false;
+        for (const cChar* layerName : validationLayers) {
+            cBool layerFound = false;
 
             for (const auto& layerProperties : availableLayers) {
                 if (strcmp(layerName, layerProperties.layerName) == 0) {
@@ -668,13 +668,13 @@ namespace vkengine
         return true;
     }
 
-    std::vector<const char*> VulkanEngine::getRequiredExtensions()
+    std::vector<const cChar*> VulkanEngine::getRequiredExtensions()
     {
         uint32_t glfwExtensionCount = 0;
-        const char** glfwExtensions;
+        const cChar** glfwExtensions;
         glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
 
-        std::vector<const char*> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
+        std::vector<const cChar*> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
 
         if (enableValidationLayers) {
             extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);

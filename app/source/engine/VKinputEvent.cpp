@@ -50,7 +50,12 @@ namespace vkengine
                 app->setMousePressed(GLFW_MOUSE_BUTTON_RIGHT, false);
                 app->setCameraMoveCheck(false);
             }
-            //else if (button == )
+            else
+            {
+                // 다른 마우스 버튼에 대한 처리
+                // 아직 구현하지 않음
+                _PRINT_TO_CONSOLE_("Mouse button %d action %d not handled yet.\n", button, action);
+            }
         }
         
         void cursorPositionCallback(GLFWwindow* window, double xpos, double ypos)
@@ -64,28 +69,28 @@ namespace vkengine
 
             if (app->getCameraMoveStyle())
             {
-                app->getCamera()->RotateScreenStandard(static_cast<float>(xpos), static_cast<float>(ypos), windowWidth, windowHeight);
+                app->getCamera()->RotateScreenStandard(static_cast<cFloat>(xpos), static_cast<cFloat>(ypos), windowWidth, windowHeight);
             }
             else
             {
-            if (app->getMousePressed(GLFW_MOUSE_BUTTON_RIGHT)) {
+                if (app->getMousePressed(GLFW_MOUSE_BUTTON_RIGHT)) {
 
-                if (!app->getCameraMoveCheck())
-                {
-                    app->setMousePosition(static_cast<float>(xpos), static_cast<float>(ypos));
-                    app->setCameraMoveCheck(true);
-                    return;
+                    if (!app->getCameraMoveCheck())
+                    {
+                        app->setMousePosition(static_cast<cFloat>(xpos), static_cast<cFloat>(ypos));
+                        app->setCameraMoveCheck(true);
+                        return;
+                    }
+
+                    cFloat xoffset = app->getLastMouseX() - static_cast<cFloat>(xpos);
+                    cFloat yoffset = app->getLastMouseY() - static_cast<cFloat>(ypos);
+
+                    cVec3 force = cVec3(xoffset, yoffset, 0.0f);
+                    app->getCamera()->RotateDeltaRotation(force);
+
+                    app->setMousePosition(static_cast<cFloat>(xpos), static_cast<cFloat>(ypos));
+
                 }
-
-                float xoffset = app->getLastMouseX() - static_cast<float>(xpos);
-                float yoffset = app->getLastMouseY() - static_cast<float>(ypos);
-
-                glm::vec3 force = glm::vec3(xoffset, yoffset, 0.0f);
-                app->getCamera()->RotateDeltaRotation(force);
-
-                app->setMousePosition(static_cast<float>(xpos), static_cast<float>(ypos));
-
-            }
 
             }
 
@@ -96,11 +101,11 @@ namespace vkengine
             VulkanEngine* app = reinterpret_cast<VulkanEngine*>(glfwGetWindowUserPointer(window));
 
             if (yoffset > 0) {
-                float fov = app->getCamera()->getFov() - 1.0f;
+                cFloat fov = app->getCamera()->getFov() - 1.0f;
                 app->getCamera()->setFov(fov);
             }
             else if (yoffset < 0) {
-                float fov = app->getCamera()->getFov() + 1.0f;
+                cFloat fov = app->getCamera()->getFov() + 1.0f;
                 app->getCamera()->setFov(fov);
             }
         }

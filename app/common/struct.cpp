@@ -4,9 +4,9 @@
 namespace std {
     template<> struct hash<Vertex> {
         size_t operator()(Vertex const& vertex) const {
-            return ((hash<glm::vec3>()(vertex.pos) ^
-                (hash<glm::vec3>()(vertex.color) << 1)) >> 1) ^
-                (hash<glm::vec2>()(vertex.texCoord) << 1);
+            return ((hash<cVec3>()(vertex.pos) ^
+                (hash<cVec3>()(vertex.color) << 1)) >> 1) ^
+                (hash<cVec2>()(vertex.texCoord) << 1);
         }
     };
 }
@@ -28,15 +28,6 @@ const std::vector<Vertex> SquareTestVertices = {
     {{0.5f, -0.5f, 0.0f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f, 0.0f}},
     {{0.5f, 0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f, 0.0f}},
     {{-0.5f, 0.5f, 0.0f}, {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f, 0.0f}},
-};
-
-const std::vector<uint16_t> DepthTestIndices = {
-        0, 1, 2, 2, 3, 0,
-        4, 5, 6, 6, 7, 4
-};
-
-const std::vector<uint16_t> SquareTestIndices_ = {
-        0, 1, 2, 2, 3, 0
 };
 
 const std::vector<Vertex> cube{
@@ -79,15 +70,6 @@ const std::vector<Vertex> cube{
 
 };
 
-const std::vector<uint16_t> cubeindices_ = {
-       0, 1, 2, 2, 3, 0,
-       4, 5, 6, 6, 7, 4,
-       8, 9, 10, 10, 11, 8,
-       12, 13, 14, 14, 15, 12,
-       16, 17, 18, 18, 19, 16,
-       20, 21, 22, 22, 23, 20
-};
-
 const std::vector<Vertex> skyboxVertices = {
     // right face
     {{ 1.0f, 1.0f, -1.0f}, {0.0f, 0.0f, 0.0f}, { 0.0f, 0.0f, 0.0f }},
@@ -127,7 +109,25 @@ const std::vector<Vertex> skyboxVertices = {
 
 };
 
-const std::vector<uint16_t> skyboxIndices = {
+const std::vector<cUint16_t> DepthTestIndices = {
+        0, 1, 2, 2, 3, 0,
+        4, 5, 6, 6, 7, 4
+};
+
+const std::vector<cUint16_t> SquareTestIndices_ = {
+        0, 1, 2, 2, 3, 0
+};
+
+const std::vector<cUint16_t> cubeindices_ = {
+       0, 1, 2, 2, 3, 0,
+       4, 5, 6, 6, 7, 4,
+       8, 9, 10, 10, 11, 8,
+       12, 13, 14, 14, 15, 12,
+       16, 17, 18, 18, 19, 16,
+       20, 21, 22, 22, 23, 20
+};
+
+const std::vector<cUint16_t> skyboxIndices = {
     0, 1, 2, 2, 3, 0,   // left face
     4, 5, 6, 6, 7, 4,   // right face
     8, 9, 10, 10, 11, 8,// top face

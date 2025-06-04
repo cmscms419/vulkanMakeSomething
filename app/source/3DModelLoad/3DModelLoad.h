@@ -55,13 +55,13 @@ namespace vkengine
         void initUI();
 
         // 3d ¸ðµ¨À» À§ÇÑ vertex, index buffer
-        object::ModelObject modelObject; // viking_room
+        object::ModelObject* modelObject{ nullptr }; // viking_room
 
         // 3d object
         //object::TextureArrayObject3D cubeObject;
 
         // skybox
-        object::SkyBox cubeSkybox;
+        object::SkyBox* cubeSkybox{ nullptr };
 
         std::vector<subUniformBuffer> VKuniformBuffer = {};
 

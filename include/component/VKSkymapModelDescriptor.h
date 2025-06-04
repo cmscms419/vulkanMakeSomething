@@ -33,7 +33,7 @@ struct VKSkyMapModelDescriptor : public VKDescriptor {
   void setObject(object::Object* object) { this->objects.push_back(object); }
 
   virtual uint16_t getDescriptorCount() {
-    return this->objects.size();
+      return static_cast<uint16_t>(this->objects.size());
   }  // 디스크립터 개수 반환
 
   virtual VkPipelineLayout getPipelineLayout() {

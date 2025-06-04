@@ -1,17 +1,17 @@
 ﻿#include "vkmath.h"
 
 namespace vkMath {
-const glm::mat4 CreateRotation(float yaw, float pitch, float roll) {
+const cMat4 CreateRotation(cFloat yaw, cFloat pitch, cFloat roll) {
   return CreateRotationY(yaw) * CreateRotationX(pitch) * CreateRotationZ(roll);
 }
 
-const glm::vec3 RotationQuat(const glm::quat q, const glm::vec3 dir) {
-  glm::quat quatDir(0.0f, dir.x, dir.y, dir.z);
-  glm::quat qConjugate(q.w, -q.x, -q.y, -q.z);
-  glm::quat quatRotdir = q * quatDir * qConjugate;  // q*v*q_
-  return glm::vec3(quatRotdir.x, quatRotdir.y, quatRotdir.z);
+const cVec3 RotationQuat(const cQuat q, const cVec3 dir) {
+  cQuat quatDir(0.0f, dir.x, dir.y, dir.z);
+  cQuat qConjugate(q.w, -q.x, -q.y, -q.z);
+  cQuat quatRotdir = q * quatDir * qConjugate;  // q*v*q_
+  return cVec3(quatRotdir.x, quatRotdir.y, quatRotdir.z);
 }
-const glm::mat4 convertQuatToMatrix(const glm::quat q) {
+const cMat4 convertQuatToMatrix(const cQuat q) {
   return glm::mat4_cast(q);
 }
 }  // namespace vkMath

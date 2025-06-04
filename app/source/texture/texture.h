@@ -6,6 +6,7 @@
 #include "Camera.h"
 #include "Debug.h"
 #include "VKtexture.h"
+#include "resourseload.h"
 
 #include "struct.h"
 #include "macros.h"

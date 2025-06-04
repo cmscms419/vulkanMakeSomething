@@ -93,16 +93,16 @@ namespace vkengine {
         if (this->objects.empty())
             return;
         
-        for (size_t i = 0; i < this->objects.size(); i++)
+        for (cUint16_t i = 0; i < this->objects.size(); i++)
         {
             // 디스크립터 버퍼 정보를 설정합니다.
             object::ModelObject* object = static_cast<object::ModelObject*>(this->objects[i]);
 
-            Vk2DTexture* texture = object->getTexture();
+            Vk2DTexture* texture = reinterpret_cast<Vk2DTexture*>(object->getTexture());
 
             uint16_t offset = i * MAX_FRAMES_IN_FLIGHT; // 여러 오브젝트가 있을 경우 각 오브젝트의 오프셋을 계산
 
-            for (size_t j = 0; j < MAX_FRAMES_IN_FLIGHT; j++)
+            for (cUint16_t j = 0; j < MAX_FRAMES_IN_FLIGHT; j++)
             {
                 UniformBuffer* mvpBuffer = object->getModelViewProjUniformBuffer(j);
 
@@ -122,14 +122,14 @@ namespace vkengine {
                 descriptorWrites[1].dstArrayElement = 0;
                 descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
                 descriptorWrites[1].descriptorCount = 1;
-                descriptorWrites[1].pImageInfo = &texture->imageInfo;
+                descriptorWrites[1].pImageInfo = &texture->getImageInfo();
 
                 vkUpdateDescriptorSets(this->logicaldevice, static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
             }
         }
     }
 
-    void VK3DModelDescriptor::BindDescriptorSets(VkCommandBuffer mainCommandBuffer, size_t currentFrame, uint16_t offset)
+    void VK3DModelDescriptor::BindDescriptorSets(VkCommandBuffer mainCommandBuffer, size_t currentFrame, cUint16_t offset)
     {
         if (this->VKdescriptorSets.empty())
             return;

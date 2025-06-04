@@ -16,7 +16,7 @@ namespace vkengine {
             _PRINT_TO_CONSOLE_("Camera Right: %f %f %f\n", this->right.x, this->right.y, this->right.z);
         }
         
-        Camera::Camera(glm::vec3 pos, glm::vec3 up, glm::vec3 dir)
+        Camera::Camera(cVec3 pos, cVec3 up, cVec3 dir)
         {
             this->pos = pos;
             this->up = up;
@@ -74,25 +74,25 @@ namespace vkengine {
             this->pitch = y * vkMath::XM_PIDIV4; // 0 ~ 180도 마우스 회전 -> X축 기준으로 회전
 
             // 방향 벡터 회전
-            glm::vec3 dirction(0.0f, 0.0f, -1.0f);
+            cVec3 dirction(0.0f, 0.0f, -1.0f);
 #if 1
             // 각 축별 quaternion 생성
-            glm::quat qYaw = glm::angleAxis(this->yaw, glm::vec3(0.0f, 1.0f, 0.0f)); // Y축
-            glm::quat qPitch = glm::angleAxis(this->pitch, glm::vec3(1.0f, 0.0f, 0.0f)); // X축
+            cQuat qYaw = glm::angleAxis(this->yaw, cVec3(0.0f, 1.0f, 0.0f)); // Y축
+            cQuat qPitch = glm::angleAxis(this->pitch, cVec3(1.0f, 0.0f, 0.0f)); // X축
 
-            glm::quat Result = qYaw * qPitch; 
+            cQuat Result = qYaw * qPitch; 
             dirction = vkMath::RotationQuat(Result, dirction);
             this->dir = glm::normalize(dirction);
             
 #else
-            dirction = glm::vec3(vkMath::CreateRotation(this->yaw,this->pitch, 0.0f) * glm::vec4(0.0f, 0.0f, -1.0f, 1.0f));
+            dirction = cVec3(vkMath::CreateRotation(this->yaw,this->pitch, 0.0f) * glm::vec4(0.0f, 0.0f, -1.0f, 1.0f));
 #endif
             this->dir = glm::normalize(dirction);
             this->right = glm::normalize(glm::cross(this->dir, this->up));
 
         }
 
-        void Camera::RotateDeltaRotation(const glm::vec3& force, bool constrainPitch)
+        void Camera::RotateDeltaRotation(const cVec3& force, bool constrainPitch)
         {
             float yawDelta = force.x * this->sensitivity;
             float pitchDelta = force.y * this->sensitivity;
@@ -106,12 +106,12 @@ namespace vkengine {
                 this->pitch = glm::clamp(this->pitch, -MAX_PITCH_VALUE, MAX_PITCH_VALUE);
             }
 
-            glm::quat qYaw = glm::angleAxis(this->yaw, glm::vec3(0.0f, 1.0f, 0.0f)); // Y축
-            glm::quat qPitch = glm::angleAxis(this->pitch, glm::vec3(1.0f, 0.0f, 0.0f)); // X축
+            cQuat qYaw = glm::angleAxis(this->yaw, cVec3(0.0f, 1.0f, 0.0f)); // Y축
+            cQuat qPitch = glm::angleAxis(this->pitch, cVec3(1.0f, 0.0f, 0.0f)); // X축
 
-            glm::vec3 dirction(0.0f, 0.0f, -1.0f);
+            cVec3 dirction(0.0f, 0.0f, -1.0f);
 
-            glm::quat Result = qYaw * qPitch;
+            cQuat Result = qYaw * qPitch;
             dirction = vkMath::RotationQuat(Result, dirction);
 
             // dirction.x = cos(glm::radians(this->yaw)) * cos(glm::radians(this->pitch));
@@ -127,7 +127,7 @@ namespace vkengine {
             assert(glm::abs(aspect - std::numeric_limits<float>::epsilon()) > 0.0f);
 
             const float tanHalfFovy = tan(fov / 2.f);
-            projectionMatrix = glm::mat4{ 0.0f };
+            projectionMatrix = cMat4{ 0.0f };
             projectionMatrix[0][0] = 1.f / (aspect * tanHalfFovy);
             projectionMatrix[1][1] = 1.f / (tanHalfFovy);
             projectionMatrix[2][2] = farP / (farP - nearP);
@@ -145,13 +145,13 @@ namespace vkengine {
             projectionMatrix[1][1] *= -1.f;
         }
 
-        void Camera::setViewDirection(glm::vec3 pos, glm::vec3 dir, glm::vec3 up)
+        void Camera::setViewDirection(cVec3 pos, cVec3 dir, cVec3 up)
         {
-            const glm::vec3 w{ glm::normalize(dir) };
-            const glm::vec3 u{ glm::normalize(glm::cross(w, up)) };
-            const glm::vec3 v{ glm::cross(u, w) };
+            const cVec3 w{ glm::normalize(dir) };
+            const cVec3 u{ glm::normalize(glm::cross(w, up)) };
+            const cVec3 v{ glm::cross(u, w) };
 
-            viewMatrix = glm::mat4{ 1.f };
+            viewMatrix = cMat4{ 1.f };
             viewMatrix[0][0] = u.x;
             viewMatrix[1][0] = u.y;
             viewMatrix[2][0] = u.z;
@@ -166,12 +166,12 @@ namespace vkengine {
             viewMatrix[3][2] = -glm::dot(w, pos);
         }
 
-        void Camera::setViewTarget(glm::vec3 pos, glm::vec3 target, glm::vec3 up)
+        void Camera::setViewTarget(cVec3 pos, cVec3 target, cVec3 up)
         {
             setViewDirection(pos, target - pos, up);
         }
 
-        void Camera::setViewXYZ(glm::vec3 pos, glm::vec3 rot)
+        void Camera::setViewXYZ(cVec3 pos, cVec3 rot)
         {
             const float c3 = glm::cos(rot.z);
             const float s3 = glm::sin(rot.z);
@@ -179,10 +179,10 @@ namespace vkengine {
             const float s2 = glm::sin(rot.x);
             const float c1 = glm::cos(rot.y);
             const float s1 = glm::sin(rot.y);
-            const glm::vec3 u{ (c1 * c3 + s1 * s2 * s3), (c2 * s3), (c1 * s2 * s3 - c3 * s1) };
-            const glm::vec3 v{ (c3 * s1 * s2 - c1 * s3), (c2 * c3), (c1 * c3 * s2 + s1 * s3) };
-            const glm::vec3 w{ (c2 * s1), (-s2), (c1 * c2) };
-            viewMatrix = glm::mat4{ 1.f };
+            const cVec3 u{ (c1 * c3 + s1 * s2 * s3), (c2 * s3), (c1 * s2 * s3 - c3 * s1) };
+            const cVec3 v{ (c3 * s1 * s2 - c1 * s3), (c2 * c3), (c1 * c3 * s2 + s1 * s3) };
+            const cVec3 w{ (c2 * s1), (-s2), (c1 * c2) };
+            viewMatrix = cMat4{ 1.f };
             viewMatrix[0][0] = u.x;
             viewMatrix[1][0] = u.y;
             viewMatrix[2][0] = u.z;

@@ -4,9 +4,9 @@
 #include <set>
 #include <fstream>
 
-#include "../../common/common.h"
-#include "../../common/struct.h"
-#include "../../common/macros.h"
+#include "common.h"
+#include "struct.h"
+#include "macros.h"
 
 #include "VKbuffer.h"
 #include "VKdevice.h"
@@ -17,10 +17,10 @@ namespace vkengine {
     namespace helper {
 
         // 파일을 읽어오는 함수
-        std::vector<char> readFile(const std::string& filename);
+        std::vector<cChar> readFile(const std::string& filename);
 
         // 물리 디바이스가 요구 사항을 충족하는지 확인하는 함수
-        bool isDeviceSuitable(VkPhysicalDevice device, VkSurfaceKHR VKsurface, QueueFamilyIndices& indices);
+        cBool isDeviceSuitable(VkPhysicalDevice device, VkSurfaceKHR VKsurface, QueueFamilyIndices& indices);
 
         // 주어진 물리 장치에서 큐 패밀리 속성을 찾는 함수
         // PROB : 큐 패밀리가 여러개인 경우에 필요한 처리가 있는 패밀리를 먼저 찾을 경우, 그 패밀리의 인덱스만 반환함
@@ -106,7 +106,7 @@ namespace vkengine {
         // 물리 디바이스의 확장 기능을 지원하는지 확인하는 함수
         // 검증 레이어 지원 여부를 확인하는 함수
         // 확장 기능을 열거하고 필요한 모든 확장 기능이 포함되어 있는지 확인
-        bool checkDeviceExtensionSupport(VkPhysicalDevice device);
+        cBool checkDeviceExtensionSupport(VkPhysicalDevice device);
 
         // 물리 디바이스의 모든 확장기능을 가져오는 함수
         void getDeviceExtensionSupport(VkPhysicalDevice device, std::set<std::string>* temp);
@@ -140,7 +140,7 @@ namespace vkengine {
             VkFormat format,
             VkImageAspectFlags aspectFlags,
             uint32_t mipLevels,
-            uint32_t imageCount = 1);
+            cSize imageCount = 1);
 
         VkImageView createArrayImageView(
             VkDevice device,
@@ -148,13 +148,13 @@ namespace vkengine {
             VkFormat format,
             VkImageAspectFlags aspectFlags,
             uint32_t mipLevels,
-            uint32_t imageCount);
+            cSize imageCount);
 
         VkImageView createCubeImageView(
             VkDevice device, VkImage image, VkFormat format, VkImageAspectFlags aspectFlags, uint32_t mipLevels);
 
         // 스텐실 컴포넌트를 가지고 있는지 확인하는 함수
-        inline bool hasStencilComponent(VkFormat format)
+        inline cBool hasStencilComponent(VkFormat format)
         {
             return format == VK_FORMAT_D32_SFLOAT_S8_UINT || format == VK_FORMAT_D24_UNORM_S8_UINT;
         }
@@ -240,7 +240,7 @@ namespace vkengine {
             VkImageLayout oldLayout,
             VkImageLayout newLayout,
             uint32_t mipLevels,
-            uint32_t layerCount);
+            cSize layerCount);
 
         void transitionImageLayout3(
             VkDevice device,
@@ -251,7 +251,7 @@ namespace vkengine {
             VkImageLayout oldLayout,
             VkImageLayout newLayout,
             uint32_t mipLevels,
-            uint32_t layerCount,
+            cSize layerCount,
             VkImageAspectFlags srcStageMask,
             VkImageAspectFlags dstStageMask);
 
@@ -265,7 +265,7 @@ namespace vkengine {
         );
 
         // stencilComponent를 가지고 있는지 확인하는 함수
-        bool hasStencilComponent(VkFormat format);
+        cBool hasStencilComponent(VkFormat format);
 
         // 특정 데이터를 VkDeviceMemory 객체로 복사하는 함수
         template <typename T>

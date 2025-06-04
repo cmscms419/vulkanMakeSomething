@@ -19,9 +19,9 @@ namespace vkengine {
 
         void destroyDescriptor();
 
-        virtual void createDescriptorSetLayout(bool useTexture) = 0; // 세이더가 지정된 위치의 리소스를 읽을 수 있게 해주는 인터페이스 제공
-        virtual void createDescriptorPool(bool useTexture) = 0;
-        virtual void createDescriptorSets(bool useTexture) = 0;
+        virtual void createDescriptorSetLayout(cBool useTexture) = 0; // 세이더가 지정된 위치의 리소스를 읽을 수 있게 해주는 인터페이스 제공
+        virtual void createDescriptorPool(cBool useTexture) = 0;
+        virtual void createDescriptorSets(cBool useTexture) = 0;
         virtual void updateDescriptorSets() = 0;
         virtual void BindDescriptorSets(VkCommandBuffer mainCommandBuffer, size_t currentFrame, uint16_t offset) = 0;
 

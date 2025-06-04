@@ -2,7 +2,7 @@
 
 namespace vkengine {
     namespace helper {
-        std::vector<char> readFile(const std::string& filename)
+        std::vector<cChar> readFile(const std::string& filename)
         {
             // 파일 끝으로 이동하여 파일 크기를 가져옵니다.
             std::ifstream file(filename, std::ios::ate | std::ios::binary);
@@ -13,7 +13,7 @@ namespace vkengine {
             }
 
             size_t fileSize = (size_t)file.tellg(); // 파일 크기를 이용하여 버퍼를 할당합니다.
-            std::vector<char> buffer(fileSize);     // 파일 포인터를 파일의 시작으로 이동합니다.
+            std::vector<cChar> buffer(fileSize);     // 파일 포인터를 파일의 시작으로 이동합니다.
             file.seekg(0);                          // 파일 포인터를 파일의 시작으로 이동합니다.
             file.read(buffer.data(), fileSize);     // 파일 내용을 버퍼에 읽어옵니다. -> 파일을 fileSize 크기만큼 한번에 읽어온다.
             file.close();                           // 파일을 닫습니다.
@@ -21,13 +21,13 @@ namespace vkengine {
             return buffer;
         }
 
-        bool isDeviceSuitable(VkPhysicalDevice device, VkSurfaceKHR VKsurface, QueueFamilyIndices& indices)
+        cBool isDeviceSuitable(VkPhysicalDevice device, VkSurfaceKHR VKsurface, QueueFamilyIndices& indices)
         {
             QueueFamilyIndices indices_ = findQueueFamilies(device, VKsurface);
             indices = indices_;
 
-            bool extensionsSupported = checkDeviceExtensionSupport(device);
-            bool swapChainAdequate = false;
+            cBool extensionsSupported = checkDeviceExtensionSupport(device);
+            cBool swapChainAdequate = false;
 
             if (extensionsSupported) {
                 SwapChainSupportDetails swapChainSupport = querySwapChainSupport(device, VKsurface);
@@ -58,7 +58,7 @@ namespace vkengine {
 #endif // DEBUG_
 
             int i = 0;
-            bool selected = false;
+            cBool selected = false;
             for (const auto& queueFamily : queueFamilies) {
                 // 현재 큐 패밀리가 그래픽스 큐를 지원하는지 확인
                 _PRINT_TO_CONSOLE_("QueueFamily %d\n", i);
@@ -153,7 +153,7 @@ namespace vkengine {
             imageInfo.usage = usage;
             imageInfo.samples = numSamples;
             imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-            
+
             if (flag == VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT)
                 imageInfo.flags = flag;
             else
@@ -287,7 +287,7 @@ namespace vkengine {
             endSingleTimeCommands(device, commandPool, graphicsQueue, commandBuffer);
         }
 
-        bool checkDeviceExtensionSupport(VkPhysicalDevice device)
+        cBool checkDeviceExtensionSupport(VkPhysicalDevice device)
         {
             uint32_t extensionCount;
             vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, nullptr);
@@ -431,7 +431,7 @@ namespace vkengine {
             return 0;
         }
 
-        VkImageView createImageView(VkDevice device, VkImage image, VkFormat format, VkImageAspectFlags aspectFlags, uint32_t mipLevels, uint32_t imageCount)
+        VkImageView createImageView(VkDevice device, VkImage image, VkFormat format, VkImageAspectFlags aspectFlags, uint32_t mipLevels, cSize imageCount)
         {
             VkImageViewCreateInfo viewInfo{};
             viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
@@ -442,7 +442,7 @@ namespace vkengine {
             viewInfo.subresourceRange.baseMipLevel = 0;
             viewInfo.subresourceRange.levelCount = mipLevels;
             viewInfo.subresourceRange.baseArrayLayer = 0;
-            viewInfo.subresourceRange.layerCount = imageCount;
+            viewInfo.subresourceRange.layerCount = static_cast<cUint32_t>(imageCount);
 
             VkImageView imageView{ VK_NULL_HANDLE };
 
@@ -451,7 +451,7 @@ namespace vkengine {
             return imageView;
         }
 
-        VkImageView createArrayImageView(VkDevice device, VkImage image, VkFormat format, VkImageAspectFlags aspectFlags, uint32_t mipLevels, uint32_t imageCount)
+        VkImageView createArrayImageView(VkDevice device, VkImage image, VkFormat format, VkImageAspectFlags aspectFlags, uint32_t mipLevels, cSize imageCount)
         {
             VkImageViewCreateInfo viewInfo{};
             viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
@@ -462,7 +462,7 @@ namespace vkengine {
             viewInfo.subresourceRange.baseMipLevel = 0;
             viewInfo.subresourceRange.levelCount = mipLevels;
             viewInfo.subresourceRange.baseArrayLayer = 0;
-            viewInfo.subresourceRange.layerCount = imageCount;
+            viewInfo.subresourceRange.layerCount = static_cast<cUint32_t>(imageCount);
 
             VkImageView imageView{ VK_NULL_HANDLE };
 
@@ -1022,7 +1022,7 @@ namespace vkengine {
             endSingleTimeCommands(device, commandPool, graphicsQueue, commandBuffer);
         }
 
-        void transitionImageLayout2(VkDevice device, VkCommandPool commandPool, VkQueue graphicsQueue, VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout, uint32_t mipLevels, uint32_t layerCount)
+        void transitionImageLayout2(VkDevice device, VkCommandPool commandPool, VkQueue graphicsQueue, VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout, uint32_t mipLevels, cSize layerCount)
         {
             VkCommandBuffer commandBuffer = beginSingleTimeCommands(device, commandPool);
 
@@ -1032,7 +1032,7 @@ namespace vkengine {
             subresourceRange.baseMipLevel = 0;
             subresourceRange.levelCount = mipLevels;
             subresourceRange.baseArrayLayer = 0;
-            subresourceRange.layerCount = layerCount;
+            subresourceRange.layerCount = static_cast<cUint32_t>(layerCount);
 
             setImageLayout(
                 commandBuffer,
@@ -1046,7 +1046,7 @@ namespace vkengine {
             endSingleTimeCommands(device, commandPool, graphicsQueue, commandBuffer);
         }
 
-        void transitionImageLayout3(VkDevice device, VkCommandPool commandPool, VkQueue graphicsQueue, VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout, uint32_t mipLevels, uint32_t layerCount, VkImageAspectFlags srcStageMask, VkImageAspectFlags dstStageMask)
+        void transitionImageLayout3(VkDevice device, VkCommandPool commandPool, VkQueue graphicsQueue, VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout, uint32_t mipLevels, cSize layerCount, VkImageAspectFlags srcStageMask, VkImageAspectFlags dstStageMask)
         {
             VkCommandBuffer commandBuffer = beginSingleTimeCommands(device, commandPool);
             
@@ -1055,7 +1055,7 @@ namespace vkengine {
             subresourceRange.baseMipLevel = 0;
             subresourceRange.levelCount = mipLevels;
             subresourceRange.baseArrayLayer = 0;
-            subresourceRange.layerCount = layerCount;
+            subresourceRange.layerCount = static_cast<cUint32_t>(layerCount);
 
             setImageLayout(
                 commandBuffer,

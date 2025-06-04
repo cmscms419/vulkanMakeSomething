@@ -15,7 +15,7 @@ namespace vkengine {
     struct VK3DModelDescriptor : public VKDescriptor
     {
     public:
-        VK3DModelDescriptor(VkDevice device = VK_NULL_HANDLE, uint16_t frames = 0) : VKDescriptor(device, frames) {};
+        VK3DModelDescriptor(VkDevice device = VK_NULL_HANDLE, cUint16_t frames = 0) : VKDescriptor(device, frames) {};
 
         virtual void createDescriptorSetLayout(bool useTexture) override;
 
@@ -28,13 +28,13 @@ namespace vkengine {
 
         virtual void updateDescriptorSets() override;
 
-        virtual void BindDescriptorSets(VkCommandBuffer mainCommandBuffer, size_t currentFrame, uint16_t offset) override;
+        virtual void BindDescriptorSets(VkCommandBuffer mainCommandBuffer, size_t currentFrame, cUint16_t offset) override;
 
         void createPipelineLayout();
 
         void setObject(object::Object* object) { this->objects.push_back(object); }
 
-        virtual uint16_t getDescriptorCount() { return this->objects.size(); } // 디스크립터 개수 반환
+        virtual cUint16_t getDescriptorCount() { return static_cast<cUint16_t>(this->objects.size()); } // 디스크립터 개수 반환
         virtual VkPipelineLayout getPipelineLayout() { return this->VKpipelineLayout; } // 파이프라인 레이아웃 반환
 
     private:

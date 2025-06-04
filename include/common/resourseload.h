@@ -8,7 +8,10 @@
 #include <stdlib.h>
 #include <stdint.h>
 
+#include "common.h"
+
 namespace vkengine {
+
     enum TextureType
     {
         Texture_default = 0, // only used for desired_channels
@@ -18,9 +21,9 @@ namespace vkengine {
         Texture_rgb_alpha = 4
     };
 
-    unsigned char* load_png_rgba(const char* filename, uint32_t* width, uint32_t* height, int type);
+    cUChar* load_png_rgba(const cChar* filename, cUint32_t* width, cUint32_t* height, cInt type);
 
-    void GetTextureSize(const char* filename, uint32_t* width, uint32_t* height);
+    void GetTextureSize(const cChar* filename, cUint32_t* width, cUint32_t* height);
 }
 
 #endif // !INCLUDE_RESOURSELOAD_H_

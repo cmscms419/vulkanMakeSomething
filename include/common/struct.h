@@ -1,32 +1,28 @@
 #ifndef INCLUDE_STRUCT_H_
 #define INCLUDE_STRUCT_H_
 
-#include <vulkan/vulkan.h>
-
-#include <vector>
-#include <array>
-
-#define GLM_ENABLE_EXPERIMENTAL
-#include <glm/glm.hpp>
+#include "common.h"
+#include "macros.h"
+#include "resourseload.h"
 
 struct QueueFamilyIndices {
-    uint32_t graphicsAndComputeFamily = 0;  // 그래픽스/컴퓨팅 큐 패밀리 인덱스 (그래픽스/컴퓨팅 명령을 처리하는 큐)
-    uint32_t presentFamily = 0;             // 프레젠트 큐 패밀리 인덱스 (윈도우 시스템과 Vulkan을 연결하는 인터페이스)
+    cUint32_t graphicsAndComputeFamily = 0;  // 그래픽스/컴퓨팅 큐 패밀리 인덱스 (그래픽스/컴퓨팅 명령을 처리하는 큐)
+    cUint32_t presentFamily = 0;             // 프레젠트 큐 패밀리 인덱스 (윈도우 시스템과 Vulkan을 연결하는 인터페이스)
     VkQueueFamilyProperties queueFamilyProperties = {};
 
-    bool graphicsAndComputeFamilyHasValue = false;
-    bool presentFamilyHasValue = false;
+    cBool graphicsAndComputeFamilyHasValue = false;
+    cBool presentFamilyHasValue = false;
 
-    void setgraphicsAndComputeFamily(uint32_t index) {
+    void setgraphicsAndComputeFamily(cUint32_t index) {
         graphicsAndComputeFamily = index;
         graphicsAndComputeFamilyHasValue = true;
     }
-    void setPresentFamily(uint32_t index) {
+    void setPresentFamily(cUint32_t index) {
         presentFamily = index;
         presentFamilyHasValue = true;
     }
-    uint32_t getGraphicsQueueFamilyIndex() const {
-        uint32_t target = -1;
+    cUint32_t getGraphicsQueueFamilyIndex() const {
+        cUint32_t target = -1;
 
         if (queueFamilyProperties.queueFlags & VkQueueFlagBits::VK_QUEUE_GRAPHICS_BIT)
         {
@@ -35,23 +31,23 @@ struct QueueFamilyIndices {
 
         return target;
     }
-    uint32_t getPresentQueueFamilyIndex() const {
-        uint32_t target = -1;
+    cUint32_t getPresentQueueFamilyIndex() const {
+        cUint32_t target = -1;
         if (queueFamilyProperties.queueFlags & VkQueueFlagBits::VK_QUEUE_GRAPHICS_BIT)
         {
             target = presentFamily;
         }
         return target;
     }
-    uint32_t getComputeQueueFamilyIndex() const {
-        uint32_t target = -1;
+    cUint32_t getComputeQueueFamilyIndex() const {
+        cUint32_t target = -1;
         if (queueFamilyProperties.queueFlags & VkQueueFlagBits::VK_QUEUE_COMPUTE_BIT)
         {
             target = graphicsAndComputeFamily;
         }
         return target;
     }
-    bool isComplete() const {
+    cBool isComplete() const {
         return this->graphicsAndComputeFamilyHasValue && this->presentFamilyHasValue;
     }
     void reset() {
@@ -70,9 +66,9 @@ struct SwapChainSupportDetails {
 };
 
 struct Vertex {
-    glm::vec3 pos;
-    glm::vec3 color;
-    glm::vec3 texCoord;
+    cVec3 pos;
+    cVec3 color;
+    cVec3 texCoord;
 
     // 바인딩 설명을 반환하는 함수
     // 이 구조체의 멤버 변수가 어떻게 바인딩되는지 설명합니다.
@@ -109,7 +105,7 @@ struct Vertex {
         return attributeDescriptions;
     }
 
-    bool operator==(const Vertex& other) const {
+    cBool operator==(const Vertex& other) const {
         return pos == other.pos && color == other.color && texCoord == other.texCoord;
     }
 
@@ -127,9 +123,9 @@ struct subUniformBuffer {
 };
 
 struct Particle {
-    glm::vec2 position;
-    glm::vec2 velocity;
-    glm::vec4 color;
+    cVec2 position;
+    cVec2 velocity;
+    cVec4 color;
 
     static VkVertexInputBindingDescription getBindingDescription() {
         VkVertexInputBindingDescription bindingDescription{};
@@ -158,7 +154,7 @@ struct Particle {
 };
 
 struct UniformBufferTime {
-    float deltaTime = 1.0f;
+    cFloat deltaTime = 1.0f;
 };
 
 struct depthStencill {
@@ -198,18 +194,105 @@ struct FrameData {
 };
 
 struct UniformBufferObject {
-    glm::mat4 model;
-    glm::mat4 view;
-    glm::mat4 proj;
+    cMat4 model;
+    cMat4 view;
+    cMat4 proj;
 };
 
+struct TextureResource {
+
+    cUint32_t texWidth = 0;                         // 텍스처 너비
+    cUint32_t texHeight = 0;                        // 텍스처 높이
+    cUint32_t texChannels = 0;                      // 텍스처 채널
+    cUChar* data = nullptr;         //< 리소스 데이터 포인터
+
+    // 생성자
+    TextureResource() {
+        this->texWidth = 0;
+        this->texHeight = 0;
+        this->texChannels = 0;
+        this->data = nullptr; // 리소스 데이터 초기화
+    }
+
+    // 소멸자
+    ~TextureResource() {
+        if (data) {
+            free(data); // 리소스 데이터 해제
+        }
+        texWidth = 0; // 너비 초기화
+        texHeight = 0; // 높이 초기화
+        texChannels = 0; // 채널 초기화
+        data = nullptr; // 포인터 초기화
+    }
+
+
+    // 복사 생성자
+    TextureResource(const TextureResource& other) {
+        texWidth = other.texWidth;
+        texHeight = other.texHeight;
+        texChannels = other.texChannels;
+
+        if (other.data) {
+            size_t size = texWidth * texHeight * texChannels;
+            data = (cUChar*)malloc(size);
+
+            if (data == nullptr) {
+                _PRINT_TO_CONSOLE_("Failed to allocate memory for texture data.");
+                return; // 메모리 할당 실패 시 함수 종료
+            }
+
+            memcpy(data, other.data, size);
+        }
+        else {
+            data = nullptr;
+        }
+    }
+
+    // 대입 연산자
+    TextureResource& operator=(const TextureResource& other) {
+        if (this == &other) return *this;
+        if (!data) free(data);
+
+        texWidth = other.texWidth;
+        texHeight = other.texHeight;
+        texChannels = other.texChannels;
+        if (other.data) {
+            size_t size = texWidth * texHeight * texChannels;
+            data = (cUChar*)malloc(size);
+
+            if (data == nullptr) {
+                _PRINT_TO_CONSOLE_("Failed to allocate memory for texture data.");
+                return *this; // 메모리 할당 실패 시 현재 객체 반환
+            }
+
+            memcpy(data, other.data, size);
+        }
+        else {
+            data = nullptr;
+        }
+
+        return *this;
+    }
+
+    void createResource(cString path) {
+
+        if (data) {
+            free(data);
+        }
+
+        this->texChannels = 4; // 기본적으로 RGBA로 설정
+
+        data = vkengine::load_png_rgba(path.c_str(), &this->texWidth, &this->texHeight, this->texChannels);
+    }
+};
+
+extern const std::vector<Vertex> cube;
+extern const std::vector<Vertex> skyboxVertices;
 extern const std::vector<Vertex> DepthTestVertices;
 extern const std::vector<Vertex> SquareTestVertices;
-extern const std::vector<uint16_t> DepthTestIndices;
-extern const std::vector<uint16_t> SquareTestIndices_;
-const extern std::vector<Vertex> cube;
-const extern std::vector<uint16_t> cubeindices_;
-extern const std::vector<Vertex> skyboxVertices;
-extern const std::vector<uint16_t> skyboxIndices;
+extern const std::vector<cUint16_t> DepthTestIndices;
+extern const std::vector<cUint16_t> SquareTestIndices_;
+extern const std::vector<cUint16_t> cubeindices_;
+extern const std::vector<cUint16_t> skyboxIndices;
 
 #endif // !INCLUDE_STRUCT_H_
