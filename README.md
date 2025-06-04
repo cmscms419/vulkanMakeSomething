@@ -19,17 +19,19 @@ Multisampling 챕터까지 완성했습니다.
 ## 만든 것
 [엔진 기본형](https://github.com/cmscms419/Vulkan_create_Somthing/tree/master/app/source/engine)
 
-[사각형](https://github.com/cmscms419/Vulkan_create_Somthing/tree/master/app/cpp/triangle.h)
+[사각형](https://github.com/cmscms419/Vulkan_create_Somthing/tree/master/app/source/Square)
 
-[카메라 -> 엔진 기본에 적용 예정](https://github.com/cmscms419/vulkanMakeSomething/blob/master/app/cpp/cameraEngine.h)
+[카메라 -> 엔진 기본에 적용 예정](https://github.com/cmscms419/Vulkan_create_Somthing/tree/master/app/source/camera)
 
-[텍스처 입히기](https://github.com/cmscms419/vulkanMakeSomething/blob/master/app/cpp/texture.h)
+[텍스처 입히기](https://github.com/cmscms419/Vulkan_create_Somthing/tree/master/app/source/texture)
 
-[텍스처 백열 입히기 -> 육면체 각각면에 서로 다른 텍스처 입히기](https://github.com/cmscms419/vulkanMakeSomething/blob/master/app/cpp/texturearray.h)
+[텍스처 백열 입히기 -> 육면체 각각면에 서로 다른 텍스처 입히기](https://github.com/cmscms419/Vulkan_create_Somthing/tree/master/app/source/textureArray)
 
-[skymap](https://github.com/cmscms419/vulkanMakeSomething/blob/master/app/cpp/skymap.h)
+[skymap](https://github.com/cmscms419/Vulkan_create_Somthing/tree/master/app/source/skymap)
 
 -> [skybox.vert, skybox.frag 출처](https://github.com/SaschaWillems/Vulkan/tree/master/shaders/glsl/texturecubemap)
+
+[Descriptor 관련된 코드 정리 및 수정](https://github.com/cmscms419/vulkanMakeSomething/tree/master/app/source/DescriptorCodeUpdate)
 
 ## 텍스처 소스 출처 및 링크
 
