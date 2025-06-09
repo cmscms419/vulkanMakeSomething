@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="..\..\app\source\PBRbasic\main_engine.cpp" />
+    <ClCompile Include="..\..\app\source\PBRbasic\PBRbasic.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\app\source\PBRbasic\PBRbasic.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="shader">
+      <UniqueIdentifier>{e2eb04ef-9da6-46e2-839b-c84d40ea9380}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\shader\pbr.vert">
+      <Filter>shader</Filter>
+    </None>
+  </ItemGroup>
+</Project>

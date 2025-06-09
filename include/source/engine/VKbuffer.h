@@ -54,5 +54,14 @@ namespace vkengine {
         };
 
     };
+
+    struct MaterialBuffer : public VkBufferObject
+    {
+        Material material = {};
+        MaterialBuffer()
+        {
+            this->size = sizeof(Material);
+        };
+    };
 }
 #endif // !INCLUDE_VKBUFFER_H_

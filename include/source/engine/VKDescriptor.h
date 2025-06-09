@@ -55,6 +55,54 @@ namespace vkengine {
         uint16_t frames = 0; // 프레임 수
     };
 
+    // VKDescriptor2는 VKDescriptor와 달리 https://github.com/SaschaWillems/Vulkan를 보고 새로 만드는 Descriptor 구조체입니다.
+    struct VKDescriptor2
+    {
+        VKDescriptor2(VkDevice device = VK_NULL_HANDLE, cUint16_t frames = 0) : logicaldevice(device), frames(frames) {};
+
+        cUint16_t getDescriptorCount() { return static_cast<cUint16_t>(VKdescriptorSets.size()); }
+
+        inline void createDescriptorPool() {
+            _VK_CHECK_RESULT_(vkCreateDescriptorPool(this->logicaldevice, &poolInfo, nullptr, &this->VKdescriptorPool));
+        }
+        inline void createDescriptorSetLayout() {
+            _VK_CHECK_RESULT_(vkCreateDescriptorSetLayout(this->logicaldevice, &layoutInfo, nullptr, &this->VKdescriptorSetLayout));
+        }
+
+        inline void createAllocateDescriptorSets() {
+            _VK_CHECK_RESULT_(vkAllocateDescriptorSets(this->logicaldevice, &allocInfo, this->VKdescriptorSets.data()));
+        }
+
+        inline void createPipelineLayout() {
+        
+        }
+        
+        void BindDescriptorSets(VkCommandBuffer mainCommandBuffer, size_t currentFrame, uint16_t offset);
+
+        //virtual void createDescriptorSets;
+        //virtual void updateDescriptorSets;
+
+        void destroyDescriptor();
+        void destroyDescriptorSetLayout();
+        void destroyDescriptorSets();
+        void destroyDescriptorPool();
+        void destroyPipelineLayouts();
+
+        VkPipelineLayout VKpipelineLayout{ VK_NULL_HANDLE }; // 파이프라인 레이아웃 -> 파이프라인 레이아웃을 생성
+
+        VkDescriptorSetLayout VKdescriptorSetLayout{ VK_NULL_HANDLE };
+        VkDescriptorSetLayoutCreateInfo layoutInfo{};
+
+        VkDescriptorPool VKdescriptorPool{ VK_NULL_HANDLE };
+        VkDescriptorPoolCreateInfo poolInfo{};
+
+        std::vector<VkDescriptorSet> VKdescriptorSets{};
+        VkDescriptorSetAllocateInfo allocInfo{};
+
+        VkDevice logicaldevice{ VK_NULL_HANDLE };
+        uint16_t frames = 0; // 프레임 수
+    };
+
 }
 
 #endif // !INCLUDE_VKDESCRIPTOR_H_

@@ -75,4 +75,54 @@ namespace vkengine {
         }
     }
 
+    void VKDescriptor2::destroyDescriptorSetLayout()
+    {
+        if (this->logicaldevice == VK_NULL_HANDLE)
+            return;
+
+        vkDestroyDescriptorSetLayout(this->logicaldevice, this->VKdescriptorSetLayout, nullptr);
+    }
+
+    void VKDescriptor2::destroyDescriptorSets()
+    {
+        if (this->logicaldevice == VK_NULL_HANDLE)
+            return;
+
+        _VK_CHECK_RESULT_(vkAllocateDescriptorSets(this->logicaldevice, &allocInfo, this->VKdescriptorSets.data()));
+    }
+
+    void VKDescriptor2::destroyDescriptorPool()
+    {
+        if (this->logicaldevice == VK_NULL_HANDLE)
+            return;
+
+        vkDestroyDescriptorPool(this->logicaldevice, this->VKdescriptorPool, nullptr);
+    }
+
+    void vkengine::VKDescriptor2::destroyPipelineLayouts()
+    {
+        if (this->VKpipelineLayout != VK_NULL_HANDLE)
+        {
+            vkDestroyPipelineLayout(this->logicaldevice, this->VKpipelineLayout, nullptr);
+            this->VKpipelineLayout = VK_NULL_HANDLE;
+        }
+    }
+
+    void VKDescriptor2::destroyDescriptor()
+    {
+        this->destroyDescriptorSetLayout();
+        this->destroyDescriptorPool();
+        this->destroyPipelineLayouts();
+    }
+
+    void VKDescriptor2::BindDescriptorSets(
+        VkCommandBuffer mainCommandBuffer, size_t currentFrame, uint16_t offset)
+    {
+        if (this->VKdescriptorSets.empty())
+            return;
+
+        vkCmdBindDescriptorSets(mainCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->VKpipelineLayout, 0,
+            1, &this->VKdescriptorSets[currentFrame + offset * this->frames], 0, nullptr);
+    }
+
 }
