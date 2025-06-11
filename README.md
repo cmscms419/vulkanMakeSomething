@@ -31,6 +31,7 @@ Multisampling 챕터까지 완성했습니다.
 
 [Descriptor 관련된 코드 정리 및 수정](https://github.com/cmscms419/vulkanMakeSomething/tree/master/app/source/DescriptorCodeUpdate)
 
+[PBR Basice](https://github.com/cmscms419/vulkanMakeSomething/tree/master/app/source/PBRbasic) -> [PBR basice 출처, 쉐이더 출처](https://github.com/SaschaWillems/Vulkan/tree/master/examples/pbrbasic)
 ## 텍스처 소스 출처 및 링크
 
 [텍스처 소스 출처](https://opengameart.org/content/tiny-texture-pack-2)
