@@ -27,9 +27,7 @@ Multisampling 챕터까지 완성했습니다.
 
 [텍스처 백열 입히기 -> 육면체 각각면에 서로 다른 텍스처 입히기](https://github.com/cmscms419/Vulkan_create_Somthing/tree/master/app/source/textureArray)
 
-[skymap](https://github.com/cmscms419/Vulkan_create_Somthing/tree/master/app/source/skymap)
-
--> [skybox.vert, skybox.frag 출처](https://github.com/SaschaWillems/Vulkan/tree/master/shaders/glsl/texturecubemap)
+[skymap](https://github.com/cmscms419/Vulkan_create_Somthing/tree/master/app/source/skymap) -> [skybox.vert, skybox.frag 출처](https://github.com/SaschaWillems/Vulkan/tree/master/shaders/glsl/texturecubemap)
 
 [Descriptor 관련된 코드 정리 및 수정](https://github.com/cmscms419/vulkanMakeSomething/tree/master/app/source/DescriptorCodeUpdate)
 
