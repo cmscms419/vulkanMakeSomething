@@ -47,7 +47,7 @@ namespace vkengine {
             this->imageInfo.sampler = this->sampler;
         }; 
 
-        const void cleanup() const  //< 텍스처 정리 함수
+        const void cleanup()  //< 텍스처 정리 함수
         {
             vkDestroySampler(device->logicaldevice, sampler, nullptr);
             vkDestroyImageView(device->logicaldevice, imageView, nullptr);

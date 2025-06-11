@@ -435,13 +435,11 @@ namespace vkengine {
             return;
         }
 
-        if (this->imageCount >= 6) {
-            _PRINT_TO_CONSOLE_("Cube map texture can only have 6 images.");
-            return;
-        }
-
         if (this->imageCount == 0) {
             this->imageCount = 1; // 첫 번째 리소스만 설정
+            this->VKmipLevels = 1;
+            //this->VKmipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(texWidth, texHeight)))) + 1;
+
             this->resource = (TextureResource*)calloc(this->imageCount, sizeof(TextureResource));
 
             if (this->resource == nullptr) {
@@ -451,10 +449,9 @@ namespace vkengine {
 
             this->resource[0] = *resource;
 
-            //this->VKmipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(texWidth, texHeight)))) + 1;
         }
         else {
-
+#if 0
             TextureResource* newData = (TextureResource*)calloc(this->imageCount + 1, sizeof(TextureResource));
 
             if (newData == nullptr) {
@@ -470,6 +467,18 @@ namespace vkengine {
             free(this->resource); // Free the old resource array
             this->resource = newData; // 새로운 리소스로 교체
             this->imageCount++;
+#endif
+            TextureResource* newData = this->resource;
+
+            if ((this->resource = (TextureResource*)realloc(this->resource, sizeof(TextureResource) * (this->imageCount + 1))) == NULL)
+            {
+                _PRINT_TO_CONSOLE_("Failed to reallocate memory for resource.");
+                free(newData);
+                return;
+            }
+            this->resource[this->imageCount] = *resource; // 마지막에 새로운 리소스 추가
+            this->imageCount++;
+
         }
     }
 }

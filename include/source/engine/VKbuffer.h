@@ -58,10 +58,19 @@ namespace vkengine {
     struct MaterialBuffer : public VkBufferObject
     {
         Material material = {};
-        MaterialBuffer()
+        cString name;
+        MaterialBuffer(
+            cString name = "DefaultMaterial",
+            cFloat metallic = 0.0f,
+            cFloat roughness = 0.0f,
+            cVec4 color = cVec4(0.0f, 0.0f, 0.0f, 1.0f)
+        )
         {
             this->size = sizeof(Material);
+            this->name = name;
+            this->material = Material(metallic, roughness, color);
         };
     };
 }
+
 #endif // !INCLUDE_VKBUFFER_H_

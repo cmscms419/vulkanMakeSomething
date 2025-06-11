@@ -16,5 +16,8 @@
     <None Include="..\..\shader\pbr.vert">
       <Filter>shader</Filter>
     </None>
+    <None Include="..\..\shader\pbr.frag">
+      <Filter>shader</Filter>
+    </None>
   </ItemGroup>
 </Project>

@@ -16,7 +16,7 @@ namespace vkengine {
         }
     }
 
-    // 함수는 버퍼 메모리를 매핑하여 CPU에서 접근할 수 있도록 합니다. 
+    // 버퍼 메모리를 매핑하여 CPU에서 접근할 수 있도록 합니다. 
     // vkMapMemory 함수를 호출하여 메모리를 매핑하고, 
     // 매핑된 메모리의 포인터를 mapped 멤버 변수에 저장합니다.
     VkResult VkBufferObject::mapToMeBuffer(VkDeviceSize size, VkDeviceSize offset)

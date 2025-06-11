@@ -374,15 +374,16 @@ namespace vkengine {
         }
 
         inline VkDescriptorSetAllocateInfo descriptorSetAllocateInfo(
-            VkDescriptorPool descriptorPool,
-            const VkDescriptorSetLayout* pSetLayouts,
-            cUint32_t descriptorSetCount)
+            const VkDescriptorPool& descriptorPool,
+            const VkDescriptorSetLayout& pSetLayouts,
+            cUint32_t descriptorSetCount = 1)
         {
             VkDescriptorSetAllocateInfo descriptorSetAllocateInfo{};
             descriptorSetAllocateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
             descriptorSetAllocateInfo.descriptorPool = descriptorPool;
-            descriptorSetAllocateInfo.pSetLayouts = pSetLayouts;
+            descriptorSetAllocateInfo.pSetLayouts = &pSetLayouts;
             descriptorSetAllocateInfo.descriptorSetCount = descriptorSetCount;
+
             return descriptorSetAllocateInfo;
         }
 
@@ -510,7 +511,7 @@ namespace vkengine {
         // ±Ì¿Ã Ω∫≈ŸΩ« ≈◊Ω∫∆Æ º≥¡§
         inline VkPipelineDepthStencilStateCreateInfo pipelineDepthStencilStateCreateInfo(
             VkBool32 depthTestEnable = VK_TRUE,
-            VkBool32 depthWriteEnable = VK_TRUE,
+            VkBool32 depthWriteEnable = VK_FALSE,
             VkCompareOp depthCompareOp = VK_COMPARE_OP_LESS,
             VkBool32 depthBoundsTestEnable = VK_FALSE,
             VkBool32 stencilTestEnable = VK_FALSE,

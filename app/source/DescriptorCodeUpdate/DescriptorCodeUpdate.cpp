@@ -365,7 +365,7 @@ namespace vkengine {
             this->modelObject->draw(framedata->mainCommandBuffer, this->currentFrame);
             
             this->modelObjectDescriptor->BindDescriptorSets(framedata->mainCommandBuffer, this->currentFrame, 1);
-            vkCmdBindPipeline(framedata->mainCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->VKgraphicsPipeline2);
+            //vkCmdBindPipeline(framedata->mainCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->VKgraphicsPipeline);
             this->modelObject2->draw(framedata->mainCommandBuffer, this->currentFrame);
 
             this->vkGUI->render();

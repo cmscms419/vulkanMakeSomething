@@ -53,6 +53,9 @@
 # Mono auto generated files
 mono_crash.*
 
+# shader cache files
+*.spv
+
 # Build results
 [Ww][Ii][Nn]32/
 [Aa][Rr][Mm]/

@@ -45,7 +45,6 @@ namespace vkengine {
             }
 
             this->cubeObject->setTexture(resource);
-
         }
 
         this->cubeObject->createTexture(VK_FORMAT_R8G8B8A8_SRGB);
@@ -71,7 +70,6 @@ namespace vkengine {
             }
 
             this->cubeSkybox->setTexture(resource);
-
         }
         this->cubeSkybox->createTexture(VK_FORMAT_R8G8B8A8_SRGB);
 
