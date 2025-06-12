@@ -10,6 +10,7 @@ layout(binding = 3) uniform subUinform {
     vec4 camPos;
     vec4 lightPos;
     vec4 objectPos;
+    bool useTexture;
 } another;
 
 layout(location = 0) in vec3 inPosition;
@@ -22,7 +23,7 @@ layout(location = 2) out vec3 WorldPos;
 
 void main() {
     gl_Position = ubo.proj * ubo.view * ubo.model * vec4(inPosition, 1.0);
-    WorldPos = another.objectPos.xyz;
+    WorldPos = another.objectPos.xyz + inPosition;
     fragNormal = inNormal;
     fragTexCoord = inTexCoord;
 }

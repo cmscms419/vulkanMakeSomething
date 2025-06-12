@@ -18,6 +18,7 @@ namespace vkengine
         cVec4 camPos = cVec4(0.0f);
         cVec4 lightPos = cVec4(0.0f);
         cVec4 objectPos = cVec4(0.0f);
+        cBool useTexture = false; // 조명 활성화 여부
     };
 
     struct subUinform  : public VkBufferObject
@@ -65,6 +66,10 @@ namespace vkengine
 
         VKDescriptor2* modeltDescriptor2 = nullptr;         // 모델 오브젝트 디스크립터
         VKDescriptor2* skyboxDescriptor2 = nullptr;         // 모델 오브젝트 디스크립터
+
+        cUint selectModel = 0; // 선택된 모델 인덱스
+        std::vector<cString> modelNames = { "Sphere", "Viking Room" }; // 모델 이름들
+        cString selectModelName = "Sphere"; // 선택된 모델 이름
 
         MaterialBuffer material; // 머티리얼 버퍼
         subUinform subUniform; // 서브 유니폼 버퍼

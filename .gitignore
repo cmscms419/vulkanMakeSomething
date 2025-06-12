@@ -54,7 +54,7 @@
 mono_crash.*
 
 # shader cache files
-*.spv
+shader/*.spv
 
 # Build results
 [Ww][Ii][Nn]32/

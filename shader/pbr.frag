@@ -21,6 +21,7 @@ layout(binding = 3) uniform subUinform {
     vec4 camPos;
     vec4 lightPos;
     vec4 objectPos;
+    bool useTexture;
 } another;
 
 
@@ -125,5 +126,18 @@ void main() {
     // Gamma correct
     color = pow(color, vec3(0.4545));
 
-    outColor = vec4(color, 1.0) + texture(Sampler, fragTexCoord.xy);;
+    // Final color output
+    vec4 final = vec4(0.0, 0.0, 0.0, 1.0);
+
+    if (another.useTexture)
+    {
+        final = vec4(color, 1.0) + texture(Sampler, fragTexCoord.xy);
+    }
+    else
+    {
+        final = vec4(color, 1.0);
+    }
+
+    outColor = final;
+
 }

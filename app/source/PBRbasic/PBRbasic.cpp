@@ -20,8 +20,8 @@ namespace vkengine {
     {
         VulkanEngine::prepare();
         this->init_sync_structures();
-        this->vkGUI = new vkengine::vkGUI(this);
 
+        this->vkGUI = new vkengine::vkGUI(this);
         this->skyBox = new object::SkyBox(this->getDevice());
 
         std::vector<std::string> pathCubeArray = {
@@ -79,7 +79,6 @@ namespace vkengine {
         this->vikingRoomObject = new object::ModelObject(this->getDevice());
         this->vikingRoomObject->setName("Viking Room");
         this->vikingRoomObject->RotationAngle(90.0f, glm::vec3(1.0f, 0.0f, 0.0f));
-        this->vikingRoomObject->setPosition(glm::vec3(0.0f, 1.5f, 0.0f));
         helper::loadModel::loadModel2(this->RootPath + RESOURSE_PATH + MODEL_PATH, *this->vikingRoomObject->getVertices(), *this->vikingRoomObject->getIndices());
 
         TextureResource* vikingRoomTexture = new TextureResource();
@@ -249,11 +248,43 @@ namespace vkengine {
             ImGui::SliderFloat("Light Position X", &this->subUniform.subUniform.lightPos.x, -10.0f, 10.0f);
             ImGui::SliderFloat("Light Position Y", &this->subUniform.subUniform.lightPos.y, -10.0f, 10.0f);
             ImGui::SliderFloat("Light Position Z", &this->subUniform.subUniform.lightPos.z, -10.0f, 10.0f);
+            ImGui::Checkbox("Use Texture", &this->subUniform.subUniform.useTexture);
+            
+            if (ImGui::BeginCombo("Select Model", selectModelName.c_str())) {
+                for (int i = 0; i < this->modelNames.size(); ++i) {
+
+                    const bool isSelected = (selectModelName == this->modelNames[i]);
+
+                    if (ImGui::Selectable(this->modelNames[i].c_str(), isSelected))
+                    {
+                        this->selectModel = i;
+                        selectModelName = this->modelNames[i];
+                    }
+
+                    // Set the initial focus when opening the combo
+                    // (scrolling + keyboard navigation focus)
+                    if (isSelected) {
+                        ImGui::SetItemDefaultFocus();
+                    }
+                }
+                ImGui::EndCombo();
+            }
 
             this->material.material = material;
-
             this->subUniform.subUniform.camPos = cVec4(this->camera->getPos(), 0.0f);
-            this->subUniform.subUniform.objectPos = cVec4(this->modelObject->getPosition(), 0.0f);
+
+            switch (this->selectModel)
+            {
+            case 0: // Sphere
+                this->subUniform.subUniform.objectPos = cVec4(this->modelObject->getPosition(), 0.0f);
+                break;
+            case 1: // Viking Room
+                this->subUniform.subUniform.objectPos = cVec4(this->vikingRoomObject->getPosition(), 0.0f);
+                break;
+            default:
+                this->subUniform.subUniform.objectPos = cVec4(this->modelObject->getPosition(), 0.0f);
+                break;
+            }
 
             this->vkGUI->end();
 
@@ -375,14 +406,25 @@ namespace vkengine {
             vkCmdBindPipeline(framedata->mainCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->VKSkyMapPipeline);
             this->skyBox->draw(framedata->mainCommandBuffer, this->currentFrame);
 
-            this->modeltDescriptor2->BindDescriptorSets(framedata->mainCommandBuffer, this->currentFrame, 0);
-            vkCmdBindPipeline(framedata->mainCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->VKgraphicsPipeline);
-            this->modelObject->draw(framedata->mainCommandBuffer, this->currentFrame);
+            switch (this->selectModel)
+            {
+            case 0: // Sphere
+                this->modeltDescriptor2->BindDescriptorSets(framedata->mainCommandBuffer, this->currentFrame, 0);
+                vkCmdBindPipeline(framedata->mainCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->VKgraphicsPipeline);
+                this->modelObject->draw(framedata->mainCommandBuffer, this->currentFrame);
+                break;
+            case 1: // Viking Room
+                this->modeltDescriptor2->BindDescriptorSets(framedata->mainCommandBuffer, this->currentFrame, 1);
+                vkCmdBindPipeline(framedata->mainCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->VKgraphicsPipeline);
+                this->vikingRoomObject->draw(framedata->mainCommandBuffer, this->currentFrame);
+                break;
+            default:
 
-            /*this->modeltDescriptor2->BindDescriptorSets(framedata->mainCommandBuffer, this->currentFrame, 1);
-            vkCmdBindPipeline(framedata->mainCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->VKgraphicsPipeline);
-            this->vikingRoomObject->draw(framedata->mainCommandBuffer, this->currentFrame);*/
-
+                this->modeltDescriptor2->BindDescriptorSets(framedata->mainCommandBuffer, this->currentFrame, 0);
+                vkCmdBindPipeline(framedata->mainCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->VKgraphicsPipeline);
+                this->modelObject->draw(framedata->mainCommandBuffer, this->currentFrame);
+                break;
+            }
 
             this->vkGUI->render();
         }
