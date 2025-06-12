@@ -494,20 +494,22 @@ namespace vkengine {
 
     void PBRbasuceEngube::createDescriptor()
     {
-
+        
         // 모델 오브젝트 디스크립터 생성
         this->modeltDescriptor2 = new VKDescriptor2(this->VKdevice->logicaldevice, this->frames);
 
+        cUint frameCount = this->frames * 2; // object가 한개다 -> virtual object가 2개이기에 frames * 2을 적용
+
         // pool create
         std::vector<VkDescriptorPoolSize> poolSizes = {
-            helper::descriptorPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, this->frames * 2), // 카메라
-            helper::descriptorPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, this->frames * 2), // 텍스쳐
-            helper::descriptorPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, this->frames* 2), // 머티리얼
-            helper::descriptorPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, this->frames* 2) // 서브 유니폼
+            helper::descriptorPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, frameCount), // 카메라
+            helper::descriptorPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, frameCount), // 텍스쳐
+            helper::descriptorPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, frameCount), // 머티리얼
+            helper::descriptorPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, frameCount) // 서브 유니폼
         };
         // cube만 있기에 1을 적용
         // virtual object가 2개이기에 frames * 2을 적용
-        this->modeltDescriptor2->poolInfo = helper::descriptorPoolCreateInfo(poolSizes, this->frames * 2);
+        this->modeltDescriptor2->poolInfo = helper::descriptorPoolCreateInfo(poolSizes, frameCount);
         this->modeltDescriptor2->createDescriptorPool();
 
         // layout create
@@ -525,9 +527,9 @@ namespace vkengine {
         this->modeltDescriptor2->allocInfo = helper::descriptorSetAllocateInfo(
             this->modeltDescriptor2->VKdescriptorPool,
             *layouts2.data(),
-            this->frames * 2); // object가 한개다 -> virtual object가 2개이기에 frames * 2을 적용
+            frameCount); // object가 한개다 -> virtual object가 2개이기에 frames * 2을 적용
 
-        this->modeltDescriptor2->VKdescriptorSets.resize(this->frames * 2); // object 2개
+        this->modeltDescriptor2->VKdescriptorSets.resize(frameCount); // object 2개
         this->modeltDescriptor2->createAllocateDescriptorSets();
 
         // descriptor set 업데이트
@@ -623,7 +625,6 @@ namespace vkengine {
                 &this->subUniform.descriptor
                 )
         };
-
 
         vkUpdateDescriptorSets(
             this->VKdevice->logicaldevice,
