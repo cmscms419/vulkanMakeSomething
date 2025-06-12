@@ -24,7 +24,7 @@ namespace vkengine {
         this->vkGUI = new vkengine::vkGUI(this);
         this->skyBox = new object::SkyBox(this->getDevice());
 
-        std::vector<std::string> pathCubeArray = {
+        std::vector<cString> pathCubeArray = {
            this->RootPath + RESOURSE_PATH + CUBE_TEXTURE_PATH + "/right.png",
            this->RootPath + RESOURSE_PATH + CUBE_TEXTURE_PATH + "/left.png",
            this->RootPath + RESOURSE_PATH + CUBE_TEXTURE_PATH + "/top.png",
@@ -32,6 +32,8 @@ namespace vkengine {
            this->RootPath + RESOURSE_PATH + CUBE_TEXTURE_PATH + "/front.png",
            this->RootPath + RESOURSE_PATH + CUBE_TEXTURE_PATH + "/back.png"
         };
+        cString defaltPath = this->RootPath + RESOURSE_PATH + "image.png";
+
         
         TextureResource* resource = new TextureResource();
 
@@ -63,10 +65,10 @@ namespace vkengine {
         this->modelObject = new object::ModelObject(this->getDevice());
         this->modelObject->setName("sphere");
 
-        resource->createResource(pathCubeArray[0]); // 텍스쳐 로드
+        resource->createResource(defaltPath); // 텍스쳐 로드
 
         if (resource->data == nullptr) {
-            _PRINT_TO_CONSOLE_("Failed to load texture from %s\n", pathCubeArray[0].c_str());
+            _PRINT_TO_CONSOLE_("Failed to load texture from %s\n", defaltPath.c_str());
             return false;
         }
 
