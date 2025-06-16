@@ -48,14 +48,8 @@
     <ClCompile Include="..\..\app\common\resourseload.cpp">
       <Filter>source</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\include\common\tiny_obj_loader.cc">
-      <Filter>external</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\include\common\tiny_obj_loader.h">
-      <Filter>external</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\include\source\engine\Debug.h">
       <Filter>source</Filter>
     </ClInclude>
@@ -100,51 +94,6 @@
     </ClInclude>
     <ClInclude Include="..\..\include\common\resourseload.h">
       <Filter>source</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\common\exception.h">
-      <Filter>external</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\common\helper_cuda.h">
-      <Filter>external</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\common\helper_math.h">
-      <Filter>external</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\common\helper_string.h">
-      <Filter>external</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\common\helper_timer.h">
-      <Filter>external</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\common\linmath.h">
-      <Filter>external</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\common\object_data.h">
-      <Filter>external</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\common\png.h">
-      <Filter>external</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\common\pngconf.h">
-      <Filter>external</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\common\pngdebug.h">
-      <Filter>external</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\common\pnginfo.h">
-      <Filter>external</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\common\pnglibconf.h">
-      <Filter>external</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\common\pngpriv.h">
-      <Filter>external</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\common\pngstruct.h">
-      <Filter>external</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\common\stb_image.h">
-      <Filter>external</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
