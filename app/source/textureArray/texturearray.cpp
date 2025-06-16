@@ -39,15 +39,15 @@ namespace vkengine {
 
         for (auto& path : pathArray)
         {
-            TextureResource* resource = new TextureResource();
-            resource->createResource(path);
+            TextureResourcePNG* resourcePNG = new TextureResourcePNG();
+            resourcePNG->createResource(path);
 
-            if (resource->data == nullptr) {
+            if (resourcePNG->data == nullptr) {
                 _PRINT_TO_CONSOLE_("Failed to load texture from %s\n", path.c_str());
                 return false;
             }
 
-            this->textureArray.setResource(resource);
+            this->textureArray.setResourcePNG(resourcePNG);
 
         }
 

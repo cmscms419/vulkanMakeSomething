@@ -5,10 +5,10 @@ namespace vkengine {
 
     void Vk2DTexture::createTextureImage()
     {
-        uint32_t texWidth = this->resource->texWidth;
-        uint32_t texHeight = this->resource->texHeight;
-        uint32_t texChannels = this->resource->texChannels;
-        cUChar* pixels = this->resource->data;
+        uint32_t texWidth = this->resourcePNG->texWidth;
+        uint32_t texHeight = this->resourcePNG->texHeight;
+        uint32_t texChannels = this->resourcePNG->texChannels;
+        cUChar* pixels = this->resourcePNG->data;
 
         if (texWidth == 0 || texHeight == 0) {
             return;
@@ -137,8 +137,8 @@ namespace vkengine {
         std::vector<VkDeviceSize> imageSizes(this->imageCount);
 
         for (size_t i = 0; i < this->imageCount; i++) {
-            TextureResource& resource = this->resource[i];
-            VkDeviceSize imageSize = resource.texWidth * resource.texHeight * resource.texChannels;
+            TextureResourcePNG& resourcePNG = this->resourcePNG[i];
+            VkDeviceSize imageSize = resourcePNG.texWidth * resourcePNG.texHeight * resourcePNG.texChannels;
             imageSizes[i] = imageSize;
             totalImageSize += imageSize;
         }
@@ -159,14 +159,14 @@ namespace vkengine {
         // 3. 각 이미지 데이터를 단일 버퍼에 연속적으로 복사합니다.
         for (size_t i = 0; i < this->imageCount; i++)
         {
-            TextureResource& resource = this->resource[i];
+            TextureResourcePNG& resourcePNG = this->resourcePNG[i];
 
-            _CHECK_RESULT_((resource.data != nullptr));
+            _CHECK_RESULT_((resourcePNG.data != nullptr));
 
             // imageSizes[i]는 현재 이미지의 크기입니다.
             vkengine::helper::copyToDeviceMemory(
                 this->device->logicaldevice,
-                resource.data,
+                resourcePNG.data,
                 stagingBufferMemory,
                 imageSizes[i],
                 offset);
@@ -176,9 +176,9 @@ namespace vkengine {
 
         // 가정 : 모든 이미지가 동일한 포맷과 크기를 가지고 있다고 가정합니다.
         // 이 예제에서는 VK_FORMAT_R8G8B8A8_SRGB 포맷을 사용합니다.
-        uint32_t width = this->resource[0].texWidth;
-        uint32_t height = this->resource[0].texHeight;
-        uint32_t channels = this->resource[0].texChannels;
+        uint32_t width = this->resourcePNG[0].texWidth;
+        uint32_t height = this->resourcePNG[0].texHeight;
+        uint32_t channels = this->resourcePNG[0].texChannels;
 
         // 4. 이미지 메모리 생성  
         vkengine::helper::createImage(
@@ -293,8 +293,8 @@ namespace vkengine {
 
         for (size_t i = 0; i < imageCount; i++) {
             // 임시로 이미지를 로드하여 크기를 얻습니다.
-            TextureResource& resource = this->resource[i];
-            VkDeviceSize imageSize = resource.texWidth * resource.texHeight * resource.texChannels;
+            TextureResourcePNG& resourcePNG = this->resourcePNG[i];
+            VkDeviceSize imageSize = resourcePNG.texWidth * resourcePNG.texHeight * resourcePNG.texChannels;
             imageSizes[i] = imageSize;
             totalImageSize += imageSize;
         }
@@ -316,14 +316,14 @@ namespace vkengine {
         // 3. 각 이미지 데이터를 단일 버퍼에 연속적으로 복사합니다.
         for (size_t i = 0; i < imageCount; i++)
         {
-            TextureResource& resource = this->resource[i];
+            TextureResourcePNG& resourcePNG = this->resourcePNG[i];
 
-            _CHECK_RESULT_((resource.data != nullptr));
+            _CHECK_RESULT_((resourcePNG.data != nullptr));
 
             // imageSizes[i]는 현재 이미지의 크기입니다.
             vkengine::helper::copyToDeviceMemory(
                 this->device->logicaldevice,
-                resource.data,
+                resourcePNG.data,
                 stagingBufferMemory,
                 imageSizes[i],
                 offset);
@@ -333,9 +333,9 @@ namespace vkengine {
 
         // 가정 : 모든 이미지가 동일한 포맷과 크기를 가지고 있다고 가정합니다.
         // 이 예제에서는 VK_FORMAT_R8G8B8A8_SRGB 포맷을 사용합니다.
-        uint32_t width = this->resource[0].texWidth;
-        uint32_t height = this->resource[0].texHeight;
-        uint32_t channels = this->resource[0].texChannels;
+        uint32_t width = this->resourcePNG[0].texWidth;
+        uint32_t height = this->resourcePNG[0].texHeight;
+        uint32_t channels = this->resourcePNG[0].texChannels;
 
         // 4. 이미지 메모리 생성  
         vkengine::helper::createImage2(
@@ -392,6 +392,99 @@ namespace vkengine {
 
     }
 
+    void VKcubeMap::createTextureImgae2(VkFormat format)
+    {
+        // 1. KTX 텍스처의 데이터와 크기를 가져오기
+        TextureResourceKTX* resource = this->resourceKTX;
+        _CHECK_RESULT_((resource != nullptr));
+
+        ktx_uint8_t* ktxTextureData = ktxTexture_GetData(resource->texture); // KTX 텍스처 데이터 가져오기
+        ktx_uint32_t ktxTextureSize = ktxTexture_GetDataSize(resource->texture); // KTX 텍스처 데이터 크기 가져오기
+
+        VkBuffer stagingBuffer;
+        VkDeviceMemory stagingMemory;
+
+        // 2. KTX 텍스처 크기만큼 스테이징 버퍼 생성
+        vkengine::helper::createBuffer(
+            this->device->logicaldevice,
+            this->device->physicalDevice,
+            ktxTextureSize,
+            VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+            stagingBuffer,
+            stagingMemory);
+
+        // 3. 스테이징 버퍼에 KTX 텍스처 데이터 복사
+        vkengine::helper::copyToDeviceMemory(
+            this->device->logicaldevice,
+            ktxTextureData,
+            stagingMemory,
+            ktxTextureSize);
+
+        // 4. KTX 텍스처의 너비, 높이, 채널 수 가져오기
+        cUint32_t mipLevels = resource->texture->numLevels;
+        cUint32_t width = resource->texWidth;
+        cUint32_t height = resource->texHeight;
+        cUint32_t channels = resource->texChannels;
+
+        this->VKmipLevels = mipLevels;
+
+        // 5. 이미지 메모리 생성
+        vkengine::helper::createImage2(
+            this->device->logicaldevice,
+            this->device->physicalDevice,
+            width,
+            height,
+            this->VKmipLevels,
+            VK_SAMPLE_COUNT_1_BIT,
+            format,
+            VK_IMAGE_TILING_OPTIMAL,
+            VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+            this->image,
+            this->imageMemory,
+            6, // Cube map은 6개의 면을 가집니다.
+            VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT
+        );
+
+        vkengine::helper::transitionImageLayout2(
+            this->device->logicaldevice,
+            this->device->commandPool,
+            this->device->graphicsVKQueue,
+            this->image,
+            format,
+            VK_IMAGE_LAYOUT_UNDEFINED,
+            VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+            this->VKmipLevels,
+            6); // Cube map은 6개의 면을 가집니다.
+        
+        vkengine::helper::copyBufferToImageKTX(
+            this->device->logicaldevice,
+            this->device->commandPool,
+            this->device->graphicsVKQueue,
+            stagingBuffer,
+            this->image,
+            width,
+            height,
+            this->VKmipLevels,
+            this->resourceKTX->texture
+        );
+
+        vkengine::helper::generateMipmapsCubeMap(
+            this->device->physicalDevice,
+            this->device->logicaldevice,
+            this->device->commandPool,
+            this->device->graphicsVKQueue,
+            this->image,
+            format,
+            width,
+            height,
+            this->VKmipLevels);
+
+        vkDestroyBuffer(this->device->logicaldevice, stagingBuffer, nullptr);
+        vkFreeMemory(this->device->logicaldevice, stagingMemory, nullptr);
+    }
+
     void VKcubeMap::createTextureImageView(VkFormat format)
     {
         this->imageView = vkengine::helper::createCubeImageView(
@@ -428,9 +521,9 @@ namespace vkengine {
         _VK_CHECK_RESULT_(vkCreateSampler(this->device->logicaldevice, &samplerInfo, nullptr, &this->sampler));
     }
 
-    void VkTextureBase::setResource(TextureResource* resource)
+    void VkTextureBase::setResourcePNG(TextureResourcePNG* resourcePNG)
     {
-        if (resource == nullptr) {
+        if (resourcePNG == nullptr) {
             _PRINT_TO_CONSOLE_("Resource is null.");
             return;
         }
@@ -440,43 +533,43 @@ namespace vkengine {
             this->VKmipLevels = 1;
             //this->VKmipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(texWidth, texHeight)))) + 1;
 
-            this->resource = (TextureResource*)calloc(this->imageCount, sizeof(TextureResource));
+            this->resourcePNG = (TextureResourcePNG*)calloc(this->imageCount, sizeof(TextureResourcePNG));
 
-            if (this->resource == nullptr) {
-                _PRINT_TO_CONSOLE_("Failed to allocate memory for resource.");
+            if (this->resourcePNG == nullptr) {
+                _PRINT_TO_CONSOLE_("Failed to allocate memory for resourcePNG.");
                 return;
             }
 
-            this->resource[0] = *resource;
+            this->resourcePNG[0] = *resourcePNG;
 
         }
         else {
 #if 0
-            TextureResource* newData = (TextureResource*)calloc(this->imageCount + 1, sizeof(TextureResource));
+            TextureResourcePNG* newData = (TextureResourcePNG*)calloc(this->imageCount + 1, sizeof(TextureResourcePNG));
 
             if (newData == nullptr) {
-                _PRINT_TO_CONSOLE_("Failed to allocate memory for new resource.");
+                _PRINT_TO_CONSOLE_("Failed to allocate memory for new resourcePNG.");
                 return;
             }
 
             for (size_t i = 0; i < this->imageCount; i++) {
-                newData[i] = this->resource[i];
+                newData[i] = this->resourcePNG[i];
             }
 
-            newData[this->imageCount] = *resource; // 마지막에 새로운 리소스 추가
-            free(this->resource); // Free the old resource array
-            this->resource = newData; // 새로운 리소스로 교체
+            newData[this->imageCount] = *resourcePNG; // 마지막에 새로운 리소스 추가
+            free(this->resourcePNG); // Free the old resourcePNG array
+            this->resourcePNG = newData; // 새로운 리소스로 교체
             this->imageCount++;
 #endif
-            TextureResource* newData = this->resource;
+            TextureResourcePNG* newData = this->resourcePNG;
 
-            if ((this->resource = (TextureResource*)realloc(this->resource, sizeof(TextureResource) * (this->imageCount + 1))) == NULL)
+            if ((this->resourcePNG = (TextureResourcePNG*)realloc(this->resourcePNG, sizeof(TextureResourcePNG) * (this->imageCount + 1))) == NULL)
             {
-                _PRINT_TO_CONSOLE_("Failed to reallocate memory for resource.");
+                _PRINT_TO_CONSOLE_("Failed to reallocate memory for resourcePNG.");
                 free(newData);
                 return;
             }
-            this->resource[this->imageCount] = *resource; // 마지막에 새로운 리소스 추가
+            this->resourcePNG[this->imageCount] = *resourcePNG; // 마지막에 새로운 리소스 추가
             this->imageCount++;
 
         }

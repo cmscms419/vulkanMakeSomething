@@ -36,22 +36,22 @@ namespace vkengine {
 
         for (auto& path : pathCubeArray)
         {
-            TextureResource* resource = new TextureResource();
-            resource->createResource(path);
+            TextureResourcePNG* resourcePNG = new TextureResourcePNG();
+            resourcePNG->createResource(path);
 
-            if (resource->data == nullptr) {
+            if (resourcePNG->data == nullptr) {
                 _PRINT_TO_CONSOLE_("Failed to load texture from %s\n", path.c_str());
                 return false;
             }
 
-            this->cubeSkybox->setTexture(resource);
+            this->cubeSkybox->setTexturePNG(resourcePNG);
 
         }
         this->cubeSkybox->createTexture(VK_FORMAT_R8G8B8A8_SRGB);
 
         this->vkGUI = new vkengine::vkGUI(this);
 
-        TextureResource* vikingRoomTexture = new TextureResource();
+        TextureResourcePNG* vikingRoomTexture = new TextureResourcePNG();
         vikingRoomTexture->createResource(this->RootPath + RESOURSE_PATH + TEXTURE_PATH);
         
         this->modelObject = new object::ModelObject(this->getDevice());
@@ -59,7 +59,7 @@ namespace vkengine {
         this->modelObject->RotationAngle(90.0f, glm::vec3(1.0f, 0.0f, 0.0f));
         helper::loadModel::loadModel(this->RootPath, *this->modelObject->getVertices(), *this->modelObject->getIndices());
 
-        this->modelObject->setTexture(vikingRoomTexture);
+        this->modelObject->setTexturePNG(vikingRoomTexture);
         this->modelObject->getTexture()->setMipLevels(static_cast<uint32_t>(std::floor(std::log2(std::max(vikingRoomTexture->texWidth, vikingRoomTexture->texHeight)))) + 1); // Mipmap 레벨 설정
         this->modelObject->createTexture(VK_FORMAT_R8G8B8A8_SRGB);
 
@@ -69,7 +69,7 @@ namespace vkengine {
         this->modelObject2->setPosition(glm::vec3(3.0f, 0.0f, 0.0f));
         helper::loadModel::loadModel(this->RootPath, *this->modelObject2->getVertices(), *this->modelObject2->getIndices());
 
-        this->modelObject2->setTexture(vikingRoomTexture);
+        this->modelObject2->setTexturePNG(vikingRoomTexture);
         this->modelObject2->getTexture()->setMipLevels(static_cast<uint32_t>(std::floor(std::log2(std::max(vikingRoomTexture->texWidth, vikingRoomTexture->texHeight)))) + 1); // Mipmap 레벨 설정
         this->modelObject2->createTexture(VK_FORMAT_R8G8B8A8_SRGB);
 

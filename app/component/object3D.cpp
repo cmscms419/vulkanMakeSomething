@@ -150,6 +150,6 @@ namespace vkengine {
             memcpy(this->modelviewprojUniformBuffer[currentImage].mapped, &ubo, sizeof(ubo));
         }
 
-    }
+}
 }
 

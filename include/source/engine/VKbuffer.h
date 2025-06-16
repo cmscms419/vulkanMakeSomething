@@ -55,6 +55,16 @@ namespace vkengine {
 
     };
 
+    struct UniformBufferSkymap : public VkBufferObject
+    {
+        UniformBufferSkymapParams uboParams = {};
+
+        UniformBufferSkymap()
+        {
+            this->size = sizeof(UniformBufferSkymapParams);
+        };
+    };
+
     struct MaterialBuffer : public VkBufferObject
     {
         Material material = {};

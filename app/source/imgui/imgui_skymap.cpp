@@ -37,15 +37,15 @@ namespace vkengine {
 
         for (auto& path : pathArray)
         {
-            TextureResource* resource = new TextureResource();
-            resource->createResource(path);
+            TextureResourcePNG* resourcePNG = new TextureResourcePNG();
+            resourcePNG->createResource(path);
 
-            if (resource->data == nullptr) {
+            if (resourcePNG->data == nullptr) {
                 _PRINT_TO_CONSOLE_("Failed to load texture from %s\n", path.c_str());
                 return false;
             }
 
-            this->cubeObject->setTexture(resource);
+            this->cubeObject->setTexturePNG(resourcePNG);
 
         }
 
@@ -63,15 +63,15 @@ namespace vkengine {
 
         for (auto& path : pathCubeArray)
         {
-            TextureResource* resource = new TextureResource();
-            resource->createResource(path);
+            TextureResourcePNG* resourcePNG = new TextureResourcePNG();
+            resourcePNG->createResource(path);
 
-            if (resource->data == nullptr) {
+            if (resourcePNG->data == nullptr) {
                 _PRINT_TO_CONSOLE_("Failed to load texture from %s\n", path.c_str());
                 return false;
             }
 
-            this->cubeSkybox->setTexture(resource);
+            this->cubeSkybox->setTexturePNG(resourcePNG);
 
         }
         this->cubeSkybox->createTexture(VK_FORMAT_R8G8B8A8_SRGB);

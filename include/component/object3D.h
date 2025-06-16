@@ -66,20 +66,17 @@ namespace vkengine {
             void setRotation(cQuat rotation) { this->rotation = rotation; }
             void setScale(cVec3 scale) { this->scale = scale; }
             void setMatrix(cMat4 matrix) { this->matrix = matrix; }
-            void setTexture(TextureResource* resource) { this->texture->setResource(resource); }
-
-            void CaluateRotation(cQuat rotation)
-            {
-              this->rotation *= rotation;
-            }
+            void setTexturePNG(TextureResourcePNG* resourcePNG) { this->texture->setResourcePNG(resourcePNG); }
+            void setTextureKTX(TextureResourceKTX* resourceKTX) { this->texture->setResourceKTX(resourceKTX); } // KTX 텍스처 설정
+            void CaluateRotation(cQuat rotation) { this->rotation *= rotation; }
             void RotationAngle(float angle, cVec3 axis);
             void updateMatrix();
 
         protected:
 
-            VertexBuffer vertexBuffer;
-            IndexBuffer indexBuffer;
-            UniformBuffer modelviewprojUniformBuffer[MAX_FRAMES_IN_FLIGHT]; // swapChain image 개수만큼 uniform buffer 생성
+            VertexBuffer vertexBuffer{};
+            IndexBuffer indexBuffer{};
+            UniformBuffer modelviewprojUniformBuffer[MAX_FRAMES_IN_FLIGHT]{}; // swapChain image 개수만큼 uniform buffer 생성
             VkTextureBase* texture = nullptr; // 텍스처 객체
             VKDevice_* device = nullptr; // VKDevice 포인터
             cString name = "";
@@ -114,6 +111,11 @@ namespace vkengine {
             };
 
             void updateUniformBuffer(uint32_t currentImage, Camera* camera);
+            void createTexture2(VkFormat format = VK_FORMAT_R8G8B8A8_SRGB) {
+                this->texture->createTextureImgae2(format);
+                this->texture->createTextureImageView(format);
+                this->texture->createTextureSampler();
+            };
 
             virtual void cleanup() {
                 Object::cleanup();

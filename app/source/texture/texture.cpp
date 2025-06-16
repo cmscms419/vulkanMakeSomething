@@ -23,12 +23,12 @@ namespace vkengine {
         this->init_sync_structures();
 
         std::string path = this->RootPath + RESOURSE_PATH + TEST_TEXTURE_PATH;
-        TextureResource* resource = new TextureResource();
-        resource->createResource(path);
+        TextureResourcePNG* resourcePNG = new TextureResourcePNG();
+        resourcePNG->createResource(path);
 
         this->testTexture = Vk2DTexture();
         this->testTexture.setDevice(this->VKdevice.get());
-        this->testTexture.setResource(resource);
+        this->testTexture.setResourcePNG(resourcePNG);
 
         this->testTexture.createTextureImage();
         this->testTexture.createTextureImageView(VK_FORMAT_R8G8B8A8_SRGB);

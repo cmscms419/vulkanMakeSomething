@@ -35,20 +35,20 @@ namespace vkengine {
         cString defaltPath = this->RootPath + RESOURSE_PATH + "image.png";
 
         
-        TextureResource* resource = new TextureResource();
+        TextureResourcePNG* resourcePNG = new TextureResourcePNG();
 
         for (auto& path : pathCubeArray)
         {
-            resource->createResource(path);
+            resourcePNG->createResource(path);
 
-            if (resource->data == nullptr) {
+            if (resourcePNG->data == nullptr) {
                 _PRINT_TO_CONSOLE_("Failed to load texture from %s\n", path.c_str());
                 return false;
             }
 
-            this->skyBox->setTexture(resource);
-            free(resource->data); // 메모리 해제
-            resource->data = nullptr; // 포인터 초기화
+            this->skyBox->setTexturePNG(resourcePNG);
+            free(resourcePNG->data); // 메모리 해제
+            resourcePNG->data = nullptr; // 포인터 초기화
         }
         this->skyBox->createTexture(VK_FORMAT_R8G8B8A8_SRGB);
 
@@ -65,14 +65,14 @@ namespace vkengine {
         this->modelObject = new object::ModelObject(this->getDevice());
         this->modelObject->setName("sphere");
 
-        resource->createResource(defaltPath); // 텍스쳐 로드
+        resourcePNG->createResource(defaltPath); // 텍스쳐 로드
 
-        if (resource->data == nullptr) {
+        if (resourcePNG->data == nullptr) {
             _PRINT_TO_CONSOLE_("Failed to load texture from %s\n", defaltPath.c_str());
             return false;
         }
 
-        this->modelObject->setTexture(resource);
+        this->modelObject->setTexturePNG(resourcePNG);
         this->modelObject->createTexture(VK_FORMAT_R8G8B8A8_SRGB);
 
         cString modelPath = this->RootPath + RESOURSE_PATH + "sphere2.obj";
@@ -83,10 +83,10 @@ namespace vkengine {
         this->vikingRoomObject->RotationAngle(90.0f, glm::vec3(1.0f, 0.0f, 0.0f));
         helper::loadModel::loadModel2(this->RootPath + RESOURSE_PATH + MODEL_PATH, *this->vikingRoomObject->getVertices(), *this->vikingRoomObject->getIndices());
 
-        TextureResource* vikingRoomTexture = new TextureResource();
+        TextureResourcePNG* vikingRoomTexture = new TextureResourcePNG();
         vikingRoomTexture->createResource(this->RootPath + RESOURSE_PATH + TEXTURE_PATH);
 
-        this->vikingRoomObject->setTexture(vikingRoomTexture);
+        this->vikingRoomObject->setTexturePNG(vikingRoomTexture);
         this->vikingRoomObject->getTexture()->setMipLevels(1);
         this->vikingRoomObject->createTexture(VK_FORMAT_R8G8B8A8_SRGB);
 

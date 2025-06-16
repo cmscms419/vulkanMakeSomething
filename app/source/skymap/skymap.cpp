@@ -36,7 +36,7 @@ namespace vkengine {
 
         for (auto& path : pathArray)
         {
-            TextureResource* resource = new TextureResource();
+            TextureResourcePNG* resource = new TextureResourcePNG();
             resource->createResource(path);
 
             if (resource->data == nullptr) {
@@ -44,7 +44,7 @@ namespace vkengine {
                 return false;
             }
 
-            this->cubeObject->setTexture(resource);
+            this->cubeObject->setTexturePNG(resource);
         }
 
         this->cubeObject->createTexture(VK_FORMAT_R8G8B8A8_SRGB);
@@ -61,7 +61,7 @@ namespace vkengine {
 
         for (auto& path : pathCubeArray)
         {
-            TextureResource* resource = new TextureResource();
+            TextureResourcePNG* resource = new TextureResourcePNG();
             resource->createResource(path);
 
             if (resource->data == nullptr) {
@@ -69,7 +69,7 @@ namespace vkengine {
                 return false;
             }
 
-            this->cubeSkybox->setTexture(resource);
+            this->cubeSkybox->setTexturePNG(resource);
         }
         this->cubeSkybox->createTexture(VK_FORMAT_R8G8B8A8_SRGB);
 
@@ -712,7 +712,7 @@ namespace vkengine {
         rasterizer.rasterizerDiscardEnable = VK_FALSE;            // 래스터화 버림 비활성화
         rasterizer.polygonMode = VK_POLYGON_MODE_FILL;            // 다각형 모드를 채우기로 설정
         rasterizer.lineWidth = 1.0f;                              // 라인 너비를 1.0f로 설정
-        rasterizer.cullMode = VK_CULL_MODE_FRONT_BIT;             // skybox는 앞면을 제거
+        rasterizer.cullMode = VK_CULL_MODE_NONE;                  // skybox는 의미 없음
         rasterizer.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;   // 전면 면을 반시계 방향으로 설정
         rasterizer.depthBiasEnable = VK_FALSE;                    // 깊이 바이어스 비활성화
         rasterizer.depthBiasConstantFactor = 0.0f;              // 깊이 바이어스 상수 요소를 0.0f로 설정

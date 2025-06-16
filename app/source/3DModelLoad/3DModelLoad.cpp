@@ -52,25 +52,25 @@ namespace vkengine {
 
         for (auto& path : pathCubeArray)
         {
-            TextureResource* resource = new TextureResource();
-            resource->createResource(path);
+            TextureResourcePNG* resourcePNG = new TextureResourcePNG();
+            resourcePNG->createResource(path);
 
-            if (resource->data == nullptr) {
+            if (resourcePNG->data == nullptr) {
                 _PRINT_TO_CONSOLE_("Failed to load texture from %s\n", path.c_str());
                 return false;
             }
 
-            this->cubeSkybox->setTexture(resource);
+            this->cubeSkybox->setTexturePNG(resourcePNG);
 
         }
 
         this->cubeSkybox->createTexture(VK_FORMAT_R8G8B8A8_SRGB);
 
         cString modelPath = this->RootPath + RESOURSE_PATH + TEXTURE_PATH;
-        TextureResource* resource = new TextureResource();
-        resource->createResource(modelPath);
+        TextureResourcePNG* resourcePNG = new TextureResourcePNG();
+        resourcePNG->createResource(modelPath);
 
-        this->modelObject->setTexture(resource);
+        this->modelObject->setTexturePNG(resourcePNG);
         this->modelObject->RotationAngle(90.0f, glm::vec3(1.0f, 0.0f, 0.0f));
 
         helper::loadModel::loadModel(this->RootPath, *this->modelObject->getVertices(), *this->modelObject->getIndices());

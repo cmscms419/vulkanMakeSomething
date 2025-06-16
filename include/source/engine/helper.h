@@ -3,13 +3,13 @@
 
 #include <set>
 #include <fstream>
-
 #include "common.h"
 #include "struct.h"
 #include "macros.h"
 
 #include "VKbuffer.h"
 #include "VKdevice.h"
+#include "ktx.h"
 
 // https://github.com/SaschaWillems/Vulkan에서 참고해서 함수 생성
 
@@ -104,6 +104,17 @@ namespace vkengine {
             uint32_t width,
             uint32_t height,
             std::vector<VkDeviceSize> &sizeArray);
+
+        void copyBufferToImageKTX(
+            VkDevice device,
+            VkCommandPool commandPool,
+            VkQueue graphicsQueue,
+            VkBuffer buffer,
+            VkImage image,
+            uint32_t width,
+            uint32_t height,
+            uint32_t mipmapLevels,
+            ktxTexture* textureKTX);
 
         // 물리 디바이스의 확장 기능을 지원하는지 확인하는 함수
         // 검증 레이어 지원 여부를 확인하는 함수

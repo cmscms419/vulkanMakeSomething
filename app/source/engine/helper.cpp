@@ -287,6 +287,46 @@ namespace vkengine {
             endSingleTimeCommands(device, commandPool, graphicsQueue, commandBuffer);
         }
 
+        void copyBufferToImageKTX(VkDevice device, VkCommandPool commandPool, VkQueue graphicsQueue, VkBuffer buffer, VkImage image, uint32_t width, uint32_t height, uint32_t mipmapLevels, ktxTexture* textureKTX)
+        {
+            VkCommandBuffer commandBuffer = beginSingleTimeCommands(device, commandPool);
+
+            // VKBufferImageCopy 배열을 만든다.
+            std::vector<VkBufferImageCopy> bufferCopyRegions;
+
+            for (uint32_t face = 0; face < 6; face++)
+            {
+                for (uint32_t level = 0; level < mipmapLevels; level++)
+                {
+                    VkDeviceSize offset = 0;
+                    KTX_error_code result = ktxTexture_GetImageOffset(textureKTX, level, 0, face, &offset);
+                    _CHECK_RESULT_((result == KTX_SUCCESS));
+
+                    VkBufferImageCopy bufferCopyRegion = {};
+                    bufferCopyRegion.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+                    bufferCopyRegion.imageSubresource.mipLevel = level;
+                    bufferCopyRegion.imageSubresource.baseArrayLayer = face;
+                    bufferCopyRegion.imageSubresource.layerCount = 1;
+                    bufferCopyRegion.imageExtent.width = textureKTX->baseWidth >> level;
+                    bufferCopyRegion.imageExtent.height = textureKTX->baseHeight >> level;
+                    bufferCopyRegion.imageExtent.depth = 1;
+                    bufferCopyRegion.bufferOffset = offset;
+
+                    bufferCopyRegions.push_back(bufferCopyRegion);
+                }
+            }
+
+            vkCmdCopyBufferToImage(
+                commandBuffer,
+                buffer,
+                image,
+                VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                static_cast<uint32_t>(bufferCopyRegions.size()),
+                bufferCopyRegions.data());
+
+            endSingleTimeCommands(device, commandPool, graphicsQueue, commandBuffer);
+        }
+
         cBool checkDeviceExtensionSupport(VkPhysicalDevice device)
         {
             uint32_t extensionCount;
