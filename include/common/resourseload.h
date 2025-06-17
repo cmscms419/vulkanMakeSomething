@@ -9,21 +9,24 @@
 #include <stdint.h>
 
 #include "common.h"
+#include "macros.h"
 
-namespace vkengine {
+#include <ktx.h>
+#include <ktxvulkan.h>
 
-    enum TextureType
-    {
-        Texture_default = 0, // only used for desired_channels
-        Texture_grey = 1,
-        Texture_grey_alpha = 2,
-        Texture_rgb = 3,
-        Texture_rgb_alpha = 4
-    };
+enum TextureType
+{
+    Texture_default = 0, // only used for desired_channels
+    Texture_grey = 1,
+    Texture_grey_alpha = 2,
+    Texture_rgb = 3,
+    Texture_rgb_alpha = 4
+};
 
-    cUChar* load_png_rgba(const cChar* filename, cUint32_t* width, cUint32_t* height, cInt type);
+cUChar* load_png_rgba(const cChar* filename, cUint32_t* width, cUint32_t* height, cInt type);
 
-    void GetTextureSize(const cChar* filename, cUint32_t* width, cUint32_t* height);
-}
+ktxTexture* load_ktx_texture(const cChar* filename, ktxTexture* texture);
+
+void GetTextureSize(const cChar* filename, cUint32_t* width, cUint32_t* height);
 
 #endif // !INCLUDE_RESOURSELOAD_H_

@@ -9,6 +9,7 @@ namespace vkengine {
 
             this->setViewDirection(pos, dir, up);
             this->setPerspectiveProjection(glm::radians(fov), aspect, nearP, farP);
+            this->RotateDeltaRotation(cVec3(0.0f, 0.0f, 0.0f), true);
             
             _PRINT_TO_CONSOLE_("Camera Position: %f %f %f\n", this->pos.x, this->pos.y, this->pos.z);
             _PRINT_TO_CONSOLE_("Camera Target: %f %f %f\n", this->target.x, this->target.y, this->target.z);
@@ -36,6 +37,7 @@ namespace vkengine {
 
         void Camera::update() {
             // Implementation here
+
             this->setViewDirection(pos, dir, up);
 
             //_PRINT_TO_CONSOLE_("\rCamera Position: %f %f %f", this->pos.x, this->pos.y, this->pos.z);
@@ -54,7 +56,10 @@ namespace vkengine {
 
         void Camera::MoveUp(float deltaTime)
         {
-            this->pos += this->up * this->speed * deltaTime;
+            if (!this->flipY)
+                this->pos -= this->up * this->speed * deltaTime;
+            else
+                this->pos += this->up * this->speed * deltaTime;
         }
 
         void Camera::RotateScreenStandard(float xpos, float ypos, int windowWidth, int windowHeight)
@@ -77,7 +82,7 @@ namespace vkengine {
             cVec3 dirction(0.0f, 0.0f, -1.0f);
 #if 1
             // 각 축별 quaternion 생성
-            cQuat qYaw = glm::angleAxis(this->yaw, cVec3(0.0f, 1.0f, 0.0f)); // Y축
+            cQuat qYaw = glm::angleAxis(this->yaw, cVec3(0.0f, this->flipY ? -1.0f : 1.0f, 0.0f)); // Y축
             cQuat qPitch = glm::angleAxis(this->pitch, cVec3(1.0f, 0.0f, 0.0f)); // X축
 
             cQuat Result = qYaw * qPitch; 
@@ -106,10 +111,10 @@ namespace vkengine {
                 this->pitch = glm::clamp(this->pitch, -MAX_PITCH_VALUE, MAX_PITCH_VALUE);
             }
 
-            cQuat qYaw = glm::angleAxis(this->yaw, cVec3(0.0f, 1.0f, 0.0f)); // Y축
+            cQuat qYaw = glm::angleAxis(this->yaw, cVec3(0.0f, this->flipY ? -1.0f : 1.0f, 0.0f)); // Y축
             cQuat qPitch = glm::angleAxis(this->pitch, cVec3(1.0f, 0.0f, 0.0f)); // X축
 
-            cVec3 dirction(0.0f, 0.0f, -1.0f);
+            cVec3 dirction(0.0f, 0.0f, 1.0f);
 
             cQuat Result = qYaw * qPitch;
             dirction = vkMath::RotationQuat(Result, dirction);
@@ -142,11 +147,20 @@ namespace vkengine {
             * Vulkan에서는 OpenGL에 비해 y축이 반전됩니다.
             * 이 선은 y축 배율 인수에 -1을 곱하여 방향을 수정합니다.
             */
-            projectionMatrix[1][1] *= -1.f;
+
+            if (this->flipY)
+            {
+                projectionMatrix[1][1] *= -1.f;
+            }
         }
 
         void Camera::setViewDirection(cVec3 pos, cVec3 dir, cVec3 up)
         {
+            if (this->flipY)
+            {
+                //pos.y *= -1.0f; // Y축 반전
+            }
+
             const cVec3 w{ glm::normalize(dir) };
             const cVec3 u{ glm::normalize(glm::cross(w, up)) };
             const cVec3 v{ glm::cross(u, w) };

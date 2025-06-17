@@ -248,10 +248,11 @@ namespace vkengine {
             this->camera->MoveUp(dt);
         }
 
-        //this->camera->setViewDirection(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(-1.0f, -1.0f, -1.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-        this->camera->update();
         float aspectRatio = static_cast<float>(this->VKswapChain->getSwapChainExtent().width) / static_cast<float>(VKswapChain->getSwapChainExtent().height);
         this->camera->setPerspectiveProjection(45.0f, aspectRatio, 0.1f, 100.0f);
+        this->camera->update();
+
+        _PRINT_TO_CONSOLE_("\rCamera Position: %f %f %f", this->camera->getPos().x, this->camera->getPos().y, this->camera->getPos().z);
     }
 
     bool SkyCubeEngine::init_sync_structures()

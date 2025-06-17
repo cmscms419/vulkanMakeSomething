@@ -9,7 +9,7 @@
 #include "vkmath.h"
 #include "macros.h"
 
-#define MAX_PITCH_VALUE 1.1f
+#define MAX_PITCH_VALUE 1.3f
 
 namespace vkengine {
     namespace object {
@@ -23,8 +23,8 @@ namespace vkengine {
 
             void update();
 
-            void setPos(cVec3 pos);
             const cVec3 getTarget() { return this->target; }
+            const cVec3 getDir() { return this->dir; }
             const cVec3 getPos() { return this->pos; }
             const float getYaw() { return this->yaw; }
             const float getPitch() { return this->pitch; }
@@ -33,6 +33,7 @@ namespace vkengine {
             const float getNearP() { return this->nearP; }
             const float getFarP() { return this->farP; }
 
+            void setPos(cVec3 pos) { this->pos = pos; }
             void setYaw(float yaw) { this->yaw = yaw; }
             void setPitch(float pitch) { this->pitch = pitch; }
             void setFov(float fov) { this->fov = fov; }
@@ -53,20 +54,21 @@ namespace vkengine {
             void setViewXYZ(cVec3 pos, cVec3 rot);
 
         private:
-            cVec3 pos{ cVec3(0.0f, 0.0f, 3.0f) };
+            cVec3 pos{ cVec3(0.0f, 0.0f, -3.0f) };
             cVec3 up{ cVec3(0.0f, 1.0f, 0.0f) };
             cVec3 target{ cVec3(0.0f) };
-            cVec3 dir{ cVec3(0.0f, 0.0f, -1.0f) };
+            cVec3 dir{ cVec3(0.0f, 0.0f, 1.0f) };
             cVec3 right{ cVec3(1.0f, 0.0f, 0.0f) };
 
-            float yaw{ 0.0f };
-            float pitch{ 0.0f };
-            float fov{ 45.f };
-            float aspect = []() { return (float)WIDTH / (float)HEIGHT; }();
-            float nearP{ 0.1f };
-            float farP{ 1000.0f };
-            float speed{ 2.5f };;
-            float sensitivity{ 0.001f };
+            cFloat yaw{ 0.0f };
+            cFloat pitch{ 0.0f };
+            cFloat fov{ 45.f };
+            cFloat aspect = []() { return (float)WIDTH / (float)HEIGHT; }();
+            cFloat nearP{ 0.1f };
+            cFloat farP{ 1000.0f };
+            cFloat speed{ 2.5f };
+            cFloat sensitivity{ 0.001f };
+            cBool flipY{ false };
 
             cMat4 viewMatrix{ 1.f };
             cMat4 projectionMatrix{ 1.f };

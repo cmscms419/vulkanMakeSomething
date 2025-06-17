@@ -199,7 +199,7 @@ struct UniformBufferObject {
     cMat4 proj;
 };
 
-struct TextureResource {
+struct TextureResourcePNG {
 
     cUint32_t texWidth = 0;                         // 텍스처 너비
     cUint32_t texHeight = 0;                        // 텍스처 높이
@@ -207,7 +207,7 @@ struct TextureResource {
     cUChar* data = nullptr;         //< 리소스 데이터 포인터
 
     // 생성자
-    TextureResource() {
+    TextureResourcePNG() {
         this->texWidth = 0;
         this->texHeight = 0;
         this->texChannels = 0;
@@ -215,7 +215,7 @@ struct TextureResource {
     }
 
     // 소멸자
-    ~TextureResource() {
+    ~TextureResourcePNG() {
         if (data) {
             free(data); // 리소스 데이터 해제
         }
@@ -227,7 +227,7 @@ struct TextureResource {
 
 
     // 복사 생성자
-    TextureResource(const TextureResource& other) {
+    TextureResourcePNG(const TextureResourcePNG& other) {
         texWidth = other.texWidth;
         texHeight = other.texHeight;
         texChannels = other.texChannels;
@@ -249,7 +249,7 @@ struct TextureResource {
     }
 
     // 대입 연산자
-    TextureResource& operator=(const TextureResource& other) {
+    TextureResourcePNG& operator=(const TextureResourcePNG& other) {
         if (this == &other) return *this;
         if (!data) free(data);
 
@@ -282,8 +282,61 @@ struct TextureResource {
 
         this->texChannels = 4; // 기본적으로 RGBA로 설정
 
-        data = vkengine::load_png_rgba(path.c_str(), &this->texWidth, &this->texHeight, this->texChannels);
+        data = load_png_rgba(path.c_str(), &this->texWidth, &this->texHeight, this->texChannels);
     }
+};
+
+struct TextureResourceKTX {
+    cUint32_t texWidth = 0;                         // 텍스처 너비
+    cUint32_t texHeight = 0;                        // 텍스처 높이
+    cUint32_t texChannels = 0;                      // 텍스처 채널
+    cUint32_t mipLevels = 0;
+    cUint32_t layerCount = 0;
+    ktxTexture* texture = nullptr; // KTX 텍스처 포인터
+
+    TextureResourceKTX() {
+        this->texWidth = 0;
+        this->texHeight = 0;
+        this->texChannels = 0;
+        this->mipLevels = 0;
+        this->layerCount = 0;
+        this->texture = nullptr; // KTX 텍스처 초기화
+    }
+
+    ~TextureResourceKTX() {
+        if (texture) {
+            ktxTexture_Destroy(texture); // KTX 텍스처 해제
+        }
+        texWidth = 0; // 너비 초기화
+        texHeight = 0; // 높이 초기화
+        texChannels = 0; // 채널 초기화
+        mipLevels = 0;
+        layerCount = 0;
+        texture = nullptr; // 포인터 초기화
+    }
+
+    bool createResource(cString path) {
+
+        if (texture) {
+            ktxTexture_Destroy(texture); // KTX 텍스처 해제
+        }
+
+        this->texture = load_ktx_texture(path.c_str(), texture);
+
+        if (texture == nullptr) {
+            _PRINT_TO_CONSOLE_("KTX texture is null.");
+            return false;
+        }
+
+        this->texWidth = texture->baseWidth;
+        this->texHeight = texture->baseHeight;
+        this->mipLevels = texture->numLevels;
+        this->layerCount = texture->numLayers;
+        this->texChannels = 4; // 기본적으로 RGBA로 설정
+
+        return true;
+    }
+
 };
 
 struct Material
@@ -326,7 +379,7 @@ struct Material
     cBool isUseEmissive = false; // Emissive usage flag
     cBool isUseColor = false; // Color usage flag
     cBool isUseSpecular = false; // Specular usage flag
-    cBool isUseTextureResource = false; // Texture resource usage flag
+    cBool isUseTextureResource = false; // Texture resourcePNG usage flag
 #endif
 
     //Material() {};
@@ -334,6 +387,13 @@ struct Material
         : metallic(metallic), roughness(roughness), r(color.r), g(color.g), b(color.b), a(color.a){
 
     }
+};
+
+struct UniformBufferSkymapParams
+{
+    cVec4 lightPos[4] = { cVec4(0.0f) }; // 조명 위치
+    cFloat exposure = 0.0f;
+    cFloat gamma = 0.0f;
 };
 
 extern const std::vector<Vertex> cube;

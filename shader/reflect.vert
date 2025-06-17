@@ -21,8 +21,8 @@ layout (location = 3) out vec3 outLightVec;
 void main() {
     gl_Position = ubo.proj * ubo.view * ubo.model * vec4(inPosition, 1.0);
 
-    outPos = vec3(ubo.view * vec4(inPosition, 1.0));
-    outNormal = mat3(ubo.view) * InNormal;
+    outPos = vec3(ubo.view * ubo.model * vec4(inPosition, 1.0));
+    outNormal = mat3(ubo.view * ubo.model) * InNormal;
 
     vec3 lightPos = vec3(0.0f, -5.0f, 5.0f);
     outLightVec = lightPos.xyz - outPos.xyz;
