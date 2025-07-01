@@ -19,7 +19,7 @@ int main(int argc, char* argv[]) {
 
     std::unique_ptr<vkengine::VulkanEngine> engine;
 
-    engine = std::make_unique<vkengine::PBRbasuceEngube>(root_path);
+    engine = std::make_unique<vkengine::PBRbasuceEngine>(root_path);
 
     engine->init();
 

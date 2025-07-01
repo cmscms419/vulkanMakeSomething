@@ -2,6 +2,7 @@
 
 layout(binding = 0) uniform UniformBufferObject {
     mat4 model;
+    mat4 inverseTranspose;
     mat4 view;
     mat4 proj;
 } ubo;
@@ -19,7 +20,7 @@ layout(binding = 2) uniform MaterialBufferObject {
 
 layout(binding = 3) uniform subUinform {
     vec4 camPos;
-    vec4 lightPos;
+    vec4 lightPos[4];
     vec4 objectPos;
     bool useTexture;
 } another;
@@ -27,7 +28,7 @@ layout(binding = 3) uniform subUinform {
 
 layout(location = 0) in vec3 fragNormal;
 layout(location = 1) in vec3 fragTexCoord;
-layout(location = 2) in vec3 WorldPos;
+layout(location = 2) in vec4 WorldPos;
 
 layout(location = 0) out vec4 outColor;
 
@@ -68,7 +69,6 @@ vec3 F_Schlick(float cosTheta, float metallic)
 }
 
 // Specular BRDF composition --------------------------------------------
-
 vec3 BRDF(vec3 L, vec3 V, vec3 N, float metallic, float roughness)
 {
     // Precalculate vectors and dot products	
@@ -104,7 +104,8 @@ vec3 BRDF(vec3 L, vec3 V, vec3 N, float metallic, float roughness)
 void main() {
 
     vec3 N = normalize(fragNormal);
-    vec3 V = normalize(another.camPos.xyz - WorldPos);
+    vec3 CameraPos = another.camPos.xyz;
+    vec3 V = normalize(CameraPos - WorldPos.xyz);
 
     float roughness = material.roughness;
 
@@ -115,10 +116,11 @@ void main() {
 
     // Specular contribution
     vec3 Lo = vec3(0.0);
-    vec3 L = normalize(another.lightPos.xyz - WorldPos);
+    for(int i = 0; i < another.lightPos.length(); i++) {
+        vec3 L = normalize(another.lightPos[i].xyz - WorldPos.xyz);
+        Lo += BRDF(L, V, N, material.metallic, roughness);
+    }
     
-    Lo = BRDF(L, V, N, material.metallic, roughness);
-
     // Combine with ambient
     vec3 color = materialcolor() * 0.02;
     color += Lo;
@@ -131,7 +133,7 @@ void main() {
 
     if (another.useTexture)
     {
-        final = vec4(color, 1.0) + texture(Sampler, fragTexCoord.xy);
+        final = texture(Sampler, fragTexCoord.xy) + vec4(color, 1.0);
     }
     else
     {

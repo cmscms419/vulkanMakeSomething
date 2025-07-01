@@ -195,6 +195,7 @@ struct FrameData {
 
 struct UniformBufferObject {
     cMat4 model;
+    cMat4 inverseTranspose;
     cMat4 view;
     cMat4 proj;
 };
@@ -280,7 +281,7 @@ struct TextureResourcePNG {
             free(data);
         }
 
-        this->texChannels = 4; // 기본적으로 RGBA로 설정
+        this->texChannels = TextureType::Texture_rgb_alpha; // 기본적으로 RGBA로 설정
 
         data = load_png_rgba(path.c_str(), &this->texWidth, &this->texHeight, this->texChannels);
     }
@@ -339,7 +340,7 @@ struct TextureResourceKTX {
 
 };
 
-struct Material
+struct cMaterial
 {
     cFloat metallic = 0.0f; // Metallic factor
     cFloat roughness = 0.0f; // Roughness factor
@@ -382,8 +383,8 @@ struct Material
     cBool isUseTextureResource = false; // Texture resourcePNG usage flag
 #endif
 
-    //Material() {};
-    Material(cFloat metallic = 0.0f, cFloat roughness = 0.0f, cVec4 color = cVec4(0.0f, 0.0f, 0.0f, 1.0f))
+    //cMaterial() {};
+    cMaterial(cFloat metallic = 0.0f, cFloat roughness = 0.0f, cVec4 color = cVec4(0.0f, 0.0f, 0.0f, 1.0f))
         : metallic(metallic), roughness(roughness), r(color.r), g(color.g), b(color.b), a(color.a){
 
     }

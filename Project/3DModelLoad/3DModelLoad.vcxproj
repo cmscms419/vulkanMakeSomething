@@ -17,12 +17,6 @@
   <ItemGroup>
     <ClInclude Include="..\..\app\source\3DModelLoad\3DModelLoad.h" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="..\..\shader\loadmodel.frag" />
-    <None Include="..\..\shader\loadmodel.vert" />
-    <None Include="..\..\shader\skybox.frag" />
-    <None Include="..\..\shader\skybox.vert" />
-  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{96bd3106-5090-46e9-89bf-4ec610a14a02}</ProjectGuid>
     <RootNamespace>_3DModelLoad</RootNamespace>

@@ -7,6 +7,7 @@ layout (location = 2) in vec3 inTexCoord;
 layout (binding = 0) uniform UBO 
 {
     mat4 model;
+    mat4 inverseTranspose;
     mat4 view;
     mat4 proj;
 } ubo;
@@ -18,8 +19,8 @@ void main()
     outUVW = inPos;
     
     // Convert cubemap coordinates into Vulkan coordinate space
-	outUVW.xy *= -1.0;
+    outUVW.xy *= -1.0;
     
-    mat4 viewWithoutTranslation = mat4(mat3(ubo.view));  // 3x3 회전 부분만 추출
+    mat4 viewWithoutTranslation = mat4(mat3(ubo.view));
     gl_Position = ubo.proj * viewWithoutTranslation * vec4(inPos.xyz, 1.0);
 }

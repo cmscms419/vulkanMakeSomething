@@ -83,13 +83,17 @@ namespace vkengine {
             staging.cleanup();
         }
 
-        void Object::draw(VkCommandBuffer commandBuffer, uint32_t imageIndex)
+        void Object::draw(VkCommandBuffer commandBuffer, bool drawIndex)
         {
             VkDeviceSize offsets[] = { 0 };
 
             vkCmdBindVertexBuffers(commandBuffer, 0, 1, &this->vertexBuffer.buffer, offsets);
             vkCmdBindIndexBuffer(commandBuffer, this->indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT16);
-            vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(this->indexBuffer.indices.size()), 1, 0, 0, 0);
+
+            if (drawIndex)
+            {
+                vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(this->indexBuffer.indices.size()), 1, 0, 0, 0);
+            }
         }
 
         void Object::RotationAngle(float angle, cVec3 axis)
@@ -136,6 +140,8 @@ namespace vkengine {
             ubo.model = cMat4(1.0f);
             ubo.view = camera->getViewMatrix();
             ubo.proj = camera->getProjectionMatrix();
+            ubo.inverseTranspose = cMat4(1.0f); // skymap은 역행렬이 필요없음
+
             memcpy(this->modelviewprojUniformBuffer[currentImage].mapped, &ubo, sizeof(ubo));
         }
 
@@ -146,10 +152,10 @@ namespace vkengine {
             ubo.model = world * this->matrix;
             ubo.view = camera->getViewMatrix();
             ubo.proj = camera->getProjectionMatrix();
+            ubo.inverseTranspose = glm::transpose(glm::inverse(this->matrix)); // 역행렬의 전치 행렬
 
             memcpy(this->modelviewprojUniformBuffer[currentImage].mapped, &ubo, sizeof(ubo));
         }
-
-}
+    }
 }
 

@@ -10,8 +10,8 @@
 
 namespace vkengine {
     struct VkTextureBase {
-    protected:
-        vkengine::VKDevice_* device = NULL; ///< Vulkan 디바이스 포인터
+    public:
+        vkengine::VKDevice_* device = NULL;             // Vulkan 디바이스 포인터
         VkImage image = VK_NULL_HANDLE;                 // 텍스처 이미지 -> 텍스처 이미지를 저장하는 데 사용
         VkDeviceMemory imageMemory = VK_NULL_HANDLE;    // 텍스처 이미지 메모리 -> 텍스처 이미지를 저장하는 데 사용
         VkImageView imageView = VK_NULL_HANDLE;         // 텍스처 이미지 뷰 -> 텍스처 이미지를 뷰로 변환 (이미지 뷰는 이미지를 읽고 쓰는 데 사용)
@@ -20,18 +20,7 @@ namespace vkengine {
         TextureResourcePNG* resourcePNG = NULL;         // 리소스 정보 -> PNG 텍스처 리소스를 설명하는 데 사용
         TextureResourceKTX* resourceKTX = NULL;         // KTX 리소스 정보 -> KTX 텍스처 리소스를 설명하는 데 사용
         uint32_t VKmipLevels = 1;                       // Mipmap 레벨 -> 텍스처의 Mipmap 레벨을 저장하는 데 사용
-        uint32_t imageCount = 0;                          // 이미지 개수 -> 텍스처 이미지의 개수를 저장하는 데 사용
-
-    public:
-
-        VkImage getImage() const { return image; } ///< 텍스처 이미지 반환 함수
-        VkDeviceMemory getImageMemory() const { return imageMemory; } ///< 텍스처 이미지 메모리 반환 함수
-        VkImageView getImageView() const { return imageView; } ///< 텍스처 이미지 뷰 반환 함수
-        VkSampler getSampler() const { return sampler; } ///< 텍스처 샘플러 반환 함수
-        VkDescriptorImageInfo getImageInfo() const { return imageInfo; } ///< 텍스처 이미지 정보 반환 함수
-        TextureResourcePNG* getResource() const { return resourcePNG; } ///< 리소스 정보 반환 함수
-        uint32_t getMipLevels() const { return VKmipLevels; } ///< Mipmap 레벨 반환 함수
-        uint32_t getImageCount() const { return imageCount; } ///< 이미지 개수 반환 함수
+        uint32_t imageCount = 0;                        // 이미지 개수 -> 텍스처 이미지의 개수를 저장하는 데 사용
 
         virtual void createTextureImage() = 0; ///< 텍스처 이미지 생성 함수
         virtual void createTextureImageView(VkFormat format) = 0; ///< 텍스처 이미지 뷰 생성 함수

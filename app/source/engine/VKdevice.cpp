@@ -144,6 +144,65 @@ namespace vkengine {
         return shaderModule;
     }
 
+    // 커맨드 버퍼를 플러시하고 큐에 제출합니다.
+    // 커맨드 버퍼(command buffer)를 큐(queue)에 제출할 때,
+    // 해당 커맨드 버퍼가 할당된 커맨드 풀(command pool)과 
+    // 동일한 큐 패밀리 인덱스(queue family index)를 가진 큐에만 제출해야 한다는 의미입니다.
+    void VKDevice_::flushCommandBuffer(VkCommandBuffer commandBuffer, VkQueue queue, VkCommandPool pool, bool free)
+    {
+        if (commandBuffer == VK_NULL_HANDLE)
+        {
+            return;
+        }
+
+        _VK_CHECK_RESULT_(vkEndCommandBuffer(commandBuffer));
+        VkSubmitInfo submitInfo{};
+        submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+        submitInfo.commandBufferCount = 1;
+        submitInfo.pCommandBuffers = &commandBuffer;
+
+        VkFenceCreateInfo fenceInfo = helper::fenceCreateInfo(0);
+        VkFence fence;
+        _VK_CHECK_RESULT_(vkCreateFence(this->logicaldevice, &fenceInfo, nullptr, &fence));
+        // Submit to the queue
+        _VK_CHECK_RESULT_(vkQueueSubmit(queue, 1, &submitInfo, fence));
+        // Wait for the fence to signal that command buffer has finished executing
+        _VK_CHECK_RESULT_(vkWaitForFences(this->logicaldevice, 1, &fence, VK_TRUE, 100000000000));
+        vkDestroyFence(this->logicaldevice, fence, nullptr);
+
+        if (free)
+        {
+            vkFreeCommandBuffers(this->logicaldevice, pool, 1, &commandBuffer);
+        }
+    }
+
+    void VKDevice_::flushCommandBuffer(VkCommandBuffer commandBuffer, VkQueue queue, bool free)
+    {
+        return flushCommandBuffer(commandBuffer, queue, commandPool, free);
+    }
+
+    VkCommandBuffer VKDevice_::createCommandBuffer(VkCommandBufferLevel level, VkCommandPool pool, bool begin)
+    {
+        VkCommandBufferAllocateInfo allocInfo = helper::commandBufferAllocateInfo(pool, 1, VK_COMMAND_BUFFER_LEVEL_PRIMARY);
+        VkCommandBuffer cmdBuffer{};
+        _VK_CHECK_RESULT_(vkAllocateCommandBuffers(this->logicaldevice, &allocInfo, &cmdBuffer));
+
+        if (begin)
+        {
+            FrameData* frameData{};
+            VkCommandBufferBeginInfo beginInfo = frameData->commandBufferBeginInfo(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
+            _VK_CHECK_RESULT_(vkBeginCommandBuffer(cmdBuffer, &beginInfo));
+        }
+
+        return cmdBuffer;
+    }
+
+    VkCommandBuffer VKDevice_::createCommandBuffer(VkCommandBufferLevel level, bool begin)
+    {
+        return createCommandBuffer(level, commandPool, begin);
+    }
+
+
     void VKDevice_::cleanup() const
     {
         vkDestroyCommandPool(logicaldevice, commandPool, nullptr);

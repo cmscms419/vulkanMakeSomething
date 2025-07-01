@@ -22,7 +22,9 @@
     <ClCompile Include="..\..\app\component\object3D.cpp" />
     <ClCompile Include="..\..\app\component\VKimgui.cpp" />
     <ClCompile Include="..\..\app\component\VKLoadModel.cpp" />
+    <ClCompile Include="..\..\app\component\VKLoadModel2.cpp" />
     <ClCompile Include="..\..\app\component\VKmodelDescriptor.cpp" />
+    <ClCompile Include="..\..\app\component\VKnormalRander.cpp" />
     <ClCompile Include="..\..\app\component\VKSkymapModelDescriptor.cpp" />
     <ClCompile Include="..\..\app\source\engine\VKinputEvent.cpp" />
   </ItemGroup>
@@ -34,7 +36,9 @@
     <ClInclude Include="..\..\include\component\object3D.h" />
     <ClInclude Include="..\..\include\component\VKimgui.h" />
     <ClInclude Include="..\..\include\component\VKLoadModel.h" />
+    <ClInclude Include="..\..\include\component\VKLoadModel2.h" />
     <ClInclude Include="..\..\include\component\VKmodelDescriptor.h" />
+    <ClInclude Include="..\..\include\component\VKnormalRander.h" />
     <ClInclude Include="..\..\include\component\VKSkymapModelDescriptor.h" />
     <ClInclude Include="..\..\include\source\engine\VKinputEvent.h" />
   </ItemGroup>
@@ -86,7 +90,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>DEBUG_;WIN32;WIN64;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <LanguageStandard_C>stdc11</LanguageStandard_C>
-      <AdditionalIncludeDirectories>./;$(CudaToolkitDir)/include;$(VULKAN_SDK)/include;../../external/imgui;../../external/GLFW/include;../../include/common;../../include/source/engine;../../include/component;../../external/ktx/include./;$(CudaToolkitDir)/include;$(VULKAN_SDK)/include;../../external/imgui;../../external/GLFW/include;../../include/common;../../include/source/engine;../../include/component;../../external/ktx/include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>./;$(CudaToolkitDir)/include;$(VULKAN_SDK)/include;../../external/imgui;../../external/GLFW/include;../../include/common;../../include/source/engine;../../include/component;../../external/ktx/include/;../../external/tinygltf/</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -105,7 +109,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;WIN64;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <LanguageStandard_C>stdc11</LanguageStandard_C>
-      <AdditionalIncludeDirectories>./;$(CudaToolkitDir)/include;$(VULKAN_SDK)/include;../../external/imgui;../../external/GLFW/include;../../include/common;../../include/source/engine;../../include/component;../../external/ktx/include./;$(CudaToolkitDir)/include;$(VULKAN_SDK)/include;../../external/imgui;../../external/GLFW/include;../../include/common;../../include/source/engine;../../include/component;../../external/ktx/include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>./;$(CudaToolkitDir)/include;$(VULKAN_SDK)/include;../../external/imgui;../../external/GLFW/include;../../include/common;../../include/source/engine;../../include/component;../../external/ktx/include/;../../external/tinygltf/</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>

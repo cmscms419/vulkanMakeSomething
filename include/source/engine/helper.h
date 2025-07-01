@@ -268,6 +268,15 @@ namespace vkengine {
             VkImageAspectFlags srcStageMask,
             VkImageAspectFlags dstStageMask);
 
+        void transitionImageLayout4(
+            VkCommandBuffer cmdbuffer,
+            VkImage image,
+            VkImageLayout oldImageLayout,
+            VkImageLayout newImageLayout,
+            VkImageSubresourceRange subresourceRange,
+            VkPipelineStageFlags srcStageMask = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
+            VkPipelineStageFlags dstStageMask = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT);
+
         void setImageLayout(
             VkCommandBuffer cmdbuffer,
             VkImage image,
@@ -444,14 +453,16 @@ namespace vkengine {
 
         // VkPipelineInputAssemblyStateCreateInfo 생성
         inline VkPipelineInputAssemblyStateCreateInfo pipelineInputAssemblyStateCreateInfo(
-            VkPrimitiveTopology topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST,
-            VkBool32 primitiveRestartEnable = VK_FALSE)
+            VkPrimitiveTopology topology,
+            VkPipelineInputAssemblyStateCreateFlags flags,
+            VkBool32 primitiveRestartEnable)
         {
-            VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
-            inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
-            inputAssembly.topology = topology;
-            inputAssembly.primitiveRestartEnable = primitiveRestartEnable;
-            return inputAssembly;
+            VkPipelineInputAssemblyStateCreateInfo pipelineInputAssemblyStateCreateInfo{};
+            pipelineInputAssemblyStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
+            pipelineInputAssemblyStateCreateInfo.topology = topology;
+            pipelineInputAssemblyStateCreateInfo.flags = flags;
+            pipelineInputAssemblyStateCreateInfo.primitiveRestartEnable = primitiveRestartEnable;
+            return pipelineInputAssemblyStateCreateInfo;
         }
 
         // 뷰포트 설정
@@ -459,7 +470,8 @@ namespace vkengine {
             const VkViewport& viewport,
             const VkRect2D& scissor,
             cUint32_t viewportCount = 1,
-            cUint32_t scissorCount = 1)
+            cUint32_t scissorCount = 1,
+            VkPipelineViewportStateCreateFlags flags = 0)
         {
             VkPipelineViewportStateCreateInfo viewportState{};
             viewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
@@ -467,6 +479,7 @@ namespace vkengine {
             viewportState.pViewports = &viewport;
             viewportState.scissorCount = scissorCount;
             viewportState.pScissors = &scissor;
+            viewportState.flags = flags;
             return viewportState;
         }
 
@@ -501,48 +514,29 @@ namespace vkengine {
 
         // 다중 샘플링 설정
         inline VkPipelineMultisampleStateCreateInfo pipelineMultisampleStateCreateInfo(
-            VkSampleCountFlagBits rasterizationSamples = VK_SAMPLE_COUNT_1_BIT,
-            VkBool32 sampleShadingEnable = VK_FALSE,
-            float minSampleShading = 1.0f,
-            const VkSampleMask* pSampleMask = nullptr,
-            VkBool32 alphaToCoverageEnable = VK_FALSE,
-            VkBool32 alphaToOneEnable = VK_FALSE)
+            VkSampleCountFlagBits rasterizationSamples,
+            VkPipelineMultisampleStateCreateFlags flags = 0)
         {
-            VkPipelineMultisampleStateCreateInfo multisampling{};
-            multisampling.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
-            multisampling.sampleShadingEnable = sampleShadingEnable;
-            multisampling.rasterizationSamples = rasterizationSamples;
-            multisampling.minSampleShading = minSampleShading;
-            multisampling.pSampleMask = pSampleMask;
-            multisampling.alphaToCoverageEnable = alphaToCoverageEnable;
-            multisampling.alphaToOneEnable = alphaToOneEnable;
-            return multisampling;
+            VkPipelineMultisampleStateCreateInfo pipelineMultisampleStateCreateInfo{};
+            pipelineMultisampleStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
+            pipelineMultisampleStateCreateInfo.rasterizationSamples = rasterizationSamples;
+            pipelineMultisampleStateCreateInfo.flags = flags;
+            return pipelineMultisampleStateCreateInfo;
         }
 
         // 깊이 스텐실 테스트 설정
         inline VkPipelineDepthStencilStateCreateInfo pipelineDepthStencilStateCreateInfo(
-            VkBool32 depthTestEnable = VK_TRUE,
-            VkBool32 depthWriteEnable = VK_FALSE,
-            VkCompareOp depthCompareOp = VK_COMPARE_OP_LESS,
-            VkBool32 depthBoundsTestEnable = VK_FALSE,
-            VkBool32 stencilTestEnable = VK_FALSE,
-            const VkStencilOpState& front = {},
-            const VkStencilOpState& back = {},
-            float minDepthBounds = 0.0f,
-            float maxDepthBounds = 1.0f)
+            VkBool32 depthTestEnable,
+            VkBool32 depthWriteEnable,
+            VkCompareOp depthCompareOp)
         {
-            VkPipelineDepthStencilStateCreateInfo depthStencil{};
-            depthStencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
-            depthStencil.depthTestEnable = depthTestEnable;
-            depthStencil.depthWriteEnable = depthWriteEnable;
-            depthStencil.depthCompareOp = depthCompareOp;
-            depthStencil.depthBoundsTestEnable = depthBoundsTestEnable;
-            depthStencil.stencilTestEnable = stencilTestEnable;
-            depthStencil.front = front;
-            depthStencil.back = back;
-            depthStencil.minDepthBounds = minDepthBounds;
-            depthStencil.maxDepthBounds = maxDepthBounds;
-            return depthStencil;
+            VkPipelineDepthStencilStateCreateInfo pipelineDepthStencilStateCreateInfo{};
+            pipelineDepthStencilStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+            pipelineDepthStencilStateCreateInfo.depthTestEnable = depthTestEnable;
+            pipelineDepthStencilStateCreateInfo.depthWriteEnable = depthWriteEnable;
+            pipelineDepthStencilStateCreateInfo.depthCompareOp = depthCompareOp;
+            pipelineDepthStencilStateCreateInfo.back.compareOp = VK_COMPARE_OP_ALWAYS;
+            return pipelineDepthStencilStateCreateInfo;
         }
 
         inline VkPipelineColorBlendAttachmentState pipelineColorBlendAttachmentState(
@@ -571,32 +565,14 @@ namespace vkengine {
 
         // 컬러 블렌딩 상태 생성 정보 구조체
         inline VkPipelineColorBlendStateCreateInfo pipelineColorBlendStateCreateInfo(
-            const VkPipelineColorBlendAttachmentState& attachment,
-            VkBool32 logicOpEnable = VK_FALSE,
-            VkLogicOp logicOp = VK_LOGIC_OP_COPY,
-            const cFloat* blendConstants = nullptr// 4개의 블렌드 상수 (R, G, B, A)
-        )
+            uint32_t attachmentCount,
+            const VkPipelineColorBlendAttachmentState* pAttachments)
         {
-            VkPipelineColorBlendStateCreateInfo colorBlending{};
-
-            if (!blendConstants)
-            {
-                static float defaultBlendConstants[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
-                blendConstants = defaultBlendConstants;
-                _PRINT_TO_CONSOLE_("Using default blend constants: [0.0f, 0.0f, 0.0f, 0.0f]\n");
-            }
-
-            colorBlending.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
-            colorBlending.logicOpEnable = logicOpEnable;
-            colorBlending.logicOp = logicOp;
-            colorBlending.attachmentCount = 1;
-            colorBlending.pAttachments = &attachment;
-            colorBlending.blendConstants[0] = blendConstants[0];
-            colorBlending.blendConstants[1] = blendConstants[1];
-            colorBlending.blendConstants[2] = blendConstants[2];
-            colorBlending.blendConstants[3] = blendConstants[3];
-
-            return colorBlending;
+            VkPipelineColorBlendStateCreateInfo pipelineColorBlendStateCreateInfo{};
+            pipelineColorBlendStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
+            pipelineColorBlendStateCreateInfo.attachmentCount = attachmentCount;
+            pipelineColorBlendStateCreateInfo.pAttachments = pAttachments;
+            return pipelineColorBlendStateCreateInfo;
         }
 
         // 다이나믹 상태 설정 -> 레스터화 상태를 동적으로 변경할 수 있습니다.
@@ -610,6 +586,48 @@ namespace vkengine {
             return dynamicState;
         }
 
+        inline VkPushConstantRange pushConstantRange(
+            VkShaderStageFlags stageFlags,
+            uint32_t size,
+            uint32_t offset)
+        {
+            VkPushConstantRange pushConstantRange{};
+            pushConstantRange.stageFlags = stageFlags;
+            pushConstantRange.offset = offset;
+            pushConstantRange.size = size;
+            return pushConstantRange;
+        }
+
+        inline VkPipelineLayoutCreateInfo pipelineLayoutCreateInfo(
+            const VkDescriptorSetLayout* pSetLayouts,
+            uint32_t setLayoutCount = 1)
+        {
+            VkPipelineLayoutCreateInfo pipelineLayoutCreateInfo{};
+            pipelineLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+            pipelineLayoutCreateInfo.setLayoutCount = setLayoutCount;
+            pipelineLayoutCreateInfo.pSetLayouts = pSetLayouts;
+            return pipelineLayoutCreateInfo;
+        }
+
+        inline VkGraphicsPipelineCreateInfo pipelineCreateInfo(
+            VkPipelineLayout layout,
+            VkRenderPass renderPass,
+            VkPipelineCreateFlags flags = 0)
+        {
+            VkGraphicsPipelineCreateInfo pipelineCreateInfo{};
+            pipelineCreateInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+            pipelineCreateInfo.layout = layout;
+            pipelineCreateInfo.renderPass = renderPass;
+            pipelineCreateInfo.flags = flags;
+            pipelineCreateInfo.basePipelineIndex = -1;
+            pipelineCreateInfo.basePipelineHandle = VK_NULL_HANDLE;
+            return pipelineCreateInfo;
+        }
+
+        bool fileExists(const std::string& filename);
+        uint32_t alignedSize(uint32_t value, uint32_t alignment);
+        size_t alignedSize(size_t value, size_t alignment);
+        VkDeviceSize alignedVkSize(VkDeviceSize value, VkDeviceSize alignment);
 
         // 그래픽 파이프라인 생성
     }

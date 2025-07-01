@@ -312,10 +312,10 @@ namespace vkengine {
             vkCmdBindDescriptorSets(framedata->mainCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->VKpipelineLayout, 0, 1, &this->VKdescriptorSets[this->currentFrame], 0, nullptr);
 
             vkCmdBindPipeline(framedata->mainCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->VKCubeMapPipeline);
-            this->cubeSkybox->draw(framedata->mainCommandBuffer, this->currentFrame);
+            this->cubeSkybox->draw(framedata->mainCommandBuffer);
             
             vkCmdBindPipeline(framedata->mainCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->VKgraphicsPipeline);
-            this->cubeObject->draw(framedata->mainCommandBuffer, this->currentFrame);
+            this->cubeObject->draw(framedata->mainCommandBuffer);
             
         }
 
@@ -448,13 +448,13 @@ namespace vkengine {
 
             VkDescriptorImageInfo imageInfo{};
             imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-            imageInfo.imageView = this->cubeSkybox->getTexture()->getImageView();
-            imageInfo.sampler = this->cubeSkybox->getTexture()->getSampler();
+            imageInfo.imageView = this->cubeSkybox->getTexture()->imageView;
+            imageInfo.sampler = this->cubeSkybox->getTexture()->sampler;
 
             VkDescriptorImageInfo imageInfo2{};
             imageInfo2.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-            imageInfo2.imageView = this->cubeObject->getTexture()->getImageView();
-            imageInfo2.sampler = this->cubeObject->getTexture()->getSampler();
+            imageInfo2.imageView = this->cubeObject->getTexture()->imageView;
+            imageInfo2.sampler = this->cubeObject->getTexture()->sampler;
 
             std::array<VkWriteDescriptorSet, 3> descriptorWrites{};
 

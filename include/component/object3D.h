@@ -30,14 +30,14 @@ namespace vkengine {
                 this->texture->createTextureSampler();
             };
 
-            virtual void draw(VkCommandBuffer commandBuffer, uint32_t imageIndex);
+            virtual void draw(VkCommandBuffer commandBuffer, bool drawIndex = true);
             virtual void cleanup() {
                 this->vertexBuffer.cleanup();
                 this->indexBuffer.cleanup();
                 if (this->texture) {
                     this->texture->cleanup();
-                    if (this->texture->getResource()) {
-                        delete this->texture->getResource(); // Replace direct destructor call with delete  
+                    if (this->texture->resourcePNG) {
+                        delete this->texture->resourcePNG; // Replace direct destructor call with delete  
                     }
                 }
 

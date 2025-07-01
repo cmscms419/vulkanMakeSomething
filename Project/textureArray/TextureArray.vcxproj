@@ -17,10 +17,6 @@
   <ItemGroup>
     <ClInclude Include="..\..\app\source\textureArray\texturearray.h" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="..\..\shader\cube.frag" />
-    <None Include="..\..\shader\cube.vert" />
-  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{F02F74BF-D376-4767-9A90-104C93961A8A}</ProjectGuid>
     <RootNamespace>triangle</RootNamespace>

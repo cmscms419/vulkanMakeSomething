@@ -42,7 +42,6 @@ namespace vkengine
 
         // grapics pipeline을 생성하기 위한 함수
         void createGraphicsPipeline();
-        void createGraphicsPipeline2();
         void createGraphicsPipeline_skymap();
 
         void cleanupSwapcChain();
@@ -64,7 +63,6 @@ namespace vkengine
         object::SkyBox* cubeSkybox;
 
         VkPipeline VKgraphicsPipeline = VK_NULL_HANDLE;                      // 그래픽스 파이프라인 -> 그래픽스 파이프라인을 생성
-        VkPipeline VKgraphicsPipeline2 = VK_NULL_HANDLE;                     // 그래픽스 파이프라인2 -> cube 파이프라인을 생성
         VkPipeline VKSkyMapPipeline = VK_NULL_HANDLE;                       // 큐브맵 파이프라인 -> 큐브맵 파이프라인을 생성
 
         std::vector<VkDescriptorSet> VKdescriptorLoadModelSets = {};

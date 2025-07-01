@@ -6,17 +6,17 @@ using namespace vkengine::debug;
 using vkengine::object::Camera;
 
 namespace vkengine {
-    PBRbasuceEngube::PBRbasuceEngube(std::string root_path) : VulkanEngine(root_path) {}
+    PBRbasuceEngine::PBRbasuceEngine(std::string root_path) : VulkanEngine(root_path) {}
 
-    PBRbasuceEngube::~PBRbasuceEngube() {}
+    PBRbasuceEngine::~PBRbasuceEngine() {}
 
-    void PBRbasuceEngube::init()
+    void PBRbasuceEngine::init()
     {
         VulkanEngine::init();
         this->camera = std::make_shared<vkengine::object::Camera>();
     }
 
-    bool PBRbasuceEngube::prepare()
+    bool PBRbasuceEngine::prepare()
     {
         VulkanEngine::prepare();
         this->init_sync_structures();
@@ -56,9 +56,9 @@ namespace vkengine {
         this->material = MaterialBuffer
         (
             "Titanium",
-            1.0f, // Metallic factor
-            0.1f, // Roughness factor
-            cVec4(0.541931f, 0.496791f, 0.449419f, 1.0f) // Color (Gold)
+            1.0f, // Roughness factor
+            0.1f, // Metallic factor
+            cVec4(0.659777f, 0.608679f, 0.525649f, 1.0f) // Nickel
         );
 
         // 모델 오브젝트 생성
@@ -75,12 +75,13 @@ namespace vkengine {
         this->modelObject->setTexturePNG(resourcePNG);
         this->modelObject->createTexture(VK_FORMAT_R8G8B8A8_SRGB);
 
-        cString modelPath = this->RootPath + RESOURSE_PATH + "sphere2.obj";
+        cString modelPath = this->RootPath + RESOURSE_PATH + "sphere.obj";
         helper::loadModel::loadModel2(modelPath, *this->modelObject->getVertices(), *this->modelObject->getIndices());
+        this->modelObject->updateMatrix();
         
         this->vikingRoomObject = new object::ModelObject(this->getDevice());
         this->vikingRoomObject->setName("Viking Room");
-        this->vikingRoomObject->RotationAngle(90.0f, glm::vec3(1.0f, 0.0f, 0.0f));
+        this->vikingRoomObject->RotationAngle(-90.0f, glm::vec3(1.0f, 0.0f, 0.0f));
         helper::loadModel::loadModel2(this->RootPath + RESOURSE_PATH + MODEL_PATH, *this->vikingRoomObject->getVertices(), *this->vikingRoomObject->getIndices());
 
         TextureResourcePNG* vikingRoomTexture = new TextureResourcePNG();
@@ -90,7 +91,10 @@ namespace vkengine {
         this->vikingRoomObject->getTexture()->setMipLevels(1);
         this->vikingRoomObject->createTexture(VK_FORMAT_R8G8B8A8_SRGB);
 
-        this->subUniform.subUniform.lightPos = cVec4(5.0f, 5.0f, 0.0f, 1.0f);
+        this->subUniform.subUniform.lightPos[0] = cVec4(5.0f, 5.0f, 0.0f, 1.0f);
+        this->subUniform.subUniform.lightPos[1] = cVec4(-5.0f, 5.0f, 0.0f, 1.0f);
+        this->subUniform.subUniform.lightPos[2] = cVec4(5.0f, -5.0f, 0.0f, 1.0f);
+        this->subUniform.subUniform.lightPos[3] = cVec4(-5.0f, -5.0f, 0.0f, 1.0f);
 
         this->createVertexbuffer();
         this->createIndexBuffer();
@@ -105,7 +109,7 @@ namespace vkengine {
         return true;
     }
 
-    void PBRbasuceEngube::cleanup()
+    void PBRbasuceEngine::cleanup()
     {
         if (this->_isInitialized)
         {
@@ -154,7 +158,7 @@ namespace vkengine {
         }
     }
 
-    void PBRbasuceEngube::drawFrame()
+    void PBRbasuceEngine::drawFrame()
     {
         // 렌더링을 시작하기 전에 프레임을 렌더링할 준비가 되었는지 확인합니다.
         _VK_CHECK_RESULT_(vkWaitForFences(this->VKdevice->logicaldevice, 1, &this->getCurrnetFrameData().VkinFlightFences, VK_TRUE, UINT64_MAX));
@@ -172,7 +176,7 @@ namespace vkengine {
         this->vikingRoomObject->updateUniformBuffer(
             static_cast<uint32_t>(this->currentFrame), cMat4(1.0f), this->camera.get());
         
-        memcpy(this->material.mapped, &this->material.material, sizeof(Material));
+        memcpy(this->material.mapped, &this->material.material, sizeof(cMaterial));
         memcpy(this->subUniform.mapped, &this->subUniform.subUniform, sizeof(subData));
 
         // 플래그를 재설정합니다. -> 렌더링이 끝나면 플래그를 재설정합니다.
@@ -216,7 +220,7 @@ namespace vkengine {
         this->currentFrame = (this->currentFrame + 1) % this->frames;
     }
 
-    bool PBRbasuceEngube::mainLoop()
+    bool PBRbasuceEngine::mainLoop()
     {
 
         while (!glfwWindowShouldClose(this->VKwindow)) {
@@ -238,18 +242,15 @@ namespace vkengine {
             float fov = this->getCamera()->getFov();
             ImGui::Text("Camera Fov: %.4f", fov);
 
-            Material material = this->material.material;
+            cMaterial material = this->material.material;
 
-            ImGui::Text("Material Name: %s", this->material.name.c_str());
+            ImGui::Text("cMaterial Name: %s", this->material.name.c_str());
             ImGui::SliderFloat("Metallic Factor", &material.metallic, 0.0f, 1.0f);
             ImGui::SliderFloat("Roughness Factor", &material.roughness, 0.0f, 1.0f);
-            ImGui::SliderFloat("Color R", &material.r, 0.0f, 1.0f);
+            ImGui::SliderFloat("Color R", &material.r, 0.0f, 1.0f); 
             ImGui::SliderFloat("Color G", &material.g, 0.0f, 1.0f);
             ImGui::SliderFloat("Color B", &material.b, 0.0f, 1.0f);
 
-            ImGui::SliderFloat("Light Position X", &this->subUniform.subUniform.lightPos.x, -10.0f, 10.0f);
-            ImGui::SliderFloat("Light Position Y", &this->subUniform.subUniform.lightPos.y, -10.0f, 10.0f);
-            ImGui::SliderFloat("Light Position Z", &this->subUniform.subUniform.lightPos.z, -10.0f, 10.0f);
             ImGui::Checkbox("Use Texture", &this->subUniform.subUniform.useTexture);
             
             if (ImGui::BeginCombo("Select Model", selectModelName.c_str())) {
@@ -273,7 +274,6 @@ namespace vkengine {
             }
 
             this->material.material = material;
-            this->subUniform.subUniform.camPos = cVec4(this->camera->getPos(), 0.0f);
 
             switch (this->selectModel)
             {
@@ -287,6 +287,12 @@ namespace vkengine {
                 this->subUniform.subUniform.objectPos = cVec4(this->modelObject->getPosition(), 0.0f);
                 break;
             }
+
+            this->subUniform.subUniform.camPos = cVec4(this->camera->getPos(), 0.0f);
+            this->subUniform.subUniform.lightPos[0].x = sin(glm::radians(time * 90.0f)) * 20.0f;
+            this->subUniform.subUniform.lightPos[0].z = cos(glm::radians(time * 90.0f)) * 20.0f;
+            this->subUniform.subUniform.lightPos[1].x = cos(glm::radians(time * 90.0f)) * 20.0f;
+            this->subUniform.subUniform.lightPos[1].y = sin(glm::radians(time * 90.0f)) * 20.0f;
 
             this->vkGUI->end();
 
@@ -304,7 +310,7 @@ namespace vkengine {
         return state;
     }
 
-    void PBRbasuceEngube::update(float dt)
+    void PBRbasuceEngine::update(float dt)
     {
         float frameTime = this->getCalulateDeltaTime();
 
@@ -345,13 +351,20 @@ namespace vkengine {
         float nearP = this->camera->getNearP();
         float farP = this->camera->getFarP();
 
-        this->camera->setPerspectiveProjection(glm::radians(fov), aspectRatio, nearP, farP);
+        const float p = 15.0f;
+
+        this->subUniform.subUniform.lightPos[0] = glm::vec4(-p, -p * 0.5f, -p, 1.0f);
+        this->subUniform.subUniform.lightPos[1] = glm::vec4(-p, -p * 0.5f, p, 1.0f);
+        this->subUniform.subUniform.lightPos[2] = glm::vec4(p, -p * 0.5f, p, 1.0f);
+        this->subUniform.subUniform.lightPos[3] = glm::vec4(p, -p * 0.5f, -p, 1.0f);
+        
+        this->camera->setPerspectiveProjection(fov, aspectRatio, nearP, farP);
 
         this->vikingRoomObject->updateMatrix();
         this->modelObject->updateMatrix();
     }
 
-    bool PBRbasuceEngube::init_sync_structures()
+    bool PBRbasuceEngine::init_sync_structures()
     {
         VkSemaphoreCreateInfo semaphoreInfo = helper::semaphoreCreateInfo(0);
         VkFenceCreateInfo fenceInfo = helper::fenceCreateInfo(VK_FENCE_CREATE_SIGNALED_BIT);
@@ -365,7 +378,7 @@ namespace vkengine {
         return true;
     }
 
-    void PBRbasuceEngube::recordCommandBuffer(FrameData* framedata, uint32_t imageIndex)
+    void PBRbasuceEngine::recordCommandBuffer(FrameData* framedata, uint32_t imageIndex)
     {
         // 커맨드 버퍼 기록을 시작합니다.
         VkCommandBufferBeginInfo beginInfo = framedata->commandBufferBeginInfo(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
@@ -406,25 +419,24 @@ namespace vkengine {
 
             this->skyboxDescriptor2->BindDescriptorSets(framedata->mainCommandBuffer, this->currentFrame, 0);
             vkCmdBindPipeline(framedata->mainCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->VKSkyMapPipeline);
-            this->skyBox->draw(framedata->mainCommandBuffer, this->currentFrame);
+            this->skyBox->draw(framedata->mainCommandBuffer);
 
             switch (this->selectModel)
             {
             case 0: // Sphere
                 this->modeltDescriptor2->BindDescriptorSets(framedata->mainCommandBuffer, this->currentFrame, 0);
                 vkCmdBindPipeline(framedata->mainCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->VKgraphicsPipeline);
-                this->modelObject->draw(framedata->mainCommandBuffer, this->currentFrame);
+                this->modelObject->draw(framedata->mainCommandBuffer);
                 break;
             case 1: // Viking Room
                 this->modeltDescriptor2->BindDescriptorSets(framedata->mainCommandBuffer, this->currentFrame, 1);
                 vkCmdBindPipeline(framedata->mainCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->VKgraphicsPipeline);
-                this->vikingRoomObject->draw(framedata->mainCommandBuffer, this->currentFrame);
+                this->vikingRoomObject->draw(framedata->mainCommandBuffer);
                 break;
             default:
-
                 this->modeltDescriptor2->BindDescriptorSets(framedata->mainCommandBuffer, this->currentFrame, 0);
                 vkCmdBindPipeline(framedata->mainCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->VKgraphicsPipeline);
-                this->modelObject->draw(framedata->mainCommandBuffer, this->currentFrame);
+                this->modelObject->draw(framedata->mainCommandBuffer);
                 break;
             }
 
@@ -437,21 +449,21 @@ namespace vkengine {
         _VK_CHECK_RESULT_(vkEndCommandBuffer(framedata->mainCommandBuffer));
     }
 
-    void PBRbasuceEngube::createVertexbuffer()
+    void PBRbasuceEngine::createVertexbuffer()
     {
         this->skyBox->createVertexBuffer(const_cast<std::vector<Vertex>&>(skyboxVertices));
         this->modelObject->createVertexBuffer(*this->modelObject->getVertices());
         this->vikingRoomObject->createVertexBuffer(*this->vikingRoomObject->getVertices());
     }
 
-    void PBRbasuceEngube::createIndexBuffer()
+    void PBRbasuceEngine::createIndexBuffer()
     {
         this->skyBox->createIndexBuffer(const_cast<std::vector<uint16_t>&>(skyboxIndices));
         this->modelObject->createIndexBuffer(*this->modelObject->getIndices());
         this->vikingRoomObject->createIndexBuffer(*this->vikingRoomObject->getIndices());
     }
 
-    void PBRbasuceEngube::createUniformBuffers()
+    void PBRbasuceEngine::createUniformBuffers()
     {
         this->skyBox->createModelViewProjBuffers();
         this->skyBox->getTexture()->createDescriptorImageInfo();
@@ -492,7 +504,7 @@ namespace vkengine {
 
     }
 
-    void PBRbasuceEngube::createDescriptor()
+    void PBRbasuceEngine::createDescriptor()
     {
         
         // 모델 오브젝트 디스크립터 생성
@@ -543,7 +555,7 @@ namespace vkengine {
                 this->modeltDescriptor2->VKdescriptorSets[0],
                 VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
                 1,
-                &this->modelObject->getTexture()->getImageInfo()), // 텍스쳐
+                &this->modelObject->getTexture()->imageInfo), // 텍스쳐
             helper::writeDescriptorSet(
                 this->modeltDescriptor2->VKdescriptorSets[0],
                 VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
@@ -566,7 +578,7 @@ namespace vkengine {
                 this->modeltDescriptor2->VKdescriptorSets[1],
                 VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
                 1,
-                &this->modelObject->getTexture()->getImageInfo()), // 텍스쳐
+                &this->modelObject->getTexture()->imageInfo), // 텍스쳐
             helper::writeDescriptorSet(
                 this->modeltDescriptor2->VKdescriptorSets[1],
                 VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
@@ -589,7 +601,7 @@ namespace vkengine {
                 this->modeltDescriptor2->VKdescriptorSets[2],
                 VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
                 1,
-                &this->vikingRoomObject->getTexture()->getImageInfo()), // 텍스쳐
+                &this->vikingRoomObject->getTexture()->imageInfo), // 텍스쳐
             helper::writeDescriptorSet(
                 this->modeltDescriptor2->VKdescriptorSets[2],
                 VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
@@ -612,7 +624,7 @@ namespace vkengine {
                 this->modeltDescriptor2->VKdescriptorSets[3],
                 VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
                 1,
-                &this->vikingRoomObject->getTexture()->getImageInfo()), // 텍스쳐
+                &this->vikingRoomObject->getTexture()->imageInfo), // 텍스쳐
             helper::writeDescriptorSet(
                 this->modeltDescriptor2->VKdescriptorSets[3],
                 VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
@@ -682,7 +694,7 @@ namespace vkengine {
                 this->skyboxDescriptor2->VKdescriptorSets[0],
                 VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
                 1,
-                &this->skyBox->getTexture()->getImageInfo()) // 텍스쳐
+                &this->skyBox->getTexture()->imageInfo) // 텍스쳐
         };
         // descriptor set 업데이트
         std::vector<VkWriteDescriptorSet> writeDescriptorSets_skyBox02 = {
@@ -695,7 +707,7 @@ namespace vkengine {
                 this->skyboxDescriptor2->VKdescriptorSets[1],
                 VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
                 1,
-                &this->skyBox->getTexture()->getImageInfo()) // 텍스쳐
+                &this->skyBox->getTexture()->imageInfo) // 텍스쳐
         };
 
         vkUpdateDescriptorSets(
@@ -709,7 +721,7 @@ namespace vkengine {
 
     }
 
-    void PBRbasuceEngube::createGraphicsPipeline()
+    void PBRbasuceEngine::createGraphicsPipeline()
     {
         VkShaderModule baseVertshaderModule = this->VKdevice->createShaderModule(this->RootPath + "../../../../../../shader/vertpbr.spv");
         VkShaderModule baseFragShaderModule = this->VKdevice->createShaderModule(this->RootPath + "../../../../../../shader/fragpbr.spv");
@@ -725,7 +737,7 @@ namespace vkengine {
 
         VkPipelineVertexInputStateCreateInfo vertexInputInfo = helper::pipelineVertexInputStateCreateInfo(
             bindingDescription, *attributeDescriptions.data(), static_cast<uint32_t>(attributeDescriptions.size()), 1);
-        VkPipelineInputAssemblyStateCreateInfo inputAssembly = helper::pipelineInputAssemblyStateCreateInfo(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, VK_FALSE);
+        VkPipelineInputAssemblyStateCreateInfo inputAssembly = helper::pipelineInputAssemblyStateCreateInfo(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0,VK_FALSE);
 
         VkViewport viewpport{};
         viewpport.x = 0.0f;
@@ -741,15 +753,14 @@ namespace vkengine {
 
         VkPipelineViewportStateCreateInfo viewportState = helper::pipelineViewportStateCreateInfo(viewpport, scissor, 1, 1);
         VkPipelineRasterizationStateCreateInfo rasterizer = helper::pipelineRasterizationStateCreateInfo(
-            VK_POLYGON_MODE_FILL, VK_CULL_MODE_BACK_BIT, VK_FRONT_FACE_COUNTER_CLOCKWISE);
+            VK_POLYGON_MODE_FILL, VK_CULL_MODE_FRONT_BIT, VK_FRONT_FACE_COUNTER_CLOCKWISE);
         VkPipelineMultisampleStateCreateInfo multisampling = helper::pipelineMultisampleStateCreateInfo(VK_SAMPLE_COUNT_1_BIT, VK_FALSE);
         VkPipelineDepthStencilStateCreateInfo depthStencil = helper::pipelineDepthStencilStateCreateInfo(VK_TRUE, VK_TRUE, VK_COMPARE_OP_LESS_OR_EQUAL);
         VkPipelineColorBlendAttachmentState colorBlendAttachment = helper::pipelineColorBlendAttachmentState(VK_COLOR_COMPONENT_R_BIT |
             VK_COLOR_COMPONENT_G_BIT |
             VK_COLOR_COMPONENT_B_BIT |
             VK_COLOR_COMPONENT_A_BIT, VK_FALSE);
-        VkPipelineColorBlendStateCreateInfo colorBlending = helper::pipelineColorBlendStateCreateInfo(
-            colorBlendAttachment, VK_FALSE, VK_LOGIC_OP_COPY, nullptr);
+        VkPipelineColorBlendStateCreateInfo colorBlending = helper::pipelineColorBlendStateCreateInfo(1, &colorBlendAttachment);
         VkPipelineDynamicStateCreateInfo dynamicState = helper::pipelineDynamicStateCreateInfo(dynamicStates);
 
         VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
@@ -772,14 +783,14 @@ namespace vkengine {
         pipelineInfo.pViewportState = &viewportState;
         pipelineInfo.pRasterizationState = &rasterizer;
         pipelineInfo.pMultisampleState = &multisampling;
-        pipelineInfo.pDepthStencilState = &depthStencil; // Optional
+        pipelineInfo.pDepthStencilState = &depthStencil;
         pipelineInfo.pColorBlendState = &colorBlending;
-        pipelineInfo.pDynamicState = &dynamicState; // Optional
+        pipelineInfo.pDynamicState = &dynamicState;
         pipelineInfo.layout = this->modeltDescriptor2->VKpipelineLayout;
         pipelineInfo.renderPass = *this->VKrenderPass.get();
         pipelineInfo.subpass = 0;
-        pipelineInfo.basePipelineHandle = VK_NULL_HANDLE; // Optional
-        pipelineInfo.basePipelineIndex = -1; // Optional
+        pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
+        pipelineInfo.basePipelineIndex = -1;
 
 
         _VK_CHECK_RESULT_(vkCreateGraphicsPipelines(this->VKdevice->logicaldevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &this->VKgraphicsPipeline));
@@ -789,7 +800,7 @@ namespace vkengine {
 
     }
 
-    void PBRbasuceEngube::createGraphicsPipeline_skymap()
+    void PBRbasuceEngine::createGraphicsPipeline_skymap()
     {
         VkShaderModule baseVertshaderModule = this->VKdevice->createShaderModule(this->RootPath + "../../../../../../shader/vertskybox.spv");
         VkShaderModule baseFragShaderModule = this->VKdevice->createShaderModule(this->RootPath + "../../../../../../shader/fragskybox.spv");
@@ -805,7 +816,7 @@ namespace vkengine {
 
         VkPipelineVertexInputStateCreateInfo vertexInputInfo = helper::pipelineVertexInputStateCreateInfo(
             bindingDescription, *attributeDescriptions.data(), static_cast<uint32_t>(attributeDescriptions.size()), 1);
-        VkPipelineInputAssemblyStateCreateInfo inputAssembly = helper::pipelineInputAssemblyStateCreateInfo(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, VK_FALSE);
+        VkPipelineInputAssemblyStateCreateInfo inputAssembly = helper::pipelineInputAssemblyStateCreateInfo(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0,VK_FALSE);
 
         VkViewport viewpport{};
         viewpport.x = 0.0f;
@@ -828,8 +839,7 @@ namespace vkengine {
             VK_COLOR_COMPONENT_G_BIT |
             VK_COLOR_COMPONENT_B_BIT |
             VK_COLOR_COMPONENT_A_BIT, VK_FALSE);
-        VkPipelineColorBlendStateCreateInfo colorBlending = helper::pipelineColorBlendStateCreateInfo(
-            colorBlendAttachment, VK_FALSE, VK_LOGIC_OP_COPY, nullptr);
+        VkPipelineColorBlendStateCreateInfo colorBlending = helper::pipelineColorBlendStateCreateInfo(1, &colorBlendAttachment);
         VkPipelineDynamicStateCreateInfo dynamicState = helper::pipelineDynamicStateCreateInfo(dynamicStates);
         
         VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
@@ -867,13 +877,13 @@ namespace vkengine {
         vkDestroyShaderModule(this->VKdevice->logicaldevice, baseFragShaderModule, nullptr);
     }
 
-    void PBRbasuceEngube::initUI()
+    void PBRbasuceEngine::initUI()
     {
         this->vkGUI->init(200, 200);
         this->vkGUI->initResources(this->getRenderPass(), this->getDevice()->graphicsVKQueue, this->getRootPath());
     }
 
-    void PBRbasuceEngube::cleanupSwapcChain()
+    void PBRbasuceEngine::cleanupSwapcChain()
     {
         this->VKdepthStencill.cleanup(this->VKdevice->logicaldevice);
 

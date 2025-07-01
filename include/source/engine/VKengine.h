@@ -89,7 +89,7 @@ namespace vkengine {
         VkDebugUtilsMessengerEXT getDebugUtilsMessenger() const { return VKdebugUtilsMessenger; }
         VkSurfaceKHR getSurface() const { return VKsurface; }
         const FrameData* getFrameData() { return VKframeData; }
-        VkRenderPass getRenderPass() const { return *this->VKrenderPass.get(); }
+        VkRenderPass getRenderPass() { return *this->VKrenderPass.get(); }
         std::vector<VkFramebuffer> getSwapChainFramebuffers() const { return VKswapChainFramebuffers; }
         depthStencill getDepthStencill() const { return VKdepthStencill; }
         VKSwapChain* getSwapChain() const { return VKswapChain.get(); }

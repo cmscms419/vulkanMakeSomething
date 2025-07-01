@@ -11,12 +11,6 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\shader\IBLpbr.frag" />
-    <None Include="..\..\shader\IBLpbr.vert" />
-    <None Include="..\..\shader\IBLskybox.frag" />
-    <None Include="..\..\shader\IBLskybox.vert" />
-  </ItemGroup>
-  <ItemGroup>
     <ClCompile Include="..\..\app\source\IBLPBR\IBLPBR.cpp" />
     <ClCompile Include="..\..\app\source\IBLPBR\main_engine.cpp" />
   </ItemGroup>
@@ -78,7 +72,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>DEBUG_;WIN32;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>./;$(CudaToolkitDir)/include;$(VULKAN_SDK)/include;../../external/imgui;../../external/GLFW/include;../../include/common/;../../include/source/engine/;../../include/component/;../../external/ktx/include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>./;$(CudaToolkitDir)/include;$(VULKAN_SDK)/include;../../external/imgui;../../external/GLFW/include;../../include/common/;../../include/source/engine/;../../include/component/;../../external/ktx/include;../../external/tinygltf/</AdditionalIncludeDirectories>
       <SDLCheck>true</SDLCheck>
       <LanguageStandard_C>stdc11</LanguageStandard_C>
     </ClCompile>
@@ -103,7 +97,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;WIN64;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>./;$(CudaToolkitDir)/include;$(VULKAN_SDK)/include;../../external/imgui;../../external/GLFW/include;../../include/common/;../../include/source/engine/;../../include/component/;../../external/ktx/include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>./;$(CudaToolkitDir)/include;$(VULKAN_SDK)/include;../../external/imgui;../../external/GLFW/include;../../include/common/;../../include/source/engine/;../../include/component/;../../external/ktx/include;../../external/tinygltf/</AdditionalIncludeDirectories>
       <SDLCheck>true</SDLCheck>
       <LanguageStandard_C>stdc11</LanguageStandard_C>
     </ClCompile>

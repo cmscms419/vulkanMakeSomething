@@ -17,10 +17,6 @@
   <ItemGroup>
     <ClInclude Include="..\..\app\source\camera\cameraEngine.h" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="..\..\shader\Square.frag" />
-    <None Include="..\..\shader\Square.vert" />
-  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{AC67A5AB-6173-4E03-B314-E9C3EBB94545}</ProjectGuid>
     <RootNamespace>triangle</RootNamespace>

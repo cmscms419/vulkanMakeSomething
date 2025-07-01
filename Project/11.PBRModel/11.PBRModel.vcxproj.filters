@@ -1,0 +1,23 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="shader">
+      <UniqueIdentifier>{9b5be91e-5529-4222-9c5b-f28c644a31f3}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\shader\pbrModel.frag">
+      <Filter>shader</Filter>
+    </None>
+    <None Include="..\..\shader\pbrModel.vert">
+      <Filter>shader</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\app\source\PBRModel\main_engine.cpp" />
+    <ClCompile Include="..\..\app\source\PBRModel\PBRModel.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\app\source\PBRModel\PBRModel.h" />
+  </ItemGroup>
+</Project>

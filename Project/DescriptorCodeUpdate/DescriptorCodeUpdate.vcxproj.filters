@@ -7,26 +7,4 @@
   <ItemGroup>
     <ClInclude Include="..\..\app\source\DescriptorCodeUpdate\DescriptorCodeUpdate.h" />
   </ItemGroup>
-  <ItemGroup>
-    <Filter Include="shader">
-      <UniqueIdentifier>{158cf68b-02a1-476b-a6d6-cfcca134926b}</UniqueIdentifier>
-    </Filter>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="..\..\shader\loadmodel.vert">
-      <Filter>shader</Filter>
-    </None>
-    <None Include="..\..\shader\loadmodel.frag">
-      <Filter>shader</Filter>
-    </None>
-    <None Include="..\..\shader\loadmodel2.frag">
-      <Filter>shader</Filter>
-    </None>
-    <None Include="..\..\shader\skybox.frag">
-      <Filter>shader</Filter>
-    </None>
-    <None Include="..\..\shader\skybox.vert">
-      <Filter>shader</Filter>
-    </None>
-  </ItemGroup>
 </Project>

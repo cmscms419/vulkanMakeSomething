@@ -17,13 +17,6 @@
   <ItemGroup>
     <ClInclude Include="..\..\app\source\DescriptorCodeUpdate\DescriptorCodeUpdate.h" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="..\..\shader\loadmodel.frag" />
-    <None Include="..\..\shader\loadmodel.vert" />
-    <None Include="..\..\shader\loadmodel2.frag" />
-    <None Include="..\..\shader\skybox.frag" />
-    <None Include="..\..\shader\skybox.vert" />
-  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{b58edb0e-4d3b-4f61-9cec-dacccb023aa1}</ProjectGuid>
     <RootNamespace>DescriptorCodeUpdate</RootNamespace>

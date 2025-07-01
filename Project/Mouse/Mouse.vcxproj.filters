@@ -1,25 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="shader">
-      <UniqueIdentifier>{b4f65395-3342-49a0-bf44-a69b32e12c44}</UniqueIdentifier>
-    </Filter>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="..\..\shader\reflect.frag">
-      <Filter>shader</Filter>
-    </None>
-    <None Include="..\..\shader\reflect.vert">
-      <Filter>shader</Filter>
-    </None>
-    <None Include="..\..\shader\skybox.frag">
-      <Filter>shader</Filter>
-    </None>
-    <None Include="..\..\shader\skybox.vert">
-      <Filter>shader</Filter>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
     <ClCompile Include="..\..\app\source\mouse\main_engine.cpp" />
     <ClCompile Include="..\..\app\source\mouse\mouse.cpp" />
   </ItemGroup>

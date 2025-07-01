@@ -71,7 +71,7 @@ namespace vkengine {
         resourcePNG->createResource(modelPath);
 
         this->modelObject->setTexturePNG(resourcePNG);
-        this->modelObject->RotationAngle(90.0f, glm::vec3(1.0f, 0.0f, 0.0f));
+        this->modelObject->RotationAngle(-90.0f, glm::vec3(1.0f, 0.0f, 0.0f));
 
         helper::loadModel::loadModel(this->RootPath, *this->modelObject->getVertices(), *this->modelObject->getIndices());
         this->modelObject->createTexture(VK_FORMAT_R8G8B8A8_SRGB);
@@ -261,7 +261,7 @@ namespace vkengine {
         float nearP = this->camera->getNearP();
         float farP = this->camera->getFarP();
 
-        this->camera->setPerspectiveProjection(glm::radians(fov), aspectRatio, nearP, farP);
+        this->camera->setPerspectiveProjection(fov, aspectRatio, nearP, farP);
 
         this->modelObject->updateMatrix();
     }
@@ -322,10 +322,10 @@ namespace vkengine {
 
             vkCmdBindDescriptorSets(framedata->mainCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->VKpipelineLayout, 0, 1, &this->VKdescriptorSets[this->currentFrame], 0, nullptr);
             vkCmdBindPipeline(framedata->mainCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->VKCubeMapPipeline);
-            this->cubeSkybox->draw(framedata->mainCommandBuffer, static_cast<uint32_t>(this->currentFrame));
+            this->cubeSkybox->draw(framedata->mainCommandBuffer);
 
             vkCmdBindPipeline(framedata->mainCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->VKgraphicsPipeline);
-            this->modelObject->draw(framedata->mainCommandBuffer, static_cast<uint32_t>(this->currentFrame));
+            this->modelObject->draw(framedata->mainCommandBuffer);
 
         }
 
@@ -439,13 +439,13 @@ namespace vkengine {
 
             VkDescriptorImageInfo imageInfo{};
             imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-            imageInfo.imageView = this->cubeSkybox->getTexture()->getImageView();
-            imageInfo.sampler = this->cubeSkybox->getTexture()->getSampler();
+            imageInfo.imageView = this->cubeSkybox->getTexture()->imageView;
+            imageInfo.sampler = this->cubeSkybox->getTexture()->sampler;
 
             VkDescriptorImageInfo imageInfo2{};
             imageInfo2.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-            imageInfo2.imageView = this->modelObject->getTexture()->getImageView();
-            imageInfo2.sampler = this->modelObject->getTexture()->getSampler();
+            imageInfo2.imageView = this->modelObject->getTexture()->imageView;
+            imageInfo2.sampler = this->modelObject->getTexture()->sampler;
 
             std::array<VkWriteDescriptorSet, 3> descriptorWrites{};
 
@@ -726,7 +726,7 @@ namespace vkengine {
         rasterizer.rasterizerDiscardEnable = VK_FALSE;            // 래스터화 버림 비활성화
         rasterizer.polygonMode = VK_POLYGON_MODE_FILL;            // 다각형 모드를 채우기로 설정
         rasterizer.lineWidth = 1.0f;                              // 라인 너비를 1.0f로 설정
-        rasterizer.cullMode = VK_CULL_MODE_FRONT_BIT;             // skybox는 앞면을 제거
+        rasterizer.cullMode = VK_CULL_MODE_NONE;             // skybox는 앞면을 제거
         rasterizer.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;   // 전면 면을 반시계 방향으로 설정
         rasterizer.depthBiasEnable = VK_FALSE;                    // 깊이 바이어스 비활성화
         rasterizer.depthBiasConstantFactor = 0.0f;              // 깊이 바이어스 상수 요소를 0.0f로 설정

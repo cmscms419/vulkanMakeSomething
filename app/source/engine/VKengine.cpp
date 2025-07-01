@@ -627,19 +627,27 @@ namespace vkengine
 
     cBool VulkanEngine::createCommandBuffer()
     {
+
+#if 1
+        for (auto& framedata : this->VKframeData)
+        {
+            framedata.mainCommandBuffer = this->VKdevice->createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, 0);
+        }
+#else
         VkCommandBufferAllocateInfo allocInfo = helper::commandBufferAllocateInfo(this->VKdevice->commandPool, 1, VK_COMMAND_BUFFER_LEVEL_PRIMARY);
         
         for (auto& framedata : this->VKframeData)
         {
             _VK_CHECK_RESULT_(vkAllocateCommandBuffers(this->VKdevice->logicaldevice, &allocInfo, &framedata.mainCommandBuffer));
         }
-
+#endif
 
         return true;
     }
 
     void VulkanEngine::recordCommandBuffer(FrameData* framedata, uint32_t imageIndex)
     {
+
     }
 
     cBool VulkanEngine::checkValidationLayerSupport()

@@ -16,7 +16,7 @@ namespace vkengine
     struct subData
     {
         cVec4 camPos = cVec4(0.0f);
-        cVec4 lightPos = cVec4(0.0f);
+        cVec4 lightPos[4] = { cVec4(0.0f) ,cVec4(0.0f) ,cVec4(0.0f) ,cVec4(0.0f) }; // 조명 위치
         cVec4 objectPos = cVec4(0.0f);
         cBool useTexture = false; // 조명 활성화 여부
     };
@@ -26,10 +26,10 @@ namespace vkengine
         subData subUniform = {};
     };
 
-    class PBRbasuceEngube : public VulkanEngine {
+    class PBRbasuceEngine : public VulkanEngine {
     public:
-        PBRbasuceEngube(std::string root_path);
-        ~PBRbasuceEngube();
+        PBRbasuceEngine(std::string root_path);
+        ~PBRbasuceEngine();
         virtual void init() override;
         virtual bool prepare() override;
         virtual void cleanup() override;
@@ -73,7 +73,6 @@ namespace vkengine
 
         MaterialBuffer material; // 머티리얼 버퍼
         subUinform subUniform; // 서브 유니폼 버퍼
-        cUint materialIndex = 0; // 머티리얼 인덱스
     };
 }
 

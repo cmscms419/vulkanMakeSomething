@@ -39,6 +39,11 @@ namespace vkengine {
             VkDeviceMemory& imageMemory) const;
         const VkShaderModule createShaderModule(const std::string& path) const;
 
+        void flushCommandBuffer(VkCommandBuffer commandBuffer, VkQueue queue, VkCommandPool pool, bool free = true);
+        void flushCommandBuffer(VkCommandBuffer commandBuffer, VkQueue queue, bool free = true);
+        VkCommandBuffer createCommandBuffer(VkCommandBufferLevel level, VkCommandPool pool, bool begin);
+        VkCommandBuffer createCommandBuffer(VkCommandBufferLevel level, bool begin);
+
         void cleanup() const;
     };
 }

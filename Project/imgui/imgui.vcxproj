@@ -11,12 +11,6 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\shader\reflect.frag" />
-    <None Include="..\..\shader\reflect.vert" />
-    <None Include="..\..\shader\skybox.frag" />
-    <None Include="..\..\shader\skybox.vert" />
-  </ItemGroup>
-  <ItemGroup>
     <ClCompile Include="..\..\app\source\imgui\imgui_skymap.cpp" />
     <ClCompile Include="..\..\app\source\imgui\main_engine.cpp" />
   </ItemGroup>

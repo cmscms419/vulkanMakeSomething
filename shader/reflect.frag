@@ -5,6 +5,7 @@ layout (binding = 1) uniform samplerCube samplerCubeMap;
 layout (binding = 0) uniform UBO
 {
     mat4 model;
+    mat4 inverseTranspose;
     mat4 view;
     mat4 proj;
 } ubo;

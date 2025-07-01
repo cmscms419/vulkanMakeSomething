@@ -56,7 +56,7 @@ namespace vkengine {
         
         this->modelObject = new object::ModelObject(this->getDevice());
         this->modelObject->setName("Viking Room");
-        this->modelObject->RotationAngle(90.0f, glm::vec3(1.0f, 0.0f, 0.0f));
+        this->modelObject->RotationAngle(-90.0f, glm::vec3(1.0f, 0.0f, 0.0f));
         helper::loadModel::loadModel(this->RootPath, *this->modelObject->getVertices(), *this->modelObject->getIndices());
 
         this->modelObject->setTexturePNG(vikingRoomTexture);
@@ -65,8 +65,8 @@ namespace vkengine {
 
         this->modelObject2 = new object::ModelObject(this->getDevice());
         this->modelObject2->setName("Viking Room2");
-        this->modelObject2->RotationAngle(90.0f, glm::vec3(1.0f, 0.0f, 0.0f));
         this->modelObject2->setPosition(glm::vec3(3.0f, 0.0f, 0.0f));
+        //this->modelObject2->RotationAngle(-90.0f, glm::vec3(1.0f, 0.0f, 0.0f));
         helper::loadModel::loadModel(this->RootPath, *this->modelObject2->getVertices(), *this->modelObject2->getIndices());
 
         this->modelObject2->setTexturePNG(vikingRoomTexture);
@@ -74,6 +74,7 @@ namespace vkengine {
         this->modelObject2->createTexture(VK_FORMAT_R8G8B8A8_SRGB);
 
         this->modelObjectDescriptor = new vkengine::VK3DModelDescriptor(this->getDevice()->logicaldevice, this->frames);
+
         this->modelObjectDescriptor->setObject(this->modelObject);
         this->modelObjectDescriptor->setObject(this->modelObject2);
 
@@ -86,7 +87,6 @@ namespace vkengine {
         this->createDescriptor();
 
         this->createGraphicsPipeline();
-        this->createGraphicsPipeline2();
         this->createGraphicsPipeline_skymap();
 
         this->initUI();
@@ -102,7 +102,7 @@ namespace vkengine {
             this->cleanupSwapcChain();
 
             vkDestroyPipeline(this->VKdevice->logicaldevice, this->VKgraphicsPipeline, nullptr);
-            vkDestroyPipeline(this->VKdevice->logicaldevice, this->VKgraphicsPipeline2, nullptr);
+            //vkDestroyPipeline(this->VKdevice->logicaldevice, this->VKgraphicsPipeline2, nullptr);
             vkDestroyPipeline(this->VKdevice->logicaldevice, this->VKSkyMapPipeline, nullptr);
 
             vkDestroyRenderPass(this->VKdevice->logicaldevice, *this->VKrenderPass.get(), nullptr);
@@ -280,7 +280,7 @@ namespace vkengine {
         float nearP = this->camera->getNearP();
         float farP = this->camera->getFarP();
 
-        this->camera->setPerspectiveProjection(glm::radians(fov), aspectRatio, nearP, farP);
+        this->camera->setPerspectiveProjection(fov, aspectRatio, nearP, farP);
         
         glm::quat rotation = glm::angleAxis(glm::radians(90.0f) * dt,
                                             glm::vec3(0.0f, 1.0f, 0.0f));
@@ -293,6 +293,7 @@ namespace vkengine {
 
         glm::mat4 rotationMatrix = vkMath::convertQuatToMatrix(rotation);
         glm::mat4 rotationMatrix2 = vkMath::convertQuatToMatrix(rotation2);
+
 
         this->worldMatrix = rotationMatrix * glm::mat4(1.0f);
 
@@ -358,15 +359,14 @@ namespace vkengine {
 
             this->skyMapModelDescriptor->BindDescriptorSets(framedata->mainCommandBuffer, this->currentFrame, 0);
             vkCmdBindPipeline(framedata->mainCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->VKSkyMapPipeline);
-            this->cubeSkybox->draw(framedata->mainCommandBuffer, this->currentFrame);
+            this->cubeSkybox->draw(framedata->mainCommandBuffer);
 
             this->modelObjectDescriptor->BindDescriptorSets(framedata->mainCommandBuffer, this->currentFrame, 0);
             vkCmdBindPipeline(framedata->mainCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->VKgraphicsPipeline);
-            this->modelObject->draw(framedata->mainCommandBuffer, this->currentFrame);
+            this->modelObject->draw(framedata->mainCommandBuffer);
             
             this->modelObjectDescriptor->BindDescriptorSets(framedata->mainCommandBuffer, this->currentFrame, 1);
-            //vkCmdBindPipeline(framedata->mainCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->VKgraphicsPipeline);
-            this->modelObject2->draw(framedata->mainCommandBuffer, this->currentFrame);
+            this->modelObject2->draw(framedata->mainCommandBuffer);
 
             this->vkGUI->render();
         }
@@ -578,169 +578,6 @@ namespace vkengine {
         vkDestroyShaderModule(this->VKdevice->logicaldevice, baseFragShaderModule, nullptr);
     }
 
-    void DescriptorCodeUpdateEngine::createGraphicsPipeline2()
-    {
-        VkShaderModule baseVertshaderModule = this->VKdevice->createShaderModule(this->RootPath + "../../../../../../shader/vertloadmodel.spv");
-        VkShaderModule baseFragShaderModule = this->VKdevice->createShaderModule(this->RootPath + "../../../../../../shader/fragloadmodel2.spv");
-
-        VkPipelineShaderStageCreateInfo vertShaderStageInfo{};
-        vertShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-        vertShaderStageInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
-        vertShaderStageInfo.module = baseVertshaderModule;
-        vertShaderStageInfo.pName = "main";
-
-        VkPipelineShaderStageCreateInfo fragShaderStageInfo{};
-        fragShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-        fragShaderStageInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
-        fragShaderStageInfo.module = baseFragShaderModule;
-        fragShaderStageInfo.pName = "main";
-
-        VkPipelineShaderStageCreateInfo shaderStages[] = { vertShaderStageInfo, fragShaderStageInfo };
-
-        // vertex input
-        auto bindingDescription = Vertex::getBindingDescription();
-        auto attributeDescriptions = Vertex::getAttributeDescriptions();
-
-        // 그래픽 파이프라인 레이아웃을 생성합니다.
-        VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
-        vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-        vertexInputInfo.vertexBindingDescriptionCount = 1;
-        vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
-        vertexInputInfo.pVertexBindingDescriptions = &bindingDescription;
-        vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
-
-        // 입력 데이터를 어떤 형태로 조립할 것인지 결정합니다.
-        VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
-        inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
-        inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST; // 삼각형 리스트로 설정
-        inputAssembly.primitiveRestartEnable = VK_FALSE; // 프리미티브 재시작 비활성화
-
-        VkViewport viewpport{};
-        viewpport.x = 0.0f;
-        viewpport.y = 0.0f;
-        viewpport.width = (float)this->VKswapChain->getSwapChainExtent().width;
-        viewpport.height = (float)this->VKswapChain->getSwapChainExtent().height;
-        viewpport.minDepth = 0.0f;
-        viewpport.maxDepth = 1.0f;
-
-        VkRect2D scissor{};
-        scissor.offset = { 0, 0 };
-        scissor.extent = VKswapChain->getSwapChainExtent();
-
-        // 뷰포트 설정
-        VkPipelineViewportStateCreateInfo viewportState{};
-        viewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
-        viewportState.viewportCount = 1;
-        viewportState.pViewports = &viewpport;
-        viewportState.scissorCount = 1;
-        viewportState.pScissors = &scissor;
-
-        // 래스터화 설정 -> 레스터화는 그래픽 파이프라인의 일부로 정점을 픽셀로 변환하는 프로세스입니다.
-        VkPipelineRasterizationStateCreateInfo rasterizer{};
-        rasterizer.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
-        rasterizer.depthClampEnable = VK_FALSE;                   // 깊이 클램핑 비활성화
-        rasterizer.rasterizerDiscardEnable = VK_FALSE;            // 래스터화 버림 비활성화
-        rasterizer.polygonMode = VK_POLYGON_MODE_FILL;            // 다각형 모드를 채우기로 설정
-        rasterizer.lineWidth = 1.0f;                              // 라인 너비를 1.0f로 설정
-        rasterizer.cullMode = VK_CULL_MODE_BACK_BIT;              // 후면 면을 제거
-        rasterizer.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;   // 전면 면을 반시계 방향으로 설정
-        rasterizer.depthBiasEnable = VK_FALSE;                    // 깊이 바이어스 비활성화
-        rasterizer.depthBiasConstantFactor = 0.0f;              // 깊이 바이어스 상수 요소를 0.0f로 설정
-        rasterizer.depthBiasClamp = 0.0f;                       // 깊이 바이어스 클램프를 0.0f로 설정
-        rasterizer.depthBiasSlopeFactor = 0.0f;                 // 깊이 바이어스 슬로프 요소를 0.0f로 설정
-
-        // 다중 샘플링 설정
-        VkPipelineMultisampleStateCreateInfo multisampling{};
-        multisampling.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO; //
-        multisampling.sampleShadingEnable = VK_FALSE;               // 샘플링 쉐이딩 비활성화
-        multisampling.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT; // 래스터화 샘플 수를 1비트로 설정
-        multisampling.minSampleShading = 1.0f;                      // 최소 샘플링을 1.0f로 설정 -> option
-        multisampling.pSampleMask = nullptr;                        // 샘플 마스크를 nullptr로 설정 -> option
-        multisampling.alphaToCoverageEnable = VK_FALSE;             // 알파 커버리지 비활성화 -> option
-        multisampling.alphaToOneEnable = VK_FALSE;                  // 알파 원 비활성화 -> option
-
-        // 깊이 스텐실 테스트 설정
-        VkPipelineDepthStencilStateCreateInfo depthStencil{};
-        depthStencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
-        depthStencil.depthTestEnable = VK_TRUE;
-        depthStencil.depthWriteEnable = VK_TRUE;
-        depthStencil.depthCompareOp = VK_COMPARE_OP_LESS;
-        depthStencil.depthBoundsTestEnable = VK_FALSE;
-        depthStencil.stencilTestEnable = VK_FALSE;
-        depthStencil.minDepthBounds = 0.0f; // Optional
-        depthStencil.maxDepthBounds = 1.0f; // Optional
-        depthStencil.stencilTestEnable = VK_FALSE;
-        depthStencil.front = {}; // Optional
-        depthStencil.back = {}; // Optional
-
-        // 컬러 블렌딩 설정
-        VkPipelineColorBlendAttachmentState colorBlendAttachment{};
-        colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT |
-            VK_COLOR_COMPONENT_G_BIT |
-            VK_COLOR_COMPONENT_B_BIT |
-            VK_COLOR_COMPONENT_A_BIT;     // 컬러 쓰기 마스크를 설정
-        colorBlendAttachment.blendEnable = VK_FALSE;                        // 블렌딩을 비활성화
-        colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_ONE;     // 소스 컬러 블렌딩 팩터를 설정
-        colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO;    // 대상 컬러 블렌딩 팩터를 설정
-        colorBlendAttachment.colorBlendOp = VK_BLEND_OP_ADD;                // 컬러 블렌딩 연산을 설정
-        colorBlendAttachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;     // 소스 알파 블렌딩 팩터를 설정
-        colorBlendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;    // 대상 알파 블렌딩 팩터를 설정
-        colorBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD;                // 알파 블렌딩 연산을 설정
-
-        // 컬러 블렌딩 상태 생성 정보 구조체를 초기화합니다.
-        VkPipelineColorBlendStateCreateInfo colorBlending{};
-        colorBlending.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO; // 구조체 타입을 설정
-        colorBlending.logicOpEnable = VK_FALSE;                                       // 논리 연산을 비활성화
-        colorBlending.logicOp = VK_LOGIC_OP_COPY;                                     // 논리 연산을 설정
-        colorBlending.attachmentCount = 1;                                            // 컬러 블렌딩 첨부 개수를 설정
-        colorBlending.pAttachments = &colorBlendAttachment;                           // 컬러 블렌딩 첨부 포인터를 설정
-        colorBlending.blendConstants[0] = 0.0f;                                       // 블렌딩 상수를 설정
-        colorBlending.blendConstants[1] = 0.0f;                                       // 블렌딩 상수를 설정
-        colorBlending.blendConstants[2] = 0.0f;                                       // 블렌딩 상수를 설정
-        colorBlending.blendConstants[3] = 0.0f;                                       // 블렌딩 상수를 설정
-
-        // 다이나믹 상태 설정 -> 레스터화 상태를 동적으로 변경할 수 있습니다.
-        VkPipelineDynamicStateCreateInfo dynamicState{};
-        dynamicState.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
-        dynamicState.dynamicStateCount = static_cast<uint32_t>(dynamicStates.size());
-        dynamicState.pDynamicStates = dynamicStates.data();
-
-        // 그래픽 파이프라인 레이아웃을 생성합니다.
-        //VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
-        //pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO; // 구조체 타입을 설정
-        //pipelineLayoutInfo.setLayoutCount = 1;                                    // 레이아웃 개수를 설정
-        //pipelineLayoutInfo.pSetLayouts = &this->VKdescriptorSetLayout;            // 레이아웃 포인터를 설정
-        //pipelineLayoutInfo.pushConstantRangeCount = 0;                            // 푸시 상수 범위 개수를 설정
-        //pipelineLayoutInfo.pPushConstantRanges = nullptr;                         // 푸시 상수 범위 포인터를 설정
-
-        //_VK_CHECK_RESULT_(vkCreatePipelineLayout(this->VKdevice->logicaldevice, &pipelineLayoutInfo, nullptr, &this->VKpipelineLayout));
-        //this->modelObjectDescriptor->createPipelineLayout();
-
-        // 그래픽 파이프라인 생성 정보 구조체를 초기화합니다.
-        VkGraphicsPipelineCreateInfo pipelineInfo{};
-        pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-        pipelineInfo.stageCount = 2;
-        pipelineInfo.pStages = shaderStages;
-        pipelineInfo.pVertexInputState = &vertexInputInfo;
-        pipelineInfo.pInputAssemblyState = &inputAssembly;
-        pipelineInfo.pViewportState = &viewportState;
-        pipelineInfo.pRasterizationState = &rasterizer;
-        pipelineInfo.pMultisampleState = &multisampling;
-        pipelineInfo.pDepthStencilState = &depthStencil; // Optional
-        pipelineInfo.pColorBlendState = &colorBlending;
-        pipelineInfo.pDynamicState = &dynamicState; // Optional
-        pipelineInfo.layout = this->modelObjectDescriptor->getPipelineLayout();
-        pipelineInfo.renderPass = *this->VKrenderPass.get();
-        pipelineInfo.subpass = 0;
-        pipelineInfo.basePipelineHandle = VK_NULL_HANDLE; // Optional
-        pipelineInfo.basePipelineIndex = -1; // Optional
-
-        _VK_CHECK_RESULT_(vkCreateGraphicsPipelines(this->VKdevice->logicaldevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &this->VKgraphicsPipeline2));
-
-        vkDestroyShaderModule(this->VKdevice->logicaldevice, baseVertshaderModule, nullptr);
-        vkDestroyShaderModule(this->VKdevice->logicaldevice, baseFragShaderModule, nullptr);
-    }
-
     void DescriptorCodeUpdateEngine::createGraphicsPipeline_skymap()
     {
         VkShaderModule baseVertshaderModule = this->VKdevice->createShaderModule(this->RootPath + "../../../../../../shader/vertskybox.spv");
@@ -805,7 +642,7 @@ namespace vkengine {
         rasterizer.rasterizerDiscardEnable = VK_FALSE;            // 래스터화 버림 비활성화
         rasterizer.polygonMode = VK_POLYGON_MODE_FILL;            // 다각형 모드를 채우기로 설정
         rasterizer.lineWidth = 1.0f;                              // 라인 너비를 1.0f로 설정
-        rasterizer.cullMode = VK_CULL_MODE_FRONT_BIT;             // skybox는 앞면을 제거
+        rasterizer.cullMode = VK_CULL_MODE_NONE;                  // skybox는 앞면을 제거
         rasterizer.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;   // 전면 면을 반시계 방향으로 설정
         rasterizer.depthBiasEnable = VK_FALSE;                    // 깊이 바이어스 비활성화
         rasterizer.depthBiasConstantFactor = 0.0f;              // 깊이 바이어스 상수 요소를 0.0f로 설정

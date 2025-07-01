@@ -2,6 +2,7 @@
 
 layout(binding = 0) uniform UniformBufferObject {
     mat4 model;
+    mat4 inverseTranspose;
     mat4 view;
     mat4 proj;
 } ubo;
@@ -16,5 +17,5 @@ layout(location = 1) out vec2 fragTexCoord;
 void main() {
     gl_Position = ubo.proj * ubo.view * ubo.model * vec4(inPosition, 1.0);
     fragNormal = inNormal;
-    fragTexCoord = inTexCoord;
+    fragTexCoord = vec2(inTexCoord.x, 1.0 - inTexCoord.y); // Flip Y coordinate for texture
 }

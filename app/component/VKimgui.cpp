@@ -74,6 +74,7 @@ namespace vkengine
         ImGui_ImplGlfw_NewFrame();
 
         ImGui::NewFrame();
+        ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_Always);
         ImGui::Begin("Scene Control");
     }
 

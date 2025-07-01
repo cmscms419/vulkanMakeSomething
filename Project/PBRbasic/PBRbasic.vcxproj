@@ -17,10 +17,6 @@
   <ItemGroup>
     <ClInclude Include="..\..\app\source\PBRbasic\PBRbasic.h" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="..\..\shader\pbr.frag" />
-    <None Include="..\..\shader\pbr.vert" />
-  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{30f42c4d-296c-4e8b-b8b9-3996d5df3515}</ProjectGuid>
     <RootNamespace>PBRbasic</RootNamespace>
