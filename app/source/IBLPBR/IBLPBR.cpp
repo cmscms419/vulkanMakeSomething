@@ -83,8 +83,10 @@ namespace vkengine {
         //modelObject->setPosition(cVec3(0.0f, -1.0f, 5.0f)); // 모델 위치 설정
         //modelObject->RotationAngle(180.0f, glm::vec3(1.0f, 0.0f, 0.0f)); // 모델 회전 설정
 
-        cMat4 rotation = glm::rotate(glm::mat4(1.0f), glm::radians(-180.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-        modelObject->setMatrix(rotation); // 모델 회전 설정
+        cMat4 rotation01 = glm::rotate(glm::mat4(1.0f), glm::radians(-180.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+        cMat4 rotation02 = glm::rotate(glm::mat4(1.0f), glm::radians(-180.0f), glm::vec3(0.0f, -1.0f, 0.0f));
+        cMat4 rotation03 = rotation01 * rotation02;
+        modelObject->setMatrix(rotation03); // 모델 회전 설정
         //modelObject->setScale(cVec3(0.01f)); // 모델 크기 조정
         //modelObject->updateMatrix();
 

@@ -167,12 +167,27 @@ void main() {
         Lo += specularContribution(L, V, N, F0, metallic, roughness);
     }
 
-    vec2 brdf = texture(samplerBRDFLUT, vec2(max(dot(N, V), 0.0), roughness)).rg;
-    vec3 reflection = prefilteredReflection(R, roughness).rgb;	
-    vec3 irradiance = texture(samplerIrradiance, N).rgb;
+    vec2 brdf = vec2(1.0, 1.0);
 
+    if (subUinform.brdfLUTTexture) {
+        brdf = texture(samplerBRDFLUT, vec2(max(dot(N, V), 0.0), roughness)).rg;
+    }
+
+    vec3 reflection = vec3(1.0, 1.0, 1.0);
+
+    if (subUinform.prefilteredCubeTexture) {
+        reflection = prefilteredReflection(R, roughness).rgb;
+    }
+    
+    vec3 irradiance = vec3(1.0, 1.0, 1.0);
+    
+    if (subUinform.irradianceCubeTexture){
+        // Sample the irradiance map
+        irradiance = texture(samplerIrradiance, N).rgb;
+    }
+    
     // Diffuse based on irradiance
-    vec3 diffuse = irradiance * ALBEDO;	
+    vec3 diffuse = irradiance * ALBEDO;
 
     vec3 F = F_SchlickR(max(dot(N, V), 0.0), F0, roughness);
 
