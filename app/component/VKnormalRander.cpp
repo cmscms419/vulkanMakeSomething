@@ -41,6 +41,7 @@ namespace vkengine
             this->normalRanderObject->setName("Normal Rander Object");
             this->normalRanderObject->setVertices(normalVertices);
             this->normalRanderObject->setIndices(normalIndices);
+            this->normalRanderObject->setMatrix(object->getMatrix());
             
             this->normalRanderObject->createVertexBuffer();
             this->normalRanderObject->createIndexBuffer();
@@ -48,6 +49,7 @@ namespace vkengine
             this->normalRanderObject->getTexture()->createDescriptorImageInfo();
             this->normalRanderObject->getModelViewProjUniformBuffer(0)->createDescriptorBufferInfo();
             this->normalRanderObject->getModelViewProjUniformBuffer(1)->createDescriptorBufferInfo();
+
 
             // for (size_t i = 0; i < 2; i++)
             // {

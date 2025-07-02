@@ -7,9 +7,6 @@
     <Filter Include="component\imgui">
       <UniqueIdentifier>{20ce2f52-de04-475b-9bd5-8bf00e6a5f75}</UniqueIdentifier>
     </Filter>
-    <Filter Include="common">
-      <UniqueIdentifier>{0607694f-e61d-4a0b-8e8f-d68ab1f55f12}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\app\component\Camera.cpp">
@@ -54,9 +51,6 @@
     <ClCompile Include="..\..\app\component\VKSkymapModelDescriptor.cpp">
       <Filter>component</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\app\component\VKLoadModel2.cpp">
-      <Filter>component</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\app\component\VKnormalRander.cpp">
       <Filter>component</Filter>
     </ClCompile>
@@ -90,9 +84,6 @@
       <Filter>component</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\component\VKSkymapModelDescriptor.h">
-      <Filter>component</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\component\VKLoadModel2.h">
       <Filter>component</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\component\VKnormalRander.h">

@@ -22,7 +22,6 @@
     <ClCompile Include="..\..\app\component\object3D.cpp" />
     <ClCompile Include="..\..\app\component\VKimgui.cpp" />
     <ClCompile Include="..\..\app\component\VKLoadModel.cpp" />
-    <ClCompile Include="..\..\app\component\VKLoadModel2.cpp" />
     <ClCompile Include="..\..\app\component\VKmodelDescriptor.cpp" />
     <ClCompile Include="..\..\app\component\VKnormalRander.cpp" />
     <ClCompile Include="..\..\app\component\VKSkymapModelDescriptor.cpp" />
@@ -36,7 +35,6 @@
     <ClInclude Include="..\..\include\component\object3D.h" />
     <ClInclude Include="..\..\include\component\VKimgui.h" />
     <ClInclude Include="..\..\include\component\VKLoadModel.h" />
-    <ClInclude Include="..\..\include\component\VKLoadModel2.h" />
     <ClInclude Include="..\..\include\component\VKmodelDescriptor.h" />
     <ClInclude Include="..\..\include\component\VKnormalRander.h" />
     <ClInclude Include="..\..\include\component\VKSkymapModelDescriptor.h" />

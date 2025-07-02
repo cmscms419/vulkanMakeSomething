@@ -7,7 +7,6 @@
 #include "object3D.h"
 #include "VKimgui.h"
 #include "VKloadModel.h"
-#include "VKloadModel2.h"
 #include "VKmodelDescriptor.h"
 #include "VKSkymapModelDescriptor.h"
 

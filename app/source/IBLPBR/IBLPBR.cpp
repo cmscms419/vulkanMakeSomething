@@ -77,7 +77,7 @@ namespace vkengine {
 #if 0
         helper::loadModel::loadModel2(modelPath, *this->modelObject->getVertices(), *this->modelObject->getIndices());
 #else
-        helper::vkglTF::loadModelGLTF(modelPathGLTF2, *this->modelObject->getVertices(), *this->modelObject->getIndices());
+        helper::loadModel::loadModelGLTF(modelPathGLTF2, *this->modelObject->getVertices(), *this->modelObject->getIndices());
 #endif
         //modelObject->setScale(cVec3(0.1f)); // ¸ğµ¨ Å©±â Á¶Á¤
         //modelObject->setPosition(cVec3(0.0f, -1.0f, 5.0f)); // ¸ğµ¨ À§Ä¡ ¼³Á¤
@@ -87,6 +87,7 @@ namespace vkengine {
         cMat4 rotation02 = glm::rotate(glm::mat4(1.0f), glm::radians(-180.0f), glm::vec3(0.0f, -1.0f, 0.0f));
         cMat4 rotation03 = rotation01 * rotation02;
         modelObject->setMatrix(rotation03); // ¸ğµ¨ È¸Àü ¼³Á¤
+
         //modelObject->setScale(cVec3(0.01f)); // ¸ğµ¨ Å©±â Á¶Á¤
         //modelObject->updateMatrix();
 
@@ -322,7 +323,7 @@ namespace vkengine {
 
             // normal vector UI
             ImGui::Checkbox("Use Normal Rander", &this->useNormalRander);
-            ImGui::SliderFloat("Normal Vector Range", &this->normalRanderObjectScale, 0.0f, 5.0f);
+            ImGui::SliderFloat("Normal Vector Range", &this->normalRanderObjectScale, 0.01f, 1.0f);
             this->normalRanderHelpe->setNormalRanderObjectScale(this->normalRanderObjectScale);
 
             this->vkGUI->end();
