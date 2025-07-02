@@ -50,19 +50,6 @@ namespace vkengine
             this->normalRanderObject->getModelViewProjUniformBuffer(0)->createDescriptorBufferInfo();
             this->normalRanderObject->getModelViewProjUniformBuffer(1)->createDescriptorBufferInfo();
 
-
-            // for (size_t i = 0; i < 2; i++)
-            // {
-            //     this->normalRanderUniformBuffer[i] = UniformBuffer();
-            //
-            //     this->normalRanderUniformBuffer[i].device = engine->getDevice()->logicaldevice;
-            //     this->normalRanderUniformBuffer[i].size = sizeof(UniformBufferObject);
-            //     this->normalRanderUniformBuffer[i].usageFlags = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
-            //     this->normalRanderUniformBuffer[i].memoryPropertyFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
-            //     this->normalRanderUniformBuffer[i].createBuffer(engine->getDevice()->physicalDevice);
-            //     this->normalRanderUniformBuffer[i].mapToMeBuffer(sizeof(UniformBufferObject), 0);
-            //     this->normalRanderUniformBuffer[i].createDescriptorBufferInfo();
-            // }
         }
 
         void normalRander::createNormalRanderPipeline()
@@ -246,7 +233,6 @@ namespace vkengine
             UniformBufferObject ubo{};
 
             ubo.model = world * this->normalRanderObject->getMatrix();
-            //ubo.model = glm::transpose(ubo.model); // 모델 행렬의 전치 행렬
             ubo.inverseTranspose = glm::transpose(glm::inverse(this->normalRanderObject->getMatrix())); // 역행렬의 전치 행렬
             ubo.view = camera->getViewMatrix();
             ubo.proj = camera->getProjectionMatrix();

@@ -16,7 +16,7 @@ layout(binding = 1) uniform MaterialBufferObject {
     float a;
 } material;
 
-layout(binding = 2) uniform subUinforms {
+layout(std140 ,binding = 2) uniform subUinforms {
     // camPos를 0바이트 위치에 배치
     layout(offset = 0) vec3 camPos;
 

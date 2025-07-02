@@ -20,11 +20,11 @@ layout(location = 2) in vec3 inTexCoord;
 
 layout(location = 0) out vec3 fragNormal;
 layout(location = 1) out vec3 fragTexCoord;
-layout(location = 2) out vec4 WorldPos;
+layout(location = 2) out vec3 WorldPos;
 
 void main() {
     vec3 localPos = vec3(ubo.model * vec4(inPosition, 1.0));
-    WorldPos = vec4(localPos, 1.0) + another.objectPos;
+    WorldPos = localPos + another.objectPos.xyz;
 
     fragNormal = normalize(mat3(ubo.inverseTranspose) * inNormal);
     fragTexCoord = vec3(inTexCoord.x, 1.0 - inTexCoord.y, 0.0);

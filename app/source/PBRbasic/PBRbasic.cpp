@@ -76,13 +76,13 @@ namespace vkengine {
         this->modelObject->createTexture(VK_FORMAT_R8G8B8A8_SRGB);
 
         cString modelPath = this->RootPath + RESOURSE_PATH + "sphere.obj";
-        helper::loadModel::loadModel2(modelPath, *this->modelObject->getVertices(), *this->modelObject->getIndices());
+        helper::loadModel::loadModel(modelPath, *this->modelObject->getVertices(), *this->modelObject->getIndices());
         this->modelObject->updateMatrix();
         
         this->vikingRoomObject = new object::ModelObject(this->getDevice());
         this->vikingRoomObject->setName("Viking Room");
         this->vikingRoomObject->RotationAngle(-90.0f, glm::vec3(1.0f, 0.0f, 0.0f));
-        helper::loadModel::loadModel2(this->RootPath + RESOURSE_PATH + MODEL_PATH, *this->vikingRoomObject->getVertices(), *this->vikingRoomObject->getIndices());
+        helper::loadModel::loadModel(this->RootPath + RESOURSE_PATH + MODEL_PATH, *this->vikingRoomObject->getVertices(), *this->vikingRoomObject->getIndices());
 
         TextureResourcePNG* vikingRoomTexture = new TextureResourcePNG();
         vikingRoomTexture->createResource(this->RootPath + RESOURSE_PATH + TEXTURE_PATH);
@@ -762,7 +762,6 @@ namespace vkengine {
             VK_COLOR_COMPONENT_A_BIT, VK_FALSE);
         VkPipelineColorBlendStateCreateInfo colorBlending = helper::pipelineColorBlendStateCreateInfo(1, &colorBlendAttachment);
         VkPipelineDynamicStateCreateInfo dynamicState = helper::pipelineDynamicStateCreateInfo(dynamicStates);
-
         VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
 
         pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO; // 구조체 타입을 설정

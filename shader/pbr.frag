@@ -28,7 +28,7 @@ layout(binding = 3) uniform subUinform {
 
 layout(location = 0) in vec3 fragNormal;
 layout(location = 1) in vec3 fragTexCoord;
-layout(location = 2) in vec4 WorldPos;
+layout(location = 2) in vec3 WorldPos;
 
 layout(location = 0) out vec4 outColor;
 
