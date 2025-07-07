@@ -29,13 +29,7 @@ namespace vkengine {
         // TODO ; 큐 패밀리가 여러개인 경우에 대한 처리가 필요함
         const QueueFamilyIndices findQueueFamilies(VkPhysicalDevice& device, VkSurfaceKHR& VKsurface);
 
-        inline VkViewport createViewport(
-            cFloat x,
-            cFloat y,
-            cFloat width,
-            cFloat height,
-            cFloat minDepth = 0.0f,
-            cFloat maxDepth = 1.0f)
+        inline VkViewport createViewport(cFloat x, cFloat y, cFloat width, cFloat height, cFloat minDepth = 0.0f, cFloat maxDepth = 1.0f)
         {
             VkViewport viewport{};
             viewport.x = x;
@@ -47,12 +41,8 @@ namespace vkengine {
 
             return viewport;
         }
-
-        inline VkRect2D createScissor(
-            cInt32_t offsetX,
-            cInt32_t offsetY,
-            cUint32_t width,
-            cUint32_t height)
+        
+        inline VkRect2D createScissor(cInt32_t offsetX, cInt32_t offsetY, cUint32_t width, cUint32_t height)
         {
             VkRect2D scissor{};
             scissor.offset.x = offsetX;
