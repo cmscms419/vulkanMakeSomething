@@ -195,7 +195,7 @@ namespace vkengine {
             this->imageMemory,
             this->imageCount);
 
-        vkengine::helper::transitionImageLayout2(
+        vkengine::helper::transitionImageLayout(
             this->device->logicaldevice,
             this->device->commandPool,
             this->device->graphicsVKQueue,
@@ -216,7 +216,7 @@ namespace vkengine {
             height,
             imageSizes);
 
-        vkengine::helper::transitionImageLayout2(
+        vkengine::helper::transitionImageLayout(
             this->device->logicaldevice,
             this->device->commandPool,
             this->device->graphicsVKQueue,
@@ -354,7 +354,7 @@ namespace vkengine {
             VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT
         );
 
-        vkengine::helper::transitionImageLayout2(
+        vkengine::helper::transitionImageLayout(
             this->device->logicaldevice,
             this->device->commandPool,
             this->device->graphicsVKQueue,
@@ -449,7 +449,7 @@ namespace vkengine {
             VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT
         );
 
-        vkengine::helper::transitionImageLayout2(
+        vkengine::helper::transitionImageLayout(
             this->device->logicaldevice,
             this->device->commandPool,
             this->device->graphicsVKQueue,

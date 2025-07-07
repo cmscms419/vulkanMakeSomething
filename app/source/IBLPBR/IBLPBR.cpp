@@ -1357,26 +1357,6 @@ namespace vkengine {
             fbufCreateInfo.layers = 1;
             _VK_CHECK_RESULT_(vkCreateFramebuffer(this->VKdevice->logicaldevice, &fbufCreateInfo, nullptr, &offscreen.framebuffer));
 
-            VkCommandBuffer layoutCmd{};
-#if 0
-            layoutCmd = this->VKdevice->createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
-#else
-            layoutCmd = helper::beginSingleTimeCommands(this->VKdevice->logicaldevice, this->getDevice()->commandPool);
-#endif
-
-            VkImageSubresourceRange subresourceRange{};
-            subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-            subresourceRange.baseMipLevel = 0;
-            subresourceRange.levelCount = VK_IMAGE_ASPECT_COLOR_BIT;
-            subresourceRange.layerCount = VK_IMAGE_ASPECT_COLOR_BIT;
-#if 0
-            helper::transitionImageLayout4(
-                layoutCmd,
-                offscreen.image,
-                VK_IMAGE_LAYOUT_UNDEFINED,
-                VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-                subresourceRange);
-#else
             helper::transitionImageLayout(
                 this->getDevice()->logicaldevice,
                 this->getDevice()->commandPool,
@@ -1384,21 +1364,8 @@ namespace vkengine {
                 offscreen.image,
                 VK_FORMAT_UNDEFINED,
                 VK_IMAGE_LAYOUT_UNDEFINED,
-                VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-                1
+                VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
             );
-#endif
-
-#if 0
-            this->VKdevice->flushCommandBuffer(layoutCmd, this->VKdevice->graphicsVKQueue);
-
-#else
-            helper::endSingleTimeCommands(
-                this->getDevice()->logicaldevice,
-                this->getDevice()->commandPool,
-                this->getDevice()->graphicsVKQueue,
-                layoutCmd);
-#endif
         }
 
         VKDescriptor2* prefilteredCubeDescriptors = nullptr;         // 모델 오브젝트 디스크립터
@@ -1541,26 +1508,22 @@ namespace vkengine {
             glm::rotate(glm::mat4(1.0f), glm::radians(180.0f), glm::vec3(0.0f, 0.0f, 1.0f)),
         };
 
-
-        VkImageSubresourceRange subresourceRange = {};
-        subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-        subresourceRange.baseMipLevel = 0;
-        subresourceRange.levelCount = numMips;
-        subresourceRange.layerCount = 6;
-
         // Change image layout for all cubemap faces to transfer destination
-#if 0
-        helper::transitionImageLayout4(
-            cmdBuf,
-            this->prefilteredCubeTexture->image,
-            VK_IMAGE_LAYOUT_UNDEFINED,
-            VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-            subresourceRange);
-#else
+
+#if 1
         helper::transitionImageLayout(
             this->getDevice()->logicaldevice,
             this->getDevice()->commandPool,
             this->getDevice()->graphicsVKQueue,
+            this->prefilteredCubeTexture->image,
+            VK_FORMAT_UNDEFINED,
+            VK_IMAGE_LAYOUT_UNDEFINED,
+            VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+            numMips, 6
+            );
+#else
+        helper::updateimageLayoutcmd(
+            cmdBuf,
             this->prefilteredCubeTexture->image,
             VK_FORMAT_UNDEFINED,
             VK_IMAGE_LAYOUT_UNDEFINED,
@@ -1658,6 +1621,15 @@ namespace vkengine {
             }
         }
 
+        helper::updateimageLayoutcmd(
+            cmdBuf,
+            this->prefilteredCubeTexture->image,
+            VK_FORMAT_UNDEFINED,
+            VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+            VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+            numMips, 6
+        );
+
 #if 0
         this->VKdevice->flushCommandBuffer(cmdBuf, this->VKdevice->graphicsVKQueue);
 #else
@@ -1667,17 +1639,6 @@ namespace vkengine {
             this->getDevice()->graphicsVKQueue,
             cmdBuf);
 #endif
-
-        helper::transitionImageLayout(
-            this->getDevice()->logicaldevice,
-            this->getDevice()->commandPool,
-            this->getDevice()->graphicsVKQueue,
-            this->prefilteredCubeTexture->image,
-            VK_FORMAT_UNDEFINED,
-            VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-            VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-            numMips, 6
-        );
 
         vkDestroyRenderPass(this->VKdevice->logicaldevice, renderpass, nullptr);
         vkDestroyFramebuffer(this->VKdevice->logicaldevice, offscreen.framebuffer, nullptr);
@@ -2030,6 +1991,7 @@ namespace vkengine {
             glm::rotate(glm::mat4(1.0f), glm::radians(180.0f), glm::vec3(0.0f, 0.0f, 1.0f)),
         };
 
+
         // Change image layout for all cubemap faces to transfer destination
         helper::transitionImageLayout(
             this->getDevice()->logicaldevice,
@@ -2038,7 +2000,7 @@ namespace vkengine {
             this->irradianceCubeTexture->image,
             VK_FORMAT_UNDEFINED,
             VK_IMAGE_LAYOUT_UNDEFINED,
-            VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 
+            VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
             numMips, 6
         );
 
@@ -2049,7 +2011,6 @@ namespace vkengine {
             this->getDevice()->logicaldevice,
             this->getDevice()->commandPool);
 #endif
-
         vkCmdSetViewport(cmdBuf, 0, 1, &viewpport);
         vkCmdSetScissor(cmdBuf, 0, 1, &scissor);
 
@@ -2121,14 +2082,14 @@ namespace vkengine {
             }
         }
 
-        helper::transitionImageLayout(
-            this->getDevice()->logicaldevice,
-            this->getDevice()->commandPool,
-            this->getDevice()->graphicsVKQueue,
+        helper::updateimageLayoutcmd(
+            cmdBuf,
             this->irradianceCubeTexture->image,
             VK_FORMAT_UNDEFINED,
             VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-            VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+            VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+            numMips, 6
+        );
 
 #if 0
         this->VKdevice->flushCommandBuffer(cmdBuf, this->VKdevice->graphicsVKQueue);
