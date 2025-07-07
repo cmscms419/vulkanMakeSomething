@@ -93,7 +93,7 @@ namespace vkengine {
         std::vector<VkFramebuffer> getSwapChainFramebuffers() const { return VKswapChainFramebuffers; }
         depthStencill getDepthStencill() const { return VKdepthStencill; }
         VKSwapChain* getSwapChain() const { return VKswapChain.get(); }
-        VKDevice_* getDevice() const { return VKdevice.get(); }
+        VKdeviceHandler* getDevice() const { return VKdevice.get(); }
         VkSampleCountFlagBits getMsaaSamples() const { return VKmsaaSamples; }
         VkPipelineCache getPipelineCache() const { return VKpipelineCache; }
         std::string getRootPath() const { return RootPath; }
@@ -154,7 +154,7 @@ namespace vkengine {
         depthStencill VKdepthStencill{};  // 깊이 스텐실 -> 깊이 스텐실 이미지와 메모리
 
         std::unique_ptr<VKSwapChain> VKswapChain;  // 스왑 체인 -> 스왑 체인 클래스
-        std::unique_ptr<VKDevice_> VKdevice{};  // 디바이스 -> GPU Logical,Physical struct Handle
+        std::unique_ptr<VKdeviceHandler> VKdevice{};  // 디바이스 -> GPU Logical,Physical struct Handle
         VkPipelineCache VKpipelineCache{ VK_NULL_HANDLE }; // 파이프라인 캐시 -> 파이프라인 캐시를 생성
         VkSampleCountFlagBits VKmsaaSamples = VK_SAMPLE_COUNT_1_BIT; // MSAA 샘플 -> MSAA 샘플 수
 

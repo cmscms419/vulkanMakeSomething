@@ -7,11 +7,12 @@
 
 #include "VKdevice.h"
 #include "VKengine.h"
+#include "helper.h"
 
 namespace vkengine {
     struct VkTextureBase {
     public:
-        vkengine::VKDevice_* device = NULL;             // Vulkan 디바이스 포인터
+        vkengine::VKdeviceHandler* device = NULL;             // Vulkan 디바이스 포인터
         VkImage image = VK_NULL_HANDLE;                 // 텍스처 이미지 -> 텍스처 이미지를 저장하는 데 사용
         VkDeviceMemory imageMemory = VK_NULL_HANDLE;    // 텍스처 이미지 메모리 -> 텍스처 이미지를 저장하는 데 사용
         VkImageView imageView = VK_NULL_HANDLE;         // 텍스처 이미지 뷰 -> 텍스처 이미지를 뷰로 변환 (이미지 뷰는 이미지를 읽고 쓰는 데 사용)
@@ -28,7 +29,7 @@ namespace vkengine {
         virtual void createTextureImgae2(VkFormat format) { _PRINT_TO_CONSOLE_("CLEATE FUNTION"); };
         void setResourcePNG(TextureResourcePNG* resourcePNG); ///< 리소스 설정 함수
         void setResourceKTX(TextureResourceKTX* resourceKTX) { this->resourceKTX = resourceKTX; } ///< KTX 리소스 설정 함수
-        void setDevice(vkengine::VKDevice_* device) { this->device = device; } ///< 디바이스 설정 함수
+        void setDevice(vkengine::VKdeviceHandler* device) { this->device = device; } ///< 디바이스 설정 함수
         void setMipLevels(uint32_t mipLevels) { this->VKmipLevels = mipLevels; } ///< Mipmap 레벨 설정 함수
 
         ///< 텍스처 이미지 정보 생성 함수

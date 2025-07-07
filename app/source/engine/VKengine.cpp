@@ -1,7 +1,7 @@
 #include "VKengine.h"
 
 using vkengine::input::key_callback;
-using vkengine::VKDevice_;
+using vkengine::VKdeviceHandler;
 using vkengine::VKSwapChain;
 
 using namespace vkengine::debug;
@@ -404,7 +404,7 @@ namespace vkengine
             return false;
         }
 
-        this->VKdevice = std::make_unique<VKDevice_>(pdevice, indices[selectQueueFamilyIndeices]);
+        this->VKdevice = std::make_unique<VKdeviceHandler>(pdevice, indices[selectQueueFamilyIndeices]);
 
         // 파생된 예제는 물리적 장치에서 읽은 지원되는 확장 목록에 따라 확장 기능을 활성화할 수 있습니다.
         // 필요할 때 코드 생성
@@ -449,17 +449,17 @@ namespace vkengine
         );
 
         // 깊이 이미지 레이아웃을 설정합니다.
-        // 나중에 다시 확인
-        //helper::transitionImageLayout(
-        //    this->VKdevice->VKdevice,
-        //    this->VKdevice->VKcommandPool,
-        //    this->VKdevice->graphicsVKQueue,
-        //    this->VKdepthStencill.depthImage,
-        //    this->VKdepthStencill.depthFormat,
-        //    VK_IMAGE_LAYOUT_UNDEFINED,
-        //    VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
-        //    1
-        //);
+        // 명시적으로 이미지 레이아웃을 전환합니다. -> 안정성을 위해서
+        helper::transitionImageLayout(
+            this->VKdevice->logicaldevice,
+            this->VKdevice->commandPool,
+            this->VKdevice->graphicsVKQueue,
+            this->VKdepthStencill.depthImage,
+            this->VKdepthStencill.depthFormat,
+            VK_IMAGE_LAYOUT_UNDEFINED,
+            VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+            1
+        );
 
         return true;
     }
@@ -628,7 +628,7 @@ namespace vkengine
     cBool VulkanEngine::createCommandBuffer()
     {
 
-#if 1
+#if 0
         for (auto& framedata : this->VKframeData)
         {
             framedata.mainCommandBuffer = this->VKdevice->createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, 0);

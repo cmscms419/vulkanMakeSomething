@@ -16,7 +16,7 @@ namespace vkengine {
                 return;
             }
 
-            VKDevice_* device = vkengine::VulkanEngine::Get().getDevice();
+            VKdeviceHandler* device = vkengine::VulkanEngine::Get().getDevice();
             VkDevice logicaldevice = device->logicaldevice;
             VkPhysicalDevice physicalDevice = device->physicalDevice;
             VkDeviceSize bufferSize = sizeof(Vertex) * vertices.size();
@@ -56,7 +56,7 @@ namespace vkengine {
                 return;
             }
 
-            VKDevice_* device = vkengine::VulkanEngine::Get().getDevice();
+            VKdeviceHandler* device = vkengine::VulkanEngine::Get().getDevice();
             VkDevice logicaldevice = device->logicaldevice;
             VkPhysicalDevice physicalDevice = device->physicalDevice;
             VkDeviceSize bufferSize = sizeof(cUint16_t) * indices.size();
@@ -116,7 +116,7 @@ namespace vkengine {
         void Object::createModelViewProjBuffers()
         {
 
-            VKDevice_* device = vkengine::VulkanEngine::Get().getDevice();
+            VKdeviceHandler* device = vkengine::VulkanEngine::Get().getDevice();
             VkDevice logicaldevice = device->logicaldevice;
             VkPhysicalDevice physicalDevice = device->physicalDevice;
             VkDeviceSize bufferSize = sizeof(UniformBufferObject);

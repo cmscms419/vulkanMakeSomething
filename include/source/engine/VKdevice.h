@@ -1,18 +1,18 @@
 #ifndef INCLUDE_VULKAN_DEVICE_H_
 #define INCLUDE_VULKAN_DEVICE_H_
 
-#include "../../common/common.h"
-#include "../../common/struct.h"
+#include "common.h"
+#include "struct.h"
 
 #include <set>
 
 namespace vkengine {
 
-    struct VKDevice_
+    struct VKdeviceHandler
     {
     public:
-        explicit VKDevice_(VkPhysicalDevice physicalDevice, QueueFamilyIndices indice);
-        ~VKDevice_() = default;
+        explicit VKdeviceHandler(VkPhysicalDevice physicalDevice, QueueFamilyIndices indice);
+        ~VKdeviceHandler() = default;
 
         VkPhysicalDevice physicalDevice{ VK_NULL_HANDLE };                  // 물리 디바이스 -> GPU Physical Handle
         VkDevice logicaldevice{ VK_NULL_HANDLE };                                  // 논리 디바이스 -> GPU Logical Handle
@@ -38,11 +38,6 @@ namespace vkengine {
             VkImage& image,
             VkDeviceMemory& imageMemory) const;
         const VkShaderModule createShaderModule(const std::string& path) const;
-
-        void flushCommandBuffer(VkCommandBuffer commandBuffer, VkQueue queue, VkCommandPool pool, bool free = true);
-        void flushCommandBuffer(VkCommandBuffer commandBuffer, VkQueue queue, bool free = true);
-        VkCommandBuffer createCommandBuffer(VkCommandBufferLevel level, VkCommandPool pool, bool begin);
-        VkCommandBuffer createCommandBuffer(VkCommandBufferLevel level, bool begin);
 
         void cleanup() const;
     };

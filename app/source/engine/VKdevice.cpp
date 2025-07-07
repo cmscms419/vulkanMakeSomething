@@ -5,7 +5,7 @@ namespace vkengine {
 
     using namespace helper;
 
-    VKDevice_::VKDevice_(VkPhysicalDevice physicalDevice, QueueFamilyIndices indice)
+    VKdeviceHandler::VKdeviceHandler(VkPhysicalDevice physicalDevice, QueueFamilyIndices indice)
     {
         assert(physicalDevice);
         assert(indice.isComplete());
@@ -37,7 +37,7 @@ namespace vkengine {
         helper::getDeviceExtensionSupport(physicalDevice, &this->supportedExtensions);
     }
 
-    VkResult VKDevice_::createLogicalDevice()
+    VkResult VKdeviceHandler::createLogicalDevice()
     {
         // 1. 물리 장치에서 큐 패밀리 인덱스를 찾습니다. -> 전 단계에서 이미 찾았습니다.
         // 2. 큐 생성 정보 구조체를 초기화합니다. -> 이미 찾았습니다.
@@ -83,11 +83,7 @@ namespace vkengine {
         }
 
         // 논리 장치를 생성합니다.
-        result = vkCreateDevice(this->physicalDevice, &createInfo, nullptr, &this->logicaldevice);
-
-        if (result != VK_SUCCESS) {
-            return result;
-        }
+        _VK_CHECK_RESULT_(result = vkCreateDevice(this->physicalDevice, &createInfo, nullptr, &this->logicaldevice));
 
         // 논리 디바이스에서 그래픽 큐 핸들을 가져옵니다.
         vkGetDeviceQueue(this->logicaldevice, this->queueFamilyIndices.graphicsAndComputeFamily, 0, &this->graphicsVKQueue);
@@ -98,7 +94,7 @@ namespace vkengine {
         return result;
     }
 
-    void VKDevice_::createimageview(uint32_t width, uint32_t height, uint32_t mipLevels, VkSampleCountFlagBits numSamples, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory) const
+    void VKdeviceHandler::createimageview(uint32_t width, uint32_t height, uint32_t mipLevels, VkSampleCountFlagBits numSamples, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory) const
     {
         VkImageCreateInfo imageInfo{};
 
@@ -129,7 +125,7 @@ namespace vkengine {
         _VK_CHECK_RESULT_(vkBindImageMemory(logicaldevice, image, imageMemory, 0));
     }
 
-    const VkShaderModule VKDevice_::createShaderModule(const std::string& path) const
+    const VkShaderModule VKdeviceHandler::createShaderModule(const std::string& path) const
     {
         auto shaderCode = helper::readFile(path);
 
@@ -144,66 +140,7 @@ namespace vkengine {
         return shaderModule;
     }
 
-    // 커맨드 버퍼를 플러시하고 큐에 제출합니다.
-    // 커맨드 버퍼(command buffer)를 큐(queue)에 제출할 때,
-    // 해당 커맨드 버퍼가 할당된 커맨드 풀(command pool)과 
-    // 동일한 큐 패밀리 인덱스(queue family index)를 가진 큐에만 제출해야 한다는 의미입니다.
-    void VKDevice_::flushCommandBuffer(VkCommandBuffer commandBuffer, VkQueue queue, VkCommandPool pool, bool free)
-    {
-        if (commandBuffer == VK_NULL_HANDLE)
-        {
-            return;
-        }
-
-        _VK_CHECK_RESULT_(vkEndCommandBuffer(commandBuffer));
-        VkSubmitInfo submitInfo{};
-        submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-        submitInfo.commandBufferCount = 1;
-        submitInfo.pCommandBuffers = &commandBuffer;
-
-        VkFenceCreateInfo fenceInfo = helper::fenceCreateInfo(0);
-        VkFence fence;
-        _VK_CHECK_RESULT_(vkCreateFence(this->logicaldevice, &fenceInfo, nullptr, &fence));
-        // Submit to the queue
-        _VK_CHECK_RESULT_(vkQueueSubmit(queue, 1, &submitInfo, fence));
-        // Wait for the fence to signal that command buffer has finished executing
-        _VK_CHECK_RESULT_(vkWaitForFences(this->logicaldevice, 1, &fence, VK_TRUE, 100000000000));
-        vkDestroyFence(this->logicaldevice, fence, nullptr);
-
-        if (free)
-        {
-            vkFreeCommandBuffers(this->logicaldevice, pool, 1, &commandBuffer);
-        }
-    }
-
-    void VKDevice_::flushCommandBuffer(VkCommandBuffer commandBuffer, VkQueue queue, bool free)
-    {
-        return flushCommandBuffer(commandBuffer, queue, commandPool, free);
-    }
-
-    VkCommandBuffer VKDevice_::createCommandBuffer(VkCommandBufferLevel level, VkCommandPool pool, bool begin)
-    {
-        VkCommandBufferAllocateInfo allocInfo = helper::commandBufferAllocateInfo(pool, 1, VK_COMMAND_BUFFER_LEVEL_PRIMARY);
-        VkCommandBuffer cmdBuffer{};
-        _VK_CHECK_RESULT_(vkAllocateCommandBuffers(this->logicaldevice, &allocInfo, &cmdBuffer));
-
-        if (begin)
-        {
-            FrameData* frameData{};
-            VkCommandBufferBeginInfo beginInfo = frameData->commandBufferBeginInfo(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
-            _VK_CHECK_RESULT_(vkBeginCommandBuffer(cmdBuffer, &beginInfo));
-        }
-
-        return cmdBuffer;
-    }
-
-    VkCommandBuffer VKDevice_::createCommandBuffer(VkCommandBufferLevel level, bool begin)
-    {
-        return createCommandBuffer(level, commandPool, begin);
-    }
-
-
-    void VKDevice_::cleanup() const
+    void VKdeviceHandler::cleanup() const
     {
         vkDestroyCommandPool(logicaldevice, commandPool, nullptr);
         vkDestroyDevice(logicaldevice, nullptr);

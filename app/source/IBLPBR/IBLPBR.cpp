@@ -412,7 +412,7 @@ namespace vkengine {
 
         // 렌더 패스를 시작하기 위한 클리어 값 설정
         std::array<VkClearValue, 2> clearValues{};
-        clearValues[0].color = { {0.2f, 0.2f, 0.2f, 1.0f} };
+        clearValues[0].color = { {0.0f, 0.0f, 0.0f, 1.0f} };
         clearValues[1].depthStencil = { 1.0f, 0 };
 
         // 렌더 패스 시작 정보 구조체를 초기화합니다.
@@ -1052,20 +1052,8 @@ namespace vkengine {
         brdfDescriptors->allocInfo = helper::descriptorSetAllocateInfo(
             brdfDescriptors->VKdescriptorPool, *layouts2.data(), 1);
         brdfDescriptors->VKdescriptorSets.resize(1);
-        brdfDescriptors->createAllocateDescriptorSets();
 
-        // descriptor set 업데이트
-        //std::vector<VkWriteDescriptorSet> writeDescriptorSets = {
-        //    helper::writeDescriptorSet(
-        //        brdfDescriptors->VKdescriptorSets[0],
-        //        VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-        //        0,
-        //        &brdfLUTTexture->imageInfo) // BRDF LUT 텍스쳐
-        //};
-        //vkUpdateDescriptorSets(
-        //    this->VKdevice->logicaldevice,
-        //    static_cast<uint32_t>(writeDescriptorSets.size()),
-        //    writeDescriptorSets.data(), 0, nullptr);
+        brdfDescriptors->createAllocateDescriptorSets();
 
         VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
         pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO; // 구조체 타입을 설정
@@ -1148,8 +1136,12 @@ namespace vkengine {
         renderPassBeginInfo.pClearValues = clearValues;
         renderPassBeginInfo.framebuffer = framebuffer;
 
-        VkCommandBuffer cmdBuf = this->VKdevice->createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
-
+        VkCommandBuffer cmdBuf{};
+#if 0
+        cmdBuf = this->VKdevice->createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
+#else
+        cmdBuf = helper::beginSingleTimeCommands(this->VKdevice->logicaldevice, this->getDevice()->commandPool);
+#endif
         vkCmdBeginRenderPass(cmdBuf, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 
         VkViewport viewport{};
@@ -1169,7 +1161,18 @@ namespace vkengine {
         vkCmdBindPipeline(cmdBuf, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
         vkCmdDraw(cmdBuf, 3, 1, 0, 0);
         vkCmdEndRenderPass(cmdBuf);
+
+#if 0
         this->VKdevice->flushCommandBuffer(cmdBuf, this->VKdevice->graphicsVKQueue);
+
+#else
+        helper::endSingleTimeCommands(
+            this->getDevice()->logicaldevice,
+            this->getDevice()->commandPool,
+            this->getDevice()->graphicsVKQueue,
+            cmdBuf);
+#endif
+
         vkQueueWaitIdle(this->VKdevice->graphicsVKQueue);
         brdfDescriptors->destroyDescriptor();
         vkDestroyPipeline(this->VKdevice->logicaldevice, pipeline, nullptr);
@@ -1354,22 +1357,48 @@ namespace vkengine {
             fbufCreateInfo.layers = 1;
             _VK_CHECK_RESULT_(vkCreateFramebuffer(this->VKdevice->logicaldevice, &fbufCreateInfo, nullptr, &offscreen.framebuffer));
 
-            VkCommandBuffer layoutCmd = this->VKdevice->createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
+            VkCommandBuffer layoutCmd{};
+#if 0
+            layoutCmd = this->VKdevice->createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
+#else
+            layoutCmd = helper::beginSingleTimeCommands(this->VKdevice->logicaldevice, this->getDevice()->commandPool);
+#endif
 
             VkImageSubresourceRange subresourceRange{};
             subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
             subresourceRange.baseMipLevel = 0;
-            subresourceRange.levelCount = 1;
-            subresourceRange.layerCount = 1;
-
+            subresourceRange.levelCount = VK_IMAGE_ASPECT_COLOR_BIT;
+            subresourceRange.layerCount = VK_IMAGE_ASPECT_COLOR_BIT;
+#if 0
             helper::transitionImageLayout4(
                 layoutCmd,
                 offscreen.image,
                 VK_IMAGE_LAYOUT_UNDEFINED,
                 VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
                 subresourceRange);
+#else
+            helper::transitionImageLayout(
+                this->getDevice()->logicaldevice,
+                this->getDevice()->commandPool,
+                this->getDevice()->graphicsVKQueue,
+                offscreen.image,
+                VK_FORMAT_UNDEFINED,
+                VK_IMAGE_LAYOUT_UNDEFINED,
+                VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+                1
+            );
+#endif
 
-            this->VKdevice->flushCommandBuffer(layoutCmd, this->VKdevice->graphicsVKQueue, true);
+#if 0
+            this->VKdevice->flushCommandBuffer(layoutCmd, this->VKdevice->graphicsVKQueue);
+
+#else
+            helper::endSingleTimeCommands(
+                this->getDevice()->logicaldevice,
+                this->getDevice()->commandPool,
+                this->getDevice()->graphicsVKQueue,
+                layoutCmd);
+#endif
         }
 
         VKDescriptor2* prefilteredCubeDescriptors = nullptr;         // 모델 오브젝트 디스크립터
@@ -1410,8 +1439,8 @@ namespace vkengine {
 
         // Pipeline layout
         struct PushBlock {
-            glm::mat4 mvp;
-            float roughness;
+            glm::mat4 mvp = cMat4(0.0f);
+            float roughness = 0.0f;
             uint32_t numSamples = 32u;
         } pushBlock;
 
@@ -1512,10 +1541,6 @@ namespace vkengine {
             glm::rotate(glm::mat4(1.0f), glm::radians(180.0f), glm::vec3(0.0f, 0.0f, 1.0f)),
         };
 
-        VkCommandBuffer cmdBuf = this->VKdevice->createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
-
-        vkCmdSetViewport(cmdBuf, 0, 1, &viewport);
-        vkCmdSetScissor(cmdBuf, 0, 1, &scissor);
 
         VkImageSubresourceRange subresourceRange = {};
         subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
@@ -1524,12 +1549,37 @@ namespace vkengine {
         subresourceRange.layerCount = 6;
 
         // Change image layout for all cubemap faces to transfer destination
+#if 0
         helper::transitionImageLayout4(
             cmdBuf,
             this->prefilteredCubeTexture->image,
             VK_IMAGE_LAYOUT_UNDEFINED,
             VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
             subresourceRange);
+#else
+        helper::transitionImageLayout(
+            this->getDevice()->logicaldevice,
+            this->getDevice()->commandPool,
+            this->getDevice()->graphicsVKQueue,
+            this->prefilteredCubeTexture->image,
+            VK_FORMAT_UNDEFINED,
+            VK_IMAGE_LAYOUT_UNDEFINED,
+            VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+            numMips,
+            6
+        );
+#endif
+
+#if 0
+        VkCommandBuffer cmdBuf = this->VKdevice->createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
+#else
+        VkCommandBuffer cmdBuf = helper::beginSingleTimeCommands(
+            this->getDevice()->logicaldevice,
+            this->getDevice()->commandPool);
+#endif
+
+        vkCmdSetViewport(cmdBuf, 0, 1, &viewport);
+        vkCmdSetScissor(cmdBuf, 0, 1, &scissor);
 
         for (uint32_t m = 0; m < numMips; m++) {
             pushBlock.roughness = (float)m / (float)(numMips - 1);
@@ -1553,19 +1603,22 @@ namespace vkengine {
 
                 vkCmdEndRenderPass(cmdBuf);
 
-                VkImageSubresourceRange subresourceRange{};
-                subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-                subresourceRange.baseMipLevel = 0;
-                subresourceRange.levelCount = 1;
-                subresourceRange.layerCount = 1;
-
+#if 0
                 helper::transitionImageLayout4(
                     cmdBuf,
                     offscreen.image,
                     VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
                     VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
                     subresourceRange);
-
+#else
+                helper::updateimageLayoutcmd(
+                    cmdBuf,
+                    offscreen.image,
+                    VK_FORMAT_UNDEFINED,
+                    VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+                    VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL
+                );
+#endif
                 // Copy region for transfer from framebuffer to cube face
                 VkImageCopy copyRegion = {};
 
@@ -1594,36 +1647,37 @@ namespace vkengine {
                     1,
                     &copyRegion);
 
-                VkImageSubresourceRange subresourceRange2{};
-                subresourceRange2.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-                subresourceRange2.baseMipLevel = 0;
-                subresourceRange2.levelCount = 1;
-                subresourceRange2.layerCount = 1;
-                subresourceRange2.baseArrayLayer = 0;
-
                 // Transform framebuffer color attachment back
-                helper::transitionImageLayout4(
+                helper::updateimageLayoutcmd(
                     cmdBuf,
                     offscreen.image,
+                    VK_FORMAT_UNDEFINED,
                     VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-                    VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-                    subresourceRange2);
+                    VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
+                );
             }
         }
-        VkImageSubresourceRange subresourceRange3{};
-        subresourceRange3.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-        subresourceRange3.baseMipLevel = 0;
-        subresourceRange3.levelCount = numMips;
-        subresourceRange3.layerCount = 6;
 
-        helper::transitionImageLayout4(
-            cmdBuf,
+#if 0
+        this->VKdevice->flushCommandBuffer(cmdBuf, this->VKdevice->graphicsVKQueue);
+#else
+        helper::endSingleTimeCommands(
+            this->getDevice()->logicaldevice,
+            this->getDevice()->commandPool,
+            this->getDevice()->graphicsVKQueue,
+            cmdBuf);
+#endif
+
+        helper::transitionImageLayout(
+            this->getDevice()->logicaldevice,
+            this->getDevice()->commandPool,
+            this->getDevice()->graphicsVKQueue,
             this->prefilteredCubeTexture->image,
+            VK_FORMAT_UNDEFINED,
             VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
             VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-            subresourceRange3);
-
-        this->VKdevice->flushCommandBuffer(cmdBuf, this->VKdevice->graphicsVKQueue);
+            numMips, 6
+        );
 
         vkDestroyRenderPass(this->VKdevice->logicaldevice, renderpass, nullptr);
         vkDestroyFramebuffer(this->VKdevice->logicaldevice, offscreen.framebuffer, nullptr);
@@ -1814,22 +1868,34 @@ namespace vkengine {
             fbufCreateInfo.layers = 1;
             _VK_CHECK_RESULT_(vkCreateFramebuffer(this->VKdevice->logicaldevice, &fbufCreateInfo, nullptr, &offscreen.framebuffer));
 
-            VkCommandBuffer layoutCmd = this->VKdevice->createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
+#if 0
+            VkCommandBuffer layoutCmd{};
+            layoutCmd = helper::beginSingleTimeCommands(this->VKdevice->logicaldevice, this->getDevice()->commandPool);
 
-            VkImageSubresourceRange subresourceRange{};
-            subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-            subresourceRange.baseMipLevel = 0;
-            subresourceRange.levelCount = 1;
-            subresourceRange.layerCount = 1;
-
-            helper::transitionImageLayout4(
+            helper::updateimageLayoutcmd(
                 layoutCmd,
                 offscreen.image,
+                VK_FORMAT_UNDEFINED,
                 VK_IMAGE_LAYOUT_UNDEFINED,
-                VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-                subresourceRange);
+                VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
+                );
 
-            this->VKdevice->flushCommandBuffer(layoutCmd, this->VKdevice->graphicsVKQueue, true);
+            helper::endSingleTimeCommands(
+                this->getDevice()->logicaldevice,
+                this->getDevice()->commandPool,
+                this->getDevice()->graphicsVKQueue,
+                layoutCmd);
+#else
+            helper::transitionImageLayout(
+                this->getDevice()->logicaldevice,
+                this->getDevice()->commandPool,
+                this->getDevice()->graphicsVKQueue,
+                offscreen.image,
+                VK_FORMAT_UNDEFINED,
+                VK_IMAGE_LAYOUT_UNDEFINED,
+                VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
+            );
+#endif
         }
 
         VKDescriptor2* irradianceCubeDescriptors = nullptr;         // 모델 오브젝트 디스크립터
@@ -1872,7 +1938,7 @@ namespace vkengine {
         
         // Pipeline layout
         struct PushBlock {
-            glm::mat4 mvp;
+            glm::mat4 mvp = cMat4(0.0f); // Model-view-projection matrix
             // Sampling deltas
             float deltaPhi = (2.0f * float(3.14159265358979323846)) / 180.0f;
             float deltaTheta = (0.5f * float(3.14159265358979323846)) / 64.0f;
@@ -1886,19 +1952,9 @@ namespace vkengine {
         pipelineLayoutCI.pPushConstantRanges = pushConstantRanges.data();
         _VK_CHECK_RESULT_(vkCreatePipelineLayout(this->VKdevice->logicaldevice, &pipelineLayoutCI, nullptr, &irradianceCubeDescriptors->VKpipelineLayout));
 
-        VkViewport viewpport{};
-        viewpport.x = 0.0f;
-        viewpport.y = 0.0f;
-        viewpport.width = static_cast<float>(dim);
-        viewpport.height = static_cast<float>(dim);
-        viewpport.minDepth = 0.0f;
-        viewpport.maxDepth = 1.0f;
-
-        VkRect2D scissor{};
-        scissor.offset = { 0, 0 };
-        scissor.extent = { dim, dim };
-
-
+        VkViewport viewpport = helper::createViewport(0.0f, 0.0f, static_cast<float>(dim), static_cast<float>(dim), 0.0f, 1.0f);
+        VkRect2D scissor = helper::createScissor(0, 0, dim, dim);
+        
         auto bindingDescription = Vertex::getBindingDescription();
         auto attributeDescriptions = Vertex::getAttributeDescriptions();
 
@@ -1974,43 +2030,34 @@ namespace vkengine {
             glm::rotate(glm::mat4(1.0f), glm::radians(180.0f), glm::vec3(0.0f, 0.0f, 1.0f)),
         };
 
-        VkCommandBuffer cmdBuf = this->VKdevice->createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
-
-        //VkViewport viewport = vks::initializers::viewport((float)512, (float)512, 0.0f, 1.0f);
-        VkViewport viewport2{};
-        viewport2.x = 0.0f;
-        viewport2.y = 0.0f;
-        viewport2.width = static_cast<float>(dim);
-        viewport2.height = static_cast<float>(dim);
-        viewport2.minDepth = 0.0f;
-        viewport2.maxDepth = 1.0f;
-
-        VkRect2D scissor2{};
-        scissor2.offset = { 0, 0 };
-        scissor2.extent = { dim,dim };
-
-        vkCmdSetViewport(cmdBuf, 0, 1, &viewport2);
-        vkCmdSetScissor(cmdBuf, 0, 1, &scissor2);
-
-        VkImageSubresourceRange subresourceRange{};
-        subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-        subresourceRange.baseMipLevel = 0;
-        subresourceRange.levelCount = numMips;
-        subresourceRange.layerCount = 6;
-
         // Change image layout for all cubemap faces to transfer destination
-        helper::transitionImageLayout4(
-            cmdBuf,
+        helper::transitionImageLayout(
+            this->getDevice()->logicaldevice,
+            this->getDevice()->commandPool,
+            this->getDevice()->graphicsVKQueue,
             this->irradianceCubeTexture->image,
+            VK_FORMAT_UNDEFINED,
             VK_IMAGE_LAYOUT_UNDEFINED,
-            VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-            subresourceRange);
+            VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 
+            numMips, 6
+        );
+
+#if 0
+        VkCommandBuffer cmdBuf = this->VKdevice->createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
+#else
+        VkCommandBuffer cmdBuf = helper::beginSingleTimeCommands(
+            this->getDevice()->logicaldevice,
+            this->getDevice()->commandPool);
+#endif
+
+        vkCmdSetViewport(cmdBuf, 0, 1, &viewpport);
+        vkCmdSetScissor(cmdBuf, 0, 1, &scissor);
 
         for (uint32_t m = 0; m < numMips; m++) {
             for (uint32_t f = 0; f < 6; f++) {
-                viewport2.width = static_cast<float>(dim * std::pow(0.5f, m));
-                viewport2.height = static_cast<float>(dim * std::pow(0.5f, m));
-                vkCmdSetViewport(cmdBuf, 0, 1, &viewport2);
+                viewpport.width = static_cast<float>(dim * std::pow(0.5f, m));
+                viewpport.height = static_cast<float>(dim * std::pow(0.5f, m));
+                vkCmdSetViewport(cmdBuf, 0, 1, &viewpport);
 
                 // Render scene from cube face's point of view
                 vkCmdBeginRenderPass(cmdBuf, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
@@ -2027,18 +2074,13 @@ namespace vkengine {
 
                 vkCmdEndRenderPass(cmdBuf);
 
-                VkImageSubresourceRange subresourceRange{};
-                subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-                subresourceRange.baseMipLevel = 0;
-                subresourceRange.levelCount = 1;
-                subresourceRange.layerCount = 1;
-
-                helper::transitionImageLayout4(
+                helper::updateimageLayoutcmd(
                     cmdBuf,
                     offscreen.image,
+                    VK_FORMAT_UNDEFINED,
                     VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-                    VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-                    subresourceRange);
+                    VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL
+                    );
 
                 // Copy region for transfer from framebuffer to cube face
                 VkImageCopy copyRegion = {};
@@ -2055,8 +2097,8 @@ namespace vkengine {
                 copyRegion.dstSubresource.layerCount = 1;
                 copyRegion.dstOffset = { 0, 0, 0 };
 
-                copyRegion.extent.width = static_cast<uint32_t>(viewport2.width);
-                copyRegion.extent.height = static_cast<uint32_t>(viewport2.height);
+                copyRegion.extent.width = static_cast<uint32_t>(viewpport.width);
+                copyRegion.extent.height = static_cast<uint32_t>(viewpport.height);
                 copyRegion.extent.depth = 1;
 
                 vkCmdCopyImage(
@@ -2068,31 +2110,35 @@ namespace vkengine {
                     1,
                     &copyRegion);
 
-                VkImageSubresourceRange subresourceRange2{};
-                subresourceRange2.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-                subresourceRange2.baseMipLevel = 0;
-                subresourceRange2.levelCount = 1;
-                subresourceRange2.layerCount = 1;
-                subresourceRange2.baseArrayLayer = 0;
-
                 // Transform framebuffer color attachment back
-                helper::transitionImageLayout4(
+                helper::updateimageLayoutcmd(
                     cmdBuf,
                     offscreen.image,
+                    VK_FORMAT_UNDEFINED,
                     VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-                    VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-                    subresourceRange2);
+                    VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
+                );
             }
         }
 
-        helper::transitionImageLayout4(
-            cmdBuf,
+        helper::transitionImageLayout(
+            this->getDevice()->logicaldevice,
+            this->getDevice()->commandPool,
+            this->getDevice()->graphicsVKQueue,
             this->irradianceCubeTexture->image,
+            VK_FORMAT_UNDEFINED,
             VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-            VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-            subresourceRange);
+            VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
+#if 0
         this->VKdevice->flushCommandBuffer(cmdBuf, this->VKdevice->graphicsVKQueue);
+#else
+        helper::endSingleTimeCommands(
+            this->getDevice()->logicaldevice,
+            this->getDevice()->commandPool,
+            this->getDevice()->graphicsVKQueue,
+            cmdBuf);
+#endif
 
         vkDestroyRenderPass(this->VKdevice->logicaldevice, renderpass, nullptr);
         vkDestroyFramebuffer(this->VKdevice->logicaldevice, offscreen.framebuffer, nullptr);

@@ -21,9 +21,6 @@
     <ClCompile Include="..\..\app\source\engine\VKswapchain.cpp">
       <Filter>source</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\app\source\engine\VKtexture.cpp">
-      <Filter>source</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\app\source\engine\helper.cpp">
       <Filter>source</Filter>
     </ClCompile>
@@ -46,6 +43,9 @@
       <Filter>source</Filter>
     </ClCompile>
     <ClCompile Include="..\..\app\common\resourseload.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\source\engine\VKtexture.cpp">
       <Filter>source</Filter>
     </ClCompile>
   </ItemGroup>
@@ -71,9 +71,6 @@
     <ClInclude Include="..\..\include\source\engine\VKswapchain.h">
       <Filter>source</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\source\engine\VKtexture.h">
-      <Filter>source</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\include\common\macros.h">
       <Filter>source</Filter>
     </ClInclude>
@@ -93,6 +90,9 @@
       <Filter>source</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\common\resourseload.h">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\source\engine\VKtexture.h">
       <Filter>source</Filter>
     </ClInclude>
   </ItemGroup>

@@ -18,7 +18,7 @@ namespace vkengine {
 
         class Object {
         public:
-            Object(VKDevice_* device) : device(device) {};
+            Object(VKdeviceHandler* device) : device(device) {};
             ~Object() {};
             void createVertexBuffer(std::vector<Vertex>& vertices = std::vector<Vertex>());
             void createIndexBuffer(std::vector<cUint16_t>& indices = std::vector<cUint16_t>());
@@ -78,7 +78,7 @@ namespace vkengine {
             IndexBuffer indexBuffer{};
             UniformBuffer modelviewprojUniformBuffer[MAX_FRAMES_IN_FLIGHT]{}; // swapChain image 개수만큼 uniform buffer 생성
             VkTextureBase* texture = nullptr; // 텍스처 객체
-            VKDevice_* device = nullptr; // VKDevice 포인터
+            VKdeviceHandler* device = nullptr; // VKDevice 포인터
             cString name = "";
 
             cVec3 position = { 0.0f, 0.0f, 0.0f };
@@ -91,7 +91,7 @@ namespace vkengine {
         class TextureArrayObject3D : public Object
         {
         public:
-            TextureArrayObject3D(VKDevice_* device) : Object(device) {
+            TextureArrayObject3D(VKdeviceHandler* device) : Object(device) {
                 this->texture = new Vk2DTextureArray();
                 this->texture->setDevice(this->device);
             };
@@ -105,7 +105,7 @@ namespace vkengine {
         {
         public:
 
-            SkyBox(VKDevice_* device) : Object(device) {
+            SkyBox(VKdeviceHandler* device) : Object(device) {
                 this->texture = new VKcubeMap();
                 this->texture->setDevice(this->device);
             };
@@ -126,7 +126,7 @@ namespace vkengine {
         class ModelObject : public Object
         {
         public:
-            ModelObject(VKDevice_* device) : Object(device) {
+            ModelObject(VKdeviceHandler* device) : Object(device) {
                 this->texture = new Vk2DTexture();
                 this->texture->setDevice(this->device);
             };

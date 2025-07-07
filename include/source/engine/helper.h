@@ -14,7 +14,7 @@
 // https://github.com/SaschaWillems/Vulkan에서 참고해서 함수 생성
 
 namespace vkengine {
-    struct VKDevice_;
+    struct VKdeviceHandler;
 
     namespace helper {
 
@@ -28,6 +28,40 @@ namespace vkengine {
         // PROB : 큐 패밀리가 여러개인 경우에 필요한 처리가 있는 패밀리를 먼저 찾을 경우, 그 패밀리의 인덱스만 반환함
         // TODO ; 큐 패밀리가 여러개인 경우에 대한 처리가 필요함
         const QueueFamilyIndices findQueueFamilies(VkPhysicalDevice& device, VkSurfaceKHR& VKsurface);
+
+        inline VkViewport createViewport(
+            cFloat x,
+            cFloat y,
+            cFloat width,
+            cFloat height,
+            cFloat minDepth = 0.0f,
+            cFloat maxDepth = 1.0f)
+        {
+            VkViewport viewport{};
+            viewport.x = x;
+            viewport.y = y;
+            viewport.width = width;
+            viewport.height = height;
+            viewport.minDepth = minDepth;
+            viewport.maxDepth = maxDepth;
+
+            return viewport;
+        }
+
+        inline VkRect2D createScissor(
+            cInt32_t offsetX,
+            cInt32_t offsetY,
+            cUint32_t width,
+            cUint32_t height)
+        {
+            VkRect2D scissor{};
+            scissor.offset.x = offsetX;
+            scissor.offset.y = offsetY;
+            scissor.extent.width = width;
+            scissor.extent.height = height;
+
+            return scissor;
+        }
 
         void createImage(
             VkDevice VKdevice,
@@ -71,7 +105,7 @@ namespace vkengine {
             VkDeviceSize size);
 
         void copyBuffer2(
-            vkengine::VKDevice_& VKdevice,
+            vkengine::VKdeviceHandler& VKdevice,
             VkBuffer srcBuffer,
             VkBuffer dstBuffer,
             VkDeviceSize size);
@@ -232,7 +266,23 @@ namespace vkengine {
         // 명령버퍼를 종료하는 함수
         void endSingleTimeCommands(VkDevice device, VkCommandPool commandPool, VkQueue graphicsQueue, VkCommandBuffer commandBuffer);
 
-        // 이미지 레이아웃을 전환하는 함수
+        /**
+            * @brief 이미지의 레이아웃을 전환하는 함수
+            *
+            * 이 함수는 지정된 이미지에 대해 필요에 따른 이미지 메모리 배리어를 설정하고,
+            * 기존 레이아웃(oldLayout)에서 새로운 레이아웃(newLayout)으로 이미지를 변경합니다.
+            * 이미지 전환은 단일 시간 명령 버퍼를 사용하여 수행되며, 전환 작업 후 관련 명령 버퍼는
+            * 제출되어 완료될 때까지 대기됩니다.
+            *
+            * ->이전 oldLayout을 가진 imageLayout을 newLayout으로 이미지를 사용 할 때 이용하는 함수
+            *
+            * @remark 지원되는 전환은 아래의 3가지 경우입니다:
+            *  1) VK_IMAGE_LAYOUT_UNDEFINED -> VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL
+            *  2) VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL -> VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
+            *  3) VK_IMAGE_LAYOUT_UNDEFINED -> VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL
+            *  4) VK_IMAGE_LAYOUT_UNDEFINED -> VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
+            *
+         */
         void transitionImageLayout(
             VkDevice device,
             VkCommandPool commandPool,
@@ -241,49 +291,25 @@ namespace vkengine {
             VkFormat format,
             VkImageLayout oldLayout,
             VkImageLayout newLayout,
-            uint32_t mipLevels);
-
-        // 이미지배열 레이아웃을 전환하는 함수
-        void transitionImageLayout2(
-            VkDevice device,
-            VkCommandPool commandPool,
-            VkQueue graphicsQueue,
+            cUint32_t levelCount = 1,
+            cUint32_t layerCount = 1
+        );
+        /**
+            * @brief 이미지 레이아웃 전환 명령을 커맨드 버퍼에 기록하는 함수
+            *
+            * 이 함수는 주어진 VkCommandBuffer에 이미지 레이아웃 전환을 위한 VkImageMemoryBarrier를 기록합니다.
+            * oldLayout에서 newLayout으로의 전환을 위해 적절한 접근 마스크와 파이프라인 스테이지를 설정합니다.
+            * mipmap level과 array layer 범위도 지정할 수 있습니다.
+            *
+        */
+        void updateimageLayoutcmd(
+            VkCommandBuffer cmdbuffer,
             VkImage image,
             VkFormat format,
             VkImageLayout oldLayout,
             VkImageLayout newLayout,
-            uint32_t mipLevels,
-            cSize layerCount);
-
-        void transitionImageLayout3(
-            VkDevice device,
-            VkCommandPool commandPool,
-            VkQueue graphicsQueue,
-            VkImage image,
-            VkFormat format,
-            VkImageLayout oldLayout,
-            VkImageLayout newLayout,
-            uint32_t mipLevels,
-            cSize layerCount,
-            VkImageAspectFlags srcStageMask,
-            VkImageAspectFlags dstStageMask);
-
-        void transitionImageLayout4(
-            VkCommandBuffer cmdbuffer,
-            VkImage image,
-            VkImageLayout oldImageLayout,
-            VkImageLayout newImageLayout,
-            VkImageSubresourceRange subresourceRange,
-            VkPipelineStageFlags srcStageMask = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
-            VkPipelineStageFlags dstStageMask = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT);
-
-        void setImageLayout(
-            VkCommandBuffer cmdbuffer,
-            VkImage image,
-            VkFormat format,
-            VkImageLayout oldImageLayout,
-            VkImageLayout newImageLayout,
-            VkImageSubresourceRange subresourceRange
+            cUint32_t levelCount = 1,
+            cUint32_t layerCount = 1
         );
 
         // stencilComponent를 가지고 있는지 확인하는 함수

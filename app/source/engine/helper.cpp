@@ -203,7 +203,7 @@ namespace vkengine {
             endSingleTimeCommands(VKdevice, VKcommandPool, graphicsVKQueue, commandBuffer);
         }
 
-        void copyBuffer2(vkengine::VKDevice_& VKdevice, VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size)
+        void copyBuffer2(vkengine::VKdeviceHandler& VKdevice, VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size)
         {
             VkCommandBuffer commandBuffer = beginSingleTimeCommands(VKdevice.logicaldevice, VKdevice.commandPool);
 
@@ -266,6 +266,7 @@ namespace vkengine {
             region.imageOffset = { 0, 0, 0 };
             region.imageExtent = { width, height, 1 };
 
+            // buffer의 데이터를 image로 복사한다.
             vkCmdCopyBufferToImage(commandBuffer, buffer, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
 
             endSingleTimeCommands(device, commandPool, graphicsQueue, commandBuffer);
@@ -763,6 +764,7 @@ namespace vkengine {
             info.flags = flags;
             return info;
         }
+
         VkCommandBufferAllocateInfo commandBufferAllocateInfo(VkCommandPool pool, uint32_t count, VkCommandBufferLevel level)
         {
             VkCommandBufferAllocateInfo info = {};
@@ -807,7 +809,7 @@ namespace vkengine {
             allocInfo.commandBufferCount = 1;                                 // 커맨드 버퍼 개수를 설정합니다.
 
             VkCommandBuffer commandBuffer;
-            _VK_CHECK_RESULT_(vkAllocateCommandBuffers(device, &allocInfo, &commandBuffer));     // 커맨드 버퍼를 할당합니다.
+            _VK_CHECK_RESULT_(vkAllocateCommandBuffers(device, &allocInfo, &commandBuffer));  // 커맨드 버퍼를 할당합니다.
 
             VkCommandBufferBeginInfo beginInfo{};
             // VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO : 명령 버퍼의 시작 정보를 설정합니다.
@@ -842,21 +844,6 @@ namespace vkengine {
             vkFreeCommandBuffers(device, commandPool, 1, &commandBuffer);
         }
 
-        /**
-            * @brief 이미지의 레이아웃을 전환하는 함수
-            *
-            * 이 함수는 지정된 이미지에 대해 필요에 따른 이미지 메모리 배리어를 설정하고,
-            * 기존 레이아웃(oldLayout)에서 새로운 레이아웃(newLayout)으로 이미지를 변경합니다.
-            * 이미지 전환은 단일 시간 명령 버퍼를 사용하여 수행되며, 전환 작업 후 관련 명령 버퍼는
-            * 제출되어 완료될 때까지 대기됩니다.
-            * -> 다른 형식으로 이미지를 사용 할 때 이용하는 함수
-            *
-            * @remark 지원되는 전환은 아래의 3가지 경우입니다:
-            *  1) VK_IMAGE_LAYOUT_UNDEFINED -> VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL
-            *  2) VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL -> VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
-            *  3) VK_IMAGE_LAYOUT_UNDEFINED -> VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL
-            *
-         */
         void transitionImageLayout(
             VkDevice device,
             VkCommandPool commandPool,
@@ -865,7 +852,8 @@ namespace vkengine {
             VkFormat format,
             VkImageLayout oldLayout,
             VkImageLayout newLayout,
-            uint32_t mipLevels)
+            cUint32_t levelCount,
+            cUint32_t layerCount)
         {
             // 단일 시간 명령 버퍼를 시작합니다.
             VkCommandBuffer commandBuffer = beginSingleTimeCommands(device, commandPool);
@@ -881,15 +869,15 @@ namespace vkengine {
             barrier.image = image; // 전환할 이미지 핸들 설정
             barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
             barrier.subresourceRange.baseMipLevel = 0;       // 첫 번째 미프맵 레벨부터 시작
-            barrier.subresourceRange.levelCount = mipLevels; // 적용할 미프맵의 수
+            barrier.subresourceRange.levelCount = levelCount;// 적용할 미프맵의 수
             barrier.subresourceRange.baseArrayLayer = 0;     // 첫 번째 배열 레이어부터 시작
-            barrier.subresourceRange.layerCount = 1;         // 배열 내 레이어 개수
+            barrier.subresourceRange.layerCount = layerCount;         // 배열 내 레이어 개수
 
             VkPipelineStageFlags sourceStage = 0;      // 전환 전 파이프라인 스테이지
             VkPipelineStageFlags destinationStage = 0; // 전환 후 파이프라인 스테이지
 
             // 이미지 레이아웃 전환 시, 적절한 액세스 마스크 및 파이프라인 스테이지를 설정합니다.
-            // TODO: switch 문으로 변경
+
             switch (oldLayout)
             {
             case VK_IMAGE_LAYOUT_UNDEFINED:
@@ -900,6 +888,7 @@ namespace vkengine {
             case VK_IMAGE_LAYOUT_GENERAL:
                 break;
             case VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL:
+                barrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
                 break;
             case VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL:
                 break;
@@ -971,6 +960,8 @@ namespace vkengine {
             case VK_IMAGE_LAYOUT_GENERAL:
                 break;
             case VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL:
+                // 전송 완료 후 색상 첨부 최적화 레이아웃으로 전환
+                barrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
                 break;
             case VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL:
                 barrier.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
@@ -982,6 +973,7 @@ namespace vkengine {
                 barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
                 break;
             case VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL:
+                barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
                 break;
             case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL:
                 // 전송 쓰기 작업을 위한 쓰기 액세스 허용 설정
@@ -1065,9 +1057,19 @@ namespace vkengine {
                 sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
                 destinationStage = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
             }
+            else if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
+            {
+                sourceStage = VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT;
+                destinationStage = VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT;
+            }
             else {
                 // 지원되지 않는 레이아웃 전환 요청시 예외 발생
-                _PRINT_TO_CONSOLE_("Unsupported layout transition!\n");
+                // 1, 모든 파이프라인 스테이지를 사용하여 전환
+
+                sourceStage = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT;
+                destinationStage = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT;
+
+                _PRINT_TO_CONSOLE_("All pass pipeline stage!\n");
             }
 
             // 파이프라인 배리어를 추가하여 레이아웃 전환 명령을 기록합니다.
@@ -1084,209 +1086,27 @@ namespace vkengine {
             endSingleTimeCommands(device, commandPool, graphicsQueue, commandBuffer);
         }
 
-        void transitionImageLayout2(VkDevice device, VkCommandPool commandPool, VkQueue graphicsQueue, VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout, uint32_t mipLevels, cSize layerCount)
-        {
-            VkCommandBuffer commandBuffer = beginSingleTimeCommands(device, commandPool);
-
-            VkImageSubresourceRange subresourceRange{};
-
-            subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-            subresourceRange.baseMipLevel = 0;
-            subresourceRange.levelCount = mipLevels;
-            subresourceRange.baseArrayLayer = 0;
-            subresourceRange.layerCount = static_cast<cUint32_t>(layerCount);
-
-            setImageLayout(
-                commandBuffer,
-                image,
-                format,
-                oldLayout,
-                newLayout,
-                subresourceRange);
-
-
-            endSingleTimeCommands(device, commandPool, graphicsQueue, commandBuffer);
-        }
-
-        void transitionImageLayout3(
-            VkDevice device, 
-            VkCommandPool commandPool, 
-            VkQueue graphicsQueue, 
-            VkImage image, 
-            VkFormat format, 
-            VkImageLayout oldLayout, 
-            VkImageLayout newLayout, 
-            uint32_t mipLevels, 
-            cSize layerCount, 
-            VkImageAspectFlags srcStageMask, 
-            VkImageAspectFlags dstStageMask)
-        {
-            VkCommandBuffer commandBuffer = beginSingleTimeCommands(device, commandPool);
-            
-            VkImageSubresourceRange subresourceRange{};
-            subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-            subresourceRange.baseMipLevel = 0;
-            subresourceRange.levelCount = mipLevels;
-            subresourceRange.baseArrayLayer = 0;
-            subresourceRange.layerCount = static_cast<cUint32_t>(layerCount);
-
-            setImageLayout(
-                commandBuffer,
-                image,
-                format,
-                oldLayout,
-                newLayout,
-                subresourceRange);
-        }
-
-        void transitionImageLayout4(
-            VkCommandBuffer cmdbuffer, 
-            VkImage image, 
-            VkImageLayout oldImageLayout, 
-            VkImageLayout newImageLayout, 
-            VkImageSubresourceRange subresourceRange, 
-            VkPipelineStageFlags srcStageMask, 
-            VkPipelineStageFlags dstStageMask)
-        {
-            VkImageMemoryBarrier imageMemoryBarrier{};
-            imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-            imageMemoryBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-            imageMemoryBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-            imageMemoryBarrier.oldLayout = oldImageLayout;
-            imageMemoryBarrier.newLayout = newImageLayout;
-            imageMemoryBarrier.image = image;
-            imageMemoryBarrier.subresourceRange = subresourceRange;
-
-            // Source layouts (old)
-            // Source access mask controls actions that have to be finished on the old layout
-            // before it will be transitioned to the new layout
-            switch (oldImageLayout)
-            {
-            case VK_IMAGE_LAYOUT_UNDEFINED:
-                // Image layout is undefined (or does not matter)
-                // Only valid as initial layout
-                // No flags required, listed only for completeness
-                imageMemoryBarrier.srcAccessMask = 0;
-                break;
-
-            case VK_IMAGE_LAYOUT_PREINITIALIZED:
-                // Image is preinitialized
-                // Only valid as initial layout for linear images, preserves memory contents
-                // Make sure host writes have been finished
-                imageMemoryBarrier.srcAccessMask = VK_ACCESS_HOST_WRITE_BIT;
-                break;
-
-            case VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL:
-                // Image is a color attachment
-                // Make sure any writes to the color buffer have been finished
-                imageMemoryBarrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-                break;
-
-            case VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL:
-                // Image is a depth/stencil attachment
-                // Make sure any writes to the depth/stencil buffer have been finished
-                imageMemoryBarrier.srcAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-                break;
-
-            case VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL:
-                // Image is a transfer source
-                // Make sure any reads from the image have been finished
-                imageMemoryBarrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
-                break;
-
-            case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL:
-                // Image is a transfer destination
-                // Make sure any writes to the image have been finished
-                imageMemoryBarrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-                break;
-
-            case VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL:
-                // Image is read by a shader
-                // Make sure any shader reads from the image have been finished
-                imageMemoryBarrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
-                break;
-            default:
-                // Other source layouts aren't handled (yet)
-                break;
-            }
-
-            // Target layouts (new)
-            // Destination access mask controls the dependency for the new image layout
-            switch (newImageLayout)
-            {
-            case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL:
-                // Image will be used as a transfer destination
-                // Make sure any writes to the image have been finished
-                imageMemoryBarrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-                break;
-
-            case VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL:
-                // Image will be used as a transfer source
-                // Make sure any reads from the image have been finished
-                imageMemoryBarrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
-                break;
-
-            case VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL:
-                // Image will be used as a color attachment
-                // Make sure any writes to the color buffer have been finished
-                imageMemoryBarrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-                break;
-
-            case VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL:
-                // Image layout will be used as a depth/stencil attachment
-                // Make sure any writes to depth/stencil buffer have been finished
-                imageMemoryBarrier.dstAccessMask = imageMemoryBarrier.dstAccessMask | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-                break;
-
-            case VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL:
-                // Image will be read in a shader (sampler, input attachment)
-                // Make sure any writes to the image have been finished
-                if (imageMemoryBarrier.srcAccessMask == 0)
-                {
-                    imageMemoryBarrier.srcAccessMask = VK_ACCESS_HOST_WRITE_BIT | VK_ACCESS_TRANSFER_WRITE_BIT;
-                }
-                imageMemoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-                break;
-            default:
-                // Other source layouts aren't handled (yet)
-                break;
-            }
-
-            // 파이프라인 배리어를 추가하여 이미지 레이아웃 전환 명령을 기록합니다.
-            vkCmdPipelineBarrier(
-                cmdbuffer,
-                srcStageMask, // 전환 전 스테이지
-                dstStageMask, // 전환 후 스테이지
-                0,            // 배리어 플래그 (사용하지 않음)
-                0, nullptr,   // 메모리 배리어 없이
-                0, nullptr,   // 버퍼 배리어 없이
-                1, &imageMemoryBarrier // 하나의 이미지 배리어 사용
-            );
-
-        }
-
-        void setImageLayout(
-            VkCommandBuffer commandBuffer,
-            VkImage image,
-            VkFormat format,
-            VkImageLayout oldILayout,
-            VkImageLayout newLayout,
-            VkImageSubresourceRange subresourceRange
-        )
+        void updateimageLayoutcmd(VkCommandBuffer cmdbuffer, VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout, cUint32_t levelCount, cUint32_t layerCount)
         {
             VkImageMemoryBarrier barrier{};
-            barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-            barrier.oldLayout = oldILayout;
-            barrier.newLayout = newLayout;
-            barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-            barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-            barrier.image = image;
-            barrier.subresourceRange = subresourceRange;
+            barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER; // 배리어의 구조체 타입 설정
+            barrier.oldLayout = oldLayout;                          // 전환 전 이미지 레이아웃
+            barrier.newLayout = newLayout;                          // 전환할 이미지 레이아웃
+            barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;  // 소스 큐 패밀리 인덱스 무시
+            barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;  // 대상 큐 패밀리 인덱스 무시
+            barrier.image = image; // 전환할 이미지 핸들 설정
+            barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+            barrier.subresourceRange.baseMipLevel = 0;       // 첫 번째 미프맵 레벨부터 시작
+            barrier.subresourceRange.levelCount = levelCount;// 적용할 미프맵의 수
+            barrier.subresourceRange.baseArrayLayer = 0;     // 첫 번째 배열 레이어부터 시작
+            barrier.subresourceRange.layerCount = layerCount;         // 배열 내 레이어 개수
 
-            VkPipelineStageFlags sourceStage = 0;
-            VkPipelineStageFlags destinationStage = 0;
+            VkPipelineStageFlags sourceStage = 0;      // 전환 전 파이프라인 스테이지
+            VkPipelineStageFlags destinationStage = 0; // 전환 후 파이프라인 스테이지
 
-            switch (oldILayout)
+            // 이미지 레이아웃 전환 시, 적절한 액세스 마스크 및 파이프라인 스테이지를 설정합니다.
+
+            switch (oldLayout)
             {
             case VK_IMAGE_LAYOUT_UNDEFINED:
                 // 이전 레이아웃이 정의되지 않은 상태이면 어떤 액세스도 보장되지 않습니다.
@@ -1296,6 +1116,7 @@ namespace vkengine {
             case VK_IMAGE_LAYOUT_GENERAL:
                 break;
             case VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL:
+                barrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
                 break;
             case VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL:
                 break;
@@ -1367,6 +1188,8 @@ namespace vkengine {
             case VK_IMAGE_LAYOUT_GENERAL:
                 break;
             case VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL:
+                // 전송 완료 후 색상 첨부 최적화 레이아웃으로 전환
+                barrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
                 break;
             case VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL:
                 barrier.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
@@ -1378,6 +1201,7 @@ namespace vkengine {
                 barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
                 break;
             case VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL:
+                barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
                 break;
             case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL:
                 // 전송 쓰기 작업을 위한 쓰기 액세스 허용 설정
@@ -1448,33 +1272,42 @@ namespace vkengine {
             }
 
 
-            if (oldILayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
-            {
-                barrier.srcAccessMask = 0;
-                barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+            // 전환 타입에 따른 액세스 마스크 및 파이프라인 스테이지 설정
+            if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL) {
                 sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
                 destinationStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
             }
-            else if (oldILayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
-            {
-                barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-                barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+            else if (oldLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
                 sourceStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
                 destinationStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
             }
-            else
+            else if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL) {
+                sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+                destinationStage = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+            }
+            else if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
             {
+                sourceStage = VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT;
+                destinationStage = VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT;
+            }
+            else {
                 // 지원되지 않는 레이아웃 전환 요청시 예외 발생
-                _PRINT_TO_CONSOLE_("Unsupported layout transition!\n");
+                // 1, 모든 파이프라인 스테이지를 사용하여 전환
+
+                sourceStage = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT;
+                destinationStage = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT;
+
+                _PRINT_TO_CONSOLE_("All pass pipeline stage!\n");
             }
 
+            // 파이프라인 배리어를 추가하여 레이아웃 전환 명령을 기록합니다.
             vkCmdPipelineBarrier(
-                commandBuffer,
-                sourceStage, destinationStage,
-                0,
-                0, nullptr,
-                0, nullptr,
-                1, &barrier
+                cmdbuffer,
+                sourceStage, destinationStage, // 전환 전/후 스테이지
+                0,                // 배리어 플래그 (사용하지 않음)
+                0, nullptr,     // 메모리 배리어 없이
+                0, nullptr,     // 버퍼 배리어 없이
+                1, &barrier     // 하나의 이미지 배리어 사용
             );
         }
 

@@ -1,5 +1,4 @@
 #include "VKtexture.h"
-#include "helper.h"
 
 namespace vkengine {
 
@@ -398,8 +397,11 @@ namespace vkengine {
         TextureResourceKTX* resource = this->resourceKTX;
         _CHECK_RESULT_((resource != nullptr));
 
-        ktx_uint8_t* ktxTextureData = ktxTexture_GetData(resource->texture); // KTX 텍스처 데이터 가져오기
-        ktx_uint32_t ktxTextureSize = ktxTexture_GetDataSize(resource->texture); // KTX 텍스처 데이터 크기 가져오기
+        ktx_uint8_t* ktxTextureData{};
+        ktxTextureData = ktxTexture_GetData(resource->texture); // KTX 텍스처 데이터 가져오기
+        
+        ktx_uint32_t ktxTextureSize{};
+        ktxTextureSize = ktxTexture_GetDataSize(resource->texture); // KTX 텍스처 데이터 크기 가져오기
 
         VkBuffer stagingBuffer;
         VkDeviceMemory stagingMemory;
