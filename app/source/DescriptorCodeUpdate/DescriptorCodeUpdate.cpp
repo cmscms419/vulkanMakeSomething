@@ -53,11 +53,13 @@ namespace vkengine {
 
         TextureResourcePNG* vikingRoomTexture = new TextureResourcePNG();
         vikingRoomTexture->createResource(this->RootPath + RESOURSE_PATH + TEXTURE_PATH);
+
+        cString vikingRoomModelPath = this->RootPath + RESOURSE_PATH + MODEL_PATH;
         
         this->modelObject = new object::ModelObject(this->getDevice());
         this->modelObject->setName("Viking Room");
         this->modelObject->RotationAngle(-90.0f, glm::vec3(1.0f, 0.0f, 0.0f));
-        helper::loadModel::loadModel(this->RootPath, *this->modelObject->getVertices(), *this->modelObject->getIndices());
+        helper::loadModel::loadModel(vikingRoomModelPath, *this->modelObject->getVertices(), *this->modelObject->getIndices());
 
         this->modelObject->setTexturePNG(vikingRoomTexture);
         this->modelObject->getTexture()->setMipLevels(static_cast<uint32_t>(std::floor(std::log2(std::max(vikingRoomTexture->texWidth, vikingRoomTexture->texHeight)))) + 1); // Mipmap 레벨 설정
@@ -67,7 +69,7 @@ namespace vkengine {
         this->modelObject2->setName("Viking Room2");
         this->modelObject2->setPosition(glm::vec3(3.0f, 0.0f, 0.0f));
         //this->modelObject2->RotationAngle(-90.0f, glm::vec3(1.0f, 0.0f, 0.0f));
-        helper::loadModel::loadModel(this->RootPath, *this->modelObject2->getVertices(), *this->modelObject2->getIndices());
+        helper::loadModel::loadModel(vikingRoomModelPath, *this->modelObject2->getVertices(), *this->modelObject2->getIndices());
 
         this->modelObject2->setTexturePNG(vikingRoomTexture);
         this->modelObject2->getTexture()->setMipLevels(static_cast<uint32_t>(std::floor(std::log2(std::max(vikingRoomTexture->texWidth, vikingRoomTexture->texHeight)))) + 1); // Mipmap 레벨 설정
@@ -488,7 +490,7 @@ namespace vkengine {
         rasterizer.rasterizerDiscardEnable = VK_FALSE;            // 래스터화 버림 비활성화
         rasterizer.polygonMode = VK_POLYGON_MODE_FILL;            // 다각형 모드를 채우기로 설정
         rasterizer.lineWidth = 1.0f;                              // 라인 너비를 1.0f로 설정
-        rasterizer.cullMode = VK_CULL_MODE_BACK_BIT;              // 후면 면을 제거
+        rasterizer.cullMode = VK_CULL_MODE_FRONT_BIT;              // 후면 면을 제거
         rasterizer.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;   // 전면 면을 반시계 방향으로 설정
         rasterizer.depthBiasEnable = VK_FALSE;                    // 깊이 바이어스 비활성화
         rasterizer.depthBiasConstantFactor = 0.0f;              // 깊이 바이어스 상수 요소를 0.0f로 설정

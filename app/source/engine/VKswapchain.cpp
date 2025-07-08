@@ -117,7 +117,8 @@ namespace vkengine
 
         for (const auto& availableFormat : availableFormats)
         {
-            if (availableFormat.format == VK_FORMAT_B8G8R8A8_SRGB &&            // 32비트 BGR 색상 구조를 지원하는지 확인
+            //if (availableFormat.format == VK_FORMAT_B8G8R8A8_SRGB &&            // 32비트 BGR 색상 구조를 지원하는지 확인
+            if (availableFormat.format == VK_FORMAT_B8G8R8A8_UNORM &&            // 32비트 BGR 색상 구조를 지원하는지 확인
                 availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR // SRGB 색상 공간을 지원하는지 확인
                 )
             {

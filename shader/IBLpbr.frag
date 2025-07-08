@@ -7,13 +7,17 @@ layout(binding = 0) uniform UniformBufferObject {
     mat4 proj;
 } ubo;
 
-layout(binding = 1) uniform MaterialBufferObject {
-    float metallic;
-    float roughness;
-    float r;
-    float g;
-    float b;
-    float a;
+layout(std140, binding = 1) uniform MaterialBufferObject {
+    layout(offset = 0) float metallic;
+    layout(offset = 4) float roughness;
+    layout(offset = 8) float r;
+    layout(offset = 12) float g;
+    layout(offset = 16) float b;
+    layout(offset = 20) float a;
+    layout(offset = 24) bool isAlbedoMap;
+    layout(offset = 28) bool isNormalMap;
+    layout(offset = 32) bool isMetallic;
+    layout(offset = 36) bool isRoughness;
 } material;
 
 layout(std140 ,binding = 2) uniform subUinforms {

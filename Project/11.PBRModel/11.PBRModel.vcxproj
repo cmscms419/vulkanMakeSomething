@@ -11,10 +11,6 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\shader\pbrModel.frag" />
-    <None Include="..\..\shader\pbrModel.vert" />
-  </ItemGroup>
-  <ItemGroup>
     <ClCompile Include="..\..\app\source\PBRModel\main_engine.cpp" />
     <ClCompile Include="..\..\app\source\PBRModel\PBRModel.cpp" />
   </ItemGroup>
