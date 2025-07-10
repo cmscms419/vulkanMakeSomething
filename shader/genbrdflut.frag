@@ -2,7 +2,7 @@
 
 layout (location = 0) in vec2 inUV;
 layout (location = 0) out vec4 outColor;
-layout (constant_id = 0) const uint NUM_SAMPLES = 1;
+layout (constant_id = 0) const uint NUM_SAMPLES = 1024u;
 
 const float PI = 3.1415926536;
 
@@ -63,7 +63,7 @@ vec2 BRDF(float NoV, float roughness)
 {
     // Normal always points along z-axis for the 2D lookup 
     const vec3 N = vec3(0.0, 0.0, 1.0); // 법선 벡터
-    vec3 V = vec3(sqrt(1.0 - NoV*NoV), 0.0, NoV); // 시선 방향 벡터
+    vec3 V = vec3(sqrt(1.0 - NoV*NoV), 0.0, NoV); // 어떤 입사 광선의 방향 -> cos(θ) = NoV
 
     vec2 LUT = vec2(0.0); // BRDF 값 초기화
     for(uint i = 0u; i < NUM_SAMPLES; i++) {

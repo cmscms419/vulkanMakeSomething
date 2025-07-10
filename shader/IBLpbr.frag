@@ -32,7 +32,6 @@ layout(std140 ,binding = 2) uniform subUinforms {
     // exposure를 80바이트 위치에 배치
     layout(offset = 80) float exposure;
 
-
     // gamma를 84바이트 위치에 배치
     layout(offset = 84) float gamma;
 

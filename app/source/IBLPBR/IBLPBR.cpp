@@ -118,9 +118,12 @@ namespace vkengine {
         this->createIndexBuffer();
         this->createUniformBuffers();
 
+        // specular texture 持失
         this->generateBRDFLUT();
-        this->generateIrradianceCube();
         this->generatePrefilteredCube();
+
+        // diffuse texture 持失
+        this->generateIrradianceCube();
 
         this->createDescriptor();
 
