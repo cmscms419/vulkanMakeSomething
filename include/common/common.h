@@ -62,6 +62,9 @@ constexpr cInt MAX_FRAMES_IN_FLIGHT = 2;
 constexpr cInt MAX_FRAMES_IN_FLIGHT_UI_VERSION = 3;
 constexpr cInt CREATESURFACE_VKWIN32SURFACECREATEINFOKHR = 0;
 
+constexpr cFloat XM_PI = 3.141592654f;
+constexpr cFloat XM_2PI = 6.283185307f;
+
 namespace vkengine
 {
     extern const std::vector<const char*> validationLayers;

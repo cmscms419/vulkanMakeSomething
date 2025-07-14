@@ -71,6 +71,9 @@ namespace vkengine {
                             vertex.texCoord = { 0.0f, 0.0f, 0.0f };
                         }
 
+                        // Tangent 정보 없음: 0으로 초기화
+                        vertex.inTangent = { 0.0f, 0.0f, 0.0f, 0.0f };
+
 #if UNIQUE_VERTEXTYPE
                         auto it = std::find(vertices.begin(), vertices.end(), vertex);
 
@@ -134,31 +137,18 @@ namespace vkengine {
                             texcoords = reinterpret_cast<const float*>(
                                 &texBuffer.data[texView.byteOffset + texAccessor.byteOffset]);
                         }
-#if 0
-                        // 인덱스
-                        std::vector<uint16_t> localIndices;
-                        if (primitive.indices >= 0) {
-                            const Accessor& idxAccessor = model.accessors[primitive.indices];
-                            const BufferView& idxView = model.bufferViews[idxAccessor.bufferView];
-                            const Buffer& idxBuffer = model.buffers[idxView.buffer];
 
-                            const void* dataPtr = &idxBuffer.data[idxView.byteOffset + idxAccessor.byteOffset];
-
-                            for (size_t i = 0; i < idxAccessor.count; ++i) {
-                                uint16_t idx = 0;
-                                if (idxAccessor.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT) {
-                                    idx = reinterpret_cast<const uint16_t*>(dataPtr)[i];
-                                }
-                                else if (idxAccessor.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT) {
-                                    idx = static_cast<uint16_t>(reinterpret_cast<const uint32_t*>(dataPtr)[i]);
-                                }
-                                else if (idxAccessor.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE) {
-                                    idx = reinterpret_cast<const uint8_t*>(dataPtr)[i];
-                                }
-                                localIndices.push_back(idx);
-                            }
+                        // TANGENT
+                        const float* tangents = nullptr;
+                        if (attributes.find("TANGENT") != attributes.end()) {
+                            const Accessor& tanAccessor = model.accessors[attributes.at("TANGENT")];
+                            const BufferView& tanView = model.bufferViews[tanAccessor.bufferView];
+                            const Buffer& tanBuffer = model.buffers[tanView.buffer];
+                            tangents = reinterpret_cast<const float*>(
+                                &tanBuffer.data[tanView.byteOffset + tanAccessor.byteOffset]);
                         }
-#else
+
+
                         const Accessor& idxAccessor = model.accessors[primitive.indices];
                         const BufferView& idxView = model.bufferViews[idxAccessor.bufferView];
                         const Buffer& idxBuffer = model.buffers[idxView.buffer];
@@ -198,25 +188,38 @@ namespace vkengine {
                             return;
                         }
 
-#endif
                         size_t vertexCount = posAccessor.count;
 
                         for (size_t i = 0; i < vertexCount; ++i) {
                             Vertex v;
-                            v.pos = cVec3(
-                                positions[i * 3 + 0],
-                                positions[i * 3 + 1],
-                                positions[i * 3 + 2]
+                            v.pos = cVec3(positions[i * 3 + 0], positions[i * 3 + 1], positions[i * 3 + 2]
                             );
                             if (normals)
+                            {
                                 v.normal = cVec3(normals[i * 3 + 0], normals[i * 3 + 1], normals[i * 3 + 2]);
+                            }
                             else
+                            {
                                 v.normal = cVec3(0.0f, 0.0f, 0.0f);
+                            }
 
                             if (texcoords)
+                            {
                                 v.texCoord = cVec3(texcoords[i * 2 + 0], texcoords[i * 2 + 1], 0.0f);
+                            }
                             else
+                            {
                                 v.texCoord = cVec3(0.0f, 0.0f, 0.0f);
+                            }
+
+                            if (tangents)
+                            {
+                                v.inTangent = cVec4(tangents[i * 4 + 0], tangents[i * 4 + 1], tangents[i * 4 + 2], tangents[i * 4 + 3]);
+                            }
+                            else
+                            {
+                                v.inTangent = cVec4(0.0f, 0.0f, 0.0f, 0.0f);
+                            }
 
                             vertices.push_back(v);
                         }

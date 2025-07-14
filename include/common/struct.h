@@ -69,6 +69,7 @@ struct Vertex {
     cVec3 pos;
     cVec3 normal;
     cVec3 texCoord;
+    cVec4 inTangent;
 
     // 바인딩 설명을 반환하는 함수
     // 이 구조체의 멤버 변수가 어떻게 바인딩되는지 설명합니다.
@@ -83,9 +84,8 @@ struct Vertex {
     }
 
     // 어트리뷰트 설명을 반환하는 함수
-    // 위치와 색상을 나타내는 두 개의 어트리뷰트가 있습니다.
-    static std::array<VkVertexInputAttributeDescription, 3> getAttributeDescriptions() {
-        std::array<VkVertexInputAttributeDescription, 3> attributeDescriptions{};
+    static std::array<VkVertexInputAttributeDescription, 4> getAttributeDescriptions() {
+        std::array<VkVertexInputAttributeDescription, 4> attributeDescriptions{};
 
         attributeDescriptions[0].binding = 0;
         attributeDescriptions[0].location = 0;
@@ -102,11 +102,20 @@ struct Vertex {
         attributeDescriptions[2].format = VK_FORMAT_R32G32B32_SFLOAT;
         attributeDescriptions[2].offset = offsetof(Vertex, texCoord);
 
+        attributeDescriptions[3].binding = 0;
+        attributeDescriptions[3].location = 3;
+        attributeDescriptions[3].format = VK_FORMAT_R32G32B32A32_SFLOAT;
+        attributeDescriptions[3].offset = offsetof(Vertex, inTangent);
+
         return attributeDescriptions;
     }
 
     cBool operator==(const Vertex& other) const {
-        return pos == other.pos && normal == other.normal && texCoord == other.texCoord;
+        return 
+            pos == other.pos && 
+            normal == other.normal && 
+            texCoord == other.texCoord && 
+            inTangent == other.inTangent;
     }
 
 };

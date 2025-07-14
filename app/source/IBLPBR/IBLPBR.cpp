@@ -294,14 +294,6 @@ namespace vkengine {
 
             this->material.material = material;
 
-            // SubUiform UI
-            cFloat boolCheck[4] = {
-                0.0f, // useTexture
-                0.0f, // brdfLUTTexture
-                0.0f, // prefilteredCubeTexture
-                0.0f  // irradianceCubeTexture
-            };
-
             cBool checkUseTexture = this->subUniform.subUniform.useTexture ? VK_TRUE : VK_FALSE;
             cBool checkBRDFLUTTexture = this->subUniform.subUniform.brdfLUTTexture ? VK_TRUE : VK_FALSE;
             cBool checkPrefilteredCubeTexture = this->subUniform.subUniform.prefilteredCubeTexture ? VK_TRUE : VK_FALSE;
@@ -449,10 +441,10 @@ namespace vkengine {
             vkCmdBindPipeline(framedata->mainCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->VKSkyMapPipeline);
             this->skyBox->draw(framedata->mainCommandBuffer);
 
-            this->modeltDescriptor2->BindDescriptorSets(framedata->mainCommandBuffer,this->currentFrame,0);
+            this->modeltDescriptor2->BindDescriptorSets(framedata->mainCommandBuffer,this->currentFrame, 0);
             vkCmdBindPipeline(framedata->mainCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->VKgraphicsPipeline);
             vkCmdPushConstants(framedata->mainCommandBuffer, this->modeltDescriptor2->VKpipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(cVec3), &this->modelObject->getPosition());
-            vkCmdPushConstants(framedata->mainCommandBuffer, this->modeltDescriptor2->VKpipelineLayout, VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(cVec3), sizeof(cMaterial), &this->material.material);
+            /*vkCmdPushConstants(framedata->mainCommandBuffer, this->modeltDescriptor2->VKpipelineLayout, VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(cVec3), sizeof(cMaterial), &this->material.material);*/
             this->modelObject->draw(framedata->mainCommandBuffer);
             
             if (useNormalRander)

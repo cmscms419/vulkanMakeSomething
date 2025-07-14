@@ -20,6 +20,7 @@
     <ClCompile Include="..\..\app\component\imgui\imgui_tables.cpp" />
     <ClCompile Include="..\..\app\component\imgui\imgui_widgets.cpp" />
     <ClCompile Include="..\..\app\component\object3D.cpp" />
+    <ClCompile Include="..\..\app\component\VKGeometryGenerator.cpp" />
     <ClCompile Include="..\..\app\component\VKimgui.cpp" />
     <ClCompile Include="..\..\app\component\VKLoadModel.cpp" />
     <ClCompile Include="..\..\app\component\VKmodelDescriptor.cpp" />
@@ -33,6 +34,7 @@
     <ClInclude Include="..\..\app\component\imgui\imstb_truetype.h" />
     <ClInclude Include="..\..\include\component\Camera.h" />
     <ClInclude Include="..\..\include\component\object3D.h" />
+    <ClInclude Include="..\..\include\component\VKGeometryGenerator.h" />
     <ClInclude Include="..\..\include\component\VKimgui.h" />
     <ClInclude Include="..\..\include\component\VKLoadModel.h" />
     <ClInclude Include="..\..\include\component\VKmodelDescriptor.h" />
