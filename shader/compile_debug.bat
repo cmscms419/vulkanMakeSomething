@@ -11,6 +11,7 @@ for %%f in (*.vert) do (
 
 echo.
 echo vert compile complete
+
 echo.
 echo frag compile start
 
@@ -19,5 +20,15 @@ for %%f in (*.frag) do (
     %GLSLANG_VALIDATOR% -e main -gFS -V -o frag%%~nf.spv %%f
 )
 
+echo.
+echo frag compile complete
+
+echo.
+echo comp compile start
+
+for %%f in (*.comp) do (
+    echo compiling: %%f
+    %GLSLANG_VALIDATOR% -V -g -Od -gCS %%f -o comp%%~nf.spv
+)
 
 pause

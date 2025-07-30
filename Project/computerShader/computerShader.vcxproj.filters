@@ -1,0 +1,10 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClInclude Include="..\..\app\source\computerShader\computerShader.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\app\source\computerShader\main_engine.cpp" />
+    <ClCompile Include="..\..\app\source\computerShader\computerShader.cpp" />
+  </ItemGroup>
+</Project>

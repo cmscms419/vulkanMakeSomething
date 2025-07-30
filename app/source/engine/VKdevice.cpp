@@ -85,7 +85,7 @@ namespace vkengine {
         // 논리 장치를 생성합니다.
         _VK_CHECK_RESULT_(result = vkCreateDevice(this->physicalDevice, &createInfo, nullptr, &this->logicaldevice));
 
-        // 논리 디바이스에서 그래픽 큐 핸들을 가져옵니다.
+        // 논리 디바이스에서 그래픽/컴퓨터 큐 핸들을 가져옵니다.
         vkGetDeviceQueue(this->logicaldevice, this->queueFamilyIndices.graphicsAndComputeFamily, 0, &this->graphicsVKQueue);
         
         // 논리 디바이스에서 프레젠테이션 큐 핸들을 가져옵니다.

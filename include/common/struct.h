@@ -132,9 +132,10 @@ struct subUniformBuffer {
 };
 
 struct Particle {
-    cVec2 position;
-    cVec2 velocity;
-    cVec4 color;
+    cVec3 position;
+    cVec3 velocity;
+    cVec3 color;
+    cVec4 empty;
 
     static VkVertexInputBindingDescription getBindingDescription() {
         VkVertexInputBindingDescription bindingDescription{};
@@ -145,18 +146,28 @@ struct Particle {
         return bindingDescription;
     }
 
-    static std::array<VkVertexInputAttributeDescription, 2> getAttributeDescriptions() {
-        std::array<VkVertexInputAttributeDescription, 2> attributeDescriptions{};
+    static std::array<VkVertexInputAttributeDescription, 3> getAttributeDescriptions() {
+        std::array<VkVertexInputAttributeDescription, 3> attributeDescriptions{};
 
         attributeDescriptions[0].binding = 0;
         attributeDescriptions[0].location = 0;
-        attributeDescriptions[0].format = VK_FORMAT_R32G32_SFLOAT;
+        attributeDescriptions[0].format = VK_FORMAT_R32G32B32_SFLOAT;
         attributeDescriptions[0].offset = offsetof(Particle, position);
 
         attributeDescriptions[1].binding = 0;
         attributeDescriptions[1].location = 1;
-        attributeDescriptions[1].format = VK_FORMAT_R32G32B32A32_SFLOAT;
-        attributeDescriptions[1].offset = offsetof(Particle, color);
+        attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
+        attributeDescriptions[1].offset = offsetof(Particle, velocity);
+
+        attributeDescriptions[2].binding = 0;
+        attributeDescriptions[2].location = 2;
+        attributeDescriptions[2].format = VK_FORMAT_R32G32B32_SFLOAT;
+        attributeDescriptions[2].offset = offsetof(Particle, color);
+
+        attributeDescriptions[3].binding = 0;
+        attributeDescriptions[3].location = 3;
+        attributeDescriptions[3].format = VK_FORMAT_R32G32B32A32_SFLOAT;
+        attributeDescriptions[3].offset = offsetof(Particle, empty);
 
         return attributeDescriptions;
     }
@@ -201,6 +212,29 @@ struct FrameData {
         return info;
     }
 };
+
+struct ComputerFrameData {
+
+    ComputerFrameData() {
+        mainCommandBuffer = VK_NULL_HANDLE;
+        computeFinishedSemaphores = VK_NULL_HANDLE;
+        VkinFlightFences = VK_NULL_HANDLE;
+    }
+
+    VkCommandBufferBeginInfo commandBufferBeginInfo(VkCommandBufferUsageFlags flags = 0) {
+        VkCommandBufferBeginInfo info = {};
+        info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+        info.pNext = nullptr;
+        info.flags = flags;
+        info.pInheritanceInfo = nullptr;
+        return info;
+    }
+
+    VkCommandBuffer mainCommandBuffer;
+    VkSemaphore computeFinishedSemaphores;
+    VkFence VkinFlightFences;
+};
+
 
 struct UniformBufferObject {
     cMat4 model;
