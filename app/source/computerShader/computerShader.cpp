@@ -20,12 +20,8 @@ namespace vkengine {
     {
         VulkanEngine::prepare();
         this->init_sync_structures();
-        // this->vkGUI = new vkengine::vkGUI(this);
 
         this->createShaderStorageBuffers();
-        // this->createVertexbuffer();
-        // this->createIndexBuffer();
-        // this->createUniformBuffers();
 
         this->createDescriptor();
 
@@ -56,12 +52,10 @@ namespace vkengine {
             vkDestroyPipeline(this->VKdevice->logicaldevice, this->graphicsPipeline, nullptr);
 
             // object 제거
+            this->particleObject->cleanup();
 
             for (size_t i = 0; i < 2; i++)
             {
-                vkDestroyBuffer(this->VKdevice->logicaldevice, this->shaderStorageBuffers[i], nullptr);
-                vkFreeMemory(this->VKdevice->logicaldevice, this->shaderStorageBuffersMemory[i], nullptr);
-                
                 vkDestroyBuffer(this->VKdevice->logicaldevice, this->uboTimeBuffers[i], nullptr);
                 vkFreeMemory(this->VKdevice->logicaldevice, this->uboTimeBuffersMemory[i], nullptr);
             }
@@ -324,7 +318,8 @@ namespace vkengine {
             vkCmdSetScissor(framedata->mainCommandBuffer, 0, 1, &scissor);
 
             VkDeviceSize offsets[] = { 0 };
-            vkCmdBindVertexBuffers(framedata->mainCommandBuffer, 0, 1, &shaderStorageBuffers[currentFrame], offsets);
+            VkBuffer buffer = this->particleObject->getParticleBuffer(this->currentFrame);
+            vkCmdBindVertexBuffers(framedata->mainCommandBuffer, 0, 1, &buffer, offsets);
 
             vkCmdDraw(framedata->mainCommandBuffer, MAX_PARTICALES, 1, 0, 0);
         }
@@ -367,85 +362,35 @@ namespace vkengine {
         }
     }
 
-    void computerShaderEngine::createVertexbuffer()
-    {
-    }
-
-    void computerShaderEngine::createIndexBuffer()
-    {
-    }
-
-    void computerShaderEngine::createUniformBuffers()
-    {
-        
-    }
-
     void computerShaderEngine::createShaderStorageBuffers()
     {
+        this->particleObject = new object::ParticleObject(this->getDevice());
+
         std::default_random_engine rndEngine((unsigned)time(nullptr));
         std::uniform_real_distribution<float> rndDist(0.0f, 50);
 
         // 파티클의 uniform buffer를 생성합니다.
-        for (auto& particle : this->particles)
+        for (size_t i = 0; i < MAX_PARTICALES; i++)
         {
+            Particle particle;
+
             cFloat r = 0.25f * sqrt(rndDist(rndEngine));
             cFloat theta = rndDist(rndEngine) * 2 * 3.14159265358979323846;
             cFloat x = r * cos(theta) * HEIGHT / WIDTH;
             cFloat y = r * sin(theta);
             cFloat z = 0.0f;
+
             particle.position = cVec3(x, y, z);
             particle.velocity = cVec3(glm::normalize(cVec2(x, y)) * 0.00025f, 0.0f); // 속도는 정규화된 벡터로 설정합니다.
             particle.color = glm::vec3(rndDist(rndEngine), rndDist(rndEngine), rndDist(rndEngine));
             particle.empty = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f); // empty는 사용하지 않지만, 파티클 구조체의 크기를 맞추기 위해 사용합니다.
+
+            this->particleObject->addParticle(particle); // 파티클 오브젝트에 파티클을 추가합니다.
         }
 
-        VkDeviceSize bufferSize = sizeof(Particle) * MAX_PARTICALES;
+        this->particleObject->createParticleBuffers();
 
-        VkBuffer stagingBuffer;
-        VkDeviceMemory stagingBufferMemory;
-
-        helper::createBuffer(
-            this->VKdevice->logicaldevice,
-            this->VKdevice->physicalDevice,
-            bufferSize,
-            VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-            stagingBuffer,
-            stagingBufferMemory);
-
-        void* data;
-        vkMapMemory(this->VKdevice->logicaldevice, stagingBufferMemory, 0, bufferSize, 0, &data);
-        memcpy(data, &particles, (size_t)bufferSize);
-        vkUnmapMemory(this->VKdevice->logicaldevice, stagingBufferMemory);
-
-        for (size_t i = 0; i < 2; i++)
-        {
-            helper::createBuffer(
-                this->VKdevice->logicaldevice,
-                this->VKdevice->physicalDevice,
-                bufferSize,
-                VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
-                VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-                this->shaderStorageBuffers[i],
-                this->shaderStorageBuffersMemory[i]);
-
-            // MAX_PARTICALES개의 파티클을 shaderStorageBuffers[i]에 복사
-            // 각 프레임마다 파티클의 위치를 업데이트
-            helper::copyBuffer(
-                this->VKdevice->logicaldevice,
-                this->VKdevice->commandPool,
-                this->VKdevice->graphicsVKQueue,
-                stagingBuffer,
-                this->shaderStorageBuffers[i],
-                bufferSize);
-
-        }
-
-        // 스테이징 버퍼를 정리합니다.
-        vkDestroyBuffer(this->VKdevice->logicaldevice, stagingBuffer, nullptr);
-        vkFreeMemory(this->VKdevice->logicaldevice, stagingBufferMemory, nullptr);
-
-        bufferSize = sizeof(UniformBufferTime);
+        VkDeviceSize bufferSize = sizeof(UniformBufferTime);
         for (size_t i = 0; i < 2; i++)
         {
             helper::createBuffer(
@@ -500,11 +445,11 @@ namespace vkengine {
         VkDescriptorBufferInfo particleInput{};
         VkDescriptorBufferInfo particleOuput{};
 
-        particleInput.buffer = this->shaderStorageBuffers[1];
+        particleInput.buffer = this->particleObject->InputPartucleBuffer.buffer;
         particleInput.offset = 0;
         particleInput.range = sizeof(Particle) * MAX_PARTICALES; // MAX_PARTICALES개의 파티클
 
-        particleOuput.buffer = this->shaderStorageBuffers[0];
+        particleOuput.buffer = this->particleObject->OutputPartucleBuffer.buffer;
         particleOuput.offset = 0;
         particleOuput.range = sizeof(Particle) * MAX_PARTICALES; // MAX_PARTICALES개의 파티클
 

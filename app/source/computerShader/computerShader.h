@@ -18,7 +18,6 @@
 
 namespace vkengine
 {
-
     class computerShaderEngine : public VulkanEngine {
     public:
         computerShaderEngine(std::string root_path);
@@ -39,9 +38,6 @@ namespace vkengine
         void createComputerCommandBuffer();
 
         // 각 3d 모델을 생성하기 위한 함수
-        void createVertexbuffer();
-        void createIndexBuffer();
-        void createUniformBuffers();
         void createShaderStorageBuffers();
         
         void createDescriptor();
@@ -55,11 +51,10 @@ namespace vkengine
         // imgui 관련
         vkGUI* vkGUI = nullptr;
 
-        Particle particles[MAX_PARTICALES]; // 파티클 개수
-        UniformBufferTime uboTime; // 시간 관련 uniform buffer
+        // Particle Object
+        object::ParticleObject* particleObject; // 파티클 오브젝트
         
-        VkBuffer shaderStorageBuffers[2];
-        VkDeviceMemory shaderStorageBuffersMemory[2];
+        UniformBufferTime uboTime; // 시간 관련 uniform buffer
 
         VkBuffer uboTimeBuffers[2];
         VkDeviceMemory uboTimeBuffersMemory[2];

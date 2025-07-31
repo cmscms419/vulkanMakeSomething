@@ -153,6 +153,54 @@ namespace vkengine {
 
             memcpy(this->modelviewprojUniformBuffer[currentImage].mapped, &ubo, sizeof(ubo));
         }
+
+        void ParticleObject::createParticleBuffers(VkBufferUsageFlags usage, VkMemoryPropertyFlags properties)
+        {
+            VkDevice logicaldevice = this->logicaldevice;
+            VkPhysicalDevice physicalDevice = this->physicalDevice;
+            VkDeviceSize bufferSize = sizeof(Particle) * this->objects.size();
+
+            this->InputPartucleBuffer.device = logicaldevice;
+            this->InputPartucleBuffer.size = bufferSize;
+            this->InputPartucleBuffer.usageFlags = usage;
+            this->InputPartucleBuffer.memoryPropertyFlags = properties;
+
+            this->OutputPartucleBuffer.device = logicaldevice;
+            this->OutputPartucleBuffer.size = bufferSize;
+            this->OutputPartucleBuffer.usageFlags = usage;
+            this->OutputPartucleBuffer.memoryPropertyFlags = properties;
+            
+            this->InputPartucleBuffer.createBuffer(physicalDevice);
+            this->OutputPartucleBuffer.createBuffer(physicalDevice);
+
+            PaterialBuffer staging;
+            staging.device = logicaldevice;
+            staging.size = bufferSize;
+            staging.usageFlags = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+            staging.memoryPropertyFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
+
+            staging.createBuffer(physicalDevice);
+            staging.mapToMeBuffer(bufferSize, 0);
+            staging.copyToMeBuffer(this->objects.data(), bufferSize);
+
+            helper::copyBuffer(
+                this->logicaldevice,
+                this->commandPool,
+                this->graphicsVKQueue,
+                staging.buffer,
+                this->InputPartucleBuffer.buffer,
+                bufferSize);
+
+            helper::copyBuffer(
+                this->logicaldevice,
+                this->commandPool,
+                this->graphicsVKQueue,
+                staging.buffer,
+                this->OutputPartucleBuffer.buffer,
+                bufferSize);
+
+            staging.cleanup();
+        }
     }
 }
 

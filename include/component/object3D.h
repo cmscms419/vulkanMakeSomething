@@ -166,18 +166,39 @@ namespace vkengine {
         private:
         };
 
-
         // Particle은 Object를 상속받지 않습니다.
         // VertexBuffer와 IndexBuffer를 사용하지 않기 때문입니다.
         // 어떻게 할지 명확하게 정의되지 않음, 하지만 사용해야 하기에 VKBaseObject를 상속받습니다.
-        class Particle : VKBaseObject {
+        class ParticleObject : VKBaseObject {
+
         public:
-            Particle(VKdeviceHandler* device) : VKBaseObject(device) {};
+            void cleanup() {
+                this->InputPartucleBuffer.cleanup();
+                this->OutputPartucleBuffer.cleanup();
+                this->objects.clear();
+            };
+
+            ParticleObject(VKdeviceHandler* device) : VKBaseObject(device) {};
             void setParticles(std::vector<Particle>& particles) { this->objects = particles; };
             void addParticle(const Particle& particle) { this->objects.push_back(particle); };
             size_t getParticleCount() const { return this->objects.size(); };
             
-            PaterialBuffer InputPartucleBuffer; // 입력 파티클 버퍼
+            VkBuffer getParticleBuffer(size_t currentFrame)
+            {
+                if (currentFrame % 2 == 0) {
+                    return this->InputPartucleBuffer.buffer;
+                }
+                else {
+                    return this->OutputPartucleBuffer.buffer;
+                }
+            }
+
+            void createParticleBuffers(
+                VkBufferUsageFlags usage = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
+                VkMemoryPropertyFlags properties = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
+            );
+            
+            PaterialBuffer InputPartucleBuffer; // 입력 파티클 버퍼 
             PaterialBuffer OutputPartucleBuffer; // 출력 파티클 버퍼
 
         private:
