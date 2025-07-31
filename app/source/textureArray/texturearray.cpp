@@ -26,7 +26,12 @@ namespace vkengine {
         int texChannels = 0;
 
         this->textureArray = Vk2DTextureArray();
-        this->textureArray.setDevice(this->VKdevice.get());
+        this->textureArray.initializeDeviceHandles(
+            this->VKdevice->physicalDevice,
+            this->VKdevice->logicaldevice,
+            this->VKdevice->commandPool,
+            this->VKdevice->graphicsVKQueue
+        );
 
         std::vector<std::string> pathArray = {
            this->RootPath + RESOURSE_PATH + TEST_TEXTURE_PATH_ARRAY0,

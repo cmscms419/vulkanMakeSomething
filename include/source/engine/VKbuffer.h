@@ -7,8 +7,8 @@
 
 namespace vkengine {
 
-    struct VkBufferObject {
-
+    struct VkBaseBuffer {
+        cString name = "Default";
         VkDevice device = VK_NULL_HANDLE; ///< Vulkan 장치 핸들
         VkBuffer buffer = VK_NULL_HANDLE; ///< Vulkan 버퍼 핸들
         VkDeviceMemory memory = VK_NULL_HANDLE; ///< Vulkan 장치 메모리 핸들
@@ -31,54 +31,57 @@ namespace vkengine {
             this->descriptor.offset = 0;
             this->descriptor.range = this->size;
         };
+
+        VkBaseBuffer(VkDeviceSize size = 0, cString name = "Default")
+            : name(name), size(size) {}
+
     };
 
-    struct VertexBuffer : public VkBufferObject
+    struct VertexBuffer : public VkBaseBuffer
     {
-        std::vector<Vertex> vertices;
-    };
-
-    struct IndexBuffer : public VkBufferObject
-    {
-        std::vector<uint16_t> indices;
-        void setIndices(std::vector<uint16_t>& indices) { this->indices = indices; }
-    };
-
-    struct UniformBuffer : public VkBufferObject
-    {
-        UniformBufferObject trs = {};
-
-        UniformBuffer()
+        VertexBuffer(VkDeviceSize size = sizeof(Vertex), cString name = "DefaultVertext")
         {
-            this->size = sizeof(UniformBufferObject);
-        };
-
-    };
-
-    struct UniformBufferSkymap : public VkBufferObject
-    {
-        UniformBufferSkymapParams uboParams = {};
-
-        UniformBufferSkymap()
-        {
-            this->size = sizeof(UniformBufferSkymapParams);
+            VkBaseBuffer buffer(size, name);
         };
     };
 
-    struct MaterialBuffer : public VkBufferObject
+    struct IndexBuffer : public VkBaseBuffer
     {
-        cMaterial material = {};
-        cString name;
-        MaterialBuffer(
-            cString name = "DefaultMaterial",
-            cFloat metallic = 0.0f,
-            cFloat roughness = 0.0f,
-            cVec4 color = cVec4(0.0f, 0.0f, 0.0f, 1.0f)
-        )
+        IndexBuffer(VkDeviceSize size = sizeof(cUint16_t), cString name = "DefaultIndexBuffer")
         {
-            this->size = sizeof(cMaterial);
-            this->name = name;
-            this->material = cMaterial(metallic, roughness, color);
+            VkBaseBuffer buffer(size, name);
+        };
+    };
+
+    struct UniformBuffer : public VkBaseBuffer
+    {
+        UniformBuffer(VkDeviceSize size = sizeof(UniformBufferObject), cString name = "DefaultUniformBuffer")
+        {
+            VkBaseBuffer buffer(size, name);
+        };
+    };
+
+    struct UniformBufferSkymap : public VkBaseBuffer
+    {
+        UniformBufferSkymap(VkDeviceSize size = sizeof(UniformBufferObject), cString name = "DefaultUniformBufferSkymap")
+        {
+            VkBaseBuffer buffer(size, name);
+        };
+    };
+
+    struct MaterialBuffer : public VkBaseBuffer
+    {
+        MaterialBuffer(VkDeviceSize size = sizeof(cMaterial), cString name = "DefaultMaterial")
+        {
+            VkBaseBuffer buffer(size, name);
+        };
+    };
+
+    struct PaterialBuffer : public VkBaseBuffer
+    {
+        PaterialBuffer(VkDeviceSize size = sizeof(Particle), cString name = "DefaultPaterial")
+        {
+            VkBaseBuffer buffer(size, name);
         };
     };
 }

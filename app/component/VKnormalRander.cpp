@@ -17,7 +17,7 @@ namespace vkengine
             this->cleanupNormalRanderPipeline();
         }
 
-        void normalRander::createNormalObject(vkengine::object::Object* object)
+        void normalRander::createNormalObject(vkengine::object::Object3d* object)
         {
             std::vector<Vertex> normalVertices;
             std::vector<uint16_t> normalIndices;
@@ -38,7 +38,7 @@ namespace vkengine
             }
 
             this->normalRanderObject = new vkengine::object::ModelObject(engine->getDevice());
-            this->normalRanderObject->setName("Normal Rander Object");
+            this->normalRanderObject->setName("Normal Rander Object3d");
             this->normalRanderObject->setVertices(normalVertices);
             this->normalRanderObject->setIndices(normalIndices);
             this->normalRanderObject->setMatrix(object->getMatrix());
@@ -205,7 +205,7 @@ namespace vkengine
             vkCmdPushConstants(frameData->mainCommandBuffer, this->normalRanderDescriptor->VKpipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(float), &this->normalRanderObjectScale);
             vkCmdBindVertexBuffers(frameData->mainCommandBuffer, 0, 1, &this->normalRanderObject->getVertexBuffer()->buffer, offsets);
             vkCmdBindIndexBuffer(frameData->mainCommandBuffer, this->normalRanderObject->getIndexBuffer()->buffer, 0, VK_INDEX_TYPE_UINT16);
-            vkCmdDrawIndexed(frameData->mainCommandBuffer, static_cast<uint32_t>(this->normalRanderObject->getIndexBuffer()->indices.size()), 1, 0, 0, 0);
+            vkCmdDrawIndexed(frameData->mainCommandBuffer, static_cast<uint32_t>(this->normalRanderObject->getIndices()->size()), 1, 0, 0, 0);
 
         }
 

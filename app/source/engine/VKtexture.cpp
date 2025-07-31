@@ -19,8 +19,8 @@ namespace vkengine {
         VkDeviceMemory stagingBufferMemory;
 
         vkengine::helper::createBuffer(
-            this->device->logicaldevice,
-            this->device->physicalDevice,
+            this->logicaldevice,
+            this->physicalDevice,
             imageSize,
             VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
             VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
@@ -29,14 +29,14 @@ namespace vkengine {
             stagingBufferMemory);
 
         vkengine::helper::copyToDeviceMemory(
-            this->device->logicaldevice,
+            this->logicaldevice,
             pixels,
             stagingBufferMemory,
             imageSize);
 
         vkengine::helper::createImage(
-            this->device->logicaldevice,
-            this->device->physicalDevice,
+            this->logicaldevice,
+            this->physicalDevice,
             texWidth,
             texHeight,
             this->VKmipLevels,
@@ -49,9 +49,9 @@ namespace vkengine {
             this->imageMemory);
 
         vkengine::helper::transitionImageLayout(
-            this->device->logicaldevice,
-            this->device->commandPool,
-            this->device->graphicsVKQueue,
+            this->logicaldevice,
+            this->commandPool,
+            this->graphicsVKQueue,
             this->image,
             VK_FORMAT_R8G8B8A8_SRGB,
             VK_IMAGE_LAYOUT_UNDEFINED,
@@ -59,22 +59,22 @@ namespace vkengine {
             this->VKmipLevels);
 
         vkengine::helper::copyBufferToImage(
-            this->device->logicaldevice,
-            this->device->commandPool,
-            this->device->graphicsVKQueue,
+            this->logicaldevice,
+            this->commandPool,
+            this->graphicsVKQueue,
             stagingBuffer,
             this->image,
             texWidth,
             texHeight);
 
-        vkDestroyBuffer(this->device->logicaldevice, stagingBuffer, nullptr);
-        vkFreeMemory(this->device->logicaldevice, stagingBufferMemory, nullptr);
+        vkDestroyBuffer(this->logicaldevice, stagingBuffer, nullptr);
+        vkFreeMemory(this->logicaldevice, stagingBufferMemory, nullptr);
 
         vkengine::helper::generateMipmaps(
-            this->device->physicalDevice,
-            this->device->logicaldevice,
-            this->device->commandPool,
-            this->device->graphicsVKQueue,
+            this->physicalDevice,
+            this->logicaldevice,
+            this->commandPool,
+            this->graphicsVKQueue,
             this->image,
             VK_FORMAT_R8G8B8A8_SRGB,
             texWidth,
@@ -85,7 +85,7 @@ namespace vkengine {
     void Vk2DTexture::createTextureImageView(VkFormat format)
     {
         this->imageView = vkengine::helper::createImageView(
-            this->device->logicaldevice,
+            this->logicaldevice,
             this->image,
             format,
             VK_IMAGE_ASPECT_COLOR_BIT,
@@ -95,7 +95,7 @@ namespace vkengine {
     void Vk2DTexture::createTextureSampler()
     {
         VkPhysicalDeviceProperties properties{};
-        vkGetPhysicalDeviceProperties(this->device->physicalDevice, &properties);
+        vkGetPhysicalDeviceProperties(this->physicalDevice, &properties);
 
         VkSamplerCreateInfo samplerInfo{};
         samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
@@ -115,7 +115,7 @@ namespace vkengine {
         samplerInfo.minLod = 0.0f;
         samplerInfo.maxLod = 0.0f;
 
-        _VK_CHECK_RESULT_(vkCreateSampler(this->device->logicaldevice, &samplerInfo, nullptr, &this->sampler));
+        _VK_CHECK_RESULT_(vkCreateSampler(this->logicaldevice, &samplerInfo, nullptr, &this->sampler));
     }
 
     // https://github.com/SaschaWillems/Vulkan 이 사이트에서 texturearray 참고
@@ -147,8 +147,8 @@ namespace vkengine {
         VkDeviceMemory stagingBufferMemory;
 
         vkengine::helper::createBuffer(
-            this->device->logicaldevice,
-            this->device->physicalDevice,
+            this->logicaldevice,
+            this->physicalDevice,
             totalImageSize,
             VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
             VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
@@ -164,7 +164,7 @@ namespace vkengine {
 
             // imageSizes[i]는 현재 이미지의 크기입니다.
             vkengine::helper::copyToDeviceMemory(
-                this->device->logicaldevice,
+                this->logicaldevice,
                 resourcePNG.data,
                 stagingBufferMemory,
                 imageSizes[i],
@@ -181,8 +181,8 @@ namespace vkengine {
 
         // 4. 이미지 메모리 생성  
         vkengine::helper::createImage(
-            this->device->logicaldevice,
-            this->device->physicalDevice,
+            this->logicaldevice,
+            this->physicalDevice,
             width,
             height,
             channels,
@@ -196,9 +196,9 @@ namespace vkengine {
             this->imageCount);
 
         vkengine::helper::transitionImageLayout(
-            this->device->logicaldevice,
-            this->device->commandPool,
-            this->device->graphicsVKQueue,
+            this->logicaldevice,
+            this->commandPool,
+            this->graphicsVKQueue,
             this->image,
             VK_FORMAT_R8G8B8A8_SRGB,
             VK_IMAGE_LAYOUT_UNDEFINED,
@@ -207,9 +207,9 @@ namespace vkengine {
             this->imageCount);
 
         vkengine::helper::copyBufferToImage2(
-            this->device->logicaldevice,
-            this->device->commandPool,
-            this->device->graphicsVKQueue,
+            this->logicaldevice,
+            this->commandPool,
+            this->graphicsVKQueue,
             stagingBuffer,
             this->image,
             width,
@@ -217,9 +217,9 @@ namespace vkengine {
             imageSizes);
 
         vkengine::helper::transitionImageLayout(
-            this->device->logicaldevice,
-            this->device->commandPool,
-            this->device->graphicsVKQueue,
+            this->logicaldevice,
+            this->commandPool,
+            this->graphicsVKQueue,
             this->image,
             VK_FORMAT_R8G8B8A8_SRGB,
             VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
@@ -227,15 +227,15 @@ namespace vkengine {
             this->VKmipLevels,
             this->imageCount);
 
-        vkDestroyBuffer(this->device->logicaldevice, stagingBuffer, nullptr);
-        vkFreeMemory(this->device->logicaldevice, stagingBufferMemory, nullptr);
+        vkDestroyBuffer(this->logicaldevice, stagingBuffer, nullptr);
+        vkFreeMemory(this->logicaldevice, stagingBufferMemory, nullptr);
 
     }
 
     void Vk2DTextureArray::createTextureImageView(VkFormat format)
     {
         this->imageView = vkengine::helper::createArrayImageView(
-            this->device->logicaldevice,
+            this->logicaldevice,
             this->image,
             format,
             VK_IMAGE_ASPECT_COLOR_BIT,
@@ -246,7 +246,7 @@ namespace vkengine {
     void Vk2DTextureArray::createTextureSampler()
     {
         VkPhysicalDeviceProperties properties{};
-        vkGetPhysicalDeviceProperties(this->device->physicalDevice, &properties);
+        vkGetPhysicalDeviceProperties(this->physicalDevice, &properties);
 
         VkSamplerCreateInfo samplerInfo{};
         samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
@@ -266,7 +266,7 @@ namespace vkengine {
         samplerInfo.minLod = 0.0f;
         samplerInfo.maxLod = 0.0f;
 
-        _VK_CHECK_RESULT_(vkCreateSampler(this->device->logicaldevice, &samplerInfo, nullptr, &this->sampler));
+        _VK_CHECK_RESULT_(vkCreateSampler(this->logicaldevice, &samplerInfo, nullptr, &this->sampler));
     }
 
     void VKcubeMap::createTextureImage()
@@ -304,8 +304,8 @@ namespace vkengine {
         VkDeviceMemory stagingBufferMemory;
 
         vkengine::helper::createBuffer(
-            this->device->logicaldevice,
-            this->device->physicalDevice,
+            this->logicaldevice,
+            this->physicalDevice,
             totalImageSize,
             VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
             VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
@@ -321,7 +321,7 @@ namespace vkengine {
 
             // imageSizes[i]는 현재 이미지의 크기입니다.
             vkengine::helper::copyToDeviceMemory(
-                this->device->logicaldevice,
+                this->logicaldevice,
                 resourcePNG.data,
                 stagingBufferMemory,
                 imageSizes[i],
@@ -338,8 +338,8 @@ namespace vkengine {
 
         // 4. 이미지 메모리 생성  
         vkengine::helper::createImage2(
-            this->device->logicaldevice,
-            this->device->physicalDevice,
+            this->logicaldevice,
+            this->physicalDevice,
             width,
             height,
             this->VKmipLevels,
@@ -355,9 +355,9 @@ namespace vkengine {
         );
 
         vkengine::helper::transitionImageLayout(
-            this->device->logicaldevice,
-            this->device->commandPool,
-            this->device->graphicsVKQueue,
+            this->logicaldevice,
+            this->commandPool,
+            this->graphicsVKQueue,
             this->image,
             VK_FORMAT_R8G8B8A8_SRGB,
             VK_IMAGE_LAYOUT_UNDEFINED,
@@ -366,9 +366,9 @@ namespace vkengine {
             imageCount);
 
         vkengine::helper::copyBufferToImage2(
-            this->device->logicaldevice,
-            this->device->commandPool,
-            this->device->graphicsVKQueue,
+            this->logicaldevice,
+            this->commandPool,
+            this->graphicsVKQueue,
             stagingBuffer,
             this->image,
             width,
@@ -376,18 +376,18 @@ namespace vkengine {
             imageSizes);
 
         vkengine::helper::generateMipmapsCubeMap(
-            this->device->physicalDevice,
-            this->device->logicaldevice,
-            this->device->commandPool,
-            this->device->graphicsVKQueue,
+            this->physicalDevice,
+            this->logicaldevice,
+            this->commandPool,
+            this->graphicsVKQueue,
             this->image,
             VK_FORMAT_R8G8B8A8_SRGB,
             width,
             height,
             this->VKmipLevels);
 
-        vkDestroyBuffer(this->device->logicaldevice, stagingBuffer, nullptr);
-        vkFreeMemory(this->device->logicaldevice, stagingBufferMemory, nullptr);
+        vkDestroyBuffer(this->logicaldevice, stagingBuffer, nullptr);
+        vkFreeMemory(this->logicaldevice, stagingBufferMemory, nullptr);
 
     }
 
@@ -408,8 +408,8 @@ namespace vkengine {
 
         // 2. KTX 텍스처 크기만큼 스테이징 버퍼 생성
         vkengine::helper::createBuffer(
-            this->device->logicaldevice,
-            this->device->physicalDevice,
+            this->logicaldevice,
+            this->physicalDevice,
             ktxTextureSize,
             VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
             VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
@@ -418,7 +418,7 @@ namespace vkengine {
 
         // 3. 스테이징 버퍼에 KTX 텍스처 데이터 복사
         vkengine::helper::copyToDeviceMemory(
-            this->device->logicaldevice,
+            this->logicaldevice,
             ktxTextureData,
             stagingMemory,
             ktxTextureSize);
@@ -433,8 +433,8 @@ namespace vkengine {
 
         // 5. 이미지 메모리 생성
         vkengine::helper::createImage2(
-            this->device->logicaldevice,
-            this->device->physicalDevice,
+            this->logicaldevice,
+            this->physicalDevice,
             width,
             height,
             this->VKmipLevels,
@@ -450,9 +450,9 @@ namespace vkengine {
         );
 
         vkengine::helper::transitionImageLayout(
-            this->device->logicaldevice,
-            this->device->commandPool,
-            this->device->graphicsVKQueue,
+            this->logicaldevice,
+            this->commandPool,
+            this->graphicsVKQueue,
             this->image,
             format,
             VK_IMAGE_LAYOUT_UNDEFINED,
@@ -461,9 +461,9 @@ namespace vkengine {
             6); // Cube map은 6개의 면을 가집니다.
         
         vkengine::helper::copyBufferToImageKTX(
-            this->device->logicaldevice,
-            this->device->commandPool,
-            this->device->graphicsVKQueue,
+            this->logicaldevice,
+            this->commandPool,
+            this->graphicsVKQueue,
             stagingBuffer,
             this->image,
             width,
@@ -473,24 +473,24 @@ namespace vkengine {
         );
 
         vkengine::helper::generateMipmapsCubeMap(
-            this->device->physicalDevice,
-            this->device->logicaldevice,
-            this->device->commandPool,
-            this->device->graphicsVKQueue,
+            this->physicalDevice,
+            this->logicaldevice,
+            this->commandPool,
+            this->graphicsVKQueue,
             this->image,
             format,
             width,
             height,
             this->VKmipLevels);
 
-        vkDestroyBuffer(this->device->logicaldevice, stagingBuffer, nullptr);
-        vkFreeMemory(this->device->logicaldevice, stagingMemory, nullptr);
+        vkDestroyBuffer(this->logicaldevice, stagingBuffer, nullptr);
+        vkFreeMemory(this->logicaldevice, stagingMemory, nullptr);
     }
 
     void VKcubeMap::createTextureImageView(VkFormat format)
     {
         this->imageView = vkengine::helper::createCubeImageView(
-            this->device->logicaldevice,
+            this->logicaldevice,
             this->image,
             format,
             VK_IMAGE_ASPECT_COLOR_BIT,
@@ -500,7 +500,7 @@ namespace vkengine {
     void VKcubeMap::createTextureSampler()
     {
         VkPhysicalDeviceProperties properties{};
-        vkGetPhysicalDeviceProperties(this->device->physicalDevice, &properties);
+        vkGetPhysicalDeviceProperties(this->physicalDevice, &properties);
 
         VkSamplerCreateInfo samplerInfo{};
         samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
@@ -520,7 +520,7 @@ namespace vkengine {
         samplerInfo.minLod = 0.0f;
         samplerInfo.maxLod = this->VKmipLevels;
 
-        _VK_CHECK_RESULT_(vkCreateSampler(this->device->logicaldevice, &samplerInfo, nullptr, &this->sampler));
+        _VK_CHECK_RESULT_(vkCreateSampler(this->logicaldevice, &samplerInfo, nullptr, &this->sampler));
     }
 
     void VkTextureBase::setResourcePNG(TextureResourcePNG* resourcePNG)

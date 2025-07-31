@@ -34,24 +34,23 @@ namespace vkengine {
         this->skyBox->createTexture2(VK_FORMAT_R16G16B16A16_SFLOAT); // 큐브맵 텍스처 생성
 
         const float p = 15.0f;
-        this->uboParams.uboParams.lightPos[0] = cVec4(-p, -p * 0.5f, -p, 1.0f);
-        this->uboParams.uboParams.lightPos[1] = cVec4(-p, -p * 0.5f, p, 1.0f);
-        this->uboParams.uboParams.lightPos[2] = cVec4(p, -p * 0.5f, p, 1.0f);
-        this->uboParams.uboParams.lightPos[3] = cVec4(p, -p * 0.5f, -p, 1.0f);
+        this->uboParamsData.lightPos[0] = cVec4(-p, -p * 0.5f, -p, 1.0f);
+        this->uboParamsData.lightPos[1] = cVec4(-p, -p * 0.5f, p, 1.0f);
+        this->uboParamsData.lightPos[2] = cVec4(p, -p * 0.5f, p, 1.0f);
+        this->uboParamsData.lightPos[3] = cVec4(p, -p * 0.5f, -p, 1.0f);
 
-        this->uboParams.uboParams.exposure = 1.0f; // 노출 값 설정
-        this->uboParams.uboParams.gamma = 2.2f; // 감마 값 설정
+        this->uboParamsData.exposure = 1.0f; // 노출 값 설정
+        this->uboParamsData.gamma = 2.2f; // 감마 값 설정
 
         this->initUI();
 
         // material 버퍼 생성
-        this->material = MaterialBuffer
-        (
-            "Titanium",
-            1.0f, // Metallic factor
-            0.1f, // Roughness factor
-            cVec4(0.541931f, 0.496791f, 0.449419f, 1.0f) // Color (Gold)
-        );
+        this->defaultMaterial.metallic = 1.0f; // 메탈릭 팩터
+        this->defaultMaterial.roughness = 0.1f; // 러프니스 팩터
+        this->defaultMaterial.r = 0.541931f; // 빨간색 성분
+        this->defaultMaterial.g = 0.496791f; // 녹색 성분
+        this->defaultMaterial.b = 0.449419f; // 파란색 성분
+        this->defaultMaterial.a = 1.0f; // 알파 성분 (불투명도)
 
         // 모델 오브젝트 생성
         this->modelObject = new object::ModelObject(this->getDevice());
@@ -79,33 +78,7 @@ namespace vkengine {
             *this->modelObject->getIndices(),
             1.0f, 100, 100); // 구 생성
 
-#if 0
-        helper::loadModel::loadModelGLTF(modelPath2, *this->modelObject->getVertices(), *this->modelObject->getIndices());
-        helper::loadModel::loadModel(modelPath, *this->modelObject->getVertices(), *this->modelObject->getIndices());
-        
-        this->vikingRoomObject = new object::ModelObject(this->getDevice());
-        this->vikingRoomObject->setName("Viking Room");
-        this->vikingRoomObject->RotationAngle(90.0f, glm::vec3(1.0f, 0.0f, 0.0f));
-        helper::loadModel::loadModel2(this->RootPath + RESOURSE_PATH + MODEL_PATH, *this->vikingRoomObject->getVertices(), *this->vikingRoomObject->getIndices());
-
-        TextureResourcePNG* vikingRoomTexture = new TextureResourcePNG();
-        vikingRoomTexture->createResource(this->RootPath + RESOURSE_PATH + TEXTURE_PATH);
-
-        this->vikingRoomObject->setTexturePNG(vikingRoomTexture);
-        this->vikingRoomObject->getTexture()->setMipLevels(1);
-        this->vikingRoomObject->createTexture(VK_FORMAT_R8G8B8A8_SRGB);
-
-        this->subUniform.subUniform.lightPos = cVec4(5.0f, 5.0f, 0.0f, 1.0f);
-
-        this->selectModelName = this->modelObject->getName();
-
-        this->modelNames.push_back(this->modelObject->getName());
-        this->modelNames.push_back(this->vikingRoomObject->getName());
-#endif
-
         cMat4 rotation01 = glm::rotate(glm::mat4(1.0f), glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-        //cMat4 rotation02 = glm::rotate(glm::mat4(1.0f), glm::radians(-180.0f), glm::vec3(0.0f, -1.0f, 0.0f));
-        //cMat4 rotation03 = rotation01 * rotation02;
         modelObject->setMatrix(rotation01); // 모델 회전 설정
 
         cString materialTexturePath = "/Texture/worn-painted-metal-ue/";
@@ -130,12 +103,42 @@ namespace vkengine {
         TextureResourcePNG* heightResource = new TextureResourcePNG();
         heightResource->createResource(heightPath);
 
-        this->materialTexture.albedoMap.setDevice(this->getDevice());
-        this->materialTexture.normalMap.setDevice(this->getDevice());
-        this->materialTexture.metallicMap.setDevice(this->getDevice());
-        this->materialTexture.roughnessMap.setDevice(this->getDevice());
-        this->materialTexture.heightMap.setDevice(this->getDevice());
-        this->materialTexture.aoMap.setDevice(this->getDevice());
+        this->materialTexture.albedoMap.initializeDeviceHandles(
+            this->getDevice()->physicalDevice,
+            this->getDevice()->logicaldevice,
+            this->getDevice()->commandPool,
+            this->getDevice()->graphicsVKQueue
+        );
+        this->materialTexture.normalMap.initializeDeviceHandles(
+            this->getDevice()->physicalDevice,
+            this->getDevice()->logicaldevice,
+            this->getDevice()->commandPool,
+            this->getDevice()->graphicsVKQueue
+        );
+        this->materialTexture.metallicMap.initializeDeviceHandles(
+            this->getDevice()->physicalDevice,
+            this->getDevice()->logicaldevice,
+            this->getDevice()->commandPool,
+            this->getDevice()->graphicsVKQueue
+        );
+        this->materialTexture.roughnessMap.initializeDeviceHandles(
+            this->getDevice()->physicalDevice,
+            this->getDevice()->logicaldevice,
+            this->getDevice()->commandPool,
+            this->getDevice()->graphicsVKQueue
+        );
+        this->materialTexture.heightMap.initializeDeviceHandles(
+            this->getDevice()->physicalDevice,
+            this->getDevice()->logicaldevice,
+            this->getDevice()->commandPool,
+            this->getDevice()->graphicsVKQueue
+        );
+        this->materialTexture.aoMap.initializeDeviceHandles(
+            this->getDevice()->physicalDevice,
+            this->getDevice()->logicaldevice,
+            this->getDevice()->commandPool,
+            this->getDevice()->graphicsVKQueue
+        );
 
         this->materialTexture.albedoMap.setResourcePNG(albedoResource);
         this->materialTexture.normalMap.setResourcePNG(normalResource);
@@ -261,8 +264,8 @@ namespace vkengine {
         this->modelObject->updateUniformBuffer(
             static_cast<uint32_t>(this->currentFrame), cMat4(1.0f), this->camera.get());
 
-        memcpy(this->uboParams.mapped, &this->uboParams.uboParams, sizeof(UniformBufferSkymapParams));
-        memcpy(this->material.mapped, &this->material.material, sizeof(cMaterial));
+        memcpy(this->uboParams.mapped, &this->uboParamsData, sizeof(UniformBufferSkymapParams));
+        memcpy(this->material.mapped, &this->defaultMaterial, sizeof(cMaterial));
         memcpy(this->subUniform.mapped, &this->subUniform.subUniform, sizeof(subData));
 
         // 플래그를 재설정합니다. -> 렌더링이 끝나면 플래그를 재설정합니다.
@@ -329,7 +332,7 @@ namespace vkengine {
             ImGui::Text("Camera Fov: %.4f", fov);
 
             // Material UI
-            cMaterial material = this->material.material;
+            cMaterial material = this->defaultMaterial;
 
             bool isAlbedoMap = material.isAlbedoMap ? VK_TRUE : VK_FALSE;
             bool isNormalMap = material.isNormalMap ? VK_TRUE : VK_FALSE;
@@ -350,7 +353,7 @@ namespace vkengine {
             material.isMetallic = isMetallic ? VK_TRUE : VK_FALSE; // 메탈릭 맵 사용 여부
             material.isRoughness = isRoughness ? VK_TRUE : VK_FALSE; // 러프니스 맵 사용 여부
 
-            this->material.material = material;
+            this->defaultMaterial = material;
 
             cBool checkUseTexture = this->subUniform.subUniform.useTexture ? VK_TRUE : VK_FALSE;
             cBool checkBRDFLUTTexture = this->subUniform.subUniform.brdfLUTTexture ? VK_TRUE : VK_FALSE;
@@ -358,8 +361,8 @@ namespace vkengine {
             cBool checkIrradianceCubeTexture = this->subUniform.subUniform.irradianceCubeTexture ? VK_TRUE : VK_FALSE;
 
             ImGui::Text("Sub Uniform Data");
-            ImGui::SliderFloat("Exposure", &this->uboParams.uboParams.exposure, 0.1f, 10.0f);
-            ImGui::SliderFloat("Gamma", &this->uboParams.uboParams.gamma, 0.1f, 10.0f);
+            ImGui::SliderFloat("Exposure", &this->uboParamsData.exposure, 0.1f, 10.0f);
+            ImGui::SliderFloat("Gamma", &this->uboParamsData.gamma, 0.1f, 10.0f);
             ImGui::Checkbox("Use Texture", &checkUseTexture);
             ImGui::Checkbox("Use BRDF LUT Texture", &checkBRDFLUTTexture);
             ImGui::Checkbox("Use Prefiltered Cube Texture", &checkPrefilteredCubeTexture);
@@ -367,8 +370,8 @@ namespace vkengine {
 
             // SubUniform 데이터 업데이트
             this->subUniform.subUniform.camPos = this->camera->getPos();
-            this->subUniform.subUniform.exposure = this->uboParams.uboParams.exposure;
-            this->subUniform.subUniform.gamma = this->uboParams.uboParams.gamma;
+            this->subUniform.subUniform.exposure = this->uboParamsData.exposure;
+            this->subUniform.subUniform.gamma = this->uboParamsData.gamma;
             this->subUniform.subUniform.useTexture = checkUseTexture ? VK_TRUE : VK_FALSE; // 텍스쳐 사용 여부
             this->subUniform.subUniform.brdfLUTTexture = checkBRDFLUTTexture ? VK_TRUE : VK_FALSE; // BRDF LUT 텍스처 사용 여부
             this->subUniform.subUniform.prefilteredCubeTexture = checkPrefilteredCubeTexture ? VK_TRUE : VK_FALSE; // Prefiltered Cube 텍스처 사용 여부
@@ -533,7 +536,8 @@ namespace vkengine {
         this->uboParams.device = this->VKdevice->logicaldevice;
         this->uboParams.usageFlags = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
         this->uboParams.memoryPropertyFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
-        
+        this->uboParams.size = sizeof(UniformBufferSkymapParams);
+
         this->uboParams.createBuffer(this->VKdevice->physicalDevice);
         this->uboParams.mapToMeBuffer(static_cast<VkDeviceSize>(this->uboParams.size), 0);
         this->uboParams.createDescriptorBufferInfo();
@@ -556,11 +560,12 @@ namespace vkengine {
         //this->vikingRoomObject->getModelViewProjUniformBuffer(1)->createDescriptorBufferInfo();
 
         // 머티리얼 버퍼 생성
-        VkDeviceSize bufferSize = material.size;
+        VkDeviceSize bufferSize = sizeof(cMaterial);
 
         material.device = this->VKdevice->logicaldevice;
         material.usageFlags = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
         material.memoryPropertyFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
+        material.size = bufferSize;
 
         material.createBuffer(this->VKdevice->physicalDevice);
         material.mapToMeBuffer(bufferSize, 0);
@@ -1013,7 +1018,12 @@ namespace vkengine {
         const int32_t dim = 512;
 
         brdfLUTTexture = new Vk2DTexture();
-        brdfLUTTexture->setDevice(this->VKdevice.get());
+        brdfLUTTexture->initializeDeviceHandles(
+            this->getDevice()->physicalDevice,
+            this->getDevice()->logicaldevice,
+            this->getDevice()->commandPool,
+            this->getDevice()->graphicsVKQueue
+        );
         brdfLUTTexture->VKmipLevels = 1; // mipmap 레벨 설정
 
         // BRDF LUT 텍스쳐 생성
@@ -1052,7 +1062,7 @@ namespace vkengine {
 
         // 샘플러 생성
         VkPhysicalDeviceProperties properties{};
-        vkGetPhysicalDeviceProperties(brdfLUTTexture->device->physicalDevice, &properties);
+        vkGetPhysicalDeviceProperties(brdfLUTTexture->physicalDevice, &properties);
         VkSamplerCreateInfo samplerInfo{};
         samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
         samplerInfo.magFilter = VK_FILTER_LINEAR;
@@ -1070,7 +1080,7 @@ namespace vkengine {
         samplerInfo.mipLodBias = 0.0f;
         samplerInfo.minLod = 0.0f;
         samplerInfo.maxLod = 1.0f;
-        _VK_CHECK_RESULT_(vkCreateSampler(brdfLUTTexture->device->logicaldevice, &samplerInfo, nullptr, &brdfLUTTexture->sampler));
+        _VK_CHECK_RESULT_(vkCreateSampler(brdfLUTTexture->logicaldevice, &samplerInfo, nullptr, &brdfLUTTexture->sampler));
 
         this->brdfLUTTexture->createDescriptorImageInfo();
 
@@ -1295,7 +1305,12 @@ namespace vkengine {
         const uint32_t numMips = static_cast<uint32_t>(floor(log2(dim))) + 1;
 
         this->prefilteredCubeTexture = new VKcubeMap();
-        this->prefilteredCubeTexture->setDevice(this->VKdevice.get());
+        this->prefilteredCubeTexture->initializeDeviceHandles(
+            this->getDevice()->physicalDevice,
+            this->getDevice()->logicaldevice,
+            this->getDevice()->commandPool,
+            this->getDevice()->graphicsVKQueue
+        );
         this->prefilteredCubeTexture->VKmipLevels = numMips;
 
         // Pre-filtered cube map
@@ -1766,7 +1781,12 @@ namespace vkengine {
         const uint32_t numMips = static_cast<uint32_t>(floor(log2(dim))) + 1;
 
         this->irradianceCubeTexture = new VKcubeMap();
-        this->irradianceCubeTexture->setDevice(this->VKdevice.get());
+        this->irradianceCubeTexture->initializeDeviceHandles(
+            this->getDevice()->physicalDevice,
+            this->getDevice()->logicaldevice,
+            this->getDevice()->commandPool,
+            this->getDevice()->graphicsVKQueue
+        );
         this->irradianceCubeTexture->VKmipLevels = numMips;
 
         // Pre-filtered cube map

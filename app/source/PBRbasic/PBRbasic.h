@@ -21,7 +21,7 @@ namespace vkengine
         cBool useTexture = false; // 조명 활성화 여부
     };
 
-    struct subUinform  : public VkBufferObject
+    struct subUinform  : public VkBaseBuffer
     {
         subData subUniform = {};
     };
@@ -71,7 +71,9 @@ namespace vkengine
         std::vector<cString> modelNames = { "Sphere", "Viking Room" }; // 모델 이름들
         cString selectModelName = "Sphere"; // 선택된 모델 이름
 
+        cMaterial defaultMaterial; // 기본 머티리얼
         MaterialBuffer material; // 머티리얼 버퍼
+
         subUinform subUniform; // 서브 유니폼 버퍼
     };
 }

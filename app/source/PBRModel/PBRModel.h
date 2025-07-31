@@ -37,7 +37,7 @@ namespace vkengine
         Vk2DTexture roughnessMap;
     };
 
-    struct subUinform : public VkBufferObject
+    struct subUinform : public VkBaseBuffer
     {
         subData subUniform = {};
     };
@@ -77,12 +77,14 @@ namespace vkengine
         object::SkyBox* skyBox = nullptr; // 스카이박스 오브젝트
         object::ModelObject* modelObject = nullptr; // 모델 오브젝트
 
+        cMaterial defaultMaterial; // 기본 머티리얼
         MaterialBuffer material; // 머티리얼 버퍼
         MaterialTexture materialTexture; // 머티리얼 텍스처
         
         VkPipeline VKSkyMapPipeline = VK_NULL_HANDLE;       // 큐브맵 파이프라인 -> 큐브맵 파이프라인을 생성
         VkPipeline VKgraphicsPipeline = VK_NULL_HANDLE;     // 모델 오브젝트 파이프라인
 
+        UniformBufferSkymapParams uboParamsData = {};
         UniformBufferSkymap uboParams; // 스카이박스 유니폼 버퍼 파라미터
         subUinform subUniform; // 서브 유니폼 버퍼
         

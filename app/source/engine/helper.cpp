@@ -2,6 +2,174 @@
 
 namespace vkengine {
     namespace helper {
+
+        VkAccessFlags getFromOldLayoutToVkAccessFlags(VkImageLayout format)
+        {
+
+            VkAccessFlags accessFlags = 0;
+
+            switch (format)
+            {
+            case VK_IMAGE_LAYOUT_UNDEFINED:
+                // 이전 레이아웃이 정의되지 않은 상태이면 어떤 액세스도 보장되지 않습니다.
+                // or 깊이/스텐실 이미지 초기화 경우로, 이전 레이아웃이 사용 불가능한 상태에서 시작함
+                accessFlags = 0;
+                break;
+            case VK_IMAGE_LAYOUT_GENERAL:
+                break;
+            case VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL:
+                accessFlags = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+                break;
+            case VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL:
+                break;
+            case VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL:
+                break;
+            case VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL:
+                break;
+            case VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL:
+                accessFlags = VK_ACCESS_TRANSFER_WRITE_BIT;
+                break;
+            case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL:
+                // 전송 완료 후 셰이더 읽기 전용으로 전환
+                accessFlags = VK_ACCESS_TRANSFER_WRITE_BIT;
+                break;
+            case VK_IMAGE_LAYOUT_PREINITIALIZED:
+                break;
+            case VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_STENCIL_ATTACHMENT_OPTIMAL:
+                break;
+            case VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_STENCIL_READ_ONLY_OPTIMAL:
+                break;
+            case VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL:
+                break;
+            case VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_OPTIMAL:
+                break;
+            case VK_IMAGE_LAYOUT_STENCIL_ATTACHMENT_OPTIMAL:
+                break;
+            case VK_IMAGE_LAYOUT_STENCIL_READ_ONLY_OPTIMAL:
+                break;
+            case VK_IMAGE_LAYOUT_READ_ONLY_OPTIMAL:
+                break;
+            case VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL:
+                break;
+            case VK_IMAGE_LAYOUT_RENDERING_LOCAL_READ:
+                break;
+            case VK_IMAGE_LAYOUT_PRESENT_SRC_KHR:
+                break;
+            case VK_IMAGE_LAYOUT_VIDEO_DECODE_DST_KHR:
+                break;
+            case VK_IMAGE_LAYOUT_VIDEO_DECODE_SRC_KHR:
+                break;
+            case VK_IMAGE_LAYOUT_VIDEO_DECODE_DPB_KHR:
+                break;
+            case VK_IMAGE_LAYOUT_SHARED_PRESENT_KHR:
+                break;
+            case VK_IMAGE_LAYOUT_FRAGMENT_DENSITY_MAP_OPTIMAL_EXT:
+                break;
+            case VK_IMAGE_LAYOUT_FRAGMENT_SHADING_RATE_ATTACHMENT_OPTIMAL_KHR:
+                break;
+            case VK_IMAGE_LAYOUT_VIDEO_ENCODE_DST_KHR:
+                break;
+            case VK_IMAGE_LAYOUT_VIDEO_ENCODE_SRC_KHR:
+                break;
+            case VK_IMAGE_LAYOUT_VIDEO_ENCODE_DPB_KHR:
+                break;
+            case VK_IMAGE_LAYOUT_ATTACHMENT_FEEDBACK_LOOP_OPTIMAL_EXT:
+                break;
+            case VK_IMAGE_LAYOUT_VIDEO_ENCODE_QUANTIZATION_MAP_KHR:
+                break;
+            case VK_IMAGE_LAYOUT_MAX_ENUM:
+                break;
+            default:
+                break;
+            }
+
+            return accessFlags;
+        }
+        VkAccessFlags getFromNewLayoutToVkAccessFlags(VkImageLayout format)
+        {
+
+            VkAccessFlags accessFlags = 0;
+
+            switch (format)
+            {
+            case VK_IMAGE_LAYOUT_UNDEFINED:
+                // 이전 레이아웃이 정의되지 않은 상태이면 어떤 액세스도 보장되지 않습니다.
+                accessFlags = 0;
+                break;
+            case VK_IMAGE_LAYOUT_GENERAL:
+                break;
+            case VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL:
+                // 전송 완료 후 색상 첨부 최적화 레이아웃으로 전환
+                accessFlags = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+                break;
+            case VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL:
+                accessFlags = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+                break;
+            case VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL:
+                break;
+            case VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL:
+                // 전송 완료 후 셰이더 읽기 전용으로 전환
+                accessFlags = VK_ACCESS_SHADER_READ_BIT;
+                break;
+            case VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL:
+                accessFlags = VK_ACCESS_TRANSFER_READ_BIT;
+                break;
+            case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL:
+                // 전송 쓰기 작업을 위한 쓰기 액세스 허용 설정
+                accessFlags = VK_ACCESS_TRANSFER_WRITE_BIT;
+                break;
+            case VK_IMAGE_LAYOUT_PREINITIALIZED:
+                break;
+            case VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_STENCIL_ATTACHMENT_OPTIMAL:
+                break;
+            case VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_STENCIL_READ_ONLY_OPTIMAL:
+                break;
+            case VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL:
+                break;
+            case VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_OPTIMAL:
+                break;
+            case VK_IMAGE_LAYOUT_STENCIL_ATTACHMENT_OPTIMAL:
+                break;
+            case VK_IMAGE_LAYOUT_STENCIL_READ_ONLY_OPTIMAL:
+                break;
+            case VK_IMAGE_LAYOUT_READ_ONLY_OPTIMAL:
+                break;
+            case VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL:
+                break;
+            case VK_IMAGE_LAYOUT_RENDERING_LOCAL_READ:
+                break;
+            case VK_IMAGE_LAYOUT_PRESENT_SRC_KHR:
+                break;
+            case VK_IMAGE_LAYOUT_VIDEO_DECODE_DST_KHR:
+                break;
+            case VK_IMAGE_LAYOUT_VIDEO_DECODE_SRC_KHR:
+                break;
+            case VK_IMAGE_LAYOUT_VIDEO_DECODE_DPB_KHR:
+                break;
+            case VK_IMAGE_LAYOUT_SHARED_PRESENT_KHR:
+                break;
+            case VK_IMAGE_LAYOUT_FRAGMENT_DENSITY_MAP_OPTIMAL_EXT:
+                break;
+            case VK_IMAGE_LAYOUT_FRAGMENT_SHADING_RATE_ATTACHMENT_OPTIMAL_KHR:
+                break;
+            case VK_IMAGE_LAYOUT_VIDEO_ENCODE_DST_KHR:
+                break;
+            case VK_IMAGE_LAYOUT_VIDEO_ENCODE_SRC_KHR:
+                break;
+            case VK_IMAGE_LAYOUT_VIDEO_ENCODE_DPB_KHR:
+                break;
+            case VK_IMAGE_LAYOUT_ATTACHMENT_FEEDBACK_LOOP_OPTIMAL_EXT:
+                break;
+            case VK_IMAGE_LAYOUT_VIDEO_ENCODE_QUANTIZATION_MAP_KHR:
+                break;
+            case VK_IMAGE_LAYOUT_MAX_ENUM:
+                break;
+            default:
+                break;
+            }
+            return accessFlags;
+        }
+
         std::vector<cChar> readFile(const std::string& filename)
         {
             // 파일 끝으로 이동하여 파일 크기를 가져옵니다.
@@ -1106,156 +1274,8 @@ namespace vkengine {
 
             // 이미지 레이아웃 전환 시, 적절한 액세스 마스크 및 파이프라인 스테이지를 설정합니다.
 
-            switch (oldLayout)
-            {
-            case VK_IMAGE_LAYOUT_UNDEFINED:
-                // 이전 레이아웃이 정의되지 않은 상태이면 어떤 액세스도 보장되지 않습니다.
-                // or 깊이/스텐실 이미지 초기화 경우로, 이전 레이아웃이 사용 불가능한 상태에서 시작함
-                barrier.srcAccessMask = 0;
-                break;
-            case VK_IMAGE_LAYOUT_GENERAL:
-                break;
-            case VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL:
-                barrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-                break;
-            case VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL:
-                break;
-            case VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL:
-                break;
-            case VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL:
-                break;
-            case VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL:
-                barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-                break;
-            case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL:
-                // 전송 완료 후 셰이더 읽기 전용으로 전환
-                barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-                break;
-            case VK_IMAGE_LAYOUT_PREINITIALIZED:
-                break;
-            case VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_STENCIL_ATTACHMENT_OPTIMAL:
-                break;
-            case VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_STENCIL_READ_ONLY_OPTIMAL:
-                break;
-            case VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL:
-                break;
-            case VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_OPTIMAL:
-                break;
-            case VK_IMAGE_LAYOUT_STENCIL_ATTACHMENT_OPTIMAL:
-                break;
-            case VK_IMAGE_LAYOUT_STENCIL_READ_ONLY_OPTIMAL:
-                break;
-            case VK_IMAGE_LAYOUT_READ_ONLY_OPTIMAL:
-                break;
-            case VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL:
-                break;
-            case VK_IMAGE_LAYOUT_RENDERING_LOCAL_READ:
-                break;
-            case VK_IMAGE_LAYOUT_PRESENT_SRC_KHR:
-                break;
-            case VK_IMAGE_LAYOUT_VIDEO_DECODE_DST_KHR:
-                break;
-            case VK_IMAGE_LAYOUT_VIDEO_DECODE_SRC_KHR:
-                break;
-            case VK_IMAGE_LAYOUT_VIDEO_DECODE_DPB_KHR:
-                break;
-            case VK_IMAGE_LAYOUT_SHARED_PRESENT_KHR:
-                break;
-            case VK_IMAGE_LAYOUT_FRAGMENT_DENSITY_MAP_OPTIMAL_EXT:
-                break;
-            case VK_IMAGE_LAYOUT_FRAGMENT_SHADING_RATE_ATTACHMENT_OPTIMAL_KHR:
-                break;
-            case VK_IMAGE_LAYOUT_VIDEO_ENCODE_DST_KHR:
-                break;
-            case VK_IMAGE_LAYOUT_VIDEO_ENCODE_SRC_KHR:
-                break;
-            case VK_IMAGE_LAYOUT_VIDEO_ENCODE_DPB_KHR:
-                break;
-            case VK_IMAGE_LAYOUT_ATTACHMENT_FEEDBACK_LOOP_OPTIMAL_EXT:
-                break;
-            case VK_IMAGE_LAYOUT_VIDEO_ENCODE_QUANTIZATION_MAP_KHR:
-                break;
-            case VK_IMAGE_LAYOUT_MAX_ENUM:
-                break;
-            default:
-                break;
-            }
-
-            switch (newLayout)
-            {
-            case VK_IMAGE_LAYOUT_UNDEFINED:
-                break;
-            case VK_IMAGE_LAYOUT_GENERAL:
-                break;
-            case VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL:
-                // 전송 완료 후 색상 첨부 최적화 레이아웃으로 전환
-                barrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-                break;
-            case VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL:
-                barrier.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-                break;
-            case VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL:
-                break;
-            case VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL:
-                // 전송 완료 후 셰이더 읽기 전용으로 전환
-                barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-                break;
-            case VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL:
-                barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
-                break;
-            case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL:
-                // 전송 쓰기 작업을 위한 쓰기 액세스 허용 설정
-                barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-                break;
-            case VK_IMAGE_LAYOUT_PREINITIALIZED:
-                break;
-            case VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_STENCIL_ATTACHMENT_OPTIMAL:
-                break;
-            case VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_STENCIL_READ_ONLY_OPTIMAL:
-                break;
-            case VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL:
-                break;
-            case VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_OPTIMAL:
-                break;
-            case VK_IMAGE_LAYOUT_STENCIL_ATTACHMENT_OPTIMAL:
-                break;
-            case VK_IMAGE_LAYOUT_STENCIL_READ_ONLY_OPTIMAL:
-                break;
-            case VK_IMAGE_LAYOUT_READ_ONLY_OPTIMAL:
-                break;
-            case VK_IMAGE_LAYOUT_ATTACHMENT_OPTIMAL:
-                break;
-            case VK_IMAGE_LAYOUT_RENDERING_LOCAL_READ:
-                break;
-            case VK_IMAGE_LAYOUT_PRESENT_SRC_KHR:
-                break;
-            case VK_IMAGE_LAYOUT_VIDEO_DECODE_DST_KHR:
-                break;
-            case VK_IMAGE_LAYOUT_VIDEO_DECODE_SRC_KHR:
-                break;
-            case VK_IMAGE_LAYOUT_VIDEO_DECODE_DPB_KHR:
-                break;
-            case VK_IMAGE_LAYOUT_SHARED_PRESENT_KHR:
-                break;
-            case VK_IMAGE_LAYOUT_FRAGMENT_DENSITY_MAP_OPTIMAL_EXT:
-                break;
-            case VK_IMAGE_LAYOUT_FRAGMENT_SHADING_RATE_ATTACHMENT_OPTIMAL_KHR:
-                break;
-            case VK_IMAGE_LAYOUT_VIDEO_ENCODE_DST_KHR:
-                break;
-            case VK_IMAGE_LAYOUT_VIDEO_ENCODE_SRC_KHR:
-                break;
-            case VK_IMAGE_LAYOUT_VIDEO_ENCODE_DPB_KHR:
-                break;
-            case VK_IMAGE_LAYOUT_ATTACHMENT_FEEDBACK_LOOP_OPTIMAL_EXT:
-                break;
-            case VK_IMAGE_LAYOUT_VIDEO_ENCODE_QUANTIZATION_MAP_KHR:
-                break;
-            case VK_IMAGE_LAYOUT_MAX_ENUM:
-                break;
-            default:
-                break;
-            }
+            barrier.srcAccessMask = getFromOldLayoutToVkAccessFlags(oldLayout);
+            barrier.dstAccessMask = getFromNewLayoutToVkAccessFlags(newLayout);
 
             // 새로운 레이아웃이 깊이/스텐실용일 경우 aspectMask를 수정합니다.
             if (newLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL) {

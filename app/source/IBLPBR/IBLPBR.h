@@ -27,7 +27,7 @@ namespace vkengine
         VkBool32 irradianceCubeTexture = VK_FALSE; // Irradiance Cube 텍스처 사용 여부
     };
 
-    struct subUinform : public VkBufferObject
+    struct subUinform : public VkBaseBuffer
     {
         subData subUniform = {};
     };
@@ -67,11 +67,13 @@ namespace vkengine
         object::SkyBox* skyBox = nullptr; // 스카이박스 오브젝트
         object::ModelObject* modelObject = nullptr; // 모델 오브젝트
 
+        cMaterial defaultMaterial; // 기본 머티리얼
         MaterialBuffer material; // 머티리얼 버퍼
         
         VkPipeline VKSkyMapPipeline = VK_NULL_HANDLE;       // 큐브맵 파이프라인 -> 큐브맵 파이프라인을 생성
         VkPipeline VKgraphicsPipeline = VK_NULL_HANDLE;     // 모델 오브젝트 파이프라인
 
+        UniformBufferSkymapParams uboParamsData = {};
         UniformBufferSkymap uboParams; // 스카이박스 유니폼 버퍼 파라미터
 
         VKDescriptor2* skyboxDescriptor2 = nullptr;         // 모델 오브젝트 디스크립터

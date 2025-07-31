@@ -27,7 +27,12 @@ namespace vkengine {
         resourcePNG->createResource(path);
 
         this->testTexture = Vk2DTexture();
-        this->testTexture.setDevice(this->VKdevice.get());
+        this->testTexture.initializeDeviceHandles(
+            this->VKdevice->physicalDevice,
+            this->VKdevice->logicaldevice,
+            this->VKdevice->commandPool,
+            this->VKdevice->graphicsVKQueue
+            );
         this->testTexture.setResourcePNG(resourcePNG);
 
         this->testTexture.createTextureImage();

@@ -32,7 +32,7 @@ namespace vkengine {
 
         void createPipelineLayout();
 
-        void setObject(object::Object* object) { this->objects.push_back(object); }
+        void setObject(object::Object3d* object) { this->objects.push_back(object); }
 
         virtual cUint16_t getDescriptorCount() { return static_cast<cUint16_t>(this->objects.size()); } // 디스크립터 개수 반환
         virtual VkPipelineLayout getPipelineLayout() { return this->VKpipelineLayout; } // 파이프라인 레이아웃 반환
@@ -44,7 +44,7 @@ namespace vkengine {
         VkDescriptorPoolSize poolSizes[MAX_UNIFORM_BUFFER_COUNT]{}; // 디스크립터 풀 사이즈(임시적)
         VkDescriptorSetLayoutBinding uboLayoutBinding[MAX_UNIFORM_BUFFER_COUNT]{}; // 디스크립터 세트 레이아웃 바인딩
 
-        std::vector<object::Object*> objects{}; // 3D 모델 객체들
+        std::vector<object::Object3d*> objects{}; // 3D 모델 객체들
     };
 
 } // namespace vkengine

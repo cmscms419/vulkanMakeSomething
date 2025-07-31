@@ -12,7 +12,10 @@
 namespace vkengine {
     struct VkTextureBase {
     public:
-        vkengine::VKdeviceHandler* device = NULL;             // Vulkan 디바이스 포인터
+        VkPhysicalDevice physicalDevice{ VK_NULL_HANDLE };                  // 물리 디바이스 -> GPU Physical Handle
+        VkDevice logicaldevice{ VK_NULL_HANDLE };                           // 논리 디바이스 -> GPU Logical Handle
+        VkCommandPool commandPool{ VK_NULL_HANDLE };                        // 커맨드 풀 -> 커맨드 버퍼를 생성하는 데 사용
+        VkQueue graphicsVKQueue{ VK_NULL_HANDLE };                          // 그래픽스 큐 -> 그래픽스 명령을 처리하는 큐
         VkImage image = VK_NULL_HANDLE;                 // 텍스처 이미지 -> 텍스처 이미지를 저장하는 데 사용
         VkDeviceMemory imageMemory = VK_NULL_HANDLE;    // 텍스처 이미지 메모리 -> 텍스처 이미지를 저장하는 데 사용
         VkImageView imageView = VK_NULL_HANDLE;         // 텍스처 이미지 뷰 -> 텍스처 이미지를 뷰로 변환 (이미지 뷰는 이미지를 읽고 쓰는 데 사용)
@@ -29,7 +32,13 @@ namespace vkengine {
         virtual void createTextureImgae2(VkFormat format) { _PRINT_TO_CONSOLE_("CLEATE FUNTION"); };
         void setResourcePNG(TextureResourcePNG* resourcePNG); ///< 리소스 설정 함수
         void setResourceKTX(TextureResourceKTX* resourceKTX) { this->resourceKTX = resourceKTX; } ///< KTX 리소스 설정 함수
-        void setDevice(vkengine::VKdeviceHandler* device) { this->device = device; } ///< 디바이스 설정 함수
+        void initializeDeviceHandles(VkPhysicalDevice physicalDevice, VkDevice logicaldevice, VkCommandPool commandPool, VkQueue graphicsVKQueue) ///< 디바이스 설정 함수
+        {
+            this->physicalDevice = physicalDevice;
+            this->logicaldevice = logicaldevice;
+            this->commandPool = commandPool;
+            this->graphicsVKQueue = graphicsVKQueue;
+        }
         void setMipLevels(uint32_t mipLevels) { this->VKmipLevels = mipLevels; } ///< Mipmap 레벨 설정 함수
 
         ///< 텍스처 이미지 정보 생성 함수
@@ -42,10 +51,10 @@ namespace vkengine {
 
         const void cleanup()  //< 텍스처 정리 함수
         {
-            vkDestroySampler(device->logicaldevice, sampler, nullptr);
-            vkDestroyImageView(device->logicaldevice, imageView, nullptr);
-            vkDestroyImage(device->logicaldevice, image, nullptr);
-            vkFreeMemory(device->logicaldevice, imageMemory, nullptr);
+            vkDestroySampler(this->logicaldevice, sampler, nullptr);
+            vkDestroyImageView(this->logicaldevice, imageView, nullptr);
+            vkDestroyImage(this->logicaldevice, image, nullptr);
+            vkFreeMemory(this->logicaldevice, imageMemory, nullptr);
         }
     };
 

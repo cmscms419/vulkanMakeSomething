@@ -52,14 +52,12 @@ namespace vkengine {
         }
         this->skyBox->createTexture(VK_FORMAT_R8G8B8A8_SRGB);
 
-        // material 버퍼 생성
-        this->material = MaterialBuffer
-        (
-            "Titanium",
-            1.0f, // Roughness factor
-            0.1f, // Metallic factor
-            cVec4(0.659777f, 0.608679f, 0.525649f, 1.0f) // Nickel
-        );
+        this->defaultMaterial.metallic = 1.0f; // 기본 머티리얼 메탈릭 값
+        this->defaultMaterial.roughness = 0.1f; // 기본 머티리얼 러프니스 값
+        this->defaultMaterial.r = 0.659777f;
+        this->defaultMaterial.r = 0.608679f;
+        this->defaultMaterial.r = 0.525649f;
+        this->defaultMaterial.r = 1.0f;
 
         // 모델 오브젝트 생성
         this->modelObject = new object::ModelObject(this->getDevice());
@@ -176,7 +174,7 @@ namespace vkengine {
         this->vikingRoomObject->updateUniformBuffer(
             static_cast<uint32_t>(this->currentFrame), cMat4(1.0f), this->camera.get());
         
-        memcpy(this->material.mapped, &this->material.material, sizeof(cMaterial));
+        memcpy(this->material.mapped, &this->defaultMaterial, sizeof(cMaterial));
         memcpy(this->subUniform.mapped, &this->subUniform.subUniform, sizeof(subData));
 
         // 플래그를 재설정합니다. -> 렌더링이 끝나면 플래그를 재설정합니다.
@@ -242,7 +240,7 @@ namespace vkengine {
             float fov = this->getCamera()->getFov();
             ImGui::Text("Camera Fov: %.4f", fov);
 
-            cMaterial material = this->material.material;
+            cMaterial material = this->defaultMaterial;
 
             ImGui::Text("cMaterial Name: %s", this->material.name.c_str());
             ImGui::SliderFloat("Metallic Factor", &material.metallic, 0.0f, 1.0f);
@@ -273,7 +271,7 @@ namespace vkengine {
                 ImGui::EndCombo();
             }
 
-            this->material.material = material;
+            this->defaultMaterial = material;
 
             switch (this->selectModel)
             {
@@ -481,11 +479,12 @@ namespace vkengine {
         this->vikingRoomObject->getModelViewProjUniformBuffer(1)->createDescriptorBufferInfo();
 
         // 머티리얼 버퍼 생성
-        VkDeviceSize bufferSize = material.size;
+        VkDeviceSize bufferSize = sizeof(cMaterial);
 
         material.device = this->VKdevice->logicaldevice;
         material.usageFlags = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
         material.memoryPropertyFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
+        material.size = bufferSize;
 
         material.createBuffer(this->VKdevice->physicalDevice);
         material.mapToMeBuffer(bufferSize, 0);

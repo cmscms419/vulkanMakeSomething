@@ -18,7 +18,7 @@ namespace vkengine
             normalRander(VulkanEngine* engine) : engine(engine) {};
 
             void cleanup();
-            void createNormalObject(vkengine::object::Object* object);
+            void createNormalObject(vkengine::object::Object3d* object);
             void createNormalRanderPipeline();
             void recordNormalRanderCommandBuffer(FrameData* frameData, uint32_t imageIndex);
             void cleanupNormalRanderPipeline();

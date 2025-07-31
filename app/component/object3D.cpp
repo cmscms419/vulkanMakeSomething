@@ -3,7 +3,7 @@
 namespace vkengine {
     namespace object {
 
-        void Object::createVertexBuffer(std::vector<Vertex>& vertices)
+        void Object3d::createVertexBuffer(std::vector<Vertex>& vertices)
         {
             if (vertices.empty() && !this->getVertices()->empty())
             {
@@ -16,12 +16,11 @@ namespace vkengine {
                 return;
             }
 
-            VKdeviceHandler* device = vkengine::VulkanEngine::Get().getDevice();
-            VkDevice logicaldevice = device->logicaldevice;
-            VkPhysicalDevice physicalDevice = device->physicalDevice;
+            VkDevice logicaldevice = this->logicaldevice;
+            VkPhysicalDevice physicalDevice = this->physicalDevice;
             VkDeviceSize bufferSize = sizeof(Vertex) * vertices.size();
 
-            this->vertexBuffer.vertices = vertices;
+            this->vertices = vertices;
             this->vertexBuffer.device = logicaldevice;
             this->vertexBuffer.size = bufferSize;
             this->vertexBuffer.usageFlags = VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
@@ -33,21 +32,21 @@ namespace vkengine {
             staging.size = bufferSize;
             staging.usageFlags = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
             staging.memoryPropertyFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
+            
             staging.createBuffer(physicalDevice);
-
             staging.mapToMeBuffer(bufferSize, 0);
             staging.copyToMeBuffer(vertices.data(), bufferSize);
 
-            helper::copyBuffer2(*device, staging.buffer, this->vertexBuffer.buffer, bufferSize);
+            helper::copyBuffer(this->logicaldevice, this->commandPool, this->graphicsVKQueue, staging.buffer, this->vertexBuffer.buffer, bufferSize);
 
             staging.cleanup();
         }
 
-        void Object::createIndexBuffer(std::vector<cUint16_t>& indices)
+        void Object3d::createIndexBuffer(std::vector<cUint16_t>& indices)
         {
             if (indices.empty() && !this->getIndices()->empty())
             {
-                indices = *this->getIndices();
+                indices = this->indices;
             }
 
             if (indices.empty())
@@ -56,12 +55,11 @@ namespace vkengine {
                 return;
             }
 
-            VKdeviceHandler* device = vkengine::VulkanEngine::Get().getDevice();
-            VkDevice logicaldevice = device->logicaldevice;
-            VkPhysicalDevice physicalDevice = device->physicalDevice;
+            VkDevice logicaldevice = this->logicaldevice;
+            VkPhysicalDevice physicalDevice = this->physicalDevice;
             VkDeviceSize bufferSize = sizeof(cUint16_t) * indices.size();
 
-            this->indexBuffer.indices = indices;
+            this->indices = indices;
             this->indexBuffer.device = logicaldevice;
             this->indexBuffer.size = bufferSize;
             this->indexBuffer.usageFlags = VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
@@ -73,17 +71,17 @@ namespace vkengine {
             staging.size = bufferSize;
             staging.usageFlags = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
             staging.memoryPropertyFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
+            
             staging.createBuffer(physicalDevice);
-
             staging.mapToMeBuffer(bufferSize, 0);
             staging.copyToMeBuffer(indices.data(), bufferSize);
 
-            helper::copyBuffer2(*device, staging.buffer, this->indexBuffer.buffer, bufferSize);
+            helper::copyBuffer(this->logicaldevice, this->commandPool, this->graphicsVKQueue, staging.buffer, this->indexBuffer.buffer, bufferSize);
 
             staging.cleanup();
         }
 
-        void Object::draw(VkCommandBuffer commandBuffer, bool drawIndex)
+        void Object3d::draw(VkCommandBuffer commandBuffer, bool drawIndex)
         {
             VkDeviceSize offsets[] = { 0 };
 
@@ -92,16 +90,16 @@ namespace vkengine {
 
             if (drawIndex)
             {
-                vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(this->indexBuffer.indices.size()), 1, 0, 0, 0);
+                vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(this->indices.size()), 1, 0, 0, 0);
             }
         }
 
-        void Object::RotationAngle(float angle, cVec3 axis)
+        void Object3d::RotationAngle(float angle, cVec3 axis)
         {
             this->rotation = glm::angleAxis(glm::radians(angle), axis);
         }
 
-        void Object::updateMatrix()
+        void Object3d::updateMatrix()
         {
             cMat4 updateMatrix = cMat4(1.0f);
 
@@ -113,12 +111,11 @@ namespace vkengine {
             this->matrix = updateMatrix;
         }
 
-        void Object::createModelViewProjBuffers()
+        void Object3d::createModelViewProjBuffers()
         {
-
-            VKdeviceHandler* device = vkengine::VulkanEngine::Get().getDevice();
-            VkDevice logicaldevice = device->logicaldevice;
-            VkPhysicalDevice physicalDevice = device->physicalDevice;
+            
+            VkDevice logicaldevice = this->logicaldevice;
+            VkPhysicalDevice physicalDevice = this->physicalDevice;
             VkDeviceSize bufferSize = sizeof(UniformBufferObject);
 
             for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)

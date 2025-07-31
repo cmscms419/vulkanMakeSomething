@@ -18,6 +18,10 @@ namespace vkengine {
 
     namespace helper {
 
+        VkAccessFlags getFromOldLayoutToVkAccessFlags(VkImageLayout format);
+
+        VkAccessFlags getFromNewLayoutToVkAccessFlags(VkImageLayout format);
+
         // 파일을 읽어오는 함수
         std::vector<cChar> readFile(const std::string& filename);
 
