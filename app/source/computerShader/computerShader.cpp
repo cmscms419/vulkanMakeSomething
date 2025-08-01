@@ -97,8 +97,11 @@ namespace vkengine {
         _VK_CHECK_RESULT_(vkWaitForFences(this->VKdevice->logicaldevice, 1, &this->computeFrameData[this->currentFrame].VkinFlightFences, VK_TRUE, UINT64_MAX));
         {
             vkResetFences(this->VKdevice->logicaldevice, 1, &this->computeFrameData[this->currentFrame].VkinFlightFences);
-            
-            this->uboTime.deltaTime = this->getCalulateDeltaTime(); // deltaTime 업데이트
+#if 0
+            this->uboTime.deltaTime = this->getCalulateDeltaTime()* 3000; // deltaTime 업데이트
+#else
+            this->uboTime.deltaTime = getProgramRunTime(); // 프로그램 실행 시간 업데이트
+#endif
             printf("\rTime: %f", this->uboTime.deltaTime);
             memcpy(this->uboTimemapped[this->currentFrame], &this->uboTime, sizeof(UniformBufferTime)); // uniform buffer에 복사
 
@@ -369,7 +372,7 @@ namespace vkengine {
         {
             Particle particle;
 
-            cFloat r = 1.0f * sqrt(rndDist(rndEngine));
+            cFloat r = 0.25f * sqrt(rndDist(rndEngine));
             cFloat theta = rndDist(rndEngine) * 2 * 3.14159265358979323846;
             cFloat x = r * cos(theta) * HEIGHT / WIDTH;
             cFloat y = r * sin(theta);
