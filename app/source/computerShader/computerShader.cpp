@@ -122,14 +122,9 @@ namespace vkengine {
 
         // Graphics Pipeline
         _VK_CHECK_RESULT_(vkWaitForFences(this->VKdevice->logicaldevice, 1, &this->VKframeData[this->currentFrame].VkinFlightFences, VK_TRUE, UINT64_MAX));
-
-        // 이미지를 가져오기 위해 스왑 체인에서 이미지 인덱스를 가져옵니다.
-        // 주어진 스왑체인에서 다음 이미지를 획득하고, 
-        // 선택적으로 세마포어와 펜스를 사용하여 동기화를 관리하는 Vulkan API의 함수입니다.
         uint32_t imageIndex = 0;
         VulkanEngine::prepareFame(&imageIndex);
         {
-
             // 플래그를 재설정합니다. -> 렌더링이 끝나면 플래그를 재설정합니다.
             vkResetFences(this->VKdevice->logicaldevice, 1, &this->VKframeData[this->currentFrame].VkinFlightFences);
 
@@ -367,21 +362,21 @@ namespace vkengine {
         this->particleObject = new object::ParticleObject(this->getDevice());
 
         std::default_random_engine rndEngine((unsigned)time(nullptr));
-        std::uniform_real_distribution<float> rndDist(0.0f, 50);
+        std::uniform_real_distribution<float> rndDist(0.0f, 1.0f);
 
         // 파티클의 uniform buffer를 생성합니다.
         for (size_t i = 0; i < MAX_PARTICALES; i++)
         {
             Particle particle;
 
-            cFloat r = 0.25f * sqrt(rndDist(rndEngine));
+            cFloat r = 1.0f * sqrt(rndDist(rndEngine));
             cFloat theta = rndDist(rndEngine) * 2 * 3.14159265358979323846;
             cFloat x = r * cos(theta) * HEIGHT / WIDTH;
             cFloat y = r * sin(theta);
             cFloat z = 0.0f;
 
             particle.position = cVec3(x, y, z);
-            particle.velocity = cVec3(glm::normalize(cVec2(x, y)) * 0.00025f, 0.0f); // 속도는 정규화된 벡터로 설정합니다.
+            particle.velocity = glm::normalize(cVec3(x, y, z)) * 0.00025f; // 속도는 정규화된 벡터로 설정합니다.
             particle.color = glm::vec3(rndDist(rndEngine), rndDist(rndEngine), rndDist(rndEngine));
             particle.empty = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f); // empty는 사용하지 않지만, 파티클 구조체의 크기를 맞추기 위해 사용합니다.
 
