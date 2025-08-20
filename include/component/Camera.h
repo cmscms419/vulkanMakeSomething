@@ -19,7 +19,7 @@ namespace vkengine {
         public:
             explicit Camera();
             explicit Camera(cVec3 pos, cVec3 up, cVec3 dir);
-            ~Camera();
+            Camera::~Camera() {}
 
             void update();
 
@@ -37,9 +37,21 @@ namespace vkengine {
             void setYaw(cFloat yaw) { this->yaw = yaw; }
             void setPitch(cFloat pitch) { this->pitch = pitch; }
             void setFov(cFloat fov) { this->fov = fov; }
-            void MoveForward(cFloat deltaTime);
-            void MoveRight(cFloat deltaTime);
-            void MoveUp(cFloat deltaTime);
+
+            void MoveForward(cFloat deltaTime)
+            {
+                this->pos -= this->dir * this->speed * deltaTime;
+            };
+
+            void MoveRight(cFloat deltaTime)
+            {
+                this->pos += this->right * this->speed * deltaTime;
+            };
+
+            void MoveUp(cFloat deltaTime)
+            {
+                this->pos -= this->up * this->speed * deltaTime;
+            };
 
             void RotateScreenStandard(cFloat xpos, cFloat ypos, int windowWidth, int windowHeight);
             void RotateDeltaRotation(const cVec3& force, bool constrainPitch = true);
@@ -58,11 +70,14 @@ namespace vkengine {
             void setViewXYZ(cVec3 pos, cVec3 rot);
 
         private:
-            cVec3 pos{ cVec3(0.0f, 0.0f, 3.0f) };
-            cVec3 up{ cVec3(0.0f, 1.0f, 0.0f) };
+            cVec3 pos{ cVec3(0.0f, 0.0f, -3.0f) };
+            cVec3 up{ cVec3(0.0f, -1.0f, 0.0f) };
             cVec3 target{ cVec3(0.0f) };
             cVec3 dir{ cVec3(0.0f, 0.0f, -1.0f) };
             cVec3 right{ cVec3(1.0f, 0.0f, 0.0f) };
+
+            cVec3 Yaxis = cVec3(0.0f, 1.0f, 0.0f); // Y축 방향 벡터
+            cVec3 Xaxis = cVec3(1.0f, 0.0f, 0.0f); // X축 방향 벡터
 
             cFloat yaw{ 0.0f };
             cFloat pitch{ 0.0f };
@@ -74,7 +89,7 @@ namespace vkengine {
             cFloat right_{ 1.0f };
             cFloat top{ 1.0f };
             cFloat bottom{ -1.0f };
-            cFloat speed{ 2.5f };
+            cFloat speed{ 0.5f };
             cFloat sensitivity{ 0.001f };
 
             cMat4 viewMatrix{ 1.f };

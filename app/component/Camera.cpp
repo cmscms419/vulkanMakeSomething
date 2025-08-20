@@ -6,9 +6,14 @@ namespace vkengine {
     namespace object {
 
         Camera::Camera() {
+
+            this->right = glm::cross(this->dir, this->up);
+
+            this->Yaxis = this->up;
+            this->Xaxis = -this->right;
+
             this->setViewDirection(pos, dir, up);
             this->setPerspectiveProjection(fov, aspect, nearP, farP);
-            //this->RotateDeltaRotation(cVec3(0.0f, 0.0f, 0.0f), true);
             
             _PRINT_TO_CONSOLE_("Camera Position: %f %f %f\n", this->pos.x, this->pos.y, this->pos.z);
             _PRINT_TO_CONSOLE_("Camera Target: %f %f %f\n", this->target.x, this->target.y, this->target.z);
@@ -21,11 +26,13 @@ namespace vkengine {
             this->pos = pos;
             this->up = up;
             this->dir = dir;
-            this->right = glm::cross(this->up, this->dir);
+            this->right = glm::cross(this->dir, this->up);
+
+            this->Yaxis = this->up;
+            this->Xaxis = -this->right;
 
             this->setViewDirection(this->pos, this->dir, this->up);
             this->setPerspectiveProjection(fov, aspect, nearP, farP);
-            //this->RotateDeltaRotation(cVec3(0.0f, 0.0f, 0.0f), true);
 
             _PRINT_TO_CONSOLE_("Camera Position: %f %f %f\n", this->pos.x, this->pos.y, this->pos.z);
             _PRINT_TO_CONSOLE_("Camera Target: %f %f %f\n", this->target.x, this->target.y, this->target.z);
@@ -33,25 +40,8 @@ namespace vkengine {
             _PRINT_TO_CONSOLE_("Camera Right: %f %f %f\n", this->right.x, this->right.y, this->right.z);
         }
 
-        Camera::~Camera() {}
-
         void Camera::update() {
             this->setViewDirection(pos, dir, up);
-        }
-        
-        void Camera::MoveForward(cFloat deltaTime)
-        {
-            this->pos += this->dir * this->speed * deltaTime;
-        }
-
-        void Camera::MoveRight(cFloat deltaTime)
-        {
-            this->pos += this->right * this->speed * deltaTime;
-        }
-
-        void Camera::MoveUp(cFloat deltaTime)
-        {
-            this->pos -= this->up * this->speed * deltaTime;
         }
 
         void Camera::RotateScreenStandard(cFloat xpos, cFloat ypos, int windowWidth, int windowHeight)
@@ -74,18 +64,17 @@ namespace vkengine {
             cVec3 dirction(0.0f, 0.0f, -1.0f);
 #if 1
             // 각 축별 quaternion 생성
-            cQuat qYaw = glm::angleAxis(this->yaw, cVec3(0.0f, -1.0f, 0.0f)); // Y축
-            cQuat qPitch = glm::angleAxis(this->pitch, cVec3(1.0f, 0.0f, 0.0f)); // X축
+            cQuat qYaw = glm::angleAxis(this->yaw, this->Yaxis); // Y축
+            cQuat qPitch = glm::angleAxis(this->pitch, this->Xaxis); // X축
 
             cQuat Result = qYaw * qPitch; 
             dirction = vkMath::RotationQuat(Result, dirction);
-            this->dir = glm::normalize(dirction);
             
+            this->dir = glm::normalize(dirction);
+            this->right = glm::normalize(glm::cross(this->dir, this->up));
 #else
             dirction = cVec3(vkMath::CreateRotation(this->yaw,this->pitch, 0.0f) * glm::vec4(0.0f, 0.0f, -1.0f, 1.0f));
 #endif
-            this->dir = glm::normalize(dirction);
-            this->right = glm::normalize(glm::cross(this->dir, this->up));
 
         }
 
@@ -103,8 +92,8 @@ namespace vkengine {
                 this->pitch = glm::clamp(this->pitch, -MAX_PITCH_VALUE, MAX_PITCH_VALUE);
             }
 
-            cQuat qYaw = glm::angleAxis(this->yaw, cVec3(0.0f, -1.0f, 0.0f)); // Y축
-            cQuat qPitch = glm::angleAxis(this->pitch, cVec3(1.0f, 0.0f, 0.0f)); // X축
+            cQuat qYaw = glm::angleAxis(this->yaw, this->Yaxis); // Y축
+            cQuat qPitch = glm::angleAxis(this->pitch, this->Xaxis); // X축
 
             cVec3 dirction(0.0f, 0.0f, -1.0f);
 
@@ -114,7 +103,7 @@ namespace vkengine {
             // dirction.x = cos(glm::radians(this->yaw)) * cos(glm::radians(this->pitch));
             // dirction.y = sin(glm::radians(this->pitch));
             // dirction.z = sin(glm::radians(this->yaw)) * cos(glm::radians(this->pitch));
-            
+
             this->dir = glm::normalize(dirction);
             this->right = glm::normalize(glm::cross(this->dir, this->up));
         }
@@ -150,8 +139,8 @@ namespace vkengine {
             projectionMatrix = cMat4{ 0.0f };
             projectionMatrix[0][0] = 1.f / (this->aspect * tanHalfFovy);
             projectionMatrix[1][1] = 1.f / (tanHalfFovy);
-            projectionMatrix[2][2] = farP / (this->farP - this->nearP);
-            projectionMatrix[2][3] = 1.f;
+            projectionMatrix[2][2] = this->farP / (this->nearP - this->farP);
+            projectionMatrix[2][3] = -1.f;
             projectionMatrix[3][2] = -(this->farP * this->nearP) / (this->farP - this->nearP);
 
             /**
@@ -159,6 +148,7 @@ namespace vkengine {
             *
             * In Vulkan, the y-axis is inverted compared to OpenGL.
             * This line multiplies the y-axis scale factor by -1 to correct the direction.
+            *
             * Vulkan에서는 OpenGL에 비해 y축이 반전됩니다.
             * 이 선은 y축 배율 인수에 -1을 곱하여 방향을 수정합니다.
             */
@@ -172,7 +162,7 @@ namespace vkengine {
 
             projectionMatrix[0][0] = 2.f / (this->right_ - this->left);
             projectionMatrix[1][1] = 2.f / (this->bottom - this->top);
-            projectionMatrix[2][2] = 1.f / (this->farP - this->nearP);
+            projectionMatrix[2][2] = 1.f / (this->nearP - this->farP);
             projectionMatrix[3][0] = -(this->right_ + this->left) / (this->right_ - this->left);
             projectionMatrix[3][1] = -(this->bottom + this->top) / (this->bottom - this->top);
             projectionMatrix[3][2] = -this->nearP / (this->farP - this->nearP);
