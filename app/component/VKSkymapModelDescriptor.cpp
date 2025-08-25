@@ -125,7 +125,7 @@ void VKSkyMapModelDescriptor::updateDescriptorSets() {
             descriptorWrites[1].dstArrayElement = 0;
             descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
             descriptorWrites[1].descriptorCount = 1;
-            descriptorWrites[1].pImageInfo = &cubeMap->imageInfo;
+            descriptorWrites[1].pImageInfo = &cubeMap->imageData[0].imageInfo;
 
             if (this->useTexture)
             {

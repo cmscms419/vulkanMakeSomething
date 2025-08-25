@@ -21,8 +21,9 @@
     <ClCompile Include="..\..\app\component\imgui\imgui_widgets.cpp" />
     <ClCompile Include="..\..\app\component\object3D.cpp" />
     <ClCompile Include="..\..\app\component\VKGeometryGenerator.cpp" />
+    <ClCompile Include="..\..\app\component\VKengineGLTFLoader.cpp" />
     <ClCompile Include="..\..\app\component\VKimgui.cpp" />
-    <ClCompile Include="..\..\app\component\VKLoadModel.cpp" />
+    <ClCompile Include="..\..\app\component\VKengineOBJLoader.cpp" />
     <ClCompile Include="..\..\app\component\VKmodelDescriptor.cpp" />
     <ClCompile Include="..\..\app\component\VKnormalRander.cpp" />
     <ClCompile Include="..\..\app\component\VKSkymapModelDescriptor.cpp" />
@@ -35,8 +36,9 @@
     <ClInclude Include="..\..\include\component\Camera.h" />
     <ClInclude Include="..\..\include\component\object3D.h" />
     <ClInclude Include="..\..\include\component\VKGeometryGenerator.h" />
+    <ClInclude Include="..\..\include\component\VKengineGLTFLoader.h" />
     <ClInclude Include="..\..\include\component\VKimgui.h" />
-    <ClInclude Include="..\..\include\component\VKLoadModel.h" />
+    <ClInclude Include="..\..\include\component\VKengineOBJLoader.h" />
     <ClInclude Include="..\..\include\component\VKmodelDescriptor.h" />
     <ClInclude Include="..\..\include\component\VKnormalRander.h" />
     <ClInclude Include="..\..\include\component\VKSkymapModelDescriptor.h" />

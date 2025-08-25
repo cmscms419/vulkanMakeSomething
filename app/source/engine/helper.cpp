@@ -728,7 +728,7 @@ namespace vkengine {
             VkFormatProperties formatProperties;
             vkGetPhysicalDeviceFormatProperties(physicalDevice, imageFormat, &formatProperties);
 
-            _CHECK_RESULT_((formatProperties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT))
+            _CHECK_RESULT_((formatProperties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT));
 
             VkCommandBuffer commandBuffer = beginSingleTimeCommands(device, commandPool);
             VkImageMemoryBarrier barrier{};

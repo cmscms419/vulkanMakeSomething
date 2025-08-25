@@ -18,7 +18,7 @@ namespace vkengine {
 
         public:
             explicit Camera();
-            explicit Camera(cVec3 pos, cVec3 up, cVec3 dir);
+            explicit Camera(cVec3 pos, cVec3 up, cVec3 dir, cVec3 right);
             Camera::~Camera() {}
 
             void update();
@@ -74,10 +74,11 @@ namespace vkengine {
             cVec3 up{ cVec3(0.0f, -1.0f, 0.0f) };
             cVec3 target{ cVec3(0.0f) };
             cVec3 dir{ cVec3(0.0f, 0.0f, -1.0f) };
-            cVec3 right{ cVec3(1.0f, 0.0f, 0.0f) };
+            cVec3 right{ cVec3(-1.0f, 0.0f, 0.0f) };
 
             cVec3 Yaxis = cVec3(0.0f, 1.0f, 0.0f); // Y축 방향 벡터
             cVec3 Xaxis = cVec3(1.0f, 0.0f, 0.0f); // X축 방향 벡터
+            cVec3 Zaxis = cVec3(0.0f, 0.0f, 1.0f); // Z축 방향 벡터
 
             cFloat yaw{ 0.0f };
             cFloat pitch{ 0.0f };
@@ -89,7 +90,7 @@ namespace vkengine {
             cFloat right_{ 1.0f };
             cFloat top{ 1.0f };
             cFloat bottom{ -1.0f };
-            cFloat speed{ 0.5f };
+            cFloat speed{ 1.5f };
             cFloat sensitivity{ 0.001f };
 
             cMat4 viewMatrix{ 1.f };

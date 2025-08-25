@@ -20,7 +20,7 @@ namespace vkengine
         void normalRander::createNormalObject(vkengine::object::Object3d* object)
         {
             std::vector<Vertex> normalVertices;
-            std::vector<uint16_t> normalIndices;
+            std::vector<cUint32_t> normalIndices;
             std::vector<Vertex>* vertices = object->getVertices();
 
             for (size_t i = 0; i < vertices->size(); i++)
@@ -33,8 +33,8 @@ namespace vkengine
                 vertex.texCoord.x = 1.0f; // ³¡
                 normalVertices.push_back(vertex);
 
-                normalIndices.push_back(uint16_t(2 * i));
-                normalIndices.push_back(uint16_t(2 * i + 1));
+                normalIndices.push_back(cUint32_t(2 * i));
+                normalIndices.push_back(cUint32_t(2 * i + 1));
             }
 
             this->normalRanderObject = new vkengine::object::ModelObject(engine->getDevice());
@@ -46,7 +46,12 @@ namespace vkengine
             this->normalRanderObject->createVertexBuffer();
             this->normalRanderObject->createIndexBuffer();
             this->normalRanderObject->createModelViewProjBuffers();
-            this->normalRanderObject->getTexture()->createDescriptorImageInfo();
+            
+            /*for (auto& data : this->normalRanderObject->getTexture()->imageTextureDatas)
+            {
+
+            }*/
+
             this->normalRanderObject->getModelViewProjUniformBuffer(0)->createDescriptorBufferInfo();
             this->normalRanderObject->getModelViewProjUniformBuffer(1)->createDescriptorBufferInfo();
 

@@ -7,10 +7,9 @@ namespace vkengine {
 
         Camera::Camera() {
 
-            this->right = glm::cross(this->dir, this->up);
-
             this->Yaxis = this->up;
             this->Xaxis = -this->right;
+            this->Zaxis = this->dir;
 
             this->setViewDirection(pos, dir, up);
             this->setPerspectiveProjection(fov, aspect, nearP, farP);
@@ -21,15 +20,17 @@ namespace vkengine {
             _PRINT_TO_CONSOLE_("Camera Right: %f %f %f\n", this->right.x, this->right.y, this->right.z);
         }
         
-        Camera::Camera(cVec3 pos, cVec3 up, cVec3 dir)
+        Camera::Camera(cVec3 pos, cVec3 up, cVec3 dir, cVec3 right)
         {
             this->pos = pos;
+
             this->up = up;
             this->dir = dir;
-            this->right = glm::cross(this->dir, this->up);
+            this->right = right;
 
             this->Yaxis = this->up;
             this->Xaxis = -this->right;
+            this->Zaxis = this->dir;
 
             this->setViewDirection(this->pos, this->dir, this->up);
             this->setPerspectiveProjection(fov, aspect, nearP, farP);
@@ -94,17 +95,12 @@ namespace vkengine {
 
             cQuat qYaw = glm::angleAxis(this->yaw, this->Yaxis); // YÃà
             cQuat qPitch = glm::angleAxis(this->pitch, this->Xaxis); // XÃà
-
-            cVec3 dirction(0.0f, 0.0f, -1.0f);
+            cVec3 zVec = this->Zaxis;
 
             cQuat Result = qYaw * qPitch;
-            dirction = vkMath::RotationQuat(Result, dirction);
+            zVec = vkMath::RotationQuat(Result, zVec);
 
-            // dirction.x = cos(glm::radians(this->yaw)) * cos(glm::radians(this->pitch));
-            // dirction.y = sin(glm::radians(this->pitch));
-            // dirction.z = sin(glm::radians(this->yaw)) * cos(glm::radians(this->pitch));
-
-            this->dir = glm::normalize(dirction);
+            this->dir = glm::normalize(zVec);
             this->right = glm::normalize(glm::cross(this->dir, this->up));
         }
 

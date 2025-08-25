@@ -122,7 +122,7 @@ namespace vkengine {
                 descriptorWrites[1].dstArrayElement = 0;
                 descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
                 descriptorWrites[1].descriptorCount = 1;
-                descriptorWrites[1].pImageInfo = &texture->imageInfo;
+                descriptorWrites[1].pImageInfo = &texture->imageData[0].imageInfo; // 이 예제에서는 단일 텍스처만 사용한다고 가정
 
                 vkUpdateDescriptorSets(this->logicaldevice, static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
             }

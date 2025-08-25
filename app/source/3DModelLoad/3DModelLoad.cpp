@@ -30,17 +30,6 @@ namespace vkengine {
         this->cubeSkybox = new object::SkyBox(this->getDevice());
         this->modelObject = new object::ModelObject(this->getDevice());
 
-        //std::vector<std::string> pathArray = {
-        //   this->RootPath + RESOURSE_PATH + TEST_TEXTURE_PATH_ARRAY0,
-        //   this->RootPath + RESOURSE_PATH + TEST_TEXTURE_PATH_ARRAY1,
-        //   this->RootPath + RESOURSE_PATH + TEST_TEXTURE_PATH_ARRAY2,
-        //   this->RootPath + RESOURSE_PATH + TEST_TEXTURE_PATH_ARRAY3,
-        //   this->RootPath + RESOURSE_PATH + TEST_TEXTURE_PATH_ARRAY4,
-        //   this->RootPath + RESOURSE_PATH + TEST_TEXTURE_PATH_ARRAY5
-        //};
-
-        //this->cubeObject.createTextureArray(pathArray);
-
         std::vector<std::string> pathCubeArray = {
            this->RootPath + RESOURSE_PATH + CUBE_TEXTURE_PATH + "/right.png",
            this->RootPath + RESOURSE_PATH + CUBE_TEXTURE_PATH + "/left.png",
@@ -74,7 +63,7 @@ namespace vkengine {
         this->modelObject->setTexturePNG(resourcePNG);
         this->modelObject->RotationAngle(-90.0f, glm::vec3(1.0f, 0.0f, 0.0f));
 
-        helper::loadModel::loadModel(modelPath, *this->modelObject->getVertices(), *this->modelObject->getIndices());
+        helper::loadModel::loadModelOBJ(modelPath, *this->modelObject->getVertices(), *this->modelObject->getIndices());
         this->modelObject->createTexture(VK_FORMAT_R8G8B8A8_SRGB);
 
         this->createVertexbuffer();
@@ -440,13 +429,13 @@ namespace vkengine {
 
             VkDescriptorImageInfo imageInfo{};
             imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-            imageInfo.imageView = this->cubeSkybox->getTexture()->imageView;
-            imageInfo.sampler = this->cubeSkybox->getTexture()->sampler;
+            imageInfo.imageView = this->cubeSkybox->getTexture()->imageData->imageView;
+            imageInfo.sampler = this->cubeSkybox->getTexture()->imageData->sampler;
 
             VkDescriptorImageInfo imageInfo2{};
             imageInfo2.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-            imageInfo2.imageView = this->modelObject->getTexture()->imageView;
-            imageInfo2.sampler = this->modelObject->getTexture()->sampler;
+            imageInfo2.imageView = this->modelObject->getTexture()->imageData->imageView;
+            imageInfo2.sampler = this->modelObject->getTexture()->imageData->sampler;
 
             std::array<VkWriteDescriptorSet, 3> descriptorWrites{};
 

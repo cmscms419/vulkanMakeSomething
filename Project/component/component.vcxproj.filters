@@ -42,7 +42,7 @@
     <ClCompile Include="..\..\app\source\engine\VKinputEvent.cpp">
       <Filter>component</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\app\component\VKLoadModel.cpp">
+    <ClCompile Include="..\..\app\component\VKengineOBJLoader.cpp">
       <Filter>component</Filter>
     </ClCompile>
     <ClCompile Include="..\..\app\component\VKmodelDescriptor.cpp">
@@ -55,6 +55,9 @@
       <Filter>component</Filter>
     </ClCompile>
     <ClCompile Include="..\..\app\component\VKGeometryGenerator.cpp">
+      <Filter>component</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\component\VKengineGLTFLoader.cpp">
       <Filter>component</Filter>
     </ClCompile>
   </ItemGroup>
@@ -80,7 +83,7 @@
     <ClInclude Include="..\..\include\source\engine\VKinputEvent.h">
       <Filter>component</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\component\VKLoadModel.h">
+    <ClInclude Include="..\..\include\component\VKengineOBJLoader.h">
       <Filter>component</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\component\VKmodelDescriptor.h">
@@ -93,6 +96,9 @@
       <Filter>component</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\component\VKGeometryGenerator.h">
+      <Filter>component</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\component\VKengineGLTFLoader.h">
       <Filter>component</Filter>
     </ClInclude>
   </ItemGroup>

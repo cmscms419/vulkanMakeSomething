@@ -48,6 +48,15 @@
     <ClCompile Include="..\..\app\source\engine\VKtexture.cpp">
       <Filter>source</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\app\common\Vkbase.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\source\engine\VKDescriptorPoolandSetLayout.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\source\engine\VKContext.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\include\source\engine\Debug.h">
@@ -93,6 +102,15 @@
       <Filter>source</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\source\engine\VKtexture.h">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\common\Vkbase.h">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\source\engine\VKDescriptorPoolandSetLayout.h">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\source\engine\VKContext.h">
       <Filter>source</Filter>
     </ClInclude>
   </ItemGroup>

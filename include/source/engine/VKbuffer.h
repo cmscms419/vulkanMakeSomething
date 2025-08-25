@@ -47,7 +47,7 @@ namespace vkengine {
 
     struct IndexBuffer : public VkBaseBuffer
     {
-        IndexBuffer(VkDeviceSize size = sizeof(cUint16_t), cString name = "DefaultIndexBuffer")
+        IndexBuffer(VkDeviceSize size = sizeof(cUint32_t), cString name = "DefaultIndexBuffer")
         {
             VkBaseBuffer buffer(size, name);
         };

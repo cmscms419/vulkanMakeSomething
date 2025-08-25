@@ -1,9 +1,9 @@
 #ifndef INCLUDE_VULKANSWAPCHAIN_H_
 #define INCLUDE_VULKANSWAPCHAIN_H_
 
-#include "../../common/common.h"
-#include "../../common/struct.h"
-#include "../../common/macros.h"
+#include "common.h"
+#include "struct.h"
+#include "macros.h"
 
 #include "helper.h"
 

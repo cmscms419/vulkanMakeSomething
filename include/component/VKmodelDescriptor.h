@@ -12,6 +12,8 @@
 
 namespace vkengine {
 
+    // 이것은 안사용할 예정
+    // 활용하기가 어렵다.
     struct VK3DModelDescriptor : public VKDescriptor
     {
     public:

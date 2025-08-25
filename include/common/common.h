@@ -11,7 +11,6 @@
 //#include <stdexcept>
 //#include <vector>
 //#include <map>
-//#include <unordered_map>
 
 #include <chrono>
 #include <iostream>
@@ -19,6 +18,7 @@
 #include <vector>
 #include <array>
 #include <string>
+#include <unordered_map>
 
 #define VK_USE_PLATFORM_WIN32_KHR
 #include <vulkan/vulkan.h>
@@ -27,6 +27,8 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+
+//#define HASH_ID(str) vkengine::hash(str)
 
 typedef bool cBool;
 typedef char cChar;
@@ -67,6 +69,8 @@ constexpr cFloat XM_2PI = 6.283185307f;
 
 namespace vkengine
 {
+
+
     extern const std::vector<const char*> validationLayers;
     extern const std::vector<const char*> deviceExtensions;
     extern const std::vector<VkDynamicState> dynamicStates;

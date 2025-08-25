@@ -5,6 +5,8 @@
 #include "macros.h"
 #include "resourseload.h"
 
+
+
 struct QueueFamilyIndices {
     cUint32_t graphicsAndComputeFamily = 0;  // 그래픽스/컴퓨팅 큐 패밀리 인덱스 (그래픽스/컴퓨팅 명령을 처리하는 큐)
     cUint32_t presentFamily = 0;             // 프레젠트 큐 패밀리 인덱스 (윈도우 시스템과 Vulkan을 연결하는 인터페이스)
@@ -243,19 +245,40 @@ struct UniformBufferObject {
     cMat4 proj;
 };
 
-struct TextureResourcePNG {
 
+struct TextureResourceBase
+{
+    enum TYPE
+    {
+        NONE = 0,          // 리소스 없음
+        PNG = 1,          // PNG 리소스
+        KTX = 2,          // KTX 리소스
+    };
+
+    cChar* name = "";                              // 리소스 이름
+    TYPE type = NONE;                               // 리소스 타입 (PNG, KTX 등)
     cUint32_t texWidth = 0;                         // 텍스처 너비
     cUint32_t texHeight = 0;                        // 텍스처 높이
     cUint32_t texChannels = 0;                      // 텍스처 채널
+    cUint32_t mipLevels = 0;
+    cUint32_t layerCount = 0;
+
+    virtual bool createResource(cString path = "", cChar* name = "") = 0; // 리소스 생성 함수, 경로를 인자로 받음
+
+};
+
+struct TextureResourcePNG : public TextureResourceBase {
+
     cUChar* data = nullptr;         //< 리소스 데이터 포인터
 
     // 생성자
     TextureResourcePNG() {
+        this->name = ""; // 이름 초기화
         this->texWidth = 0;
         this->texHeight = 0;
         this->texChannels = 0;
         this->data = nullptr; // 리소스 데이터 초기화
+        this->type = TYPE::PNG; // 리소스 타입을 PNG로 설정
     }
 
     // 소멸자
@@ -268,7 +291,6 @@ struct TextureResourcePNG {
         texChannels = 0; // 채널 초기화
         data = nullptr; // 포인터 초기화
     }
-
 
     // 복사 생성자
     TextureResourcePNG(const TextureResourcePNG& other) {
@@ -300,6 +322,8 @@ struct TextureResourcePNG {
         texWidth = other.texWidth;
         texHeight = other.texHeight;
         texChannels = other.texChannels;
+        name = other.name;
+
         if (other.data) {
             size_t size = texWidth * texHeight * texChannels;
             data = (cUChar*)malloc(size);
@@ -318,7 +342,9 @@ struct TextureResourcePNG {
         return *this;
     }
 
-    void createResource(cString path) {
+    virtual bool createResource(cString path = "", cChar* name = "") {
+
+        this->name = name;
 
         if (data) {
             free(data);
@@ -327,24 +353,29 @@ struct TextureResourcePNG {
         this->texChannels = TextureType::Texture_rgb_alpha; // 기본적으로 RGBA로 설정
 
         data = load_png_rgba(path.c_str(), &this->texWidth, &this->texHeight, this->texChannels);
+
+        if (data == nullptr) {
+            _PRINT_TO_CONSOLE_("PNG texture data is null.");
+            return false;
+        }
+
+        return true;
     }
 };
 
-struct TextureResourceKTX {
-    cUint32_t texWidth = 0;                         // 텍스처 너비
-    cUint32_t texHeight = 0;                        // 텍스처 높이
-    cUint32_t texChannels = 0;                      // 텍스처 채널
-    cUint32_t mipLevels = 0;
-    cUint32_t layerCount = 0;
+struct TextureResourceKTX : public TextureResourceBase {
+    
     ktxTexture* texture = nullptr; // KTX 텍스처 포인터
 
     TextureResourceKTX() {
+        this->name = ""; // 이름 초기화
         this->texWidth = 0;
         this->texHeight = 0;
         this->texChannels = 0;
         this->mipLevels = 0;
         this->layerCount = 0;
         this->texture = nullptr; // KTX 텍스처 초기화
+        this->type = TYPE::KTX;
     }
 
     ~TextureResourceKTX() {
@@ -359,8 +390,7 @@ struct TextureResourceKTX {
         texture = nullptr; // 포인터 초기화
     }
 
-    bool createResource(cString path) {
-
+    virtual bool createResource(cString path = "", cChar* name = "") {
         if (texture) {
             ktxTexture_Destroy(texture); // KTX 텍스처 해제
         }
@@ -377,10 +407,36 @@ struct TextureResourceKTX {
         this->mipLevels = texture->numLevels;
         this->layerCount = texture->numLayers;
         this->texChannels = 4; // 기본적으로 RGBA로 설정
+        this->name = name;
 
         return true;
     }
 
+};
+
+// 프리미티브는 단일 드로우 콜에 대한 데이터를 포함합니다.
+struct Primitive {
+    cUint32_t firstIndex;
+    cUint32_t indexCount;
+    cInt32_t materialIndex;
+};
+
+// 노드의 (선택 사항) 기하학을 포함하고 임의의 수의 기본 요소로 구성될 수 있습니다.
+struct Mesh {
+    std::vector<::Primitive> primitives;
+};
+
+// A node represents an object in the glTF scene graph
+struct Node {
+    Node* parent;
+    std::vector<Node*> children;
+    Mesh mesh;
+    cMat4 matrix;
+    ~Node() {
+        for (auto& child : children) {
+            delete child;
+        }
+    }
 };
 
 struct cMaterial
@@ -395,6 +451,8 @@ struct cMaterial
     VkBool32 isNormalMap = VK_FALSE; // Normal map flag
     VkBool32 isMetallic = VK_FALSE; // Metallic flag
     VkBool32 isRoughness = VK_FALSE; // Roughness flag
+
+    cUint32_t baseColorTextureIndex = 0;
 
 #if 0
     cFloat emissive = 0.0f; // Emissive factor
@@ -426,7 +484,6 @@ struct cMaterial
     cBool isUseTextureResource = false; // Texture resourcePNG usage flag
 #endif
 
-    //cMaterial() {};
     cMaterial(cFloat metallic = 0.0f, cFloat roughness = 0.0f, cVec4 color = cVec4(0.0f, 0.0f, 0.0f, 1.0f))
         : metallic(metallic), roughness(roughness), r(color.r), g(color.g), b(color.b), a(color.a){
 

@@ -64,6 +64,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "VS", "VS", "{CAFC0940-D847-
 		..\shader\IBLpbr.vert = ..\shader\IBLpbr.vert
 		..\shader\IBLskybox.vert = ..\shader\IBLskybox.vert
 		..\shader\loadmodel.vert = ..\shader\loadmodel.vert
+		..\shader\mesh.vert = ..\shader\mesh.vert
 		..\shader\NormalShader.vert = ..\shader\NormalShader.vert
 		..\shader\ParticleVS.vert = ..\shader\ParticleVS.vert
 		..\shader\pbr.vert = ..\shader\pbr.vert
@@ -83,6 +84,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "FS", "FS", "{4660BEB4-CF0C-
 		..\shader\irradiancecube.frag = ..\shader\irradiancecube.frag
 		..\shader\loadmodel.frag = ..\shader\loadmodel.frag
 		..\shader\loadmodel2.frag = ..\shader\loadmodel2.frag
+		..\shader\mesh.frag = ..\shader\mesh.frag
 		..\shader\NormalShader.frag = ..\shader\NormalShader.frag
 		..\shader\ParticleFS.frag = ..\shader\ParticleFS.frag
 		..\shader\pbr.frag = ..\shader\pbr.frag
@@ -98,6 +100,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "COMP", "COMP", "{FB61FBDA-2
 	ProjectSection(SolutionItems) = preProject
 		..\shader\computerShdaer.comp = ..\shader\computerShdaer.comp
 	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "14.gltfLoader", "14.gltfLoader\14.gltfLoader.vcxproj", "{40B4619E-8652-479C-BA91-EBB5459D8EE1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -173,6 +177,10 @@ Global
 		{6DA4C292-826B-4085-89E9-FA80C7B5C243}.Debug|x64.Build.0 = Debug|x64
 		{6DA4C292-826B-4085-89E9-FA80C7B5C243}.Release|x64.ActiveCfg = Release|x64
 		{6DA4C292-826B-4085-89E9-FA80C7B5C243}.Release|x64.Build.0 = Release|x64
+		{40B4619E-8652-479C-BA91-EBB5459D8EE1}.Debug|x64.ActiveCfg = Debug|x64
+		{40B4619E-8652-479C-BA91-EBB5459D8EE1}.Debug|x64.Build.0 = Debug|x64
+		{40B4619E-8652-479C-BA91-EBB5459D8EE1}.Release|x64.ActiveCfg = Release|x64
+		{40B4619E-8652-479C-BA91-EBB5459D8EE1}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -195,6 +203,7 @@ Global
 		{CAFC0940-D847-4BD4-BA90-EA5D87C8A13C} = {8120791F-E306-43A2-AAEA-BA97B19D5094}
 		{4660BEB4-CF0C-4B19-B41C-0A77784417DC} = {8120791F-E306-43A2-AAEA-BA97B19D5094}
 		{FB61FBDA-2F78-4560-9832-3A14F142D5AE} = {8120791F-E306-43A2-AAEA-BA97B19D5094}
+		{40B4619E-8652-479C-BA91-EBB5459D8EE1} = {C8D5274F-AC00-46C7-1F8D-E88E81087A52}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {46E572E5-9639-4EE0-9508-072778161B66}

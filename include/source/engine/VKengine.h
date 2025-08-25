@@ -18,6 +18,7 @@
 #include "VKinputEvent.h"
 #include "Debug.h"
 #include "helper.h"
+#include "VKDescriptorPoolandSetLayout.h"
 
 #define MOVESPEED 1.2f
 
@@ -29,7 +30,7 @@ namespace vkengine {
 
     class VulkanEngine {
     public:
-        VulkanEngine(std::string root_path);
+        VulkanEngine(cString root_path);
         ~VulkanEngine();
 
         cBool _isInitialized{ false };
@@ -96,7 +97,8 @@ namespace vkengine {
         VKdeviceHandler* getDevice() const { return VKdevice.get(); }
         VkSampleCountFlagBits getMsaaSamples() const { return VKmsaaSamples; }
         VkPipelineCache getPipelineCache() const { return VKpipelineCache; }
-        std::string getRootPath() const { return RootPath; }
+        cString getRootPath() const { return RootPath; }
+        cString getResourcePath() const { return RESOURSE_PATH; }
         size_t getCurrentFrame() const { return currentFrame; }
         cBool getState() const { return state; }
         VkDescriptorPool getDescriptorPool() const { return VKdescriptorPool; }
@@ -167,7 +169,8 @@ namespace vkengine {
         // 렌더링을 시작하기 전에 렌더링할 준비가 되었는지 확인하는 변수
         VkSubmitInfo VKsubmitInfo{};  // 제출 정보 -> 제출할 명령 버퍼와 세마포어를 저장
 
-        std::string RootPath = "";                          // 루트 경로
+        cString RootPath = "";                              // 루트 경로
+        cString ResourcePath = "../../../../../../source/"; // 리소스 경로
         size_t currentFrame = 0;                            // 현재 프레임 인덱스
         cBool state = false;                                 // 프로그램 상태 
         int windowWidth = WIDTH;                            // 윈도우 너비

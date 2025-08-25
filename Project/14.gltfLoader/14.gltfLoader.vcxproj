@@ -11,57 +11,27 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\app\common\common.cpp" />
-    <ClCompile Include="..\..\app\common\macros.cpp" />
-    <ClCompile Include="..\..\app\common\resourseload.cpp" />
-    <ClCompile Include="..\..\app\common\struct.cpp" />
-    <ClCompile Include="..\..\app\common\Vkbase.cpp" />
-    <ClCompile Include="..\..\app\common\vkmath.cpp" />
-    <ClCompile Include="..\..\app\source\engine\Debug.cpp" />
-    <ClCompile Include="..\..\app\source\engine\helper.cpp" />
-    <ClCompile Include="..\..\app\source\engine\VKbuffer.cpp" />
-    <ClCompile Include="..\..\app\source\engine\VKContext.cpp" />
-    <ClCompile Include="..\..\app\source\engine\VKDescriptor.cpp" />
-    <ClCompile Include="..\..\app\source\engine\VKDescriptorPoolandSetLayout.cpp" />
-    <ClCompile Include="..\..\app\source\engine\VKdevice.cpp" />
-    <ClCompile Include="..\..\app\source\engine\VKengine.cpp" />
-    <ClCompile Include="..\..\app\source\engine\VKswapchain.cpp" />
-    <ClCompile Include="..\..\app\source\engine\VKtexture.cpp" />
+    <ClCompile Include="..\..\app\source\gltfLoader\gltfLoader.cpp" />
+    <ClCompile Include="..\..\app\source\gltfLoader\main_engine.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\include\common\common.h" />
-    <ClInclude Include="..\..\include\common\macros.h" />
-    <ClInclude Include="..\..\include\common\resourseload.h" />
-    <ClInclude Include="..\..\include\common\struct.h" />
-    <ClInclude Include="..\..\include\common\VectorCMS.h" />
-    <ClInclude Include="..\..\include\common\Vkbase.h" />
-    <ClInclude Include="..\..\include\common\vkmath.h" />
-    <ClInclude Include="..\..\include\source\engine\Debug.h" />
-    <ClInclude Include="..\..\include\source\engine\helper.h" />
-    <ClInclude Include="..\..\include\source\engine\VKbuffer.h" />
-    <ClInclude Include="..\..\include\source\engine\VKContext.h" />
-    <ClInclude Include="..\..\include\source\engine\VKDescriptor.h" />
-    <ClInclude Include="..\..\include\source\engine\VKDescriptorPoolandSetLayout.h" />
-    <ClInclude Include="..\..\include\source\engine\VKdevice.h" />
-    <ClInclude Include="..\..\include\source\engine\VKengine.h" />
-    <ClInclude Include="..\..\include\source\engine\VKmemoryAlloc.h" />
-    <ClInclude Include="..\..\include\source\engine\VKswapchain.h" />
-    <ClInclude Include="..\..\include\source\engine\VKtexture.h" />
+    <ClInclude Include="..\..\app\source\gltfLoader\gltfLoader.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{4C2DB017-DA5B-1C63-CFD9-6700B8C045BA}</ProjectGuid>
-    <RootNamespace>basicEngine</RootNamespace>
+    <ProjectGuid>{40b4619e-8652-479c-ba91-ebb5459d8ee1}</ProjectGuid>
+    <RootNamespace>_14_gltfLoader</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <ProjectName>14.gltfLoader</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <CharacterSet>MultiByte</CharacterSet>
     <PlatformToolset>v143</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
@@ -80,32 +50,45 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <OutDir>$(SolutionDir)../external\$(ProjectName)\$(Platform)\$(Configuration)\</OutDir>
+    <OutDir>$(SolutionDir)../exe\$(ProjectName)\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)../build\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(VULKAN_SDK)\Include</IncludePath>
+    <LibraryPath>$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(VULKAN_SDK)\Lib</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <OutDir>$(SolutionDir)../external\$(ProjectName)\$(Platform)\$(Configuration)\</OutDir>
+    <OutDir>$(SolutionDir)../exe\$(ProjectName)\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)../build\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(VULKAN_SDK)\Include</IncludePath>
+    <LibraryPath>$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(VULKAN_SDK)\Lib</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Label="Vcpkg">
     <VcpkgEnabled>false</VcpkgEnabled>
+    <VcpkgManifestInstall>false</VcpkgManifestInstall>
+    <VcpkgAutoLink>false</VcpkgAutoLink>
+    <VcpkgApplocalDeps>false</VcpkgApplocalDeps>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>DEBUG_;WIN32;WIN64;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>DEBUG_;WIN32;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>./;$(CudaToolkitDir)/include;$(VULKAN_SDK)/include;../../external/imgui;../../external/GLFW/include;../../include/common/;../../include/source/engine/;../../include/component/;../../external/ktx/include;../../external/tinygltf/</AdditionalIncludeDirectories>
+      <SDLCheck>true</SDLCheck>
       <LanguageStandard_C>stdc11</LanguageStandard_C>
-      <AdditionalIncludeDirectories>./;$(CudaToolkitDir)/include;$(VULKAN_SDK)/include;../../external/imgui;../../external/GLFW/include;../../include/common;../../include/source/engine;../../external/ktx/include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
-      <AdditionalDependencies>cudart_static.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>vulkan-1.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;glfw3dll.lib;zlib.lib;libpng.lib;basicEngine.lib;component.lib;ktx.lib</AdditionalDependencies>
+      <LinkTimeCodeGeneration>Default</LinkTimeCodeGeneration>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories);$(CudaToolkitLibDir);../../external/GLFW/lib/$(Configuration)/;../../external/zlib/lib/$(Configuration)/;../../external/libpng/lib/$(Configuration)/;../../external/basicEngine/$(Platform)/$(Configuration)/;../../external/component/$(Platform)/$(Configuration)/;../../external/ktx/lib/</AdditionalLibraryDirectories>
     </Link>
     <CudaCompile>
       <TargetMachinePlatform>64</TargetMachinePlatform>
     </CudaCompile>
+    <PostBuildEvent>
+      <Command>xcopy /Y "$(SolutionDir)..\external\dll\$(Platform)\$(Configuration)\*.*" "$(OutDir)"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -114,19 +97,25 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;WIN64;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>./;$(CudaToolkitDir)/include;$(VULKAN_SDK)/include;../../external/imgui;../../external/GLFW/include;../../include/common/;../../include/source/engine/;../../include/component/;../../external/ktx/include;../../external/tinygltf/</AdditionalIncludeDirectories>
+      <SDLCheck>true</SDLCheck>
       <LanguageStandard_C>stdc11</LanguageStandard_C>
-      <AdditionalIncludeDirectories>./;$(CudaToolkitDir)/include;$(VULKAN_SDK)/include;../../external/imgui;../../external/GLFW/include;../../include/common;../../include/source/engine;../../external/ktx/include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <SubSystem>Console</SubSystem>
-      <AdditionalDependencies>cudart_static.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>vulkan-1.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;glfw3dll.lib;zlib.lib;libpng.lib;basicEngine.lib;component.lib;ktx.lib</AdditionalDependencies>
+      <LinkTimeCodeGeneration>Default</LinkTimeCodeGeneration>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories);$(CudaToolkitLibDir);../../external/GLFW/lib/$(Configuration)/;../../external/zlib/lib/$(Configuration)/;../../external/libpng/lib/$(Configuration)/;../../external/basicEngine/$(Platform)/$(Configuration)/;../../external/component/$(Platform)/$(Configuration)/;../../external/ktx/lib/</AdditionalLibraryDirectories>
     </Link>
     <CudaCompile>
       <TargetMachinePlatform>64</TargetMachinePlatform>
     </CudaCompile>
+    <PostBuildEvent>
+      <Command>xcopy /Y "$(SolutionDir)..\external\dll\$(Platform)\$(Configuration)\*.*" "$(OutDir)"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

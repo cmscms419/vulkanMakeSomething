@@ -32,7 +32,7 @@ namespace vkengine {
             staging.size = bufferSize;
             staging.usageFlags = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
             staging.memoryPropertyFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
-            
+
             staging.createBuffer(physicalDevice);
             staging.mapToMeBuffer(bufferSize, 0);
             staging.copyToMeBuffer(vertices.data(), bufferSize);
@@ -42,7 +42,7 @@ namespace vkengine {
             staging.cleanup();
         }
 
-        void Object3d::createIndexBuffer(std::vector<cUint16_t>& indices)
+        void Object3d::createIndexBuffer(std::vector<cUint32_t>& indices)
         {
             if (indices.empty() && !this->getIndices()->empty())
             {
@@ -57,7 +57,7 @@ namespace vkengine {
 
             VkDevice logicaldevice = this->logicaldevice;
             VkPhysicalDevice physicalDevice = this->physicalDevice;
-            VkDeviceSize bufferSize = sizeof(cUint16_t) * indices.size();
+            VkDeviceSize bufferSize = sizeof(cUint32_t) * indices.size();
 
             this->indices = indices;
             this->indexBuffer.device = logicaldevice;
@@ -71,7 +71,7 @@ namespace vkengine {
             staging.size = bufferSize;
             staging.usageFlags = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
             staging.memoryPropertyFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
-            
+
             staging.createBuffer(physicalDevice);
             staging.mapToMeBuffer(bufferSize, 0);
             staging.copyToMeBuffer(indices.data(), bufferSize);
@@ -113,7 +113,7 @@ namespace vkengine {
 
         void Object3d::createModelViewProjBuffers()
         {
-            
+
             VkDevice logicaldevice = this->logicaldevice;
             VkPhysicalDevice physicalDevice = this->physicalDevice;
             VkDeviceSize bufferSize = sizeof(UniformBufferObject);
@@ -169,7 +169,7 @@ namespace vkengine {
             this->OutputPartucleBuffer.size = bufferSize;
             this->OutputPartucleBuffer.usageFlags = usage;
             this->OutputPartucleBuffer.memoryPropertyFlags = properties;
-            
+
             this->InputPartucleBuffer.createBuffer(physicalDevice);
             this->OutputPartucleBuffer.createBuffer(physicalDevice);
 
@@ -201,6 +201,27 @@ namespace vkengine {
 
             staging.cleanup();
         }
+
+        void GLTFmodelObject::updateUniformBuffer(cMat4 world, Camera* camera)
+        {
+            UniformBufferObject ubo{};
+            ubo.model = cMat4(1.0f);
+            ubo.view = camera->getViewMatrix();
+            ubo.proj = camera->getProjectionMatrix();
+            ubo.inverseTranspose = cMat4(1.0f); // skymap은 역행렬이 필요없음
+
+            // 임시로 하나로 설정
+            memcpy(this->modelviewprojUniformBuffer[0].mapped, &ubo, sizeof(ubo));
+        }
+
+        VKBaseObject::VKBaseObject(const cString& name) {}
+        VKBaseObject::VKBaseObject(VKdeviceHandler* device, const cString& name)
+            :
+            physicalDevice(device->physicalDevice),
+            logicaldevice(device->logicaldevice),
+            commandPool(device->commandPool),
+            graphicsVKQueue(device->graphicsVKQueue) {
+        };
     }
 }
 

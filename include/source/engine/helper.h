@@ -413,6 +413,18 @@ namespace vkengine {
             return descriptorSetLayoutCreateInfo;
         }
 
+        inline VkDescriptorSetLayoutCreateInfo descriptorSetLayoutCreateInfo2(
+            const VkDescriptorSetLayoutBinding& bindings,
+            cUint32_t bindingCount = 1
+            )
+        {
+            VkDescriptorSetLayoutCreateInfo descriptorSetLayoutCreateInfo{};
+            descriptorSetLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+            descriptorSetLayoutCreateInfo.pBindings = &bindings;
+            descriptorSetLayoutCreateInfo.bindingCount = bindingCount;
+            return descriptorSetLayoutCreateInfo;
+        }
+
         inline VkDescriptorSetAllocateInfo descriptorSetAllocateInfo(
             const VkDescriptorPool& descriptorPool,
             const VkDescriptorSetLayout& pSetLayouts,
