@@ -46,7 +46,7 @@ namespace vkengine
 
         VertexBuffer VKvertexBuffer{};
         IndexBuffer VKindexBuffer{};
-        Vk2DTextureArray textureArray = {};
+        Vk2DArrayTexture textureArray = {};
 
         std::vector<subUniformBuffer> VKuniformBuffer = {};
 

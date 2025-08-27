@@ -70,20 +70,19 @@ namespace vkengine {
         this->modelObject->setTexturePNG(resourcePNG);
         this->modelObject->createTexture(VK_FORMAT_R8G8B8A8_SRGB);
 
-        cString modelPath = this->RootPath + RESOURSE_PATH + "teapot.obj";
+        cString modelPath = this->RootPath + RESOURSE_PATH + "sphere.obj";
         cString modelPathGLTF = this->RootPath + RESOURSE_PATH + "sphere.gltf";
         cString modelPathGLTF2 = this->RootPath + RESOURSE_PATH + "glTF/Suzanne.gltf";
-#if 0
-        helper::loadModel::loadModel2(modelPath, *this->modelObject->getVertices(), *this->modelObject->getIndices());
+#if 1
+        helper::loadModel::OBJ::loadAsset(modelPath, *this->modelObject->getVertices(), *this->modelObject->getIndices());
 #else
-        helper::loadModel::loadModelGLTF(modelPathGLTF2, *this->modelObject->getVertices(), *this->modelObject->getIndices());
+        helper::loadModel::loadModelGLTF(modelPathGLTF2, *this->modelObject);
 #endif
 
-        cMat4 rotation01 = glm::rotate(glm::mat4(1.0f), glm::radians(-180.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-        cMat4 rotation02 = glm::rotate(glm::mat4(1.0f), glm::radians(-180.0f), glm::vec3(0.0f, -1.0f, 0.0f));
-        cMat4 rotation03 = rotation01 * rotation02;
-        modelObject->setMatrix(rotation03); // 모델 회전 설정
-
+        //cMat4 rotation01 = glm::rotate(glm::mat4(1.0f), glm::radians(-180.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+        //cMat4 rotation02 = glm::rotate(glm::mat4(1.0f), glm::radians(-180.0f), glm::vec3(0.0f, -1.0f, 0.0f));
+        //cMat4 rotation03 = rotation01 * rotation02;
+        //modelObject->setMatrix(rotation03); // 모델 회전 설정
 
         normalRanderHelpe = new vkengine::helper::normalRander(this);
         normalRanderHelpe->createNormalObject(this->modelObject);
@@ -443,7 +442,7 @@ namespace vkengine {
 
     void iblpbrEngine::createIndexBuffer()
     {
-        this->skyBox->createIndexBuffer(const_cast<std::vector<uint16_t>&>(skyboxIndices));
+        this->skyBox->createIndexBuffer(const_cast<std::vector<uint32_t>&>(skyboxIndices));
         this->modelObject->createIndexBuffer(*this->modelObject->getIndices());
         //this->vikingRoomObject->createIndexBuffer(*this->vikingRoomObject->getIndices());
     }
@@ -536,7 +535,7 @@ namespace vkengine {
                 this->skyboxDescriptor2->VKdescriptorSets[0],
                 VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
                 1,
-                &this->skyBox->getTexture()->imageInfo), // 텍스쳐
+                &this->skyBox->getTexture()->imageData[0].imageInfo), // 텍스쳐
             helper::writeDescriptorSet(
                 this->skyboxDescriptor2->VKdescriptorSets[0],
                 VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
@@ -554,7 +553,7 @@ namespace vkengine {
                 this->skyboxDescriptor2->VKdescriptorSets[1],
                 VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
                 1,
-                &this->skyBox->getTexture()->imageInfo), // 텍스쳐
+                &this->skyBox->getTexture()->imageData[0].imageInfo), // 텍스쳐
             helper::writeDescriptorSet(
                 this->skyboxDescriptor2->VKdescriptorSets[1],
                 VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
@@ -629,17 +628,17 @@ namespace vkengine {
                 this->modeltDescriptor2->VKdescriptorSets[0],
                 VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
                 3,
-                &this->irradianceCubeTexture->imageInfo), // samplerIrradiance
+                &this->irradianceCubeTexture->imageData[0].imageInfo), // samplerIrradiance
             helper::writeDescriptorSet(
                 this->modeltDescriptor2->VKdescriptorSets[0],
                 VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
                 4,
-                &this->brdfLUTTexture->imageInfo), // samplerBRDFLUT
+                &this->brdfLUTTexture->imageData[0].imageInfo), // samplerBRDFLUT
             helper::writeDescriptorSet(
                 this->modeltDescriptor2->VKdescriptorSets[0],
                 VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
                 5,
-                &this->prefilteredCubeTexture->imageInfo) // prefilteredMap
+                &this->prefilteredCubeTexture->imageData[0].imageInfo) // prefilteredMap
         };
 
         std::vector<VkWriteDescriptorSet> writeDescirptorSets_Model02 = {
@@ -662,17 +661,17 @@ namespace vkengine {
                 this->modeltDescriptor2->VKdescriptorSets[1],
                 VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
                 3,
-                &this->irradianceCubeTexture->imageInfo), // samplerIrradiance
+                &this->irradianceCubeTexture->imageData[0].imageInfo), // samplerIrradiance
             helper::writeDescriptorSet(
                 this->modeltDescriptor2->VKdescriptorSets[1],
                 VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
                 4,
-                &this->brdfLUTTexture->imageInfo), // samplerBRDFLUT
+                &this->brdfLUTTexture->imageData[0].imageInfo), // samplerBRDFLUT
             helper::writeDescriptorSet(
                 this->modeltDescriptor2->VKdescriptorSets[1],
                 VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
                 5,
-                &this->prefilteredCubeTexture->imageInfo) // prefilteredMap
+                &this->prefilteredCubeTexture->imageData[0].imageInfo) // prefilteredMap
         };
 
         vkUpdateDescriptorSets(
@@ -880,13 +879,16 @@ namespace vkengine {
         const int32_t dim = 512;
 
         brdfLUTTexture = new Vk2DTexture();
+
         brdfLUTTexture->initializeDeviceHandles(
             this->getDevice()->physicalDevice,
             this->getDevice()->logicaldevice,
             this->getDevice()->commandPool,
             this->getDevice()->graphicsVKQueue
         );
-        brdfLUTTexture->VKmipLevels = 1; // mipmap 레벨 설정
+
+        brdfLUTTexture->imageData.reserve(1);
+        brdfLUTTexture->imageData.push_back(vkengine::VKimageData{});
 
         // BRDF LUT 텍스쳐 생성
         VkImageCreateInfo imageCI{};
@@ -902,23 +904,23 @@ namespace vkengine {
         imageCI.tiling = VK_IMAGE_TILING_OPTIMAL;
         imageCI.usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
 
-        _VK_CHECK_RESULT_(vkCreateImage(this->VKdevice->logicaldevice, &imageCI, nullptr, &this->brdfLUTTexture->image));
+        _VK_CHECK_RESULT_(vkCreateImage(this->VKdevice->logicaldevice, &imageCI, nullptr, &this->brdfLUTTexture->imageData[0].image));
 
         VkMemoryAllocateInfo memAllocInfo{};
         memAllocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
         VkMemoryRequirements memReqs;
 
-        vkGetImageMemoryRequirements(this->VKdevice->logicaldevice, this->brdfLUTTexture->image, &memReqs);
+        vkGetImageMemoryRequirements(this->VKdevice->logicaldevice, this->brdfLUTTexture->imageData[0].image, &memReqs);
         memAllocInfo.allocationSize = memReqs.size;
         memAllocInfo.memoryTypeIndex = helper::findMemoryType(
             this->VKdevice->physicalDevice,
             memReqs.memoryTypeBits,
             VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
-        _VK_CHECK_RESULT_(vkAllocateMemory(this->VKdevice->logicaldevice, &memAllocInfo, nullptr, &this->brdfLUTTexture->imageMemory));
-        _VK_CHECK_RESULT_(vkBindImageMemory(this->VKdevice->logicaldevice, this->brdfLUTTexture->image, this->brdfLUTTexture->imageMemory, 0));
+        _VK_CHECK_RESULT_(vkAllocateMemory(this->VKdevice->logicaldevice, &memAllocInfo, nullptr, &this->brdfLUTTexture->imageData[0].imageMemory));
+        _VK_CHECK_RESULT_(vkBindImageMemory(this->VKdevice->logicaldevice, this->brdfLUTTexture->imageData[0].image, this->brdfLUTTexture->imageData[0].imageMemory, 0));
 
-
+        
         // 이미지 뷰 생성
         brdfLUTTexture->createTextureImageView(format);
         
@@ -942,7 +944,7 @@ namespace vkengine {
         samplerInfo.mipLodBias = 0.0f;
         samplerInfo.minLod = 0.0f;
         samplerInfo.maxLod = 1.0f;
-        _VK_CHECK_RESULT_(vkCreateSampler(brdfLUTTexture->logicaldevice, &samplerInfo, nullptr, &brdfLUTTexture->sampler));
+        _VK_CHECK_RESULT_(vkCreateSampler(brdfLUTTexture->logicaldevice, &samplerInfo, nullptr, &brdfLUTTexture->imageData[0].sampler));
 
         this->brdfLUTTexture->createDescriptorImageInfo();
 
@@ -999,7 +1001,7 @@ namespace vkengine {
         framebufferCI.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
         framebufferCI.renderPass = renderpass;
         framebufferCI.attachmentCount = 1;
-        framebufferCI.pAttachments = &this->brdfLUTTexture->imageView;
+        framebufferCI.pAttachments = &this->brdfLUTTexture->imageData[0].imageView;
         framebufferCI.width = 512;
         framebufferCI.height = 512;
         framebufferCI.layers = 1;
@@ -1173,6 +1175,9 @@ namespace vkengine {
             this->getDevice()->commandPool,
             this->getDevice()->graphicsVKQueue
         );
+        this->prefilteredCubeTexture->imageData.reserve(1);
+        this->prefilteredCubeTexture->imageData.push_back(vkengine::VKimageData());
+
         this->prefilteredCubeTexture->VKmipLevels = numMips;
 
         // Pre-filtered cube map
@@ -1191,21 +1196,23 @@ namespace vkengine {
         imageCI.usage = VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
         imageCI.flags = VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT;
 
-        _VK_CHECK_RESULT_(vkCreateImage(this->VKdevice->logicaldevice, &imageCI, nullptr, &this->prefilteredCubeTexture->image));
+        _VK_CHECK_RESULT_(vkCreateImage(this->VKdevice->logicaldevice, &imageCI, nullptr, &this->prefilteredCubeTexture->imageData[0].image));
 
         VkMemoryAllocateInfo memAllocInfo{};
         memAllocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
         VkMemoryRequirements memReqs;
 
-        vkGetImageMemoryRequirements(this->VKdevice->logicaldevice, this->prefilteredCubeTexture->image, &memReqs);
+        vkGetImageMemoryRequirements(this->VKdevice->logicaldevice, this->prefilteredCubeTexture->imageData[0].image, &memReqs);
         memAllocInfo.allocationSize = memReqs.size;
         memAllocInfo.memoryTypeIndex = helper::findMemoryType(
             this->VKdevice->physicalDevice,
             memReqs.memoryTypeBits,
             VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
-        _VK_CHECK_RESULT_(vkAllocateMemory(this->VKdevice->logicaldevice, &memAllocInfo, nullptr, &this->prefilteredCubeTexture->imageMemory));
-        _VK_CHECK_RESULT_(vkBindImageMemory(this->VKdevice->logicaldevice, this->prefilteredCubeTexture->image, this->prefilteredCubeTexture->imageMemory, 0));
+        _VK_CHECK_RESULT_(vkAllocateMemory(this->VKdevice->logicaldevice, &memAllocInfo, nullptr, &this->prefilteredCubeTexture->imageData[0].imageMemory));
+        _VK_CHECK_RESULT_(vkBindImageMemory(this->VKdevice->logicaldevice, this->prefilteredCubeTexture->imageData[0].image, this->prefilteredCubeTexture->imageData[0].imageMemory, 0));
+
+        //this->prefilteredCubeTexture->imageDataCount = 1; // 이미지 데이터 개수 설정
 
         // Image view
         this->prefilteredCubeTexture->createTextureImageView(format);
@@ -1222,7 +1229,7 @@ namespace vkengine {
         samplerCI.minLod = 0.0f;
         samplerCI.maxLod = static_cast<float>(numMips);
         samplerCI.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
-        _VK_CHECK_RESULT_(vkCreateSampler(this->VKdevice->logicaldevice, &samplerCI, nullptr, &this->prefilteredCubeTexture->sampler));
+        _VK_CHECK_RESULT_(vkCreateSampler(this->VKdevice->logicaldevice, &samplerCI, nullptr, &this->prefilteredCubeTexture->imageData[0].sampler));
 
         prefilteredCubeTexture->createDescriptorImageInfo();
 
@@ -1378,7 +1385,7 @@ namespace vkengine {
             prefilteredCubeDescriptors->VKdescriptorSets[0],
             VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
             0,
-            &this->skyBox->getTexture()->imageInfo); // Pre-filtered cube map texture
+            &this->skyBox->getTexture()->imageData[0].imageInfo); // Pre-filtered cube map texture
 
         vkUpdateDescriptorSets(
             this->VKdevice->logicaldevice,
@@ -1496,7 +1503,7 @@ namespace vkengine {
             this->getDevice()->logicaldevice,
             this->getDevice()->commandPool,
             this->getDevice()->graphicsVKQueue,
-            this->prefilteredCubeTexture->image,
+            this->prefilteredCubeTexture->imageData[0].image,
             VK_FORMAT_UNDEFINED,
             VK_IMAGE_LAYOUT_UNDEFINED,
             VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
@@ -1586,7 +1593,7 @@ namespace vkengine {
                     cmdBuf,
                     offscreen.image,
                     VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-                    this->prefilteredCubeTexture->image,
+                    this->prefilteredCubeTexture->imageData[0].image,
                     VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
                     1,
                     &copyRegion);
@@ -1604,7 +1611,7 @@ namespace vkengine {
 
         helper::updateimageLayoutcmd(
             cmdBuf,
-            this->prefilteredCubeTexture->image,
+            this->prefilteredCubeTexture->imageData[0].image,
             VK_FORMAT_UNDEFINED,
             VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
             VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
@@ -1649,6 +1656,10 @@ namespace vkengine {
             this->getDevice()->commandPool,
             this->getDevice()->graphicsVKQueue
         );
+
+        this->irradianceCubeTexture->imageData.reserve(1);
+        this->irradianceCubeTexture->imageData.push_back(vkengine::VKimageData());
+
         this->irradianceCubeTexture->VKmipLevels = numMips;
 
         // Pre-filtered cube map
@@ -1666,21 +1677,21 @@ namespace vkengine {
         imageCI.tiling = VK_IMAGE_TILING_OPTIMAL;
         imageCI.usage = VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
         imageCI.flags = VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT;
-        _VK_CHECK_RESULT_(vkCreateImage(this->VKdevice->logicaldevice, &imageCI, nullptr, &this->irradianceCubeTexture->image));
+        _VK_CHECK_RESULT_(vkCreateImage(this->VKdevice->logicaldevice, &imageCI, nullptr, &this->irradianceCubeTexture->imageData[0].image));
 
         VkMemoryAllocateInfo memAllocInfo{};
         memAllocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
         VkMemoryRequirements memReqs;
 
-        vkGetImageMemoryRequirements(this->VKdevice->logicaldevice, this->irradianceCubeTexture->image, &memReqs);
+        vkGetImageMemoryRequirements(this->VKdevice->logicaldevice, this->irradianceCubeTexture->imageData[0].image, &memReqs);
         memAllocInfo.allocationSize = memReqs.size;
         memAllocInfo.memoryTypeIndex = helper::findMemoryType(
             this->VKdevice->physicalDevice,
             memReqs.memoryTypeBits,
             VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
-        _VK_CHECK_RESULT_(vkAllocateMemory(this->VKdevice->logicaldevice, &memAllocInfo, nullptr, &this->irradianceCubeTexture->imageMemory));
-        _VK_CHECK_RESULT_(vkBindImageMemory(this->VKdevice->logicaldevice, this->irradianceCubeTexture->image, this->irradianceCubeTexture->imageMemory, 0));
+        _VK_CHECK_RESULT_(vkAllocateMemory(this->VKdevice->logicaldevice, &memAllocInfo, nullptr, &this->irradianceCubeTexture->imageData[0].imageMemory));
+        _VK_CHECK_RESULT_(vkBindImageMemory(this->VKdevice->logicaldevice, this->irradianceCubeTexture->imageData[0].image, this->irradianceCubeTexture->imageData[0].imageMemory, 0));
 
         // Image view
         this->irradianceCubeTexture->createTextureImageView(format);
@@ -1698,7 +1709,7 @@ namespace vkengine {
         samplerCI.maxLod = static_cast<float>(numMips);
         samplerCI.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
 
-        _VK_CHECK_RESULT_(vkCreateSampler(this->VKdevice->logicaldevice, &samplerCI, nullptr, &this->irradianceCubeTexture->sampler));
+        _VK_CHECK_RESULT_(vkCreateSampler(this->VKdevice->logicaldevice, &samplerCI, nullptr, &this->irradianceCubeTexture->imageData[0].sampler));
 
         this->irradianceCubeTexture->createDescriptorImageInfo();
 
@@ -1875,7 +1886,7 @@ namespace vkengine {
                 irradianceCubeDescriptors->VKdescriptorSets[0],
                 VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
                 0,
-                &this->skyBox->getTexture()->imageInfo) //
+                &this->skyBox->getTexture()->imageData[0].imageInfo) //
         };
         
         vkUpdateDescriptorSets(
@@ -1983,7 +1994,7 @@ namespace vkengine {
             this->getDevice()->logicaldevice,
             this->getDevice()->commandPool,
             this->getDevice()->graphicsVKQueue,
-            this->irradianceCubeTexture->image,
+            this->irradianceCubeTexture->imageData[0].image,
             VK_FORMAT_UNDEFINED,
             VK_IMAGE_LAYOUT_UNDEFINED,
             VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
@@ -2052,7 +2063,7 @@ namespace vkengine {
                     cmdBuf,
                     offscreen.image,
                     VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-                    this->irradianceCubeTexture->image,
+                    this->irradianceCubeTexture->imageData[0].image,
                     VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
                     1,
                     &copyRegion);
@@ -2070,7 +2081,7 @@ namespace vkengine {
 
         helper::updateimageLayoutcmd(
             cmdBuf,
-            this->irradianceCubeTexture->image,
+            this->irradianceCubeTexture->imageData[0].image,
             VK_FORMAT_UNDEFINED,
             VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
             VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,

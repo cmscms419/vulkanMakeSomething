@@ -471,13 +471,13 @@ namespace vkengine {
 
             VkDescriptorImageInfo imageInfo{};
             imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-            imageInfo.imageView = this->cubeSkybox->getTexture()->imageView;
-            imageInfo.sampler = this->cubeSkybox->getTexture()->sampler;
+            imageInfo.imageView = this->cubeSkybox->getTexture()->imageData[0].imageView;
+            imageInfo.sampler = this->cubeSkybox->getTexture()->imageData[0].sampler;
 
             VkDescriptorImageInfo imageInfo2{};
             imageInfo2.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-            imageInfo2.imageView = this->cubeObject->getTexture()->imageView;
-            imageInfo2.sampler = this->cubeObject->getTexture()->sampler;
+            imageInfo2.imageView = this->cubeObject->getTexture()->imageData[0].imageView;
+            imageInfo2.sampler = this->cubeObject->getTexture()->imageData[0].sampler;
 
             std::array<VkWriteDescriptorSet, 3> descriptorWrites{};
 

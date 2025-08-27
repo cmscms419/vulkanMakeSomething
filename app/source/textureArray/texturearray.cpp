@@ -25,7 +25,7 @@ namespace vkengine {
         uint32_t texHeight = 0;
         int texChannels = 0;
 
-        this->textureArray = Vk2DTextureArray();
+        this->textureArray = Vk2DArrayTexture();
         this->textureArray.initializeDeviceHandles(
             this->VKdevice->physicalDevice,
             this->VKdevice->logicaldevice,
@@ -52,11 +52,11 @@ namespace vkengine {
                 return false;
             }
 
-            this->textureArray.setResourcePNG(resourcePNG);
+            this->textureArray.setTexturePNG(resourcePNG);
 
         }
-
-        this->textureArray.createTextureImage();
+        this->textureArray.VKmipLevels = 1;
+        this->textureArray.createTextureImagePNG();
         this->textureArray.createTextureImageView(VK_FORMAT_R8G8B8A8_SRGB);
         this->textureArray.createTextureSampler();
 
@@ -301,7 +301,7 @@ namespace vkengine {
             vkCmdBindVertexBuffers(framedata->mainCommandBuffer, 0, 1, vertexBuffers, offsets);
 
             // 인덱스 버퍼를 바인딩합니다.
-            vkCmdBindIndexBuffer(framedata->mainCommandBuffer, this->VKindexBuffer.buffer, 0, VK_INDEX_TYPE_UINT16);
+            vkCmdBindIndexBuffer(framedata->mainCommandBuffer, this->VKindexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32);
 
             // 디스크립터 세트를 바인딩합니다.
             vkCmdBindDescriptorSets(framedata->mainCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->VKpipelineLayout, 0, 1, &this->VKdescriptorSets[this->currentFrame], 0, nullptr);
@@ -494,8 +494,8 @@ namespace vkengine {
 
             VkDescriptorImageInfo imageInfo{};
             imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-            imageInfo.imageView = this->textureArray.imageView;
-            imageInfo.sampler = this->textureArray.sampler;
+            imageInfo.imageView = this->textureArray.imageData[0].imageView;
+            imageInfo.sampler = this->textureArray.imageData[0].sampler;
 
             std::array<VkWriteDescriptorSet, 2> descriptorWrites{};
 
@@ -584,7 +584,7 @@ namespace vkengine {
         rasterizer.polygonMode = VK_POLYGON_MODE_FILL;            // 다각형 모드를 채우기로 설정
         rasterizer.lineWidth = 1.0f;                              // 라인 너비를 1.0f로 설정
         rasterizer.cullMode = VK_CULL_MODE_FRONT_BIT;              // 후면 면을 제거
-        rasterizer.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;   // 전면 면을 반시계 방향으로 설정
+        rasterizer.frontFace = VK_FRONT_FACE_CLOCKWISE;   // 전면 면을 반시계 방향으로 설정
         rasterizer.depthBiasEnable = VK_FALSE;                    // 깊이 바이어스 비활성화
         rasterizer.depthBiasConstantFactor = 0.0f;              // 깊이 바이어스 상수 요소를 0.0f로 설정
         rasterizer.depthBiasClamp = 0.0f;                       // 깊이 바이어스 클램프를 0.0f로 설정

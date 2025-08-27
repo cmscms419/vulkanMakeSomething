@@ -33,9 +33,9 @@ namespace vkengine {
             this->VKdevice->commandPool,
             this->VKdevice->graphicsVKQueue
             );
-        this->testTexture.setResourcePNG(resourcePNG);
+        this->testTexture.setTexturePNG(resourcePNG);
 
-        this->testTexture.createTextureImage();
+        this->testTexture.createTextureImagePNG();
         this->testTexture.createTextureImageView(VK_FORMAT_R8G8B8A8_SRGB);
         this->testTexture.createTextureSampler();
 
@@ -478,8 +478,8 @@ namespace vkengine {
             // 디스크립터 이미지 정보를 설정합니다.
             VkDescriptorImageInfo imageInfo{};
             imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-            imageInfo.imageView = this->testTexture.imageView;
-            imageInfo.sampler = this->testTexture.sampler;
+            imageInfo.imageView = this->testTexture.imageData[0].imageView;
+            imageInfo.sampler = this->testTexture.imageData[0].sampler;
 
             descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
             descriptorWrites[0].dstSet = this->VKdescriptorSets[i];

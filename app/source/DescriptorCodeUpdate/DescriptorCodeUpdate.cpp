@@ -58,21 +58,23 @@ namespace vkengine {
         
         this->modelObject = new object::ModelObject(this->getDevice());
         this->modelObject->setName("Viking Room");
-        this->modelObject->RotationAngle(-90.0f, glm::vec3(1.0f, 0.0f, 0.0f));
-        helper::loadModel::loadModel(vikingRoomModelPath, *this->modelObject->getVertices(), *this->modelObject->getIndices());
-
+        this->modelObject->RotationAngle(90.0f, glm::vec3(1.0f, 0.0f, 0.0f));
+        helper::loadModel::OBJ::loadAsset(vikingRoomModelPath, *this->modelObject->getVertices(), *this->modelObject->getIndices());
         this->modelObject->setTexturePNG(vikingRoomTexture);
-        this->modelObject->getTexture()->setMipLevels(static_cast<uint32_t>(std::floor(std::log2(std::max(vikingRoomTexture->texWidth, vikingRoomTexture->texHeight)))) + 1); // Mipmap 레벨 설정
+        this->modelObject->getTexture()->VKmipLevels = static_cast<cUint32_t>(std::floor(std::log2(std::max(vikingRoomTexture->texWidth, vikingRoomTexture->texHeight)))) + 1;
         this->modelObject->createTexture(VK_FORMAT_R8G8B8A8_SRGB);
 
         this->modelObject2 = new object::ModelObject(this->getDevice());
         this->modelObject2->setName("Viking Room2");
         this->modelObject2->setPosition(glm::vec3(3.0f, 0.0f, 0.0f));
         //this->modelObject2->RotationAngle(-90.0f, glm::vec3(1.0f, 0.0f, 0.0f));
-        helper::loadModel::loadModel(vikingRoomModelPath, *this->modelObject2->getVertices(), *this->modelObject2->getIndices());
+        helper::loadModel::OBJ::loadAsset(vikingRoomModelPath, *this->modelObject2->getVertices(), *this->modelObject2->getIndices());
+
+        vikingRoomTexture = new TextureResourcePNG();
+        vikingRoomTexture->createResource(this->RootPath + RESOURSE_PATH + TEXTURE_PATH);
 
         this->modelObject2->setTexturePNG(vikingRoomTexture);
-        this->modelObject2->getTexture()->setMipLevels(static_cast<uint32_t>(std::floor(std::log2(std::max(vikingRoomTexture->texWidth, vikingRoomTexture->texHeight)))) + 1); // Mipmap 레벨 설정
+        this->modelObject2->getTexture()->VKmipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(vikingRoomTexture->texWidth, vikingRoomTexture->texHeight)))) + 1; // Mipmap 레벨 설정
         this->modelObject2->createTexture(VK_FORMAT_R8G8B8A8_SRGB);
 
         this->modelObjectDescriptor = new vkengine::VK3DModelDescriptor(this->getDevice()->logicaldevice, this->frames);
@@ -390,7 +392,7 @@ namespace vkengine {
     {
         this->modelObject->createIndexBuffer(*this->modelObject->getIndices());
         this->modelObject2->createIndexBuffer(*this->modelObject2->getIndices());
-        this->cubeSkybox->createIndexBuffer(const_cast<std::vector<uint16_t>&>(skyboxIndices));
+        this->cubeSkybox->createIndexBuffer(const_cast<std::vector<cUint32_t>&>(skyboxIndices));
     }
 
     void DescriptorCodeUpdateEngine::createUniformBuffers()
@@ -428,8 +430,8 @@ namespace vkengine {
 
     void DescriptorCodeUpdateEngine::createGraphicsPipeline()
     {
-        VkShaderModule baseVertshaderModule = this->VKdevice->createShaderModule(this->RootPath + "../../../../../../shader/vertloadmodel.spv");
-        VkShaderModule baseFragShaderModule = this->VKdevice->createShaderModule(this->RootPath + "../../../../../../shader/fragloadmodel2.spv");
+        VkShaderModule baseVertshaderModule = this->VKdevice->createShaderModule(this->RootPath + SHADER_PATH + "vertloadmodel.spv");
+        VkShaderModule baseFragShaderModule = this->VKdevice->createShaderModule(this->RootPath + SHADER_PATH + "fragloadmodel.spv");
 
         VkPipelineShaderStageCreateInfo vertShaderStageInfo{};
         vertShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -491,7 +493,7 @@ namespace vkengine {
         rasterizer.polygonMode = VK_POLYGON_MODE_FILL;            // 다각형 모드를 채우기로 설정
         rasterizer.lineWidth = 1.0f;                              // 라인 너비를 1.0f로 설정
         rasterizer.cullMode = VK_CULL_MODE_FRONT_BIT;              // 후면 면을 제거
-        rasterizer.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;   // 전면 면을 반시계 방향으로 설정
+        rasterizer.frontFace = VK_FRONT_FACE_CLOCKWISE;   // 전면 면을 반시계 방향으로 설정
         rasterizer.depthBiasEnable = VK_FALSE;                    // 깊이 바이어스 비활성화
         rasterizer.depthBiasConstantFactor = 0.0f;              // 깊이 바이어스 상수 요소를 0.0f로 설정
         rasterizer.depthBiasClamp = 0.0f;                       // 깊이 바이어스 클램프를 0.0f로 설정

@@ -17,7 +17,7 @@ namespace vkengine
     };
 
     const cString RESOURSE_PATH = "../../../../../../source/";
-
+    const cString SHADER_PATH = "../../../../../../shader/";
     const cString MODEL_PATH = "viking_room.obj";
     const cString TEXTURE_PATH = "viking_room.png";
     const cString TEST_TEXTURE_PATH = "image.png";

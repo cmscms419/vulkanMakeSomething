@@ -6,7 +6,7 @@
 
 #include "object3D.h"
 #include "VKimgui.h"
-#include "VKloadModel.h"
+#include "VKengineOBJLoader.h"
 #include "VKmodelDescriptor.h"
 #include "VKSkymapModelDescriptor.h"
 

@@ -35,7 +35,7 @@ namespace vkengine {
 
             staging.createBuffer(physicalDevice);
             staging.mapToMeBuffer(bufferSize, 0);
-            staging.copyToMeBuffer(vertices.data(), bufferSize);
+            staging.copyToMeBuffer(this->vertices.data(), bufferSize);
 
             helper::copyBuffer(this->logicaldevice, this->commandPool, this->graphicsVKQueue, staging.buffer, this->vertexBuffer.buffer, bufferSize);
 
@@ -86,7 +86,7 @@ namespace vkengine {
             VkDeviceSize offsets[] = { 0 };
 
             vkCmdBindVertexBuffers(commandBuffer, 0, 1, &this->vertexBuffer.buffer, offsets);
-            vkCmdBindIndexBuffer(commandBuffer, this->indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT16);
+            vkCmdBindIndexBuffer(commandBuffer, this->indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32);
 
             if (drawIndex)
             {

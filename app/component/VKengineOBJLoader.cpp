@@ -7,7 +7,7 @@ namespace vkengine {
     namespace helper {
         namespace loadModel {
             namespace OBJ {
-                void loadAsset(const std::string& path, std::vector<Vertex>& vertices, std::vector<uint16_t>& indices)
+                void loadAsset(const std::string& path, std::vector<Vertex>& vertices, std::vector<cUint32_t>& indices)
                 {
                     tinyobj::attrib_t attrib;
                     std::vector<tinyobj::shape_t> shapes;
@@ -71,10 +71,10 @@ namespace vkengine {
 
                             if (it == vertices.end()) {
                                 vertices.push_back(vertex);
-                                indices.push_back(static_cast<uint16_t>(vertices.size() - 1));
+                                indices.push_back(static_cast<cUint32_t>(vertices.size() - 1));
                             }
                             else {
-                                indices.push_back(static_cast<uint16_t>(std::distance(vertices.begin(), it)));
+                                indices.push_back(static_cast<cUint32_t>(std::distance(vertices.begin(), it)));
                             }
 #else
                             /*this->VKvertices.push_back(vertex);

@@ -103,16 +103,16 @@ const std::vector<Vertex> skyboxVertices = {
     {{-5.00f, -5.00f,  5.00f}, {4.37114e-08f, 0.00005f, 1.00f}, {0.00f, 0.00f, 0.0f}},
 };
 
-const std::vector<cUint16_t> DepthTestIndices = {
+const std::vector<cUint32_t> DepthTestIndices = {
         0, 1, 2, 2, 3, 0,
         4, 5, 6, 6, 7, 4
 };
 
-const std::vector<cUint16_t> SquareTestIndices_ = {
+const std::vector<cUint32_t> SquareTestIndices_ = {
         0, 1, 2, 2, 3, 0
 };
 
-const std::vector<cUint16_t> cubeindices_ = {
+const std::vector<cUint32_t> cubeindices_ = {
        0, 1, 2, 2, 3, 0,
        4, 5, 6, 6, 7, 4,
        8, 9, 10, 10, 11, 8,
@@ -121,7 +121,7 @@ const std::vector<cUint16_t> cubeindices_ = {
        20, 21, 22, 22, 23, 20
 };
 
-const std::vector<cUint16_t> skyboxIndices = {
+const std::vector<cUint32_t> skyboxIndices = {
     0, 1, 2, 2, 3, 0,   // left face
     4, 5, 6, 6, 7, 4,   // right face
     8, 9, 10, 10, 11, 8,// top face
