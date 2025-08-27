@@ -19,7 +19,7 @@ namespace vkengine {
     namespace helper {
         namespace loadModel {
             namespace OBJ {
-                void loadAsset(const std::string& path, std::vector<Vertex>& vertices, std::vector<uint16_t>& indices);
+                void loadAsset(const std::string& path, std::vector<Vertex>& vertices, std::vector<cUint32_t>& indices);
             }
         }
     }

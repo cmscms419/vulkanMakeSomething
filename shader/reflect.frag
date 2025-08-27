@@ -24,9 +24,6 @@ void main() {
     vec3 cR = reflect (cI, normalize(inNormal));
     cR = vec3(ubo.view * vec4(cR, 0.0));
 
-    // Convert cubemap coordinates into Vulkan coordinate space
-    cR.xy *= -1.0;
-
     vec4 color = texture(samplerCubeMap, cR, 0);
 
     vec3 N = normalize(inNormal);

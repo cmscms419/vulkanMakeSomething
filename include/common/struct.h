@@ -283,6 +283,7 @@ struct TextureResourcePNG : public TextureResourceBase {
 
     // 소멸자
     ~TextureResourcePNG() {
+        
         if (data) {
             free(data); // 리소스 데이터 해제
         }
@@ -317,7 +318,7 @@ struct TextureResourcePNG : public TextureResourceBase {
     // 대입 연산자
     TextureResourcePNG& operator=(const TextureResourcePNG& other) {
         if (this == &other) return *this;
-        if (!data) free(data);
+        if (data) free(data);
 
         texWidth = other.texWidth;
         texHeight = other.texHeight;
@@ -501,9 +502,9 @@ extern const std::vector<Vertex> cube;
 extern const std::vector<Vertex> skyboxVertices;
 extern const std::vector<Vertex> DepthTestVertices;
 extern const std::vector<Vertex> SquareTestVertices;
-extern const std::vector<cUint16_t> DepthTestIndices;
-extern const std::vector<cUint16_t> SquareTestIndices_;
-extern const std::vector<cUint16_t> cubeindices_;
-extern const std::vector<cUint16_t> skyboxIndices;
+extern const std::vector<cUint32_t> DepthTestIndices;
+extern const std::vector<cUint32_t> SquareTestIndices_;
+extern const std::vector<cUint32_t> cubeindices_;
+extern const std::vector<cUint32_t> skyboxIndices;
 
 #endif // !INCLUDE_STRUCT_H_

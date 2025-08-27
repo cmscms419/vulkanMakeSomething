@@ -12,6 +12,15 @@ constexpr const cChar* DEBUG_USER_NAME_0 = "alstj";
 
 namespace vkengine {
     extern const cBool enableValidationLayers;
+
+    inline const cInt getHash(const cString& str) {
+        cInt hash = 0;
+        for (cChar ch : str) {
+            hash = (hash * 31) + ch; // 간단한 해시 함수
+        }
+        return hash;
+    }
+
 }
 
 #if DEBUG_
@@ -51,6 +60,7 @@ namespace vkengine {
     }                                                                    \
       assert(res == VK_SUCCESS);                                         \
   }                                                                      \
+
 
 #else
 

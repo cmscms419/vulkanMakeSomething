@@ -355,8 +355,8 @@ namespace vkengine {
 
     void imguiEngine::createIndexBuffer()
     {
-        this->cubeObject->createIndexBuffer(const_cast<std::vector<uint16_t>&>(cubeindices_));
-        this->cubeSkybox->createIndexBuffer(const_cast<std::vector<uint16_t>&>(skyboxIndices));
+        this->cubeObject->createIndexBuffer(const_cast<std::vector<uint32_t>&>(cubeindices_));
+        this->cubeSkybox->createIndexBuffer(const_cast<std::vector<uint32_t>&>(skyboxIndices));
     }
 
     void imguiEngine::createUniformBuffers()
@@ -575,7 +575,7 @@ namespace vkengine {
         rasterizer.polygonMode = VK_POLYGON_MODE_FILL;            // 다각형 모드를 채우기로 설정
         rasterizer.lineWidth = 1.0f;                              // 라인 너비를 1.0f로 설정
         rasterizer.cullMode = VK_CULL_MODE_FRONT_BIT;              // 후면 면을 제거
-        rasterizer.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;   // 전면 면을 반시계 방향으로 설정
+        rasterizer.frontFace = VK_FRONT_FACE_CLOCKWISE;   // 전면 면을 반시계 방향으로 설정
         rasterizer.depthBiasEnable = VK_FALSE;                    // 깊이 바이어스 비활성화
         rasterizer.depthBiasConstantFactor = 0.0f;              // 깊이 바이어스 상수 요소를 0.0f로 설정
         rasterizer.depthBiasClamp = 0.0f;                       // 깊이 바이어스 클램프를 0.0f로 설정

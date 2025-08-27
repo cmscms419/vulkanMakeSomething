@@ -25,7 +25,7 @@ void main() {
     WorldPos = localPos + pushConsts.objectPos;
 
     fragNormal = normalize(mat3(ubo.inverseTranspose) * inNormal);
-    fragTexCoord = vec3(inTexCoord.x,1.0 - inTexCoord.y, 0.0);
+    fragTexCoord = vec3(inTexCoord.x, inTexCoord.y, 0.0);
 
     gl_Position = ubo.proj * ubo.view * vec4(localPos, 1.0);
 }

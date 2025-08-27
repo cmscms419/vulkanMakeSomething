@@ -91,6 +91,8 @@ namespace vkengine {
                 texHeight,
                 this->VKmipLevels);
         }
+
+        this->cleanResource();
     }
 
     void Vk2DTexture::createTextureImageView(VkFormat format)
@@ -146,7 +148,7 @@ namespace vkengine {
         // 1. 먼저 각 이미지의 크기를 계산하여 총 크기를 구합니다.
         VkDeviceSize totalImageSize = 0;
         std::vector<VkDeviceSize> imageSizes{};
-        cUint32_t imageCount = static_cast<cUint32_t>(this->imageTextureDatas.size());
+        this->imageCount = static_cast<cUint32_t>(this->imageTextureDatas.size());
 
         for (auto& data : this->imageTextureDatas) {
             TextureResourcePNG* resource = data.resourcePNG;
@@ -245,11 +247,11 @@ namespace vkengine {
 
         vkDestroyBuffer(this->logicaldevice, stagingBuffer, nullptr);
         vkFreeMemory(this->logicaldevice, stagingBufferMemory, nullptr);
+        this->cleanResource();
     }
 
     void Vk2DArrayTexture::createTextureImageView(VkFormat format)
     {
-        cUint32_t imageCount = static_cast<cUint32_t>(this->imageTextureDatas.size());
         VKimageData& data = this->imageData[0]; // 2D Array Texture는 단일 이미지 데이터로 처리합니다.
 
         data.imageView = vkengine::helper::createArrayImageView(
@@ -258,7 +260,7 @@ namespace vkengine {
             format,
             VK_IMAGE_ASPECT_COLOR_BIT,
             this->VKmipLevels,
-            imageCount);
+            this->imageCount);
     }
 
     void Vk2DArrayTexture::createTextureSampler()
@@ -412,6 +414,7 @@ namespace vkengine {
         vkDestroyBuffer(this->logicaldevice, stagingBuffer, nullptr);
         vkFreeMemory(this->logicaldevice, stagingBufferMemory, nullptr);
 
+        this->cleanResource();
     }
 
     void VKcubeMap::createTextureImgaeKTX(VkFormat format)
@@ -511,6 +514,7 @@ namespace vkengine {
 
         vkDestroyBuffer(this->logicaldevice, stagingBuffer, nullptr);
         vkFreeMemory(this->logicaldevice, stagingMemory, nullptr);
+        this->cleanResource();
     }
 
     void VKcubeMap::createTextureImageView(VkFormat format)

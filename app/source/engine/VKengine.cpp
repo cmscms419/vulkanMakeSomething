@@ -287,7 +287,7 @@ namespace vkengine
         appInfo.applicationVersion = VK_MAKE_VERSION(0, 0, 0);  // 애플리케이션 버전을 지정합니다.
         appInfo.pEngineName = "vulkanEngine";                   // 엔진 이름을 지정합니다.
         appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);       // 엔진 버전을 지정합니다.
-        appInfo.apiVersion = VK_API_VERSION_1_0;                // 사용할 Vulkan API 버전을 지정합니다.
+        appInfo.apiVersion = VK_API_VERSION_1_3;                // 사용할 Vulkan API 버전을 지정합니다.
 
         // VkInstanceCreateInfo 구조체는 Vulkan 인스턴스를 생성하기 위한 정보를 제공합니다.
         VkInstanceCreateInfo createInfo = {};

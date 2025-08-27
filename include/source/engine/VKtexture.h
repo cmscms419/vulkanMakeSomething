@@ -69,6 +69,21 @@ namespace vkengine {
         virtual void createTextureImgaeKTX(VkFormat format) { _PRINT_TO_CONSOLE_("CLEATE FUNTION"); };
         virtual void createTextureImageView(VkFormat format) = 0; ///< 텍스처 이미지 뷰 생성 함수
         virtual void createTextureSampler() = 0; ///< 텍스처 샘플러 생성 함수
+        virtual void cleanResource()
+        {
+            for (auto& imageTextureData : this->imageTextureDatas)
+            {
+                if (imageTextureData.resourcePNG)
+                {
+                    delete imageTextureData.resourcePNG; // 리소스 해제
+                }
+                if (imageTextureData.resourceKTX)
+                {
+                    delete imageTextureData.resourceKTX; // 리소스 해제
+                }
+            }
+            this->imageTextureDatas.clear();
+        }
 
         virtual void cleanup() //< 텍스처 정리 함수
         {
@@ -79,21 +94,8 @@ namespace vkengine {
                 vkDestroyImage(this->logicaldevice, data.image, nullptr);
                 vkFreeMemory(this->logicaldevice, data.imageMemory, nullptr);
             }
-
-            for (auto& imageTextureData : this->imageTextureDatas) 
-            {
-                if (imageTextureData.resourcePNG->data)
-                {
-                    delete imageTextureData.resourcePNG; // 리소스 해제
-                }
-
-                if (imageTextureData.resourceKTX)
-                {
-                    delete imageTextureData.resourceKTX; // 리소스 해제
-                }
-            }
-
         }
+
         virtual void createDescriptorImageInfo() ///< 텍스처 이미지 정보 생성 함수
         {
             for (VKimageData& data : this->imageData) {
@@ -133,6 +135,8 @@ namespace vkengine {
         virtual void createTextureSampler(); ///< 텍스처 샘플러 생성 함수
 
         Vk2DArrayTexture() = default;
+    private:
+        cUint32_t imageCount = 0;   // 이미지 개수 -> 텍스처 이미지의 개수를 저장
     };
 
     struct VKcubeMap : public VkTextureBase {

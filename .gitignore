@@ -78,6 +78,11 @@ source/Texture/512x512/Stone/
 source/Texture/512x512/Tile/
 source/Texture/512x512/Wood/
 source/glTF/
+source/glTF2/
+source/Avocado/
+source/FlightHelmet/
+source/SciFiHelmet/
+source/sponza/
 
 # Visual Studio 2015/2017 cache/options directory
 .vs/

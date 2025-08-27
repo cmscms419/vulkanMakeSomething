@@ -28,7 +28,7 @@ void main() {
     fragNormal = mat3(ubo.model) * inNormal;
 
     outTangent = vec4(mat3(ubo.model) * inTangent.xyz, inTangent.w);
-    fragTexCoord = vec3(inTexCoord.x, 1.0 - inTexCoord.y, 0.0);
+    fragTexCoord = vec3(inTexCoord.x, inTexCoord.y, 0.0);
 
     gl_Position = ubo.proj * ubo.view * vec4(localPos, 1.0);
 }

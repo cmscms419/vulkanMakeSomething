@@ -3,7 +3,7 @@
 namespace vkengine
 {
     namespace helper {
-        void GeometryGenerator::createSphere(std::vector<Vertex>& vertices, std::vector<uint16_t>& indices, float radius, uint32_t rings, uint32_t sectors)
+        void GeometryGenerator::createSphere(std::vector<Vertex>& vertices, std::vector<uint32_t>& indices, float radius, uint32_t rings, uint32_t sectors)
         {
             vertices.clear();
             indices.clear();
@@ -60,7 +60,7 @@ namespace vkengine
             }
 
             // ÀÎµ¦½º »ý¼º
-            uint16_t k1, k2;
+            uint32_t k1, k2;
             for (int i = 0; i < sectors; ++i)
             {
                 k1 = i * (rings + 1);     // beginning of current stack

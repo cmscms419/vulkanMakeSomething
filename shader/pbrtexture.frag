@@ -164,8 +164,7 @@ void main() {
     vec3 N = calculateNormal();
     vec3 CameraPos = subUinform.camPos;
     vec3 V = normalize(CameraPos - WorldPos);
-    vec3 R = reflect(-V, N); 
-
+    vec3 R = reflect(V, N); 
 
     float metallic = 1.0;
     

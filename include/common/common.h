@@ -19,6 +19,7 @@
 #include <array>
 #include <string>
 #include <unordered_map>
+#include <map>
 
 #define VK_USE_PLATFORM_WIN32_KHR
 #include <vulkan/vulkan.h>
@@ -75,6 +76,7 @@ namespace vkengine
     extern const std::vector<const char*> deviceExtensions;
     extern const std::vector<VkDynamicState> dynamicStates;
     extern const cString RESOURSE_PATH;
+    extern const cString SHADER_PATH;
     extern const cString MODEL_PATH;
     extern const cString TEXTURE_PATH;
     extern const cString TEST_TEXTURE_PATH;
