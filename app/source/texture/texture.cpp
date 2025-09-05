@@ -14,7 +14,7 @@ namespace vkengine {
         VulkanEngine::init();
         // Vulkan은 y좌표 + 방향이 아래이기 때문에, setPerspectiveProjection에서 반전시킨 y 좌표를 다시 반전시켜서 카메라가
         // 보고 있는 방향에서는 텍스처를 똑바록 볼 수 있다. 하지만 이 방법은 x좌표, z좌표가 반전되어 있다.
-        this->camera = std::make_shared<vkengine::object::Camera>(glm::vec3(0.f,0.f,2.0f), glm::vec3(0.0f, -1.0f, 0.f), glm::vec3(0.f, 0.f, -1.0f));
+        this->camera = std::make_shared<vkengine::object::Camera>();
     }
 
     bool TextureEngine::prepare()
@@ -322,8 +322,10 @@ namespace vkengine {
         this->VKvertexBuffer2.memoryPropertyFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
         this->VKvertexBuffer2.createBuffer(this->VKdevice->physicalDevice);
 
-        helper::copyBuffer2(
-            *this->VKdevice,
+        helper::copyBuffer(
+            this->VKdevice->logicaldevice,
+            this->VKdevice->commandPool,
+            this->VKdevice->graphicsVKQueue,
             stagingBuffer,
             this->VKvertexBuffer2.buffer,
             buffersize);
@@ -363,8 +365,10 @@ namespace vkengine {
         this->VKindexBuffer.memoryPropertyFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
         this->VKindexBuffer.createBuffer(this->VKdevice->physicalDevice);
 
-        helper::copyBuffer2(
-            *this->VKdevice,
+        helper::copyBuffer(
+            this->VKdevice->logicaldevice,
+            this->VKdevice->commandPool,
+            this->VKdevice->graphicsVKQueue,
             stagingBuffer,
             this->VKindexBuffer.buffer,
             buffersize);

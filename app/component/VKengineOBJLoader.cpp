@@ -1,7 +1,7 @@
 #include "VKengineOBJLoader.h"
 
 #define TINYOBJLOADER_IMPLEMENTATION
-#include "../common/tiny_obj_loader.h"
+#include "tiny_obj_loader.h"
 
 namespace vkengine {
     namespace helper {

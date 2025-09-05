@@ -20,9 +20,12 @@
 #include <string>
 #include <unordered_map>
 #include <map>
+#include <functional>
+#include <set>
 
 #define VK_USE_PLATFORM_WIN32_KHR
 #include <vulkan/vulkan.h>
+#include <spirv_cross/spirv_reflect.hpp>
 
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/glm.hpp>

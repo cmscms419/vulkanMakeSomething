@@ -10,15 +10,13 @@
 #include <GLFW/glfw3.h>
 #include <GLFW/glfw3native.h>
 
-#include <map>
-
 #include "VKdevice.h"
 #include "VKbuffer.h"
 #include "VKswapchain.h"
 #include "VKinputEvent.h"
 #include "Debug.h"
 #include "helper.h"
-#include "VKDescriptorPoolandSetLayout.h"
+#include "VKDescriptorManager.h"
 
 #define MOVESPEED 1.2f
 

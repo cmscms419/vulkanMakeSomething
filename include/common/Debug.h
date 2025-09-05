@@ -1,7 +1,8 @@
 #ifndef INCLUDE_SOURCE_DEBUG_H
 #define INCLUDE_SOURCE_DEBUG_H
 
-#include "../../common/common.h"
+#include "macros.h"
+#include "common.h"
 
 namespace vkengine {
     namespace debug {

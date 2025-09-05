@@ -1,0 +1,51 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="external">
+      <UniqueIdentifier>{6d4bdeae-2764-436e-ba73-fb09cc907caf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source2">
+      <UniqueIdentifier>{0aec74e1-ddb8-441c-a662-50ee17f74c58}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\app\source\engine2\VKdescriptorPool.cpp">
+      <Filter>source2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\source\engine2\VKengine2.cpp">
+      <Filter>source2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\source\engine2\VKwindow.cpp">
+      <Filter>source2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\source\engine2\VKContext.cpp">
+      <Filter>source2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\source\engine2\VKdevice2.cpp">
+      <Filter>source2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\source\engine2\VKDescriptorManager2.cpp">
+      <Filter>source2</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\include\source\engine2\VKdescriptorPool.h">
+      <Filter>source2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\source\engine2\VKengine2.h">
+      <Filter>source2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\source\engine2\VKwindow.h">
+      <Filter>source2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\source\engine2\VKContext.h">
+      <Filter>source2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\source\engine2\VKdevice2.h">
+      <Filter>source2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\source\engine2\VKDescriptorManager2.h">
+      <Filter>source2</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

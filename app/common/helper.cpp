@@ -2,6 +2,23 @@
 
 namespace vkengine {
     namespace helper {
+        cString getPhysicalDeviceTypeString(VkPhysicalDeviceType type)
+        {
+            switch (type) {
+            case VK_PHYSICAL_DEVICE_TYPE_OTHER:
+                return "Other";
+            case VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU:
+                return "Integrated GPU";
+            case VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU:
+                return "Discrete GPU";
+            case VK_PHYSICAL_DEVICE_TYPE_VIRTUAL_GPU:
+                return "Virtual GPU";
+            case VK_PHYSICAL_DEVICE_TYPE_CPU:
+                return "CPU";
+            default:
+                return "Unknown";
+            }
+        }
 
         VkAccessFlags getFromOldLayoutToVkAccessFlags(VkImageLayout format)
         {
@@ -177,10 +194,39 @@ namespace vkengine {
 
             // 파일을 열 수 없는 경우 예외를 발생시킵니다.
             if (!file.is_open()) {
-                throw std::runtime_error("failed to open file!");
+                _EXIT_WITH_MESSAGE_("failed to open file!");
             }
 
             size_t fileSize = (size_t)file.tellg(); // 파일 크기를 이용하여 버퍼를 할당합니다.
+            std::vector<cChar> buffer(fileSize);     // 파일 포인터를 파일의 시작으로 이동합니다.
+            file.seekg(0);                          // 파일 포인터를 파일의 시작으로 이동합니다.
+            file.read(buffer.data(), fileSize);     // 파일 내용을 버퍼에 읽어옵니다. -> 파일을 fileSize 크기만큼 한번에 읽어온다.
+            file.close();                           // 파일을 닫습니다.
+
+            return buffer;
+        }
+
+        std::vector<cChar> readSPVFile(const std::string& filename)
+        {
+            // 파일 확장자가 .spv인지 확인합니다.
+            if (filename.length() < 4 || filename.substr(filename.length() - 4) != ".spv") {
+                _EXIT_WITH_MESSAGE_("Shader file does not have .spv extension: &s", filename.c_str());
+            }
+
+            // 파일 끝으로 이동하여 파일 크기를 가져옵니다.
+            std::ifstream file(filename, std::ios::ate | std::ios::binary);
+
+            // 파일을 열 수 없는 경우 예외를 발생시킵니다.
+            if (!file.is_open()) {
+                _EXIT_WITH_MESSAGE_("failed to open file!");
+            }
+
+            // Get file size and validate it's a valid SPIR-V file
+            size_t fileSize = (size_t)file.tellg(); // 파일 크기를 이용하여 버퍼를 할당합니다.
+            if (fileSize == 0 || fileSize % 4 != 0) {
+                _EXIT_WITH_MESSAGE_("Invalid SPIR-V file size: %zu bytes", fileSize);
+            }
+
             std::vector<cChar> buffer(fileSize);     // 파일 포인터를 파일의 시작으로 이동합니다.
             file.seekg(0);                          // 파일 포인터를 파일의 시작으로 이동합니다.
             file.read(buffer.data(), fileSize);     // 파일 내용을 버퍼에 읽어옵니다. -> 파일을 fileSize 크기만큼 한번에 읽어온다.
@@ -211,9 +257,9 @@ namespace vkengine {
             return (value + alignment - 1) & ~(alignment - 1);
         }
 
-        cBool isDeviceSuitable(VkPhysicalDevice device, VkSurfaceKHR VKsurface, QueueFamilyIndices& indices)
+        cBool isDeviceSuitableWithSurface(VkPhysicalDevice device, VkSurfaceKHR VKsurface, QueueFamilyIndices& indices)
         {
-            QueueFamilyIndices indices_ = findQueueFamilies(device, VKsurface);
+            QueueFamilyIndices indices_ = findQueueFamiliesWitchSurface(device, VKsurface);
             indices = indices_;
 
             cBool extensionsSupported = checkDeviceExtensionSupport(device);
@@ -230,7 +276,28 @@ namespace vkengine {
             return indices_.isComplete() && extensionsSupported && swapChainAdequate && supportedFeatures.samplerAnisotropy;
         }
 
-        const QueueFamilyIndices findQueueFamilies(VkPhysicalDevice& device, VkSurfaceKHR& VKsurface)
+        cBool isDeviceSuitableWithoutSurface(VkPhysicalDevice device, QueueFamilyIndices2& indices)
+        {
+            // 1. 큐 패밀리 검사 (Surface 없이 그래픽스 큐만 확인)
+            QueueFamilyIndices2 indices_ = findQueueFamiliesWithoutSurface(device);
+            indices = indices_;
+
+            // 2. 디바이스 확장 지원 검사
+            cBool extensionsSupported = checkDeviceExtensionSupport(device);
+
+            // 3. 물리 디바이스 특성 검사
+            VkPhysicalDeviceFeatures supportedFeatures;
+            vkGetPhysicalDeviceFeatures(device, &supportedFeatures);
+
+            // 4. 디바이스 속성 검사 (옵션)
+            VkPhysicalDeviceProperties deviceProperties;
+            vkGetPhysicalDeviceProperties(device, &deviceProperties);
+
+            // 스왑체인 검사는 제외하고 기본적인 적합성만 확인
+            return indices_.isComplete() && extensionsSupported && supportedFeatures.samplerAnisotropy;
+        }
+
+        const QueueFamilyIndices findQueueFamiliesWitchSurface(VkPhysicalDevice& device, VkSurfaceKHR& VKsurface)
         {
             QueueFamilyIndices indices; // 큐 패밀리의 개수를 저장할 변수를 초기화
             QueueFamilyIndices target; // 큐 패밀리의 개수를 저장할 변수를 초기화
@@ -253,7 +320,27 @@ namespace vkengine {
                 // 현재 큐 패밀리가 그래픽스 큐를 지원하는지 확인
                 _PRINT_TO_CONSOLE_("QueueFamily %d\n", i);
                 _PRINT_TO_CONSOLE_("QueueFamily queueCount: %d\n", queueFamily.queueCount);
-                _PRINT_TO_CONSOLE_("QueueFamily queueFlags: %d\n", queueFamily.queueFlags);
+                
+                cString queueFlagsStr;
+                if (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT)
+                    queueFlagsStr += "GRAPHICS ";
+                if (queueFamily.queueFlags & VK_QUEUE_COMPUTE_BIT)
+                    queueFlagsStr += "COMPUTE ";
+                if (queueFamily.queueFlags & VK_QUEUE_TRANSFER_BIT)
+                    queueFlagsStr += "TRANSFER ";
+                if (queueFamily.queueFlags & VK_QUEUE_SPARSE_BINDING_BIT)
+                    queueFlagsStr += "SPARSE_BINDING ";
+                if (queueFamily.queueFlags & VK_QUEUE_PROTECTED_BIT)
+                    queueFlagsStr += "PROTECTED ";
+                if (queueFamily.queueFlags & VK_QUEUE_VIDEO_DECODE_BIT_KHR)
+                    queueFlagsStr += "VIDEO_DECODE ";
+                if (queueFamily.queueFlags & VK_QUEUE_VIDEO_ENCODE_BIT_KHR)
+                    queueFlagsStr += "VIDEO_ENCODE ";
+                if (queueFamily.queueFlags & VK_QUEUE_OPTICAL_FLOW_BIT_NV)
+                    queueFlagsStr += "OPTICAL_FLOW ";
+
+                _PRINT_TO_CONSOLE_("QueueFamily queueFlags: %s\n", queueFlagsStr.c_str());
+                
                 _PRINT_TO_CONSOLE_("QueueFamily timestampValidBits: %d\n", queueFamily.timestampValidBits);
                 _PRINT_TO_CONSOLE_("QueueFamily minImageTransferGranularity.width: %d\n", queueFamily.minImageTransferGranularity.width);
                 _PRINT_TO_CONSOLE_("QueueFamily minImageTransferGranularity.height: %d\n", queueFamily.minImageTransferGranularity.height);
@@ -292,6 +379,75 @@ namespace vkengine {
                     }
                 }
 
+                indices.reset();
+                i++;
+            }
+
+            return target;
+        }
+
+        const QueueFamilyIndices2 findQueueFamiliesWithoutSurface(VkPhysicalDevice& device)
+        {
+            QueueFamilyIndices2 indices;
+            QueueFamilyIndices2 target;
+
+            uint32_t queueFamilyCount = 0;
+            vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);
+
+            std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
+            vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, queueFamilies.data());
+
+            int i = 0;
+            cBool selected = false;
+
+            for (const auto& queueFamily : queueFamilies) {
+                // 그래픽스와 컴퓨트 큐 지원 확인
+                _PRINT_TO_CONSOLE_("QueueFamily %d\n", i);
+                _PRINT_TO_CONSOLE_("QueueFamily queueCount: %d\n", queueFamily.queueCount);
+                _PRINT_TO_CONSOLE_("QueueFamily queueFlags: %d\n", queueFamily.queueFlags);
+                _PRINT_TO_CONSOLE_("QueueFamily timestampValidBits: %d\n", queueFamily.timestampValidBits);
+                _PRINT_TO_CONSOLE_("QueueFamily minImageTransferGranularity.width: %d\n", queueFamily.minImageTransferGranularity.width);
+                _PRINT_TO_CONSOLE_("QueueFamily minImageTransferGranularity.height: %d\n", queueFamily.minImageTransferGranularity.height);
+                _PRINT_TO_CONSOLE_("QueueFamily minImageTransferGranularity.depth: %d\n", queueFamily.minImageTransferGranularity.depth);
+
+
+                // 그래픽스 큐 지원 확인
+                if (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT) {
+                    _PRINT_TO_CONSOLE_("VK_QUEUE_GRAPHICS_BIT is supported\n");
+                    if (!indices.grapicFamilyHasValue) {
+                        indices.setGrapicFamily(i);
+                    }
+                }
+
+                // 컴퓨트 큐 지원 확인  
+                if (queueFamily.queueFlags & VK_QUEUE_COMPUTE_BIT) {
+                    _PRINT_TO_CONSOLE_("VK_QUEUE_COMPUTE_BIT is supported\n");
+                    if (!indices.computerFamilyHasValue) {
+                        indices.setComputerFamily(i);
+                    }
+                }
+
+                // 트랜스퍼 큐 지원 확인
+                if (queueFamily.queueFlags & VK_QUEUE_TRANSFER_BIT) {
+                    _PRINT_TO_CONSOLE_("VK_QUEUE_TRANSFER_BIT is supported\n");
+                    if (!indices.transferFamilyHasValue) {
+                        indices.setTransferFamily(i);
+                    }
+                }
+
+                if (indices.isComplete()) {
+
+                    if (!selected)
+                    {
+                        indices.queueFamilyProperties = queueFamily;
+                        target = indices;
+                        selected = true;
+
+                        _PRINT_TO_CONSOLE_("------------------ select Queuefamily index: %d ------------------\n", i);
+                    }
+                }
+
+                // Surface가 없으므로 Present 큐 확인은 생략
                 indices.reset();
                 i++;
             }
@@ -369,17 +525,6 @@ namespace vkengine {
             vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
 
             endSingleTimeCommands(VKdevice, VKcommandPool, graphicsVKQueue, commandBuffer);
-        }
-
-        void copyBuffer2(vkengine::VKdeviceHandler& VKdevice, VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size)
-        {
-            VkCommandBuffer commandBuffer = beginSingleTimeCommands(VKdevice.logicaldevice, VKdevice.commandPool);
-
-            VkBufferCopy copyRegion{};
-            copyRegion.size = size;
-            vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
-
-            endSingleTimeCommands(VKdevice.logicaldevice, VKdevice.commandPool, VKdevice.graphicsVKQueue, commandBuffer);
         }
 
         void createBuffer(VkDevice device, VkPhysicalDevice physicalDevice, VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory)
@@ -610,7 +755,9 @@ namespace vkengine {
         {
             return findSupportedFormat(
                 physicalDevice,
-                { VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT },    // 후보 형식
+                { VK_FORMAT_D32_SFLOAT, 
+                  VK_FORMAT_D32_SFLOAT_S8_UINT, 
+                  VK_FORMAT_D24_UNORM_S8_UINT },    // 후보 형식
                 VK_IMAGE_TILING_OPTIMAL,                                                                // 타일링
                 VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT                                          // 특징
             );

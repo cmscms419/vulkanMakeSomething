@@ -343,8 +343,10 @@ namespace vkengine {
         this->VKvertexBuffer.memoryPropertyFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
         this->VKvertexBuffer.createBuffer(this->VKdevice->physicalDevice);
 
-        helper::copyBuffer2(
-            *this->VKdevice,
+        helper::copyBuffer(
+            this->VKdevice->logicaldevice,
+            this->VKdevice->commandPool,
+            this->VKdevice->graphicsVKQueue,
             stagingBuffer,
             this->VKvertexBuffer.buffer,
             buffersize);
@@ -382,8 +384,10 @@ namespace vkengine {
         this->VKindexBuffer.memoryPropertyFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
         this->VKindexBuffer.createBuffer(this->VKdevice->physicalDevice);
 
-        helper::copyBuffer2(
-            *this->VKdevice,
+        helper::copyBuffer(
+            this->VKdevice->logicaldevice,
+            this->VKdevice->commandPool,
+            this->VKdevice->graphicsVKQueue,
             stagingBuffer,
             this->VKindexBuffer.buffer,
             buffersize);

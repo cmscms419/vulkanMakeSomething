@@ -451,10 +451,21 @@ external/basicEngine/x64/Debug/basicEngine.lib
 external/basicEngine/x64/Release/basicEngine.lib
 external/basicEngine/x64/Debug/basicEngine.idb
 external/basicEngine/x64/Release/basicEngine.idb
+
 external/component/x64/Debug/component.lib
 external/component/x64/Release/component.lib
 external/component/x64/Debug/component.idb
 external/component/x64/Release/component.idb
+
+external/basicEngine2/x64/Debug/basicEngine2.lib
+external/basicEngine2/x64/Release/basicEngine2.lib
+external/basicEngine2/x64/Debug/basicEngine2.idb
+external/basicEngine2/x64/Release/basicEngine2.idb
+
+external/common/x64/Debug/common.lib
+external/common/x64/Release/common.lib
+external/common/x64/Debug/common.idb
+external/common/x64/Release/common.idb
 
 ### VisualStudio Patch ###
 # Additional files built by Visual Studio

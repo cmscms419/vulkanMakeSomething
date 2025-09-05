@@ -1,4 +1,4 @@
-﻿#include "vkmath.h"
+﻿#include "VKmath.h"
 
 namespace vkMath {
 const cMat4 CreateRotation(cFloat yaw, cFloat pitch, cFloat roll) {

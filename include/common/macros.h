@@ -23,6 +23,16 @@ namespace vkengine {
 
 }
 
+#define _EXIT_WITH_MESSAGE_(mes, ...)          \
+{                                           \
+    const cString localUserName = UserName; \
+    const cString targetUserName = static_cast<const cString>(DEBUG_USER_NAME_0); /* 여기에 자신의 사용자 이름을 입력하세요 */ \
+    if (vkengine::enableValidationLayers && localUserName == targetUserName) { \
+        printf(mes, __VA_ARGS__);          \
+        exit(-1);                          \
+    }                                       \
+}                                           \
+
 #if DEBUG_
 #define _PRINT_TO_CONSOLE_(text, ...)              \
 {                                           \
@@ -64,6 +74,7 @@ namespace vkengine {
 
 #else
 
+#define _EXIT_WITH_MESSAGE_(mes, ...)
 #define _PRINT_TO_CONSOLE_(text, ...)
 #define _CHECK_RESULT_(f) f
 #define _VK_CHECK_RESULT_(f) f

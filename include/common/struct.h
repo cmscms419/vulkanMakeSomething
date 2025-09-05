@@ -61,6 +61,68 @@ struct QueueFamilyIndices {
     }
 };
 
+struct QueueFamilyIndices2 {
+    cUint32_t grapicFamily = 0;  // 그래픽스 큐 패밀리 인덱스 (그래픽스 명령을 처리하는 큐)
+    cUint32_t computerFamily = 0; // 컴퓨팅 큐 패밀리 인덱스 (컴퓨팅 명령을 처리하는 큐)
+    cUint32_t transferFamily = 0; // 트랜스퍼 큐 패밀리 인덱스 (트랜스퍼 명령을 처리하는 큐)
+    VkQueueFamilyProperties queueFamilyProperties = {};
+
+    cBool grapicFamilyHasValue = false;
+    cBool computerFamilyHasValue = false;
+    cBool transferFamilyHasValue = false;
+
+    void setGrapicFamily(cUint32_t index) {
+        grapicFamily = index;
+        grapicFamilyHasValue = true;
+    }
+    void setComputerFamily(cUint32_t index) {
+        computerFamily = index;
+        computerFamilyHasValue = true;
+    }
+    void setTransferFamily(cUint32_t index) {
+        transferFamily = index;
+        transferFamilyHasValue = true;
+    }
+
+    cUint32_t getGrapicQueueFamilyIndex() const {
+        cUint32_t target = -1;
+        if (queueFamilyProperties.queueFlags & VkQueueFlagBits::VK_QUEUE_GRAPHICS_BIT)
+        {
+            target = grapicFamily;
+        }
+        return target;
+    }
+    cUint32_t getComputerQueueFamilyIndex() const {
+        cUint32_t target = -1;
+        if (queueFamilyProperties.queueFlags & VkQueueFlagBits::VK_QUEUE_COMPUTE_BIT)
+        {
+            target = computerFamily;
+        }
+        return target;
+    }
+    cUint32_t getTransferQueueFamilyIndex() const {
+        cUint32_t target = -1;
+        if (queueFamilyProperties.queueFlags & VkQueueFlagBits::VK_QUEUE_TRANSFER_BIT)
+        {
+            target = transferFamily;
+        }
+        return target;
+    }
+
+    cBool isComplete() const {
+        return this->grapicFamilyHasValue && this->computerFamilyHasValue && this->transferFamilyHasValue;
+    }
+    void reset() {
+        this->grapicFamily = 0;
+        this->computerFamily = 0;
+        this->transferFamily = 0;
+        this->grapicFamilyHasValue = false;
+        this->computerFamilyHasValue = false;
+        this->transferFamilyHasValue = false;
+    }
+};
+
+
 struct SwapChainSupportDetails {
     VkSurfaceCapabilitiesKHR capabilities = {};
     std::vector<VkSurfaceFormatKHR> formats;
@@ -113,10 +175,10 @@ struct Vertex {
     }
 
     cBool operator==(const Vertex& other) const {
-        return 
-            pos == other.pos && 
-            normal == other.normal && 
-            texCoord == other.texCoord && 
+        return
+            pos == other.pos &&
+            normal == other.normal &&
+            texCoord == other.texCoord &&
             inTangent == other.inTangent;
     }
 
@@ -180,10 +242,10 @@ struct UniformBufferTime {
 };
 
 struct depthStencill {
-    VkFormat depthFormat{};
-    VkImage depthImage{};
-    VkDeviceMemory depthImageMemory{};
-    VkImageView depthImageView{};
+    VkFormat depthFormat{ VK_FORMAT_UNDEFINED };
+    VkImage depthImage{ VK_NULL_HANDLE };
+    VkDeviceMemory depthImageMemory{ VK_NULL_HANDLE };
+    VkImageView depthImageView{ VK_NULL_HANDLE };
 
     void cleanup(VkDevice device) const {
         vkDestroyImageView(device, depthImageView, nullptr);
@@ -283,7 +345,7 @@ struct TextureResourcePNG : public TextureResourceBase {
 
     // 소멸자
     ~TextureResourcePNG() {
-        
+
         if (data) {
             free(data); // 리소스 데이터 해제
         }
@@ -365,7 +427,7 @@ struct TextureResourcePNG : public TextureResourceBase {
 };
 
 struct TextureResourceKTX : public TextureResourceBase {
-    
+
     ktxTexture* texture = nullptr; // KTX 텍스처 포인터
 
     TextureResourceKTX() {
@@ -486,7 +548,7 @@ struct cMaterial
 #endif
 
     cMaterial(cFloat metallic = 0.0f, cFloat roughness = 0.0f, cVec4 color = cVec4(0.0f, 0.0f, 0.0f, 1.0f))
-        : metallic(metallic), roughness(roughness), r(color.r), g(color.g), b(color.b), a(color.a){
+        : metallic(metallic), roughness(roughness), r(color.r), g(color.g), b(color.b), a(color.a) {
 
     }
 };

@@ -374,7 +374,7 @@ namespace vkengine
 
         uint16_t selectQueueFamilyIndeices = 0;
         for (VkPhysicalDevice& device : devices) {
-            if (helper::isDeviceSuitable(device, this->VKsurface, indices[selectQueueFamilyIndeices]))
+            if (helper::isDeviceSuitableWithSurface(device, this->VKsurface, indices[selectQueueFamilyIndeices]))
             {
                 int score = helper::rateDeviceSuitability(device);
                 candidates.insert(std::make_pair(score, device));
@@ -692,5 +692,3 @@ namespace vkengine
     }
 
 }
-
-

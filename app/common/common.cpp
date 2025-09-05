@@ -7,9 +7,11 @@ namespace vkengine
     };
 
     const std::vector<const cChar*> deviceExtensions = {
-        VK_KHR_SWAPCHAIN_EXTENSION_NAME,
-        VK_KHR_SHADER_NON_SEMANTIC_INFO_EXTENSION_NAME
+        VK_KHR_SWAPCHAIN_EXTENSION_NAME,                // 스왑체인 확장
+        VK_KHR_SHADER_NON_SEMANTIC_INFO_EXTENSION_NAME  // 디버깅을 위한 확장
     };
+
+    const std::vector<const cChar*> enabledDeviceExtensions = {};
 
     const std::vector<VkDynamicState> dynamicStates = {
         VK_DYNAMIC_STATE_VIEWPORT,
