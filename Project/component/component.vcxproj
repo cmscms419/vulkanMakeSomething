@@ -93,6 +93,7 @@
       <PreprocessorDefinitions>DEBUG_;WIN32;WIN64;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <LanguageStandard_C>stdc11</LanguageStandard_C>
       <AdditionalIncludeDirectories>./;$(CudaToolkitDir)/include;$(VULKAN_SDK)/include;../../external/imgui;../../external/GLFW/include;../../include/common;../../include/source/engine;../../include/component;../../external/ktx/include/;../../external/tinygltf/;../../external/include</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -112,6 +113,7 @@
       <PreprocessorDefinitions>WIN32;WIN64;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <LanguageStandard_C>stdc11</LanguageStandard_C>
       <AdditionalIncludeDirectories>./;$(CudaToolkitDir)/include;$(VULKAN_SDK)/include;../../external/imgui;../../external/GLFW/include;../../include/common;../../include/source/engine;../../include/component;../../external/ktx/include/;../../external/tinygltf/;../../external/include</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
