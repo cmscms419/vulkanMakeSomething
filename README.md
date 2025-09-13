@@ -68,3 +68,5 @@ KhronosGroup에서 개발한 [SPIRV-Reflect](https://github.com/KhronosGroup/SPI
 [PBR basice 출처, 쉐이더 출처](https://github.com/SaschaWillems/Vulkan/tree/master/examples/pbrbasic)
 
 [image base lighting PBR 코드 출처](https://github.com/SaschaWillems/Vulkan/tree/master/examples/pbribl)
+
+basicEngine2 등 여러 프로젝트에서 만드는 코드들은 [HonglabVulkan](https://github.com/HongLabInc/HonglabVulkan)에서 가져온 것이 많습니다.
