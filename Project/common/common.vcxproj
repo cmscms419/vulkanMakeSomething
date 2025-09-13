@@ -11,10 +11,12 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\external\include\spirv-reflect\spirv_reflect.h" />
     <ClInclude Include="..\..\include\common\common.h" />
     <ClInclude Include="..\..\include\common\Debug.h" />
     <ClInclude Include="..\..\include\common\exception.h" />
     <ClInclude Include="..\..\include\common\helper.h" />
+    <ClInclude Include="..\..\include\common\log.h" />
     <ClInclude Include="..\..\include\common\macros.h" />
     <ClInclude Include="..\..\include\common\resourseload.h" />
     <ClInclude Include="..\..\include\common\struct.h" />
@@ -32,6 +34,7 @@
     <ClCompile Include="..\..\app\common\common.cpp" />
     <ClCompile Include="..\..\app\common\Debug.cpp" />
     <ClCompile Include="..\..\app\common\helper.cpp" />
+    <ClCompile Include="..\..\app\common\log.cpp" />
     <ClCompile Include="..\..\app\common\macros.cpp" />
     <ClCompile Include="..\..\app\common\resourseload.cpp" />
     <ClCompile Include="..\..\app\common\struct.cpp" />
@@ -40,6 +43,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\..\app\common\VKmath.cpp" />
+    <ClCompile Include="..\..\external\include\spirv-reflect\spirv_reflect.c" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{1950486a-e32d-424d-b403-243f6a452517}</ProjectGuid>

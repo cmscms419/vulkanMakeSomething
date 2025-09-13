@@ -2,6 +2,260 @@
 
 namespace vkengine {
     namespace helper {
+        void printReflectionInfo(const SpvReflectShaderModule& reflectModule)
+        {
+            vkengine::Log::PRINT_TO_LOGGER("=== SPIR-V Shader Reflection Information ===\n");
+            vkengine::Log::PRINT_TO_LOGGER("Entry Point: ");
+            vkengine::Log::PRINT_TO_LOGGER(reflectModule.entry_point_name ? reflectModule.entry_point_name : "Unknown");
+            vkengine::Log::PRINT_TO_LOGGER("\n");
+            vkengine::Log::PRINT_TO_LOGGER("Shader Stage: %s\n", vkengine::helper::getShaderStageString(reflectModule.shader_stage));
+            vkengine::Log::PRINT_TO_LOGGER("Source Language: ");
+            switch (reflectModule.source_language) {
+            case SpvSourceLanguageGLSL:
+                vkengine::Log::PRINT_TO_LOGGER("GLSL");
+                break;
+            case SpvSourceLanguageHLSL:
+                vkengine::Log::PRINT_TO_LOGGER("HLSL");
+                break;
+            case SpvSourceLanguageOpenCL_C:
+                vkengine::Log::PRINT_TO_LOGGER("OpenCL C");
+                break;
+            default:
+                vkengine::Log::PRINT_TO_LOGGER("Unknown (%d)", reflectModule.source_language);
+                break;
+            }
+            vkengine::Log::PRINT_TO_LOGGER("\n");
+
+            vkengine::Log::PRINT_TO_LOGGER(" v%d\n", reflectModule.source_language_version);
+
+            if (reflectModule.source_file) {
+                vkengine::Log::PRINT_TO_LOGGER("Source File: %s\n", reflectModule.source_file);
+            }
+
+            vkengine::Log::PRINT_TO_LOGGER("\n--- Descriptor Bindings ---\n");
+            vkengine::Log::PRINT_TO_LOGGER("Total descriptor bindings: %d\n", reflectModule.descriptor_binding_count);
+
+            for (uint32_t i = 0; i < reflectModule.descriptor_binding_count; ++i) {
+                const SpvReflectDescriptorBinding* binding = &reflectModule.descriptor_bindings[i];
+                vkengine::Log::PRINT_TO_LOGGER("  Binding %d:\n", i);
+                vkengine::Log::PRINT_TO_LOGGER("    Name: %s\n", (binding->name ? binding->name : "Unknown"));
+                vkengine::Log::PRINT_TO_LOGGER("    Set: %d\n", binding->set);
+                vkengine::Log::PRINT_TO_LOGGER("    Binding: %d\n", binding->binding);
+                vkengine::Log::PRINT_TO_LOGGER("    Type: %s\n", vkengine::helper::getDescriptorTypeString(binding->descriptor_type));
+                vkengine::Log::PRINT_TO_LOGGER("    Count: %d\n", binding->count);
+
+                if (binding->image.dim != SpvDimMax) {
+                    vkengine::Log::PRINT_TO_LOGGER("    Image Dimension: \n");
+                    switch (binding->image.dim) {
+                    case SpvDim1D:
+                        vkengine::Log::PRINT_TO_LOGGER("1D");
+                        break;
+                    case SpvDim2D:
+                        vkengine::Log::PRINT_TO_LOGGER("2D");
+                        break;
+                    case SpvDim3D:
+                        vkengine::Log::PRINT_TO_LOGGER("3D");
+                        break;
+                    case SpvDimCube:
+                        vkengine::Log::PRINT_TO_LOGGER("Cube");
+                        break;
+                    case SpvDimBuffer:
+                        vkengine::Log::PRINT_TO_LOGGER("Buffer");
+                        break;
+                    default:
+                        vkengine::Log::PRINT_TO_LOGGER("Unknown");
+                        break;
+                    }
+                    vkengine::Log::PRINT_TO_LOGGER("    Image Format: %d", binding->image.image_format);
+                }
+            }
+
+            vkengine::Log::PRINT_TO_LOGGER("\n--- Descriptor Sets ---\n");
+            vkengine::Log::PRINT_TO_LOGGER("Total descriptor sets: %d\n", reflectModule.descriptor_set_count);
+            for (uint32_t i = 0; i < reflectModule.descriptor_set_count; ++i) {
+                const SpvReflectDescriptorSet* set = &reflectModule.descriptor_sets[i];
+                vkengine::Log::PRINT_TO_LOGGER("  Set %d: %d bindings\n", set->set, set->binding_count);
+            }
+
+            vkengine::Log::PRINT_TO_LOGGER("\n--- Input Variables ---\n");
+            vkengine::Log::PRINT_TO_LOGGER("Total input variables: %d\n", reflectModule.input_variable_count);
+            for (uint32_t i = 0; i < reflectModule.input_variable_count; ++i) {
+                const SpvReflectInterfaceVariable* var = reflectModule.input_variables[i];
+                vkengine::Log::PRINT_TO_LOGGER("  Input %d: %s\n", i, (var->name ? var->name : "Unknown\n"));
+                vkengine::Log::PRINT_TO_LOGGER("    Location: %d\n", var->location);
+            }
+
+            vkengine::Log::PRINT_TO_LOGGER("\n--- Output Variables ---\n");
+            vkengine::Log::PRINT_TO_LOGGER("Total output variables: %d\n", reflectModule.output_variable_count);
+            for (uint32_t i = 0; i < reflectModule.output_variable_count; ++i) {
+                const SpvReflectInterfaceVariable* var = reflectModule.output_variables[i];
+                vkengine::Log::PRINT_TO_LOGGER("  Output %d: %s\n", i, (var->name ? var->name : "Unknown\n"));
+                vkengine::Log::PRINT_TO_LOGGER("    Location: %d\n", var->location);
+            }
+
+            vkengine::Log::PRINT_TO_LOGGER("\n--- Push Constants ---\n");
+            vkengine::Log::PRINT_TO_LOGGER("Total push constant blocks: %d\n", reflectModule.push_constant_block_count);
+            for (uint32_t i = 0; i < reflectModule.push_constant_block_count; ++i) {
+                const SpvReflectBlockVariable* block = &reflectModule.push_constant_blocks[i];
+                vkengine::Log::PRINT_TO_LOGGER("  Push constant block %d:\n", i);
+                vkengine::Log::PRINT_TO_LOGGER("    Name: %s\n", (block->name ? block->name : "Unknown\n"));
+                vkengine::Log::PRINT_TO_LOGGER("    Size: %d bytes\n", block->size);
+                vkengine::Log::PRINT_TO_LOGGER("    Offset: %d\n", block->offset);
+            }
+
+            // For compute shaders, show workgroup size
+            if (reflectModule.shader_stage & SPV_REFLECT_SHADER_STAGE_COMPUTE_BIT) {
+                vkengine::Log::PRINT_TO_LOGGER("\n--- Compute Shader Info ---\n");
+                vkengine::Log::PRINT_TO_LOGGER("Local workgroup size: (%d, %d, %d)\n",
+                    reflectModule.entry_points[0].local_size.x,
+                    reflectModule.entry_points[0].local_size.y,
+                    reflectModule.entry_points[0].local_size.z);
+            }
+        }
+        cString descriptorTypeToString(VkDescriptorType type)
+        {
+            cString str;
+
+            switch (type) {
+            case VK_DESCRIPTOR_TYPE_SAMPLER:
+                str = "SAMPLER";
+                break;
+            case VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER:
+                str = "COMBINED_IMAGE_SAMPLER";
+                break;
+            case VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE:
+                str = "SAMPLED_IMAGE";
+                break;
+            case VK_DESCRIPTOR_TYPE_STORAGE_IMAGE:
+                str = "STORAGE_IMAGE";
+                break;
+            case VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER:
+                str = "UNIFORM_TEXEL_BUFFER";
+                break;
+            case VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER:
+                str = "STORAGE_TEXEL_BUFFER";
+                break;
+            case VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER:
+                str = "UNIFORM_BUFFER";
+                break;
+            case VK_DESCRIPTOR_TYPE_STORAGE_BUFFER:
+                str = "STORAGE_BUFFER";
+                break;
+            case VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC:
+                str = "UNIFORM_BUFFER_DYNAMIC";
+                break;
+            case VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC:
+                str = "STORAGE_BUFFER_DYNAMIC";
+                break;
+            case VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT:
+                str = "INPUT_ATTACHMENT";
+                break;
+            case VK_DESCRIPTOR_TYPE_INLINE_UNIFORM_BLOCK:
+                str = "INLINE_UNIFORM_BLOCK";
+                break;
+            case VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR:
+                str = "ACCELERATION_STRUCTURE_KHR";
+                break;
+            case VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_NV:
+                str = "ACCELERATION_STRUCTURE_NV";
+                break;
+            case VK_DESCRIPTOR_TYPE_SAMPLE_WEIGHT_IMAGE_QCOM:
+                str = "SAMPLE_WEIGHT_IMAGE_QCOM";
+                break;
+            case VK_DESCRIPTOR_TYPE_BLOCK_MATCH_IMAGE_QCOM:
+                str = "BLOCK_MATCH_IMAGE_QCOM";
+                break;
+            case VK_DESCRIPTOR_TYPE_MUTABLE_EXT:
+                str = "MUTABLE_EXT";
+                break;
+            default:
+                str = "UNKNOWN_DESCRIPTOR_TYPE";
+                break;
+            }
+
+            return str;
+        }
+
+        VkDescriptorType stringToDescriptorType(const cString& typeStr)
+        {
+            static const std::unordered_map<cString, VkDescriptorType> stringToTypeMap = {
+         {"SAMPLER", VK_DESCRIPTOR_TYPE_SAMPLER},
+         {"COMBINED_IMAGE_SAMPLER", VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER},
+         {"SAMPLED_IMAGE", VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE},
+         {"STORAGE_IMAGE", VK_DESCRIPTOR_TYPE_STORAGE_IMAGE},
+         {"UNIFORM_TEXEL_BUFFER", VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER},
+         {"STORAGE_TEXEL_BUFFER", VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER},
+         {"UNIFORM_BUFFER", VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER},
+         {"STORAGE_BUFFER", VK_DESCRIPTOR_TYPE_STORAGE_BUFFER},
+         {"UNIFORM_BUFFER_DYNAMIC", VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC},
+         {"STORAGE_BUFFER_DYNAMIC", VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC},
+         {"INPUT_ATTACHMENT", VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT},
+         {"INLINE_UNIFORM_BLOCK", VK_DESCRIPTOR_TYPE_INLINE_UNIFORM_BLOCK},
+         {"ACCELERATION_STRUCTURE_KHR", VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR},
+         {"ACCELERATION_STRUCTURE_NV", VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_NV},
+         {"SAMPLE_WEIGHT_IMAGE_QCOM", VK_DESCRIPTOR_TYPE_SAMPLE_WEIGHT_IMAGE_QCOM},
+         {"BLOCK_MATCH_IMAGE_QCOM", VK_DESCRIPTOR_TYPE_BLOCK_MATCH_IMAGE_QCOM},
+         {"MUTABLE_EXT", VK_DESCRIPTOR_TYPE_MUTABLE_EXT} };
+
+            auto it = stringToTypeMap.find(typeStr);
+            if (it != stringToTypeMap.end()) {
+                return it->second;
+            }
+
+            _EXIT_WITH_MESSAGE_("Error: Unknown descriptor type string: %s\n", typeStr.c_str());
+            return VK_DESCRIPTOR_TYPE_MAX_ENUM; // Return a default value in case of error
+
+        }
+        const cChar* getShaderStageString(const SpvReflectShaderStageFlagBits& stage)
+        {
+            switch (stage) {
+            case SPV_REFLECT_SHADER_STAGE_VERTEX_BIT:
+                return "Vertex";
+            case SPV_REFLECT_SHADER_STAGE_TESSELLATION_CONTROL_BIT:
+                return "Tessellation Control";
+            case SPV_REFLECT_SHADER_STAGE_TESSELLATION_EVALUATION_BIT:
+                return "Tessellation Evaluation";
+            case SPV_REFLECT_SHADER_STAGE_GEOMETRY_BIT:
+                return "Geometry";
+            case SPV_REFLECT_SHADER_STAGE_FRAGMENT_BIT:
+                return "Fragment";
+            case SPV_REFLECT_SHADER_STAGE_COMPUTE_BIT:
+                return "Compute";
+            default:
+                return "Unknown";
+            }
+        }
+
+        const cChar* getDescriptorTypeString(SpvReflectDescriptorType type)
+        {
+            switch (type) {
+            case SPV_REFLECT_DESCRIPTOR_TYPE_SAMPLER:
+                return "Sampler";
+            case SPV_REFLECT_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER:
+                return "Combined Image Sampler";
+            case SPV_REFLECT_DESCRIPTOR_TYPE_SAMPLED_IMAGE:
+                return "Sampled Image";
+            case SPV_REFLECT_DESCRIPTOR_TYPE_STORAGE_IMAGE:
+                return "Storage Image";
+            case SPV_REFLECT_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER:
+                return "Uniform Texel Buffer";
+            case SPV_REFLECT_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER:
+                return "Storage Texel Buffer";
+            case SPV_REFLECT_DESCRIPTOR_TYPE_UNIFORM_BUFFER:
+                return "Uniform Buffer";
+            case SPV_REFLECT_DESCRIPTOR_TYPE_STORAGE_BUFFER:
+                return "Storage Buffer";
+            case SPV_REFLECT_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC:
+                return "Dynamic Uniform Buffer";
+            case SPV_REFLECT_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC:
+                return "Dynamic Storage Buffer";
+            case SPV_REFLECT_DESCRIPTOR_TYPE_INPUT_ATTACHMENT:
+                return "Input Attachment";
+            default:
+                return "Unknown";
+            }
+        }
+
         cString getPhysicalDeviceTypeString(VkPhysicalDeviceType type)
         {
             switch (type) {
@@ -102,6 +356,7 @@ namespace vkengine {
 
             return accessFlags;
         }
+
         VkAccessFlags getFromNewLayoutToVkAccessFlags(VkImageLayout format)
         {
 
@@ -210,7 +465,8 @@ namespace vkengine {
         {
             // 파일 확장자가 .spv인지 확인합니다.
             if (filename.length() < 4 || filename.substr(filename.length() - 4) != ".spv") {
-                _EXIT_WITH_MESSAGE_("Shader file does not have .spv extension: &s", filename.c_str());
+                _EXIT_WITH_MESSAGE_("Shader file does not have .spv extension: %s", filename.c_str());
+
             }
 
             // 파일 끝으로 이동하여 파일 크기를 가져옵니다.
@@ -250,7 +506,6 @@ namespace vkengine {
         {
             return (value + alignment - 1) & ~(alignment - 1);
         }
-
 
         VkDeviceSize alignedVkSize(VkDeviceSize value, VkDeviceSize alignment)
         {
@@ -320,7 +575,7 @@ namespace vkengine {
                 // 현재 큐 패밀리가 그래픽스 큐를 지원하는지 확인
                 _PRINT_TO_CONSOLE_("QueueFamily %d\n", i);
                 _PRINT_TO_CONSOLE_("QueueFamily queueCount: %d\n", queueFamily.queueCount);
-                
+
                 cString queueFlagsStr;
                 if (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT)
                     queueFlagsStr += "GRAPHICS ";
@@ -340,7 +595,7 @@ namespace vkengine {
                     queueFlagsStr += "OPTICAL_FLOW ";
 
                 _PRINT_TO_CONSOLE_("QueueFamily queueFlags: %s\n", queueFlagsStr.c_str());
-                
+
                 _PRINT_TO_CONSOLE_("QueueFamily timestampValidBits: %d\n", queueFamily.timestampValidBits);
                 _PRINT_TO_CONSOLE_("QueueFamily minImageTransferGranularity.width: %d\n", queueFamily.minImageTransferGranularity.width);
                 _PRINT_TO_CONSOLE_("QueueFamily minImageTransferGranularity.height: %d\n", queueFamily.minImageTransferGranularity.height);
@@ -755,8 +1010,8 @@ namespace vkengine {
         {
             return findSupportedFormat(
                 physicalDevice,
-                { VK_FORMAT_D32_SFLOAT, 
-                  VK_FORMAT_D32_SFLOAT_S8_UINT, 
+                { VK_FORMAT_D32_SFLOAT,
+                  VK_FORMAT_D32_SFLOAT_S8_UINT,
                   VK_FORMAT_D24_UNORM_S8_UINT },    // 후보 형식
                 VK_IMAGE_TILING_OPTIMAL,                                                                // 타일링
                 VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT                                          // 특징

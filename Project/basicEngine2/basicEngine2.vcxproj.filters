@@ -27,6 +27,9 @@
     <ClCompile Include="..\..\app\source\engine2\VKDescriptorManager2.cpp">
       <Filter>source2</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\app\source\engine2\VKCommandBuffer.cpp">
+      <Filter>source2</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\include\source\engine2\VKdescriptorPool.h">
@@ -45,6 +48,9 @@
       <Filter>source2</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\source\engine2\VKDescriptorManager2.h">
+      <Filter>source2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\source\engine2\VKCommandBuffer.h">
       <Filter>source2</Filter>
     </ClInclude>
   </ItemGroup>

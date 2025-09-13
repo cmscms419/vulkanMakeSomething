@@ -7,6 +7,7 @@
 #include "common.h"
 #include "struct.h"
 #include "macros.h"
+#include "log.h"
 
 #include "ktx.h"
 
@@ -15,6 +16,16 @@
 namespace vkengine {
 
     namespace helper {
+
+        void printReflectionInfo(const SpvReflectShaderModule& reflectModule);
+
+        cString descriptorTypeToString(VkDescriptorType type);
+
+        VkDescriptorType stringToDescriptorType(const cString& typeStr);
+
+        const cChar* getShaderStageString(const SpvReflectShaderStageFlagBits& stage);
+
+        const cChar* getDescriptorTypeString(SpvReflectDescriptorType type);
 
         cString getPhysicalDeviceTypeString(VkPhysicalDeviceType type);
 

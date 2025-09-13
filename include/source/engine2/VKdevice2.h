@@ -3,9 +3,9 @@
 
 #include "common.h"
 #include "struct.h"
-#include "macros.h"
-
 #include "helper.h"
+
+#include "log.h"
 
 namespace vkengine {
 

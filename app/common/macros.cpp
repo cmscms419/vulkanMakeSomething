@@ -1,4 +1,5 @@
 #include "macros.h"
+#include "log.h"
 
 const cString UserName = []()
 {
@@ -8,7 +9,7 @@ const cString UserName = []()
 
 #if DEBUG_
 
-    if (cString(username) != DEBUG_USER_NAME_0) 
+    if (cString(username) != DEBUG_USER_NAME_0)
     {
         username[0] = '\0';
     }
@@ -21,3 +22,15 @@ const cString UserName = []()
 
     return cString(username);
 }();
+
+//namespace vkengine {
+//    void logMessage(const cString& message) {
+//
+//#if DEBUG_
+//
+//        Log::Logger::getInstance().log(message);
+//#else
+//        return;
+//#endif
+//    }
+//}

@@ -1,5 +1,7 @@
 #include "VKContext.h"
 
+using namespace vkengine::Log;
+
 namespace vkengine {
     VkContext::VkContext(const std::vector<const char*>& requiredInstanceExtensions, cBool useSwapchain)
         : descriptorManager2(VKdevice.logicaldevice)
@@ -37,7 +39,7 @@ namespace vkengine {
         // debug 가능한지 확인
         for (const cChar* layerName : validationLayers) {
             if (enableValidationLayers && !checkValidationLayerSupport(layerName)) {
-                _PRINT_TO_CONSOLE_("validation layer not supported: %s", layerName);
+                PRINT_TO_LOGGER("validation layer not supported: %s", layerName);
                 return check;
             }
         }
@@ -57,9 +59,9 @@ namespace vkengine {
         }
 
         // print instanceExtensions
-        _PRINT_TO_CONSOLE_("Supported Instance Extensions:");
+        PRINT_TO_LOGGER("Supported Instance Extensions: \n");
         for (const cString& extension : supportedInstanceExtensions) {
-            _PRINT_TO_CONSOLE_("  %s\n", extension.c_str());
+            PRINT_TO_LOGGER("  %s\n", extension.c_str());
         }
 
         // MoltenVK on macOS/iOS supported
@@ -141,7 +143,7 @@ namespace vkengine {
 
         _VK_CHECK_RESULT_(vkCreateInstance(&createInfo, nullptr, &VKinstance));
 
-        _PRINT_TO_CONSOLE_("Vulkan instance created successfully\n");
+        PRINT_TO_LOGGER("Vulkan instance created successfully\n");
         return true;
     }
 
@@ -190,7 +192,7 @@ namespace vkengine {
 
         if (Score == 0)
         {
-            _PRINT_TO_CONSOLE_("failed to find a suitable GPU!");
+            PRINT_TO_LOGGER("failed to find a suitable GPU!");
             return false;
         }
 

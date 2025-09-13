@@ -39,6 +39,12 @@
     <ClInclude Include="..\..\include\common\VKmath.h">
       <Filter>common</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\include\common\log.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\external\include\spirv-reflect\spirv_reflect.h">
+      <Filter>external</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\app\common\common.cpp">
@@ -64,6 +70,12 @@
     </ClCompile>
     <ClCompile Include="..\..\app\common\VKmath.cpp">
       <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\common\log.cpp">
+      <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\external\include\spirv-reflect\spirv_reflect.c">
+      <Filter>external</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

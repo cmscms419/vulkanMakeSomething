@@ -20,7 +20,6 @@ namespace vkengine {
         }
         return hash;
     }
-
 }
 
 #define _EXIT_WITH_MESSAGE_(mes, ...)          \

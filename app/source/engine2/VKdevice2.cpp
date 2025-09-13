@@ -1,5 +1,7 @@
 #include "VKdevice2.h"
 
+using namespace vkengine::Log;
+
 namespace vkengine {
 
     using namespace helper;
@@ -36,9 +38,9 @@ namespace vkengine {
             // Vulkan 1.0을 지원하는 디바이스 처리
         }
 
-        _PRINT_TO_CONSOLE_("Select Device\n");
-        _PRINT_TO_CONSOLE_("Select DeviceProperties.deviceType: %d\n", properties.deviceType);
-        _PRINT_TO_CONSOLE_("Select Device Name: %s\n", properties.deviceName);
+        PRINT_TO_LOGGER("Select Device\n");
+        PRINT_TO_LOGGER("Select DeviceProperties.deviceType: %d\n", properties.deviceType);
+        PRINT_TO_LOGGER("Select Device Name: %s\n", properties.deviceName);
 
         helper::getDeviceExtensionSupport(physicalDevice, &this->supportedExtensions);
     }
@@ -50,22 +52,22 @@ namespace vkengine {
 
     void VKdeviceHandler2::printPysicaldeviceProperties() const
     {
-        _PRINT_TO_CONSOLE_("Selected %s (%s)\n", properties.deviceName,
+        PRINT_TO_LOGGER("Selected %s (%s)\n", properties.deviceName,
             helper::getPhysicalDeviceTypeString(properties.deviceType).c_str());
-        _PRINT_TO_CONSOLE_("  nonCoherentAtomSize: %llu\n", properties.limits.nonCoherentAtomSize);
-        _PRINT_TO_CONSOLE_("  Max UBO size: %u KBytes\n", properties.limits.maxUniformBufferRange / 1024);
-        _PRINT_TO_CONSOLE_("  Max SSBO size: %u KBytes\n", properties.limits.maxStorageBufferRange / 1024);
-        _PRINT_TO_CONSOLE_("  UBO offset alignment: %llu\n",
+        PRINT_TO_LOGGER("  nonCoherentAtomSize: %llu\n", properties.limits.nonCoherentAtomSize);
+        PRINT_TO_LOGGER("  Max UBO size: %u KBytes\n", properties.limits.maxUniformBufferRange / 1024);
+        PRINT_TO_LOGGER("  Max SSBO size: %u KBytes\n", properties.limits.maxStorageBufferRange / 1024);
+        PRINT_TO_LOGGER("  UBO offset alignment: %llu\n",
             properties.limits.minUniformBufferOffsetAlignment);
-        _PRINT_TO_CONSOLE_("  SSBO offset alignment: %llu\n",
+        PRINT_TO_LOGGER("  SSBO offset alignment: %llu\n",
             properties.limits.minStorageBufferOffsetAlignment);
 
-        _PRINT_TO_CONSOLE_("\nDevice Features:\n");
-        _PRINT_TO_CONSOLE_("  geometryShader: %s\n", features.geometryShader ? "YES" : "NO");
-        _PRINT_TO_CONSOLE_("  tessellationShader: %s\n", features.tessellationShader ? "YES" : "NO");
+        PRINT_TO_LOGGER("\nDevice Features:\n");
+        PRINT_TO_LOGGER("  geometryShader: %s\n", features.geometryShader ? "YES" : "NO");
+        PRINT_TO_LOGGER("  tessellationShader: %s\n", features.tessellationShader ? "YES" : "NO");
 
-        _PRINT_TO_CONSOLE_("\nDevice Memory Properties:\n");
-        _PRINT_TO_CONSOLE_("  Memory Type Count: %d\n", memoryProperties.memoryTypeCount);
+        PRINT_TO_LOGGER("\nDevice Memory Properties:\n");
+        PRINT_TO_LOGGER("  Memory Type Count: %d\n", memoryProperties.memoryTypeCount);
 
         for (uint32_t i = 0; i < memoryProperties.memoryTypeCount; ++i) {
             const auto& memType = memoryProperties.memoryTypes[i];
@@ -85,10 +87,10 @@ namespace vkengine {
             if (propFlags.empty())
                 propFlags = "NONE ";
 
-            _PRINT_TO_CONSOLE_("    Memory Type %d: heap %d, flags: %s\n", i, memType.heapIndex, propFlags.c_str());
+            PRINT_TO_LOGGER("    Memory Type %d: heap %d, flags: %s\n", i, memType.heapIndex, propFlags.c_str());
         }
 
-        _PRINT_TO_CONSOLE_("  Memory Heap Count: %d\n", memoryProperties.memoryHeapCount);
+        PRINT_TO_LOGGER("  Memory Heap Count: %d\n", memoryProperties.memoryHeapCount);
         for (uint32_t i = 0; i < memoryProperties.memoryHeapCount; ++i) {
             const auto& memHeap = memoryProperties.memoryHeaps[i];
             cString propFlags;
@@ -98,7 +100,7 @@ namespace vkengine {
                 propFlags += "MULTI_INSTANCE ";
             if (propFlags.empty())
                 propFlags = "NONE ";
-            _PRINT_TO_CONSOLE_("    Memory Heap %d: size %llu MBytes, flags: %s\n", i,
+            PRINT_TO_LOGGER("    Memory Heap %d: size %llu MBytes, flags: %s\n", i,
                 memHeap.size / 1024 / 1024, propFlags.c_str());
         }
 
@@ -244,7 +246,7 @@ namespace vkengine {
             this->queueFamilyIndices.computerFamily == cUint32_t(-1) ||
             this->queueFamilyIndices.transferFamily == cUint32_t(-1))
         {
-            _PRINT_TO_CONSOLE_("Error:: createQueues:: invalid queue family index");
+            PRINT_TO_LOGGER("Error:: createQueues:: invalid queue family index");
             return false;
         }
         // 그래픽 큐 핸들을 가져옵니다.
@@ -276,7 +278,7 @@ namespace vkengine {
             this->computerVKQueue == VK_NULL_HANDLE ||
             this->transferVKQueue == VK_NULL_HANDLE)
         {
-            _PRINT_TO_CONSOLE_("Error:: createQueues:: failed to get queue handle");
+            PRINT_TO_LOGGER("Error:: createQueues:: failed to get queue handle");
             return false;
         }
 

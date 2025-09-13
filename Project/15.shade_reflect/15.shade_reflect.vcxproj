@@ -11,7 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\app\source\shadeReflect\shadeReflect.cpp" />
+    <ClCompile Include="..\..\app\source\shadeReflect\main_engine.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{f73bd1ec-736d-4ce1-afd9-fdb227e4e0b8}</ProjectGuid>

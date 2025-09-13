@@ -3,11 +3,11 @@
 
 #include "common.h"
 #include "struct.h"
-#include "macros.h"
 
 #include "VKdevice2.h"
 #include "VKDescriptorManager2.h"
 #include "Debug.h"
+#include "log.h"
 
 namespace vkengine {
     class VkContext
