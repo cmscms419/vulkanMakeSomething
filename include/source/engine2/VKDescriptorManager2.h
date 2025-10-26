@@ -51,6 +51,7 @@ namespace vkengine {
         // 할당된 descriptor 개수 통계를 출력한다.
         void printAllocatedStatistics() const;
 
+        std::vector<VkDescriptorSetLayout> getLayoutsForPipeline(const cString& pipelineName);
 
     private:
         void cleanup();

@@ -22,6 +22,8 @@
 #include <map>
 #include <functional>
 #include <set>
+#include <initializer_list>
+#include <algorithm>
 
 #define VK_USE_PLATFORM_WIN32_KHR
 #include <vulkan/vulkan.h>
@@ -74,8 +76,6 @@ constexpr cFloat XM_2PI = 6.283185307f;
 
 namespace vkengine
 {
-
-
     extern const std::vector<const char*> validationLayers;
     extern const std::vector<const char*> deviceExtensions;
     extern const std::vector<VkDynamicState> dynamicStates;
@@ -92,6 +92,19 @@ namespace vkengine
     extern const cString TEST_TEXTURE_PATH_ARRAY5;
     extern const cString CUBE_TEXTURE_PATH;
     extern const cBool enableValidationLayers;
+
+    // Hash function for vector<VkDescriptorSetLayoutBinding>
+    struct BindingHash
+    {
+        size_t operator()(const std::vector<VkDescriptorSetLayoutBinding>& bindings) const;
+    };
+
+    // Equality function for vector<VkDescriptorSetLayoutBinding>
+    struct BindingEqual
+    {
+        bool operator()(const std::vector<VkDescriptorSetLayoutBinding>& lhs,
+            const std::vector<VkDescriptorSetLayoutBinding>& rhs) const;
+    };
 
 } // namespace vkengine
 

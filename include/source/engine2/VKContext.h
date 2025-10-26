@@ -4,7 +4,8 @@
 #include "common.h"
 #include "struct.h"
 
-#include "VKdevice2.h"
+#include "VKCommadBufferHander.h"
+#include "VKdeviceHandler2.h"
 #include "VKDescriptorManager2.h"
 #include "Debug.h"
 #include "log.h"
@@ -13,6 +14,11 @@ namespace vkengine {
     class VkContext
     {
     public:
+
+        // VkContext 클래스에 추가
+        VkContext(const VkContext&) = delete;
+        VkContext& operator=(const VkContext&) = delete;
+
         VkContext(const std::vector<const char*>& requiredInstanceExtensions, cBool useSwapchain);
         ~VkContext();
 
@@ -27,6 +33,13 @@ namespace vkengine {
 
         // 도구
         cBool checkValidationLayerSupport(const cChar* str); // 검증 레이어 지원 확인
+        VKCommandBufferHander createGrapicsCommandBufferHander(VkCommandBufferLevel level, cBool begin); // 커맨드 버퍼 생성
+
+        VKdeviceHandler2* getDevice() { return &VKdevice; }
+        DescriptorManager2* getDescriptorManager() { return &descriptorManager2; }
+        VkInstance getInstance() { return VKinstance; }
+        VkPipelineCache getPipelineCache() { return VKpipelineCache; }
+        depthStencill* getDepthStencil() { return &VKdepthStencill; }
 
     private:
         VkInstance VKinstance{};                              // Vulkan 인스턴스 -> Vulkan API를 사용하기 위한 인스턴스

@@ -9,9 +9,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\app\source\engine2\VKdescriptorPool.cpp">
-      <Filter>source2</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\app\source\engine2\VKengine2.cpp">
       <Filter>source2</Filter>
     </ClCompile>
@@ -21,20 +18,38 @@
     <ClCompile Include="..\..\app\source\engine2\VKContext.cpp">
       <Filter>source2</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\app\source\engine2\VKdevice2.cpp">
+    <ClCompile Include="..\..\app\source\engine2\VKdeviceHandler2.cpp">
       <Filter>source2</Filter>
     </ClCompile>
     <ClCompile Include="..\..\app\source\engine2\VKDescriptorManager2.cpp">
       <Filter>source2</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\app\source\engine2\VKCommandBuffer.cpp">
+    <ClCompile Include="..\..\app\source\engine2\VKImage2D.cpp">
+      <Filter>source2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\source\engine2\VKbuffer2.cpp">
+      <Filter>source2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\source\engine2\VKbarrier2.cpp">
+      <Filter>source2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\source\engine2\VKpipeLineHandle.cpp">
+      <Filter>source2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\source\engine2\VKShaderManager.cpp">
+      <Filter>source2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\source\engine2\VKshader.cpp">
+      <Filter>source2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\source\engine2\VKSquarePipeLine.cpp">
+      <Filter>source2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\source\engine2\VKCommadBufferHander.cpp">
       <Filter>source2</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\include\source\engine2\VKdescriptorPool.h">
-      <Filter>source2</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\include\source\engine2\VKengine2.h">
       <Filter>source2</Filter>
     </ClInclude>
@@ -44,13 +59,34 @@
     <ClInclude Include="..\..\include\source\engine2\VKContext.h">
       <Filter>source2</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\source\engine2\VKdevice2.h">
+    <ClInclude Include="..\..\include\source\engine2\VKdeviceHandler2.h">
       <Filter>source2</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\source\engine2\VKDescriptorManager2.h">
       <Filter>source2</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\source\engine2\VKCommandBuffer.h">
+    <ClInclude Include="..\..\include\source\engine2\VKImage2D.h">
+      <Filter>source2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\source\engine2\VKbuffer2.h">
+      <Filter>source2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\source\engine2\VKbarrier2.h">
+      <Filter>source2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\source\engine2\VKResourceBindingData.h">
+      <Filter>source2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\source\engine2\VKpipeLineHandle.h">
+      <Filter>source2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\source\engine2\VKShaderManager.h">
+      <Filter>source2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\source\engine2\VKshader.h">
+      <Filter>source2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\source\engine2\VKCommadBufferHander.h">
       <Filter>source2</Filter>
     </ClInclude>
   </ItemGroup>

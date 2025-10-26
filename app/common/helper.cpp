@@ -1,117 +1,232 @@
 #include "helper.h"
 
+using namespace vkengine::Log;
+
 namespace vkengine {
     namespace helper {
+
+        cUint32_t getFormatSize(VkFormat format)
+        {
+            switch (format) {
+            case VK_FORMAT_R8_UNORM:
+            case VK_FORMAT_R8_UINT:
+            case VK_FORMAT_R8_SINT:
+                return 1;
+            case VK_FORMAT_R8G8_UNORM:
+            case VK_FORMAT_R8G8_UINT:
+            case VK_FORMAT_R8G8_SINT:
+                return 2;
+            case VK_FORMAT_R8G8B8_UNORM:
+            case VK_FORMAT_R8G8B8_UINT:
+            case VK_FORMAT_R8G8B8_SINT:
+                return 3;
+            case VK_FORMAT_R8G8B8A8_UNORM:
+            case VK_FORMAT_R8G8B8A8_UINT:
+            case VK_FORMAT_R8G8B8A8_SINT:
+            case VK_FORMAT_R32_SFLOAT:
+                return 4;
+            case VK_FORMAT_R32G32_SFLOAT:
+                return 8;
+            case VK_FORMAT_R32G32B32_SFLOAT:
+                return 12;
+            case VK_FORMAT_R32G32B32A32_SFLOAT:
+                return 16;
+            case VK_FORMAT_R32_SINT:
+                return 4;
+            case VK_FORMAT_R32G32_SINT:
+                return 8;
+            case VK_FORMAT_R32G32B32_SINT:
+                return 12;
+            case VK_FORMAT_R32G32B32A32_SINT:
+                return 16;
+            case VK_FORMAT_R32_UINT:
+                return 4;
+            case VK_FORMAT_R32G32_UINT:
+                return 8;
+            case VK_FORMAT_R32G32B32_UINT:
+                return 12;
+            case VK_FORMAT_R32G32B32A32_UINT:
+                return 16;
+            default:
+                EXIT_TO_LOGGER("Unsupported format.");
+                return 0; // Unknown/unsupported format
+            }
+        }
+
+        VkFormat getVkFormatFromSpvReflectFormat(SpvReflectFormat format)
+        {
+            switch (format) {
+            case SPV_REFLECT_FORMAT_R32G32B32_SFLOAT:
+                return VK_FORMAT_R32G32B32_SFLOAT;
+            case SPV_REFLECT_FORMAT_R32G32_SFLOAT:
+                return VK_FORMAT_R32G32_SFLOAT;
+            case SPV_REFLECT_FORMAT_R32_SFLOAT:
+                return VK_FORMAT_R32_SFLOAT;
+            default:
+                EXIT_TO_LOGGER("Unsupported SPIR-V format");
+                return VK_FORMAT_UNDEFINED; // Unsupported or unknown format
+            }
+        }
+        cString extractFilename(const cString& spvFilename)
+        {
+            if (spvFilename.length() < 4 || spvFilename.substr(spvFilename.length() - 4) != ".spv") {
+                EXIT_TO_LOGGER("Shader file does not have .spv extension: %s", spvFilename);
+            }
+
+            // 경로와 마지막 .spv 제거 ex: path/triangle.vert.spv -> triangle.vert
+            size_t lastSlash = spvFilename.find_last_of("/\\");
+            size_t start = (lastSlash == cString::npos) ? 0 : lastSlash + 1;
+            size_t end = spvFilename.length();
+            size_t lastDot = spvFilename.find_last_of('.');
+            if (lastDot != cString::npos && lastDot > start)
+                end = lastDot;
+
+            return spvFilename.substr(start, end - start);
+        }
+
+        SpvReflectShaderModule createSpvReflectModule(const std::vector<cChar>& code)
+        {
+            SpvReflectShaderModule reflectShaderModule;
+            SpvReflectResult reflectResult = spvReflectCreateShaderModule(
+                code.size(),
+                reinterpret_cast<const cUint32_t*>(code.data()),
+                &reflectShaderModule);
+            if (reflectResult != SPV_REFLECT_RESULT_SUCCESS) {
+                EXIT_TO_LOGGER("Failed to create SPIR-V reflection module: %d", reflectResult);
+            }
+
+            if (reflectShaderModule._internal == nullptr) {
+                EXIT_TO_LOGGER("SPIR-V reflection module internal structure is null.");
+            }
+
+            return reflectShaderModule;
+        }
+        VkShaderModule createShaderModule(VkDevice device, const std::vector<cChar>& code)
+        {
+            VkShaderModuleCreateInfo createInfo{};
+
+            createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+            createInfo.codeSize = code.size();
+            createInfo.pCode = reinterpret_cast<const uint32_t*>(code.data());
+            
+            VkShaderModule shaderModule{ VK_NULL_HANDLE };
+            
+            _VK_CHECK_RESULT_(vkCreateShaderModule(device, &createInfo, nullptr, &shaderModule));
+
+            return shaderModule;
+        }
+        
         void printReflectionInfo(const SpvReflectShaderModule& reflectModule)
         {
-            vkengine::Log::PRINT_TO_LOGGER("=== SPIR-V Shader Reflection Information ===\n");
-            vkengine::Log::PRINT_TO_LOGGER("Entry Point: ");
-            vkengine::Log::PRINT_TO_LOGGER(reflectModule.entry_point_name ? reflectModule.entry_point_name : "Unknown");
-            vkengine::Log::PRINT_TO_LOGGER("\n");
-            vkengine::Log::PRINT_TO_LOGGER("Shader Stage: %s\n", vkengine::helper::getShaderStageString(reflectModule.shader_stage));
-            vkengine::Log::PRINT_TO_LOGGER("Source Language: ");
+            PRINT_TO_LOGGER("=== SPIR-V Shader Reflection Information ===\n");
+            PRINT_TO_LOGGER("Entry Point: ");
+            PRINT_TO_LOGGER(reflectModule.entry_point_name ? reflectModule.entry_point_name : "Unknown\n");
+            PRINT_TO_LOGGER("\n");
+            PRINT_TO_LOGGER("Shader Stage: %s\n", vkengine::helper::getShaderStageString(reflectModule.shader_stage));
+            PRINT_TO_LOGGER("Source Language: ");
             switch (reflectModule.source_language) {
             case SpvSourceLanguageGLSL:
-                vkengine::Log::PRINT_TO_LOGGER("GLSL");
+                PRINT_TO_LOGGER("GLSL");
                 break;
             case SpvSourceLanguageHLSL:
-                vkengine::Log::PRINT_TO_LOGGER("HLSL");
+                PRINT_TO_LOGGER("HLSL");
                 break;
             case SpvSourceLanguageOpenCL_C:
-                vkengine::Log::PRINT_TO_LOGGER("OpenCL C");
+                PRINT_TO_LOGGER("OpenCL C");
                 break;
             default:
-                vkengine::Log::PRINT_TO_LOGGER("Unknown (%d)", reflectModule.source_language);
+                PRINT_TO_LOGGER("Unknown (%d)", reflectModule.source_language);
                 break;
             }
-            vkengine::Log::PRINT_TO_LOGGER("\n");
+            PRINT_TO_LOGGER("\n");
 
-            vkengine::Log::PRINT_TO_LOGGER(" v%d\n", reflectModule.source_language_version);
+            PRINT_TO_LOGGER(" v%d\n", reflectModule.source_language_version);
 
             if (reflectModule.source_file) {
-                vkengine::Log::PRINT_TO_LOGGER("Source File: %s\n", reflectModule.source_file);
+                PRINT_TO_LOGGER("Source File: %s\n", reflectModule.source_file);
             }
 
-            vkengine::Log::PRINT_TO_LOGGER("\n--- Descriptor Bindings ---\n");
-            vkengine::Log::PRINT_TO_LOGGER("Total descriptor bindings: %d\n", reflectModule.descriptor_binding_count);
+            PRINT_TO_LOGGER("\n--- Descriptor Bindings ---\n");
+            PRINT_TO_LOGGER("Total descriptor bindings: %d\n", reflectModule.descriptor_binding_count);
 
             for (uint32_t i = 0; i < reflectModule.descriptor_binding_count; ++i) {
                 const SpvReflectDescriptorBinding* binding = &reflectModule.descriptor_bindings[i];
-                vkengine::Log::PRINT_TO_LOGGER("  Binding %d:\n", i);
-                vkengine::Log::PRINT_TO_LOGGER("    Name: %s\n", (binding->name ? binding->name : "Unknown"));
-                vkengine::Log::PRINT_TO_LOGGER("    Set: %d\n", binding->set);
-                vkengine::Log::PRINT_TO_LOGGER("    Binding: %d\n", binding->binding);
-                vkengine::Log::PRINT_TO_LOGGER("    Type: %s\n", vkengine::helper::getDescriptorTypeString(binding->descriptor_type));
-                vkengine::Log::PRINT_TO_LOGGER("    Count: %d\n", binding->count);
+                PRINT_TO_LOGGER("  Binding %d:\n", i);
+                PRINT_TO_LOGGER("    Name: %s\n", (binding->name ? binding->name : "Unknown"));
+                PRINT_TO_LOGGER("    Set: %d\n", binding->set);
+                PRINT_TO_LOGGER("    Binding: %d\n", binding->binding);
+                PRINT_TO_LOGGER("    Type: %s\n", vkengine::helper::getDescriptorTypeString(binding->descriptor_type));
+                PRINT_TO_LOGGER("    Count: %d\n", binding->count);
 
                 if (binding->image.dim != SpvDimMax) {
-                    vkengine::Log::PRINT_TO_LOGGER("    Image Dimension: \n");
+                    PRINT_TO_LOGGER("    Image Dimension: \n");
                     switch (binding->image.dim) {
                     case SpvDim1D:
-                        vkengine::Log::PRINT_TO_LOGGER("1D");
+                        PRINT_TO_LOGGER("1D");
                         break;
                     case SpvDim2D:
-                        vkengine::Log::PRINT_TO_LOGGER("2D");
+                        PRINT_TO_LOGGER("2D");
                         break;
                     case SpvDim3D:
-                        vkengine::Log::PRINT_TO_LOGGER("3D");
+                        PRINT_TO_LOGGER("3D");
                         break;
                     case SpvDimCube:
-                        vkengine::Log::PRINT_TO_LOGGER("Cube");
+                        PRINT_TO_LOGGER("Cube");
                         break;
                     case SpvDimBuffer:
-                        vkengine::Log::PRINT_TO_LOGGER("Buffer");
+                        PRINT_TO_LOGGER("Buffer");
                         break;
                     default:
-                        vkengine::Log::PRINT_TO_LOGGER("Unknown");
+                        PRINT_TO_LOGGER("Unknown");
                         break;
                     }
-                    vkengine::Log::PRINT_TO_LOGGER("    Image Format: %d", binding->image.image_format);
+                    PRINT_TO_LOGGER("    Image Format: %d", binding->image.image_format);
                 }
             }
 
-            vkengine::Log::PRINT_TO_LOGGER("\n--- Descriptor Sets ---\n");
-            vkengine::Log::PRINT_TO_LOGGER("Total descriptor sets: %d\n", reflectModule.descriptor_set_count);
+            PRINT_TO_LOGGER("\n--- Descriptor Sets ---\n");
+            PRINT_TO_LOGGER("Total descriptor sets: %d\n", reflectModule.descriptor_set_count);
             for (uint32_t i = 0; i < reflectModule.descriptor_set_count; ++i) {
                 const SpvReflectDescriptorSet* set = &reflectModule.descriptor_sets[i];
-                vkengine::Log::PRINT_TO_LOGGER("  Set %d: %d bindings\n", set->set, set->binding_count);
+                PRINT_TO_LOGGER("  Set %d: %d bindings\n", set->set, set->binding_count);
             }
 
-            vkengine::Log::PRINT_TO_LOGGER("\n--- Input Variables ---\n");
-            vkengine::Log::PRINT_TO_LOGGER("Total input variables: %d\n", reflectModule.input_variable_count);
+            PRINT_TO_LOGGER("\n--- Input Variables ---\n");
+            PRINT_TO_LOGGER("Total input variables: %d\n", reflectModule.input_variable_count);
             for (uint32_t i = 0; i < reflectModule.input_variable_count; ++i) {
                 const SpvReflectInterfaceVariable* var = reflectModule.input_variables[i];
-                vkengine::Log::PRINT_TO_LOGGER("  Input %d: %s\n", i, (var->name ? var->name : "Unknown\n"));
-                vkengine::Log::PRINT_TO_LOGGER("    Location: %d\n", var->location);
+                PRINT_TO_LOGGER("  Input %d: %s\n", i, (var->name ? var->name : "Unknown\n"));
+                PRINT_TO_LOGGER("    Location: %d\n", var->location);
             }
 
-            vkengine::Log::PRINT_TO_LOGGER("\n--- Output Variables ---\n");
-            vkengine::Log::PRINT_TO_LOGGER("Total output variables: %d\n", reflectModule.output_variable_count);
+            PRINT_TO_LOGGER("\n--- Output Variables ---\n");
+            PRINT_TO_LOGGER("Total output variables: %d\n", reflectModule.output_variable_count);
             for (uint32_t i = 0; i < reflectModule.output_variable_count; ++i) {
                 const SpvReflectInterfaceVariable* var = reflectModule.output_variables[i];
-                vkengine::Log::PRINT_TO_LOGGER("  Output %d: %s\n", i, (var->name ? var->name : "Unknown\n"));
-                vkengine::Log::PRINT_TO_LOGGER("    Location: %d\n", var->location);
+                PRINT_TO_LOGGER("  Output %d: %s\n", i, (var->name ? var->name : "Unknown\n"));
+                PRINT_TO_LOGGER("    Location: %d\n", var->location);
             }
 
-            vkengine::Log::PRINT_TO_LOGGER("\n--- Push Constants ---\n");
-            vkengine::Log::PRINT_TO_LOGGER("Total push constant blocks: %d\n", reflectModule.push_constant_block_count);
+            PRINT_TO_LOGGER("\n--- Push Constants ---\n");
+            PRINT_TO_LOGGER("Total push constant blocks: %d\n", reflectModule.push_constant_block_count);
             for (uint32_t i = 0; i < reflectModule.push_constant_block_count; ++i) {
                 const SpvReflectBlockVariable* block = &reflectModule.push_constant_blocks[i];
-                vkengine::Log::PRINT_TO_LOGGER("  Push constant block %d:\n", i);
-                vkengine::Log::PRINT_TO_LOGGER("    Name: %s\n", (block->name ? block->name : "Unknown\n"));
-                vkengine::Log::PRINT_TO_LOGGER("    Size: %d bytes\n", block->size);
-                vkengine::Log::PRINT_TO_LOGGER("    Offset: %d\n", block->offset);
+                PRINT_TO_LOGGER("  Push constant block %d:\n", i);
+                PRINT_TO_LOGGER("    Name: %s\n", (block->name ? block->name : "Unknown\n"));
+                PRINT_TO_LOGGER("    Size: %d bytes\n", block->size);
+                PRINT_TO_LOGGER("    Offset: %d\n", block->offset);
             }
 
             // For compute shaders, show workgroup size
             if (reflectModule.shader_stage & SPV_REFLECT_SHADER_STAGE_COMPUTE_BIT) {
-                vkengine::Log::PRINT_TO_LOGGER("\n--- Compute Shader Info ---\n");
-                vkengine::Log::PRINT_TO_LOGGER("Local workgroup size: (%d, %d, %d)\n",
+                PRINT_TO_LOGGER("\n--- Compute Shader Info ---\n");
+                PRINT_TO_LOGGER("Local workgroup size: (%d, %d, %d)\n",
                     reflectModule.entry_points[0].local_size.x,
                     reflectModule.entry_points[0].local_size.y,
                     reflectModule.entry_points[0].local_size.z);
             }
         }
+        
         cString descriptorTypeToString(VkDescriptorType type)
         {
             cString str;
@@ -202,10 +317,11 @@ namespace vkengine {
                 return it->second;
             }
 
-            _EXIT_WITH_MESSAGE_("Error: Unknown descriptor type string: %s\n", typeStr.c_str());
+            EXIT_TO_LOGGER("Error: Unknown descriptor type string: %s\n", typeStr.c_str());
             return VK_DESCRIPTOR_TYPE_MAX_ENUM; // Return a default value in case of error
 
         }
+      
         const cChar* getShaderStageString(const SpvReflectShaderStageFlagBits& stage)
         {
             switch (stage) {
@@ -442,14 +558,14 @@ namespace vkengine {
             return accessFlags;
         }
 
-        std::vector<cChar> readFile(const std::string& filename)
+        std::vector<cChar> readFile(const cString& filename)
         {
             // 파일 끝으로 이동하여 파일 크기를 가져옵니다.
             std::ifstream file(filename, std::ios::ate | std::ios::binary);
 
             // 파일을 열 수 없는 경우 예외를 발생시킵니다.
             if (!file.is_open()) {
-                _EXIT_WITH_MESSAGE_("failed to open file!");
+                EXIT_TO_LOGGER("failed to open file!");
             }
 
             size_t fileSize = (size_t)file.tellg(); // 파일 크기를 이용하여 버퍼를 할당합니다.
@@ -461,11 +577,11 @@ namespace vkengine {
             return buffer;
         }
 
-        std::vector<cChar> readSPVFile(const std::string& filename)
+        std::vector<cChar> readSPVFile(const cString& filename)
         {
             // 파일 확장자가 .spv인지 확인합니다.
             if (filename.length() < 4 || filename.substr(filename.length() - 4) != ".spv") {
-                _EXIT_WITH_MESSAGE_("Shader file does not have .spv extension: %s", filename.c_str());
+                EXIT_TO_LOGGER("Shader file does not have .spv extension: %s", filename.c_str());
 
             }
 
@@ -474,13 +590,13 @@ namespace vkengine {
 
             // 파일을 열 수 없는 경우 예외를 발생시킵니다.
             if (!file.is_open()) {
-                _EXIT_WITH_MESSAGE_("failed to open file!");
+                EXIT_TO_LOGGER("failed to open file!");
             }
 
             // Get file size and validate it's a valid SPIR-V file
             size_t fileSize = (size_t)file.tellg(); // 파일 크기를 이용하여 버퍼를 할당합니다.
             if (fileSize == 0 || fileSize % 4 != 0) {
-                _EXIT_WITH_MESSAGE_("Invalid SPIR-V file size: %zu bytes", fileSize);
+                EXIT_TO_LOGGER("Invalid SPIR-V file size: %zu bytes", fileSize);
             }
 
             std::vector<cChar> buffer(fileSize);     // 파일 포인터를 파일의 시작으로 이동합니다.
@@ -491,7 +607,7 @@ namespace vkengine {
             return buffer;
         }
 
-        bool fileExists(const std::string& filename)
+        bool fileExists(const cString& filename)
         {
             std::ifstream f(filename.c_str());
             return !f.fail();
@@ -573,8 +689,8 @@ namespace vkengine {
             cBool selected = false;
             for (const auto& queueFamily : queueFamilies) {
                 // 현재 큐 패밀리가 그래픽스 큐를 지원하는지 확인
-                _PRINT_TO_CONSOLE_("QueueFamily %d\n", i);
-                _PRINT_TO_CONSOLE_("QueueFamily queueCount: %d\n", queueFamily.queueCount);
+                PRINT_TO_LOGGER("QueueFamily %d\n", i);
+                PRINT_TO_LOGGER("QueueFamily queueCount: %d\n", queueFamily.queueCount);
 
                 cString queueFlagsStr;
                 if (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT)
@@ -594,17 +710,17 @@ namespace vkengine {
                 if (queueFamily.queueFlags & VK_QUEUE_OPTICAL_FLOW_BIT_NV)
                     queueFlagsStr += "OPTICAL_FLOW ";
 
-                _PRINT_TO_CONSOLE_("QueueFamily queueFlags: %s\n", queueFlagsStr.c_str());
+                PRINT_TO_LOGGER("QueueFamily queueFlags: %s\n", queueFlagsStr.c_str());
 
-                _PRINT_TO_CONSOLE_("QueueFamily timestampValidBits: %d\n", queueFamily.timestampValidBits);
-                _PRINT_TO_CONSOLE_("QueueFamily minImageTransferGranularity.width: %d\n", queueFamily.minImageTransferGranularity.width);
-                _PRINT_TO_CONSOLE_("QueueFamily minImageTransferGranularity.height: %d\n", queueFamily.minImageTransferGranularity.height);
-                _PRINT_TO_CONSOLE_("QueueFamily minImageTransferGranularity.depth: %d\n", queueFamily.minImageTransferGranularity.depth);
+                PRINT_TO_LOGGER("QueueFamily timestampValidBits: %d\n", queueFamily.timestampValidBits);
+                PRINT_TO_LOGGER("QueueFamily minImageTransferGranularity.width: %d\n", queueFamily.minImageTransferGranularity.width);
+                PRINT_TO_LOGGER("QueueFamily minImageTransferGranularity.height: %d\n", queueFamily.minImageTransferGranularity.height);
+                PRINT_TO_LOGGER("QueueFamily minImageTransferGranularity.depth: %d\n", queueFamily.minImageTransferGranularity.depth);
 
                 if ((queueFamily.queueFlags & VkQueueFlagBits::VK_QUEUE_GRAPHICS_BIT)
                     && (queueFamily.queueFlags & VkQueueFlagBits::VK_QUEUE_COMPUTE_BIT)) {
-                    _PRINT_TO_CONSOLE_("VK_QUEUE_GRAPHICS_BIT is supported\n");
-                    _PRINT_TO_CONSOLE_("VK_QUEUE_COMPUTE_BIT is supported\n");
+                    PRINT_TO_LOGGER("VK_QUEUE_GRAPHICS_BIT is supported\n");
+                    PRINT_TO_LOGGER("VK_QUEUE_COMPUTE_BIT is supported\n");
                     if (!selected)
                     {
                         indices.setgraphicsAndComputeFamily(i);
@@ -616,7 +732,7 @@ namespace vkengine {
 
                 if (presentSupport)
                 {
-                    _PRINT_TO_CONSOLE_("VK_QUEUE_PRESENT_BIT is supported\n");
+                    PRINT_TO_LOGGER("VK_QUEUE_PRESENT_BIT is supported\n");
                     if (!selected)
                     {
                         indices.setPresentFamily(i);
@@ -629,7 +745,7 @@ namespace vkengine {
                     {
                         indices.queueFamilyProperties = queueFamily;
                         target = indices;
-                        _PRINT_TO_CONSOLE_("------------------ select Queuefamily index: %d ------------------\n", i);
+                        PRINT_TO_LOGGER("------------------ select Queuefamily index: %d ------------------\n", i);
                         selected = true;
                     }
                 }
@@ -657,18 +773,18 @@ namespace vkengine {
 
             for (const auto& queueFamily : queueFamilies) {
                 // 그래픽스와 컴퓨트 큐 지원 확인
-                _PRINT_TO_CONSOLE_("QueueFamily %d\n", i);
-                _PRINT_TO_CONSOLE_("QueueFamily queueCount: %d\n", queueFamily.queueCount);
-                _PRINT_TO_CONSOLE_("QueueFamily queueFlags: %d\n", queueFamily.queueFlags);
-                _PRINT_TO_CONSOLE_("QueueFamily timestampValidBits: %d\n", queueFamily.timestampValidBits);
-                _PRINT_TO_CONSOLE_("QueueFamily minImageTransferGranularity.width: %d\n", queueFamily.minImageTransferGranularity.width);
-                _PRINT_TO_CONSOLE_("QueueFamily minImageTransferGranularity.height: %d\n", queueFamily.minImageTransferGranularity.height);
-                _PRINT_TO_CONSOLE_("QueueFamily minImageTransferGranularity.depth: %d\n", queueFamily.minImageTransferGranularity.depth);
+                PRINT_TO_LOGGER("QueueFamily %d\n", i);
+                PRINT_TO_LOGGER("QueueFamily queueCount: %d\n", queueFamily.queueCount);
+                PRINT_TO_LOGGER("QueueFamily queueFlags: %d\n", queueFamily.queueFlags);
+                PRINT_TO_LOGGER("QueueFamily timestampValidBits: %d\n", queueFamily.timestampValidBits);
+                PRINT_TO_LOGGER("QueueFamily minImageTransferGranularity.width: %d\n", queueFamily.minImageTransferGranularity.width);
+                PRINT_TO_LOGGER("QueueFamily minImageTransferGranularity.height: %d\n", queueFamily.minImageTransferGranularity.height);
+                PRINT_TO_LOGGER("QueueFamily minImageTransferGranularity.depth: %d\n", queueFamily.minImageTransferGranularity.depth);
 
 
                 // 그래픽스 큐 지원 확인
                 if (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT) {
-                    _PRINT_TO_CONSOLE_("VK_QUEUE_GRAPHICS_BIT is supported\n");
+                    PRINT_TO_LOGGER("VK_QUEUE_GRAPHICS_BIT is supported\n");
                     if (!indices.grapicFamilyHasValue) {
                         indices.setGrapicFamily(i);
                     }
@@ -676,7 +792,7 @@ namespace vkengine {
 
                 // 컴퓨트 큐 지원 확인  
                 if (queueFamily.queueFlags & VK_QUEUE_COMPUTE_BIT) {
-                    _PRINT_TO_CONSOLE_("VK_QUEUE_COMPUTE_BIT is supported\n");
+                    PRINT_TO_LOGGER("VK_QUEUE_COMPUTE_BIT is supported\n");
                     if (!indices.computerFamilyHasValue) {
                         indices.setComputerFamily(i);
                     }
@@ -684,7 +800,7 @@ namespace vkengine {
 
                 // 트랜스퍼 큐 지원 확인
                 if (queueFamily.queueFlags & VK_QUEUE_TRANSFER_BIT) {
-                    _PRINT_TO_CONSOLE_("VK_QUEUE_TRANSFER_BIT is supported\n");
+                    PRINT_TO_LOGGER("VK_QUEUE_TRANSFER_BIT is supported\n");
                     if (!indices.transferFamilyHasValue) {
                         indices.setTransferFamily(i);
                     }
@@ -698,7 +814,7 @@ namespace vkengine {
                         target = indices;
                         selected = true;
 
-                        _PRINT_TO_CONSOLE_("------------------ select Queuefamily index: %d ------------------\n", i);
+                        PRINT_TO_LOGGER("------------------ select Queuefamily index: %d ------------------\n", i);
                     }
                 }
 
@@ -878,6 +994,17 @@ namespace vkengine {
             endSingleTimeCommands(device, commandPool, graphicsQueue, commandBuffer);
         }
 
+        void copyBufferToImage3(VkCommandBuffer cmb, VkBuffer buffer, VkImage image, uint32_t width, uint32_t height)
+        {
+            VkBufferImageCopy region{};
+            region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+            region.imageSubresource.layerCount = 1;
+            region.imageExtent = { width, height, 1 };
+
+            // buffer의 데이터를 image로 복사한다.
+            vkCmdCopyBufferToImage(cmb, buffer, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
+        }
+
         void copyBufferToImageKTX(VkDevice device, VkCommandPool commandPool, VkQueue graphicsQueue, VkBuffer buffer, VkImage image, uint32_t width, uint32_t height, uint32_t mipmapLevels, ktxTexture* textureKTX)
         {
             VkCommandBuffer commandBuffer = beginSingleTimeCommands(device, commandPool);
@@ -926,18 +1053,18 @@ namespace vkengine {
             std::vector<VkExtensionProperties> availableExtensions(extensionCount);
             vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, availableExtensions.data());
 
-            std::set<std::string> requiredExtensions(deviceExtensions.begin(), deviceExtensions.end());
+            std::set<cString> requiredExtensions(deviceExtensions.begin(), deviceExtensions.end());
 
             for (const auto& extension : availableExtensions) {
 
-                _PRINT_TO_CONSOLE_("Available Extension: %s\n", extension.extensionName);
+                PRINT_TO_LOGGER("Available Extension: %s\n", extension.extensionName);
                 requiredExtensions.erase(extension.extensionName);
             }
 
             return requiredExtensions.empty();
         }
 
-        void getDeviceExtensionSupport(VkPhysicalDevice device, std::set<std::string>* temp)
+        void getDeviceExtensionSupport(VkPhysicalDevice device, std::set<cString>* temp)
         {
             uint32_t extensionCount;
             vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, nullptr);
@@ -973,10 +1100,10 @@ namespace vkengine {
                 return 0;
             }
 
-            _PRINT_TO_CONSOLE_("Device %s score: %d\n", deviceProperties.deviceName, score);
-            _PRINT_TO_CONSOLE_("DeviceProperties.deviceType: %d\n", deviceProperties.deviceType);
-            _PRINT_TO_CONSOLE_("Device Name: %s\n", deviceProperties.deviceName);
-            _PRINT_TO_CONSOLE_("\n");
+            PRINT_TO_LOGGER("Device %s score: %d\n", deviceProperties.deviceName, score);
+            PRINT_TO_LOGGER("DeviceProperties.deviceType: %d\n", deviceProperties.deviceType);
+            PRINT_TO_LOGGER("Device Name: %s\n", deviceProperties.deviceName);
+            PRINT_TO_LOGGER("\n");
 
             return score;
         }
@@ -1041,7 +1168,7 @@ namespace vkengine {
                 }
                 else
                 {
-                    _PRINT_TO_CONSOLE_("Failed to find supported format!\n");
+                    PRINT_TO_LOGGER("Failed to find supported format!\n");
                 }
             }
 
@@ -1335,7 +1462,7 @@ namespace vkengine {
             return info;
         }
 
-        VkCommandBufferAllocateInfo commandBufferAllocateInfo(VkCommandPool pool, uint32_t count, VkCommandBufferLevel level)
+        VkCommandBufferAllocateInfo commandBufferAllocateInfo(VkCommandPool pool, uint32_t count = 1, VkCommandBufferLevel level = VK_COMMAND_BUFFER_LEVEL_PRIMARY)
         {
             VkCommandBufferAllocateInfo info = {};
             info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -1346,6 +1473,7 @@ namespace vkengine {
 
             return info;
         }
+
         VkFenceCreateInfo fenceCreateInfo(VkFenceCreateFlags flags)
         {
             VkFenceCreateInfo info = {};
@@ -1392,9 +1520,9 @@ namespace vkengine {
             _VK_CHECK_RESULT_(vkBeginCommandBuffer(commandBuffer, &beginInfo));
 
             return commandBuffer;
-
         }
-        void endSingleTimeCommands(VkDevice device, VkCommandPool commandPool, VkQueue graphicsQueue, VkCommandBuffer commandBuffer)
+
+        void endSingleTimeCommands(VkDevice device, VkCommandPool commandPool, VkQueue Queue, VkCommandBuffer commandBuffer)
         {
             // 커맨드 버퍼를 종료합니다.
             _VK_CHECK_RESULT_(vkEndCommandBuffer(commandBuffer));
@@ -1405,10 +1533,10 @@ namespace vkengine {
             submitInfo.pCommandBuffers = &commandBuffer; // 커맨드 버퍼를 설정합니다.
 
             // 큐에 커맨드 버퍼를 제출합니다.
-            _VK_CHECK_RESULT_(vkQueueSubmit(graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE));
+            _VK_CHECK_RESULT_(vkQueueSubmit(Queue, 1, &submitInfo, VK_NULL_HANDLE));
 
             // 큐가 모든 작업을 완료할 때까지 대기합니다.
-            _VK_CHECK_RESULT_(vkQueueWaitIdle(graphicsQueue));
+            _VK_CHECK_RESULT_(vkQueueWaitIdle(Queue));
 
             // 커맨드 버퍼를 해제합니다.
             vkFreeCommandBuffers(device, commandPool, 1, &commandBuffer);
@@ -1639,7 +1767,7 @@ namespace vkengine {
                 sourceStage = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT;
                 destinationStage = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT;
 
-                _PRINT_TO_CONSOLE_("All pass pipeline stage!\n");
+                PRINT_TO_LOGGER("All pass pipeline stage!\n");
             }
 
             // 파이프라인 배리어를 추가하여 레이아웃 전환 명령을 기록합니다.
@@ -1675,7 +1803,6 @@ namespace vkengine {
             VkPipelineStageFlags destinationStage = 0; // 전환 후 파이프라인 스테이지
 
             // 이미지 레이아웃 전환 시, 적절한 액세스 마스크 및 파이프라인 스테이지를 설정합니다.
-
             barrier.srcAccessMask = getFromOldLayoutToVkAccessFlags(oldLayout);
             barrier.dstAccessMask = getFromNewLayoutToVkAccessFlags(newLayout);
 
@@ -1692,7 +1819,6 @@ namespace vkengine {
             else {
                 barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
             }
-
 
             // 전환 타입에 따른 액세스 마스크 및 파이프라인 스테이지 설정
             if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL) {
@@ -1719,7 +1845,7 @@ namespace vkengine {
                 sourceStage = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT;
                 destinationStage = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT;
 
-                _PRINT_TO_CONSOLE_("All pass pipeline stage!\n");
+                PRINT_TO_LOGGER("All pass pipeline stage!\n");
             }
 
             // 파이프라인 배리어를 추가하여 레이아웃 전환 명령을 기록합니다.

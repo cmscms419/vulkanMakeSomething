@@ -287,4 +287,8 @@ namespace vkengine {
         return true;
     }
 
+    VKCommandBufferHander VkContext::createGrapicsCommandBufferHander(VkCommandBufferLevel level, cBool begin)
+    {
+        return VKCommandBufferHander(this->VKdevice.logicaldevice, this->VKdevice.graphicsCommandPool, this->VKdevice.graphicsVKQueue, level, begin);
+    }
 }

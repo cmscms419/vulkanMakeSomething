@@ -11,49 +11,23 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\app\source\engine2\VKCommadBufferHander.cpp" />
-    <ClCompile Include="..\..\app\source\engine2\VKshader.cpp" />
-    <ClCompile Include="..\..\app\source\engine2\VKShaderManager.cpp" />
-    <ClCompile Include="..\..\app\source\engine2\VKbarrier2.cpp" />
-    <ClCompile Include="..\..\app\source\engine2\VKbuffer2.cpp" />
-    <ClCompile Include="..\..\app\source\engine2\VKContext.cpp" />
-    <ClCompile Include="..\..\app\source\engine2\VKDescriptorManager2.cpp" />
-    <ClCompile Include="..\..\app\source\engine2\VKdeviceHandler2.cpp" />
-    <ClCompile Include="..\..\app\source\engine2\VKengine2.cpp" />
-    <ClCompile Include="..\..\app\source\engine2\VKImage2D.cpp" />
-    <ClCompile Include="..\..\app\source\engine2\VKpipeLineHandle.cpp" />
-    <ClCompile Include="..\..\app\source\engine2\VKSquarePipeLine.cpp" />
-    <ClCompile Include="..\..\app\source\engine2\VKwindow.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="..\..\include\source\engine2\VKCommadBufferHander.h" />
-    <ClInclude Include="..\..\include\source\engine2\VKshader.h" />
-    <ClInclude Include="..\..\include\source\engine2\VKShaderManager.h" />
-    <ClInclude Include="..\..\include\source\engine2\VKbarrier2.h" />
-    <ClInclude Include="..\..\include\source\engine2\VKbuffer2.h" />
-    <ClInclude Include="..\..\include\source\engine2\VKContext.h" />
-    <ClInclude Include="..\..\include\source\engine2\VKDescriptorManager2.h" />
-    <ClInclude Include="..\..\include\source\engine2\VKdeviceHandler2.h" />
-    <ClInclude Include="..\..\include\source\engine2\VKengine2.h" />
-    <ClInclude Include="..\..\include\source\engine2\VKImage2D.h" />
-    <ClInclude Include="..\..\include\source\engine2\VKpipeLineHandle.h" />
-    <ClInclude Include="..\..\include\source\engine2\VKResourceBindingData.h" />
-    <ClInclude Include="..\..\include\source\engine2\VKwindow.h" />
+    <ClCompile Include="..\..\app\source\Pipeline\main_engine.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{aa7beba8-c275-4c9b-ba08-a371b71683e6}</ProjectGuid>
-    <RootNamespace>basicEngine2</RootNamespace>
+    <ProjectGuid>{940b8462-c224-4039-a23c-a10d6bcafbed}</ProjectGuid>
+    <RootNamespace>_03_Pipeline</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <ProjectName>03.Pipeline</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <CharacterSet>MultiByte</CharacterSet>
     <PlatformToolset>v143</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
@@ -72,33 +46,46 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <OutDir>$(SolutionDir)../external\$(ProjectName)\$(Platform)\$(Configuration)\</OutDir>
+    <OutDir>$(SolutionDir)../exe\$(ProjectName)\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)../build\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(VULKAN_SDK)\Include</IncludePath>
+    <LibraryPath>$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(VULKAN_SDK)\Lib</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <OutDir>$(SolutionDir)../external\$(ProjectName)\$(Platform)\$(Configuration)\</OutDir>
+    <OutDir>$(SolutionDir)../exe\$(ProjectName)\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)../build\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(VULKAN_SDK)\Include</IncludePath>
+    <LibraryPath>$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(VULKAN_SDK)\Lib</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Label="Vcpkg">
     <VcpkgEnabled>false</VcpkgEnabled>
+    <VcpkgManifestInstall>false</VcpkgManifestInstall>
+    <VcpkgAutoLink>false</VcpkgAutoLink>
+    <VcpkgApplocalDeps>false</VcpkgApplocalDeps>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>DEBUG_;WIN32;WIN64;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>DEBUG_;WIN32;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>./;$(CudaToolkitDir)/include;$(VULKAN_SDK)/include;../../external/imgui;../../external/GLFW/include;../../include/common/;../../include/source/engine2/;../../external/ktx/include;../../external/include</AdditionalIncludeDirectories>
+      <SDLCheck>true</SDLCheck>
       <LanguageStandard_C>stdc11</LanguageStandard_C>
-      <AdditionalIncludeDirectories>./;$(CudaToolkitDir)/include;$(VULKAN_SDK)/include;../../external/imgui;../../external/GLFW/include;../../include/common;../../include/source/engine2;../../external/ktx/include;../../external/include</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
-      <AdditionalDependencies>cudart_static.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>vulkan-1.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;glfw3dll.lib;zlib.lib;libpng.lib;basicEngine2.lib;common.lib;ktx.lib</AdditionalDependencies>
+      <LinkTimeCodeGeneration>Default</LinkTimeCodeGeneration>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories);$(CudaToolkitLibDir);../../external/GLFW/lib/$(Configuration)/;../../external/zlib/lib/$(Configuration)/;../../external/libpng/lib/$(Configuration)/;../../external/basicEngine2/$(Platform)/$(Configuration)/;../../external/ktx/lib/;../../external/common/$(Platform)/$(Configuration)/</AdditionalLibraryDirectories>
     </Link>
     <CudaCompile>
       <TargetMachinePlatform>64</TargetMachinePlatform>
     </CudaCompile>
+    <PostBuildEvent>
+      <Command>xcopy /Y "$(SolutionDir)..\external\dll\$(Platform)\$(Configuration)\*.*" "$(OutDir)"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -107,8 +94,9 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;WIN64;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>./;$(CudaToolkitDir)/include;$(VULKAN_SDK)/include;../../external/imgui;../../external/GLFW/include;../../include/common/;../../include/source/engine2/;../../external/ktx/include;../../external/include</AdditionalIncludeDirectories>
+      <SDLCheck>true</SDLCheck>
       <LanguageStandard_C>stdc11</LanguageStandard_C>
-      <AdditionalIncludeDirectories>./;$(CudaToolkitDir)/include;$(VULKAN_SDK)/include;../../external/imgui;../../external/GLFW/include;../../include/common;../../include/source/engine2;../../external/ktx/include;../../external/include</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
@@ -116,11 +104,16 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <SubSystem>Console</SubSystem>
-      <AdditionalDependencies>cudart_static.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>vulkan-1.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;glfw3dll.lib;zlib.lib;libpng.lib;basicEngine2.lib;common.lib;ktx.lib</AdditionalDependencies>
+      <LinkTimeCodeGeneration>Default</LinkTimeCodeGeneration>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories);$(CudaToolkitLibDir);../../external/GLFW/lib/$(Configuration)/;../../external/zlib/lib/$(Configuration)/;../../external/libpng/lib/$(Configuration)/;../../external/basicEngine2/$(Platform)/$(Configuration)/;../../external/ktx/lib/;../../external/common/$(Platform)/$(Configuration)/</AdditionalLibraryDirectories>
     </Link>
     <CudaCompile>
       <TargetMachinePlatform>64</TargetMachinePlatform>
     </CudaCompile>
+    <PostBuildEvent>
+      <Command>xcopy /Y "$(SolutionDir)..\external\dll\$(Platform)\$(Configuration)\*.*" "$(OutDir)"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

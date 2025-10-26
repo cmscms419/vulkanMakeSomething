@@ -206,6 +206,27 @@ namespace vkengine {
         _PRINT_TO_CONSOLE_("\n");
     }
 
+    std::vector<VkDescriptorSetLayout> DescriptorManager2::getLayoutsForPipeline(const cString& pipelineName)
+    {
+        std::vector<VkDescriptorSetLayout> layouts;
+
+        for (const auto& [layout, info] : this->layoutsAndInfos)
+        {
+            for (const auto& [pName, setNumber] : info.pipelineNamesAndSetNumbers)
+            {
+                if (pName == pipelineName)
+                {
+                    if (layouts.size() < setNumber + 1)
+                    {
+                        layouts.resize(setNumber + 1, VK_NULL_HANDLE);
+                    }
+                    layouts[setNumber] = layout;
+                }
+            }
+        }
+        return layouts;
+    }
+
     void DescriptorManager2::cleanup()
     {
 

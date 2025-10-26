@@ -17,6 +17,18 @@ namespace vkengine {
 
     namespace helper {
 
+
+
+        cUint32_t getFormatSize(VkFormat format);
+
+        VkFormat getVkFormatFromSpvReflectFormat(SpvReflectFormat format);
+
+        cString extractFilename(const cString& spvFilename);
+
+        SpvReflectShaderModule createSpvReflectModule(const std::vector<cChar>& code);
+
+        VkShaderModule createShaderModule(VkDevice device, const std::vector<cChar>& code);
+
         void printReflectionInfo(const SpvReflectShaderModule& reflectModule);
 
         cString descriptorTypeToString(VkDescriptorType type);
@@ -79,9 +91,9 @@ namespace vkengine {
         void createImage(
             VkDevice VKdevice,
             VkPhysicalDevice VKphysicalDevice,
-            uint32_t width,
-            uint32_t height,
-            uint32_t mipLevels,
+            cUint32_t width,
+            cUint32_t height,
+            cUint32_t mipLevels,
             VkSampleCountFlagBits numSamples,
             VkFormat format,
             VkImageTiling tiling,
@@ -89,14 +101,14 @@ namespace vkengine {
             VkMemoryPropertyFlags properties,
             VkImage& image,
             VkDeviceMemory& imageMemory,
-            uint32_t arrayLayer = 1);
+            cUint32_t arrayLayer = 1);
 
         void createImage2(
             VkDevice VKdevice,
             VkPhysicalDevice VKphysicalDevice,
-            uint32_t width,
-            uint32_t height,
-            uint32_t mipLevels,
+            cUint32_t width,
+            cUint32_t height,
+            cUint32_t mipLevels,
             VkSampleCountFlagBits numSamples,
             VkFormat format,
             VkImageTiling tiling,
@@ -104,7 +116,7 @@ namespace vkengine {
             VkMemoryPropertyFlags properties,
             VkImage& image,
             VkDeviceMemory& imageMemory,
-            uint32_t arrayLayer,
+            cUint32_t arrayLayer,
             VkImageCreateFlagBits flag);
 
 
@@ -133,8 +145,8 @@ namespace vkengine {
             VkQueue graphicsQueue,
             VkBuffer buffer,
             VkImage image,
-            uint32_t width,
-            uint32_t height);
+            cUint32_t width,
+            cUint32_t height);
 
         void copyBufferToImage2(
             VkDevice device,
@@ -142,9 +154,16 @@ namespace vkengine {
             VkQueue graphicsQueue,
             VkBuffer buffer,
             VkImage image,
-            uint32_t width,
-            uint32_t height,
+            cUint32_t width,
+            cUint32_t height,
             std::vector<VkDeviceSize> &sizeArray);
+
+        void copyBufferToImage3(
+            VkCommandBuffer cmb,
+            VkBuffer buffer,
+            VkImage image,
+            cUint32_t width,
+            cUint32_t height);
 
         void copyBufferToImageKTX(
             VkDevice device,
@@ -152,9 +171,9 @@ namespace vkengine {
             VkQueue graphicsQueue,
             VkBuffer buffer,
             VkImage image,
-            uint32_t width,
-            uint32_t height,
-            uint32_t mipmapLevels,
+            cUint32_t width,
+            cUint32_t height,
+            cUint32_t mipmapLevels,
             ktxTexture* textureKTX);
 
         // 물리 디바이스의 확장 기능을 지원하는지 확인하는 함수
@@ -183,9 +202,9 @@ namespace vkengine {
             VkImageTiling tiling,
             VkFormatFeatureFlags features);
 
-        uint32_t findMemoryType(
+        cUint32_t findMemoryType(
             VkPhysicalDevice physicalDevice,
-            uint32_t typeFilter,
+            cUint32_t typeFilter,
             VkMemoryPropertyFlags properties);
 
         VkImageView createImageView(
@@ -193,7 +212,7 @@ namespace vkengine {
             VkImage image,
             VkFormat format,
             VkImageAspectFlags aspectFlags,
-            uint32_t mipLevels,
+            cUint32_t mipLevels,
             cSize imageCount = 1);
 
         VkImageView createArrayImageView(
@@ -201,11 +220,11 @@ namespace vkengine {
             VkImage image,
             VkFormat format,
             VkImageAspectFlags aspectFlags,
-            uint32_t mipLevels,
+            cUint32_t mipLevels,
             cSize imageCount);
 
         VkImageView createCubeImageView(
-            VkDevice device, VkImage image, VkFormat format, VkImageAspectFlags aspectFlags, uint32_t mipLevels);
+            VkDevice device, VkImage image, VkFormat format, VkImageAspectFlags aspectFlags, cUint32_t mipLevels);
 
         // 스텐실 컴포넌트를 가지고 있는지 확인하는 함수
         inline cBool hasStencilComponent(VkFormat format)
@@ -224,7 +243,7 @@ namespace vkengine {
             VkFormat imageFormat,
             int32_t texWidth,
             int32_t texHeight,
-            uint32_t mipLevels);
+            cUint32_t mipLevels);
 
         // CubeMap에 대한 mipmap을 생성하는 함수
         void generateMipmapsCubeMap(
@@ -236,7 +255,7 @@ namespace vkengine {
             VkFormat imageFormat,
             int32_t texWidth,
             int32_t texHeight,
-            uint32_t mipLevels);
+            cUint32_t mipLevels);
 
         // 최대 사용 가능한 샘플링 수를 반환하는 함수
 
@@ -255,10 +274,10 @@ namespace vkengine {
         }
 
         // commandPood에 대한 information을 생성하는 함수
-        VkCommandPoolCreateInfo commandPoolCreateInfo(uint32_t queueFamilyIndex, VkCommandPoolCreateFlags flags = 0);
+        VkCommandPoolCreateInfo commandPoolCreateInfo(cUint32_t queueFamilyIndex, VkCommandPoolCreateFlags flags = 0);
 
         // commandBuffer에 대한 information을 생성하는 함수
-        VkCommandBufferAllocateInfo commandBufferAllocateInfo(VkCommandPool pool, uint32_t count = 1, VkCommandBufferLevel level = VK_COMMAND_BUFFER_LEVEL_PRIMARY);
+        VkCommandBufferAllocateInfo commandBufferAllocateInfo(VkCommandPool pool, cUint32_t count, VkCommandBufferLevel level);
 
         // Fencee에 대한 information을 생성하는 함수
         VkFenceCreateInfo fenceCreateInfo(VkFenceCreateFlags flags = 0);
@@ -267,12 +286,12 @@ namespace vkengine {
         VkSemaphoreCreateInfo semaphoreCreateInfo(VkSemaphoreCreateFlags flags = 0);
 
         // https://steel-gourd-618.notion.site/Images-19618a41dc6f80b89bc1d1575bcf3d04 참고
-        //  시작하려는 명령버퍼를 생성하는 함수
+        // 시작하려는 명령버퍼를 생성하는 함수
         VkCommandBuffer beginSingleTimeCommands(VkDevice device, VkCommandPool commandPool);
 
         // 명령버퍼를 종료하는 함수
-        void endSingleTimeCommands(VkDevice device, VkCommandPool commandPool, VkQueue graphicsQueue, VkCommandBuffer commandBuffer);
-
+        void endSingleTimeCommands(VkDevice device, VkCommandPool commandPool, VkQueue Queue, VkCommandBuffer commandBuffer);
+        
         /**
             * @brief 이미지의 레이아웃을 전환하는 함수
             *
@@ -301,6 +320,7 @@ namespace vkengine {
             cUint32_t levelCount = 1,
             cUint32_t layerCount = 1
         );
+
         /**
             * @brief 이미지 레이아웃 전환 명령을 커맨드 버퍼에 기록하는 함수
             *
@@ -358,9 +378,9 @@ namespace vkengine {
         inline VkWriteDescriptorSet writeDescriptorSet(
             VkDescriptorSet dstSet,
             VkDescriptorType type,
-            uint32_t binding,
+            cUint32_t binding,
             VkDescriptorBufferInfo* bufferInfo,
-            uint32_t descriptorCount = 1)
+            cUint32_t descriptorCount = 1)
         {
             VkWriteDescriptorSet writeDescriptorSet{};
             writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -376,9 +396,9 @@ namespace vkengine {
         inline VkWriteDescriptorSet writeDescriptorSet(
             VkDescriptorSet dstSet,
             VkDescriptorType type,
-            uint32_t binding,
+            cUint32_t binding,
             VkDescriptorImageInfo* imageInfo,
-            uint32_t descriptorCount = 1)
+            cUint32_t descriptorCount = 1)
         {
             VkWriteDescriptorSet writeDescriptorSet{};
             writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -392,11 +412,11 @@ namespace vkengine {
 
         inline VkDescriptorPoolCreateInfo descriptorPoolCreateInfo(
             const std::vector<VkDescriptorPoolSize>& poolSizes,
-            uint32_t maxSets)
+            cUint32_t maxSets)
         {
             VkDescriptorPoolCreateInfo descriptorPoolInfo{};
             descriptorPoolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-            descriptorPoolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
+            descriptorPoolInfo.poolSizeCount = static_cast<cUint32_t>(poolSizes.size());
             descriptorPoolInfo.pPoolSizes = poolSizes.data();
             descriptorPoolInfo.maxSets = maxSets;
             return descriptorPoolInfo;
@@ -405,8 +425,8 @@ namespace vkengine {
         inline VkDescriptorSetLayoutBinding descriptorSetLayoutBinding(
             VkDescriptorType type,
             VkShaderStageFlags stageFlags,
-            uint32_t binding,
-            uint32_t descriptorCount = 1)
+            cUint32_t binding,
+            cUint32_t descriptorCount = 1)
         {
             VkDescriptorSetLayoutBinding setLayoutBinding{};
             setLayoutBinding.descriptorType = type;
@@ -610,7 +630,7 @@ namespace vkengine {
 
         // 컬러 블렌딩 상태 생성 정보 구조체
         inline VkPipelineColorBlendStateCreateInfo pipelineColorBlendStateCreateInfo(
-            uint32_t attachmentCount,
+            cUint32_t attachmentCount,
             const VkPipelineColorBlendAttachmentState* pAttachments)
         {
             VkPipelineColorBlendStateCreateInfo pipelineColorBlendStateCreateInfo{};
@@ -626,15 +646,15 @@ namespace vkengine {
         {
             VkPipelineDynamicStateCreateInfo dynamicState{};
             dynamicState.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
-            dynamicState.dynamicStateCount = static_cast<uint32_t>(dynamicStates.size());
+            dynamicState.dynamicStateCount = static_cast<cUint32_t>(dynamicStates.size());
             dynamicState.pDynamicStates = dynamicStates.data();
             return dynamicState;
         }
 
         inline VkPushConstantRange pushConstantRange(
             VkShaderStageFlags stageFlags,
-            uint32_t size,
-            uint32_t offset)
+            cUint32_t size,
+            cUint32_t offset)
         {
             VkPushConstantRange pushConstantRange{};
             pushConstantRange.stageFlags = stageFlags;
@@ -645,7 +665,7 @@ namespace vkengine {
 
         inline VkPipelineLayoutCreateInfo pipelineLayoutCreateInfo(
             const VkDescriptorSetLayout* pSetLayouts,
-            uint32_t setLayoutCount = 1)
+            cUint32_t setLayoutCount = 1)
         {
             VkPipelineLayoutCreateInfo pipelineLayoutCreateInfo{};
             pipelineLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -669,8 +689,25 @@ namespace vkengine {
             return pipelineCreateInfo;
         }
 
+        inline VkPipelineRenderingCreateInfo pipelineRenderingCreateInfo(
+            std::vector<VkFormat> colorAttachmentFormats,
+            VkFormat depthAttachmentFormat = VK_FORMAT_UNDEFINED,
+            VkFormat stencilAttachmentFormat = VK_FORMAT_UNDEFINED)
+        {
+            static thread_local std::vector<VkFormat> formats; // thread-safe한 정적 저장소
+            formats = std::move(colorAttachmentFormats);
+
+            VkPipelineRenderingCreateInfo pipelineRenderingCreateInfo{};
+            pipelineRenderingCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO;
+            pipelineRenderingCreateInfo.colorAttachmentCount = static_cast<cUint32_t>(colorAttachmentFormats.size());
+            pipelineRenderingCreateInfo.pColorAttachmentFormats = colorAttachmentFormats.data();
+            pipelineRenderingCreateInfo.depthAttachmentFormat = depthAttachmentFormat;
+            pipelineRenderingCreateInfo.stencilAttachmentFormat = stencilAttachmentFormat;
+            return pipelineRenderingCreateInfo;
+        }
+
         bool fileExists(const std::string& filename);
-        uint32_t alignedSize(uint32_t value, uint32_t alignment);
+        cUint32_t alignedSize(cUint32_t value, cUint32_t alignment);
         size_t alignedSize(size_t value, size_t alignment);
         VkDeviceSize alignedVkSize(VkDeviceSize value, VkDeviceSize alignment);
 

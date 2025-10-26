@@ -3,6 +3,7 @@
 
 #include "common.h"
 #include "macros.h"
+#include "log.h"
 #include "resourseload.h"
 
 struct QueueFamilyIndices {
@@ -322,14 +323,14 @@ struct TextureResourceBase
     cUint32_t texChannels = 0;                      // 텍스처 채널
     cUint32_t mipLevels = 0;
     cUint32_t layerCount = 0;
+    cUChar* data = nullptr;         //< 리소스 데이터 포인터
 
-    virtual bool createResource(cString path = "", cChar* name = "") = 0; // 리소스 생성 함수, 경로를 인자로 받음
+    virtual bool createResource(cString path = "", cChar* name = "", TextureType textureType = TextureType::Texture_rgb_alpha) = 0; // 리소스 생성 함수, 경로를 인자로 받음
 
 };
 
 struct TextureResourcePNG : public TextureResourceBase {
 
-    cUChar* data = nullptr;         //< 리소스 데이터 포인터
 
     // 생성자
     TextureResourcePNG() {
@@ -362,13 +363,14 @@ struct TextureResourcePNG : public TextureResourceBase {
         if (other.data) {
             size_t size = texWidth * texHeight * texChannels;
             data = (cUChar*)malloc(size);
+            
 
-            if (data == nullptr) {
-                _PRINT_TO_CONSOLE_("Failed to allocate memory for texture data.");
-                return; // 메모리 할당 실패 시 함수 종료
+            if (data && other.data) {
+                memcpy(data, other.data, size);
             }
-
-            memcpy(data, other.data, size);
+            else {
+                vkengine::Log::EXIT_TO_LOGGER("Failed to allocate memory for texture data.");
+            }
         }
         else {
             data = nullptr;
@@ -388,13 +390,14 @@ struct TextureResourcePNG : public TextureResourceBase {
         if (other.data) {
             size_t size = texWidth * texHeight * texChannels;
             data = (cUChar*)malloc(size);
-
-            if (data == nullptr) {
-                _PRINT_TO_CONSOLE_("Failed to allocate memory for texture data.");
-                return *this; // 메모리 할당 실패 시 현재 객체 반환
+            
+            if (data && other.data) {
+                memcpy(data, other.data, size);
+            }
+            else {
+                vkengine::Log::EXIT_TO_LOGGER("Failed to allocate memory for texture data.");
             }
 
-            memcpy(data, other.data, size);
         }
         else {
             data = nullptr;
@@ -403,7 +406,7 @@ struct TextureResourcePNG : public TextureResourceBase {
         return *this;
     }
 
-    virtual bool createResource(cString path = "", cChar* name = "") {
+    virtual cBool createResource(cString path = "", cChar* name = "", TextureType textureType = TextureType::Texture_rgb_alpha) {
 
         this->name = name;
 
@@ -411,7 +414,7 @@ struct TextureResourcePNG : public TextureResourceBase {
             free(data);
         }
 
-        this->texChannels = TextureType::Texture_rgb_alpha; // 기본적으로 RGBA로 설정
+        this->texChannels = textureType; // 기본적으로 RGBA로 설정
 
         data = load_png_rgba(path.c_str(), &this->texWidth, &this->texHeight, this->texChannels);
 

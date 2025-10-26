@@ -215,6 +215,7 @@ namespace vkengine {
         }
 
         VKBaseObject::VKBaseObject(const cString& name) {}
+        
         VKBaseObject::VKBaseObject(VKdeviceHandler* device, const cString& name)
             :
             physicalDevice(device->physicalDevice),

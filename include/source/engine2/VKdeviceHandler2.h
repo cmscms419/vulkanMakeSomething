@@ -11,7 +11,6 @@ namespace vkengine {
 
     struct VKdeviceHandler2
     {
-    public:
         VKdeviceHandler2() = default;
         VKdeviceHandler2(VkPhysicalDevice physicalDevice, QueueFamilyIndices2 indice);
         ~VKdeviceHandler2();

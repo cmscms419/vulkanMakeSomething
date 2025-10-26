@@ -104,58 +104,11 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "12.PBRModel", "11.PBRModel\
 		{FDB36B85-8C84-47B3-A5AE-65DF4EE936C9} = {FDB36B85-8C84-47B3-A5AE-65DF4EE936C9}
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "shaders", "shaders", "{8120791F-E306-43A2-AAEA-BA97B19D5094}"
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "13.computerShader", "computerShader\computerShader.vcxproj", "{6DA4C292-826B-4085-89E9-FA80C7B5C243}"
 	ProjectSection(ProjectDependencies) = postProject
 		{1950486A-E32D-424D-B403-243F6A452517} = {1950486A-E32D-424D-B403-243F6A452517}
 		{4C2DB017-DA5B-1C63-CFD9-6700B8C045BA} = {4C2DB017-DA5B-1C63-CFD9-6700B8C045BA}
 		{FDB36B85-8C84-47B3-A5AE-65DF4EE936C9} = {FDB36B85-8C84-47B3-A5AE-65DF4EE936C9}
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "VS", "VS", "{CAFC0940-D847-4BD4-BA90-EA5D87C8A13C}"
-	ProjectSection(SolutionItems) = preProject
-		..\shader\cube.vert = ..\shader\cube.vert
-		..\shader\filtercube.vert = ..\shader\filtercube.vert
-		..\shader\genbrdflut.vert = ..\shader\genbrdflut.vert
-		..\shader\IBLpbr.vert = ..\shader\IBLpbr.vert
-		..\shader\IBLskybox.vert = ..\shader\IBLskybox.vert
-		..\shader\loadmodel.vert = ..\shader\loadmodel.vert
-		..\shader\mesh.vert = ..\shader\mesh.vert
-		..\shader\NormalShader.vert = ..\shader\NormalShader.vert
-		..\shader\ParticleVS.vert = ..\shader\ParticleVS.vert
-		..\shader\pbr.vert = ..\shader\pbr.vert
-		..\shader\pbrtexture.vert = ..\shader\pbrtexture.vert
-		..\shader\reflect.vert = ..\shader\reflect.vert
-		..\shader\skybox.vert = ..\shader\skybox.vert
-		..\shader\Square.vert = ..\shader\Square.vert
-		..\shader\Texture.vert = ..\shader\Texture.vert
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "FS", "FS", "{4660BEB4-CF0C-4B19-B41C-0A77784417DC}"
-	ProjectSection(SolutionItems) = preProject
-		..\shader\cube.frag = ..\shader\cube.frag
-		..\shader\genbrdflut.frag = ..\shader\genbrdflut.frag
-		..\shader\IBLpbr.frag = ..\shader\IBLpbr.frag
-		..\shader\IBLskybox.frag = ..\shader\IBLskybox.frag
-		..\shader\irradiancecube.frag = ..\shader\irradiancecube.frag
-		..\shader\loadmodel.frag = ..\shader\loadmodel.frag
-		..\shader\loadmodel2.frag = ..\shader\loadmodel2.frag
-		..\shader\mesh.frag = ..\shader\mesh.frag
-		..\shader\NormalShader.frag = ..\shader\NormalShader.frag
-		..\shader\ParticleFS.frag = ..\shader\ParticleFS.frag
-		..\shader\pbr.frag = ..\shader\pbr.frag
-		..\shader\pbrtexture.frag = ..\shader\pbrtexture.frag
-		..\shader\prefilterenvmap.frag = ..\shader\prefilterenvmap.frag
-		..\shader\reflect.frag = ..\shader\reflect.frag
-		..\shader\skybox.frag = ..\shader\skybox.frag
-		..\shader\Square.frag = ..\shader\Square.frag
-		..\shader\Texture.frag = ..\shader\Texture.frag
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "COMP", "COMP", "{FB61FBDA-2F78-4560-9832-3A14F142D5AE}"
-	ProjectSection(SolutionItems) = preProject
-		..\shader\computerShdaer.comp = ..\shader\computerShdaer.comp
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "14.gltfLoader", "14.gltfLoader\14.gltfLoader.vcxproj", "{40B4619E-8652-479C-BA91-EBB5459D8EE1}"
@@ -177,6 +130,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "basicEngine2", "basicEngine
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "common", "common\common.vcxproj", "{1950486A-E32D-424D-B403-243F6A452517}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "03.Pipeline", "03.Pipeline\03.Pipeline.vcxproj", "{940B8462-C224-4039-A23C-A10D6BCAFBED}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -272,6 +227,10 @@ Global
 		{1950486A-E32D-424D-B403-243F6A452517}.Debug|x64.Build.0 = Debug|x64
 		{1950486A-E32D-424D-B403-243F6A452517}.Release|x64.ActiveCfg = Release|x64
 		{1950486A-E32D-424D-B403-243F6A452517}.Release|x64.Build.0 = Release|x64
+		{940B8462-C224-4039-A23C-A10D6BCAFBED}.Debug|x64.ActiveCfg = Debug|x64
+		{940B8462-C224-4039-A23C-A10D6BCAFBED}.Debug|x64.Build.0 = Debug|x64
+		{940B8462-C224-4039-A23C-A10D6BCAFBED}.Release|x64.ActiveCfg = Release|x64
+		{940B8462-C224-4039-A23C-A10D6BCAFBED}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -291,12 +250,10 @@ Global
 		{816F6C07-10F4-47CB-AA62-637E145E83A6} = {C8D5274F-AC00-46C7-1F8D-E88E81087A52}
 		{424A4244-E42B-414C-97B5-F4A309F63D7F} = {C8D5274F-AC00-46C7-1F8D-E88E81087A52}
 		{6DA4C292-826B-4085-89E9-FA80C7B5C243} = {C8D5274F-AC00-46C7-1F8D-E88E81087A52}
-		{CAFC0940-D847-4BD4-BA90-EA5D87C8A13C} = {8120791F-E306-43A2-AAEA-BA97B19D5094}
-		{4660BEB4-CF0C-4B19-B41C-0A77784417DC} = {8120791F-E306-43A2-AAEA-BA97B19D5094}
-		{FB61FBDA-2F78-4560-9832-3A14F142D5AE} = {8120791F-E306-43A2-AAEA-BA97B19D5094}
 		{40B4619E-8652-479C-BA91-EBB5459D8EE1} = {C8D5274F-AC00-46C7-1F8D-E88E81087A52}
 		{94E1C5A1-2D56-40C9-94B1-B59D5D4C8DAA} = {9982C1F3-33A6-4CD6-9D5F-E8BF420AC414}
 		{F73BD1EC-736D-4CE1-AFD9-FDB227E4E0B8} = {9982C1F3-33A6-4CD6-9D5F-E8BF420AC414}
+		{940B8462-C224-4039-A23C-A10D6BCAFBED} = {9982C1F3-33A6-4CD6-9D5F-E8BF420AC414}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {46E572E5-9639-4EE0-9508-072778161B66}
