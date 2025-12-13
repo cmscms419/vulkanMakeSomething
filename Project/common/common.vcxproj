@@ -15,7 +15,6 @@
     <ClInclude Include="..\..\include\common\common.h" />
     <ClInclude Include="..\..\include\common\Debug.h" />
     <ClInclude Include="..\..\include\common\exception.h" />
-    <ClInclude Include="..\..\include\common\helper.h" />
     <ClInclude Include="..\..\include\common\log.h" />
     <ClInclude Include="..\..\include\common\macros.h" />
     <ClInclude Include="..\..\include\common\resourseload.h" />
@@ -29,11 +28,13 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClInclude>
     <ClInclude Include="..\..\include\common\VKmath.h" />
+    <ClInclude Include="..\..\include\helper\helper.h" />
+    <ClInclude Include="..\..\include\helper\helperCreate.h" />
+    <ClInclude Include="..\..\include\helper\helperFile.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\app\common\common.cpp" />
     <ClCompile Include="..\..\app\common\Debug.cpp" />
-    <ClCompile Include="..\..\app\common\helper.cpp" />
     <ClCompile Include="..\..\app\common\log.cpp" />
     <ClCompile Include="..\..\app\common\macros.cpp" />
     <ClCompile Include="..\..\app\common\resourseload.cpp" />
@@ -43,6 +44,9 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\..\app\common\VKmath.cpp" />
+    <ClCompile Include="..\..\app\helper\helper.cpp" />
+    <ClCompile Include="..\..\app\helper\helperCreate.cpp" />
+    <ClCompile Include="..\..\app\helper\helperFile.cpp" />
     <ClCompile Include="..\..\external\include\spirv-reflect\spirv_reflect.c" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
@@ -93,7 +97,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>DEBUG_;WIN32;WIN64;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <LanguageStandard_C>stdc11</LanguageStandard_C>
-      <AdditionalIncludeDirectories>./;$(CudaToolkitDir)/include;$(VULKAN_SDK)/include;../../external/ktx/include;../../include/common;../../external/include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>./;$(CudaToolkitDir)/include;$(VULKAN_SDK)/include;../../include/common;../../include/helper/;../../external/include;../../external/ktx/include</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
@@ -113,7 +117,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;WIN64;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <LanguageStandard_C>stdc11</LanguageStandard_C>
-      <AdditionalIncludeDirectories>./;$(CudaToolkitDir)/include;$(VULKAN_SDK)/include;../../external/ktx/include;../../include/common;../../external/include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>./;$(CudaToolkitDir)/include;$(VULKAN_SDK)/include;../../include/common;../../include/helper/;../../external/include;../../external/ktx/include</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>

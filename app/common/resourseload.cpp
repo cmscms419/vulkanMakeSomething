@@ -90,6 +90,11 @@ ktxTexture* load_ktx_texture(const cChar* filename, ktxTexture* texture)
     return texture;
 }
 
+ktxResult load_ktx2_texture(const cChar* filename, ktxTexture2* texture)
+{
+    return ktxResult();
+}
+
 void GetTextureSize(const cChar* filename, cUint32_t* width, cUint32_t* height)
 {
     FILE* fp = NULL;

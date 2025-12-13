@@ -7,7 +7,7 @@
 #include "Camera.h"
 #include "object3D.h"
 #include "VKimgui.h"
-#include "VKloadModel.h"
+#include "VKengineOBJLoader.h"
 
 namespace vkengine
 {

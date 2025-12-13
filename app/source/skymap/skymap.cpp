@@ -58,7 +58,6 @@ namespace vkengine {
            this->RootPath + RESOURSE_PATH + CUBE_TEXTURE_PATH + "/back.png"
         };
 
-
         for (auto& path : pathCubeArray)
         {
             TextureResourcePNG* resource = new TextureResourcePNG();

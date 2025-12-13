@@ -7,6 +7,9 @@
     <Filter Include="common">
       <UniqueIdentifier>{8a29e1c6-cf6c-4ba7-a57f-e59595af4897}</UniqueIdentifier>
     </Filter>
+    <Filter Include="helper">
+      <UniqueIdentifier>{478740ee-48aa-4613-bb2f-e42c7d3dc6fc}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\include\common\common.h">
@@ -16,9 +19,6 @@
       <Filter>common</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\common\exception.h">
-      <Filter>common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\common\helper.h">
       <Filter>common</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\common\macros.h">
@@ -45,15 +45,21 @@
     <ClInclude Include="..\..\external\include\spirv-reflect\spirv_reflect.h">
       <Filter>external</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\include\helper\helper.h">
+      <Filter>helper</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\helper\helperFile.h">
+      <Filter>helper</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\helper\helperCreate.h">
+      <Filter>helper</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\app\common\common.cpp">
       <Filter>common</Filter>
     </ClCompile>
     <ClCompile Include="..\..\app\common\Debug.cpp">
-      <Filter>common</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\app\common\helper.cpp">
       <Filter>common</Filter>
     </ClCompile>
     <ClCompile Include="..\..\app\common\macros.cpp">
@@ -76,6 +82,15 @@
     </ClCompile>
     <ClCompile Include="..\..\external\include\spirv-reflect\spirv_reflect.c">
       <Filter>external</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\helper\helper.cpp">
+      <Filter>helper</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\helper\helperFile.cpp">
+      <Filter>helper</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\helper\helperCreate.cpp">
+      <Filter>helper</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

@@ -39,9 +39,6 @@
     <ClCompile Include="..\..\app\component\imgui\imgui_draw.cpp">
       <Filter>component\imgui</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\app\source\engine\VKinputEvent.cpp">
-      <Filter>component</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\app\component\VKengineOBJLoader.cpp">
       <Filter>component</Filter>
     </ClCompile>
@@ -58,6 +55,9 @@
       <Filter>component</Filter>
     </ClCompile>
     <ClCompile Include="..\..\app\component\VKengineGLTFLoader.cpp">
+      <Filter>component</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\engine\VKinputEvent.cpp">
       <Filter>component</Filter>
     </ClCompile>
   </ItemGroup>
@@ -79,9 +79,6 @@
     </ClInclude>
     <ClInclude Include="..\..\app\component\imgui\imstb_truetype.h">
       <Filter>component\imgui</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\source\engine\VKinputEvent.h">
-      <Filter>component</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\component\VKengineOBJLoader.h">
       <Filter>component</Filter>

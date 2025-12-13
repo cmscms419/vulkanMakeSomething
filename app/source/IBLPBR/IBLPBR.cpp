@@ -73,11 +73,7 @@ namespace vkengine {
         cString modelPath = this->RootPath + RESOURSE_PATH + "sphere.obj";
         cString modelPathGLTF = this->RootPath + RESOURSE_PATH + "sphere.gltf";
         cString modelPathGLTF2 = this->RootPath + RESOURSE_PATH + "glTF/Suzanne.gltf";
-#if 1
         helper::loadModel::OBJ::loadAsset(modelPath, *this->modelObject->getVertices(), *this->modelObject->getIndices());
-#else
-        helper::loadModel::loadModelGLTF(modelPathGLTF2, *this->modelObject);
-#endif
 
         //cMat4 rotation01 = glm::rotate(glm::mat4(1.0f), glm::radians(-180.0f), glm::vec3(1.0f, 0.0f, 0.0f));
         //cMat4 rotation02 = glm::rotate(glm::mat4(1.0f), glm::radians(-180.0f), glm::vec3(0.0f, -1.0f, 0.0f));
@@ -103,7 +99,7 @@ namespace vkengine {
         this->createGraphicsPipeline();
         this->createGraphicsPipeline_skymap();
         this->normalRanderHelpe->createNormalRanderPipeline();
-        
+
         return true;
     }
 
@@ -130,7 +126,7 @@ namespace vkengine {
             // object 제거
             this->skyBox->cleanup();
             this->modelObject->cleanup();
-            
+
             this->material.cleanup();
             this->uboParams.cleanup();
             this->subUniform.cleanup();
@@ -279,7 +275,7 @@ namespace vkengine {
             ImGui::Checkbox("Use BRDF LUT Texture", &checkBRDFLUTTexture);
             ImGui::Checkbox("Use Prefiltered Cube Texture", &checkPrefilteredCubeTexture);
             ImGui::Checkbox("Use Irradiance Cube Texture", &checkIrradianceCubeTexture);
-            
+
             // SubUniform 데이터 업데이트
             this->subUniform.subUniform.camPos = this->camera->getPos();
             this->subUniform.subUniform.exposure = this->uboParamsData.exposure;
@@ -414,12 +410,12 @@ namespace vkengine {
             vkCmdBindPipeline(framedata->mainCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->VKSkyMapPipeline);
             this->skyBox->draw(framedata->mainCommandBuffer);
 
-            this->modeltDescriptor2->BindDescriptorSets(framedata->mainCommandBuffer,this->currentFrame, 0);
+            this->modeltDescriptor2->BindDescriptorSets(framedata->mainCommandBuffer, this->currentFrame, 0);
             vkCmdBindPipeline(framedata->mainCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->VKgraphicsPipeline);
             vkCmdPushConstants(framedata->mainCommandBuffer, this->modeltDescriptor2->VKpipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(cVec3), &this->modelObject->getPosition());
             /*vkCmdPushConstants(framedata->mainCommandBuffer, this->modeltDescriptor2->VKpipelineLayout, VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(cVec3), sizeof(cMaterial), &this->material.material);*/
             this->modelObject->draw(framedata->mainCommandBuffer);
-            
+
             if (useNormalRander)
             {
                 this->normalRanderHelpe->recordNormalRanderCommandBuffer(framedata, this->currentFrame);
@@ -458,7 +454,7 @@ namespace vkengine {
         this->uboParams.device = this->VKdevice->logicaldevice;
         this->uboParams.usageFlags = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
         this->uboParams.memoryPropertyFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
-        
+
         this->uboParams.createBuffer(this->VKdevice->physicalDevice);
         this->uboParams.mapToMeBuffer(static_cast<VkDeviceSize>(this->uboParams.size), 0);
         this->uboParams.createDescriptorBufferInfo();
@@ -562,12 +558,12 @@ namespace vkengine {
         };
 
         vkUpdateDescriptorSets(
-            this->VKdevice->logicaldevice, 
-            static_cast<uint32_t>(writeDescriptorSets_skyBox01.size()), 
+            this->VKdevice->logicaldevice,
+            static_cast<uint32_t>(writeDescriptorSets_skyBox01.size()),
             writeDescriptorSets_skyBox01.data(), 0, nullptr);
         vkUpdateDescriptorSets(
-            this->VKdevice->logicaldevice, 
-            static_cast<uint32_t>(writeDescriptorSets_skyBox02.size()), 
+            this->VKdevice->logicaldevice,
+            static_cast<uint32_t>(writeDescriptorSets_skyBox02.size()),
             writeDescriptorSets_skyBox02.data(), 0, nullptr);
 
         // modeltDescriptor2
@@ -729,7 +725,7 @@ namespace vkengine {
             helper::pushConstantRange(VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(cMaterial), sizeof(glm::vec3))
         };
 
-        VkPipelineLayoutCreateInfo pipelineLayoutInfo = 
+        VkPipelineLayoutCreateInfo pipelineLayoutInfo =
             helper::pipelineLayoutCreateInfo(&this->modeltDescriptor2->VKdescriptorSetLayout, 1);
 
         pipelineLayoutInfo.pushConstantRangeCount = 2;
@@ -813,7 +809,7 @@ namespace vkengine {
             VK_COLOR_COMPONENT_A_BIT, VK_FALSE);
         VkPipelineColorBlendStateCreateInfo colorBlending = helper::pipelineColorBlendStateCreateInfo(1, &colorBlendAttachment);
         VkPipelineDynamicStateCreateInfo dynamicState = helper::pipelineDynamicStateCreateInfo(dynamicStates);
-        
+
         VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
         pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO; // 구조체 타입을 설정
         pipelineLayoutInfo.pNext = nullptr;                                       // 다음 구조체 포인터를 설정
@@ -874,7 +870,7 @@ namespace vkengine {
         // 예를 들어, 렌더 패스를 설정하고, 셰이더를 실행하여 BRDF LUT를 생성할 수 있습니다.
         // 하지만 귀찮은 관계로 파일을 가져오는 형식으로 씀
 #if 1
-        
+
         const VkFormat format = VK_FORMAT_R16G16_SFLOAT;	// R16G16 is supported pretty much everywhere
         const int32_t dim = 512;
 
@@ -920,10 +916,10 @@ namespace vkengine {
         _VK_CHECK_RESULT_(vkAllocateMemory(this->VKdevice->logicaldevice, &memAllocInfo, nullptr, &this->brdfLUTTexture->imageData[0].imageMemory));
         _VK_CHECK_RESULT_(vkBindImageMemory(this->VKdevice->logicaldevice, this->brdfLUTTexture->imageData[0].image, this->brdfLUTTexture->imageData[0].imageMemory, 0));
 
-        
+
         // 이미지 뷰 생성
         brdfLUTTexture->createTextureImageView(format);
-        
+
         // 샘플러 생성
         VkPhysicalDeviceProperties properties{};
         vkGetPhysicalDeviceProperties(brdfLUTTexture->physicalDevice, &properties);
@@ -1367,8 +1363,8 @@ namespace vkengine {
         prefilteredCubeDescriptors->createDescriptorSetLayout();
 
         // Descriptor Pool
-        std::vector<VkDescriptorPoolSize> poolSizes = { 
-            helper::descriptorPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1) 
+        std::vector<VkDescriptorPoolSize> poolSizes = {
+            helper::descriptorPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1)
         };
         prefilteredCubeDescriptors->poolInfo = helper::descriptorPoolCreateInfo(poolSizes, 2);
         prefilteredCubeDescriptors->createDescriptorPool();
@@ -1430,7 +1426,7 @@ namespace vkengine {
         VkPipelineVertexInputStateCreateInfo pipelineVertexInputStateCreateInfo{};
         pipelineVertexInputStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
         VkPipelineVertexInputStateCreateInfo emptyInputState = pipelineVertexInputStateCreateInfo;
-        VkPipelineInputAssemblyStateCreateInfo inputAssembly = helper::pipelineInputAssemblyStateCreateInfo(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST,0, VK_FALSE);
+        VkPipelineInputAssemblyStateCreateInfo inputAssembly = helper::pipelineInputAssemblyStateCreateInfo(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0, VK_FALSE);
         VkPipelineViewportStateCreateInfo viewportState = helper::pipelineViewportStateCreateInfo(viewport, scissor, 1, 1);
         VkPipelineRasterizationStateCreateInfo rasterizer = helper::pipelineRasterizationStateCreateInfo(
             VK_POLYGON_MODE_FILL, VK_CULL_MODE_NONE, VK_FRONT_FACE_COUNTER_CLOCKWISE);
@@ -1508,7 +1504,7 @@ namespace vkengine {
             VK_IMAGE_LAYOUT_UNDEFINED,
             VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
             numMips, 6
-            );
+        );
 #else
         helper::updateimageLayoutcmd(
             cmdBuf,
@@ -1836,7 +1832,7 @@ namespace vkengine {
                 VK_FORMAT_UNDEFINED,
                 VK_IMAGE_LAYOUT_UNDEFINED,
                 VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
-                );
+            );
 
             helper::endSingleTimeCommands(
                 this->getDevice()->logicaldevice,
@@ -1867,7 +1863,7 @@ namespace vkengine {
         irradianceCubeDescriptors->createDescriptorSetLayout();
 
         // Descriptor Pool
-        std::vector<VkDescriptorPoolSize> poolSizes = { 
+        std::vector<VkDescriptorPoolSize> poolSizes = {
             helper::descriptorPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1)
         };
         irradianceCubeDescriptors->poolInfo = helper::descriptorPoolCreateInfo(poolSizes, 2);
@@ -1879,7 +1875,7 @@ namespace vkengine {
             irradianceCubeDescriptors->VKdescriptorPool, *layouts2.data(), 1);
         irradianceCubeDescriptors->VKdescriptorSets.resize(1);
         irradianceCubeDescriptors->createAllocateDescriptorSets();
-        
+
         // descriptor set 업데이트
         std::vector<VkWriteDescriptorSet> writeDescriptorSets01 = {
             helper::writeDescriptorSet(
@@ -1888,12 +1884,12 @@ namespace vkengine {
                 0,
                 &this->skyBox->getTexture()->imageData[0].imageInfo) //
         };
-        
+
         vkUpdateDescriptorSets(
             this->VKdevice->logicaldevice,
             static_cast<uint32_t>(writeDescriptorSets01.size()),
             writeDescriptorSets01.data(), 0, nullptr);
-        
+
         // Pipeline layout
         struct PushBlock {
             glm::mat4 mvp = cMat4(0.0f); // Model-view-projection matrix
@@ -1912,7 +1908,7 @@ namespace vkengine {
 
         VkViewport viewpport = helper::createViewport(0.0f, 0.0f, static_cast<float>(dim), static_cast<float>(dim), 0.0f, 1.0f);
         VkRect2D scissor = helper::createScissor(0, 0, dim, dim);
-        
+
         auto bindingDescription = Vertex::getBindingDescription();
         auto attributeDescriptions = Vertex::getAttributeDescriptions();
 
@@ -2038,7 +2034,7 @@ namespace vkengine {
                     VK_FORMAT_UNDEFINED,
                     VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
                     VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL
-                    );
+                );
 
                 // Copy region for transfer from framebuffer to cube face
                 VkImageCopy copyRegion = {};

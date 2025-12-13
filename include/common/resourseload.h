@@ -26,6 +26,7 @@ enum TextureType
 cUChar* load_png_rgba(const cChar* filename, cUint32_t* width, cUint32_t* height, cInt type);
 
 ktxTexture* load_ktx_texture(const cChar* filename, ktxTexture* texture);
+ktxResult load_ktx2_texture(const cChar* filename, ktxTexture2* texture);
 
 void GetTextureSize(const cChar* filename, cUint32_t* width, cUint32_t* height);
 

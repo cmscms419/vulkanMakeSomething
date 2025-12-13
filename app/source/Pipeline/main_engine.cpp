@@ -2,7 +2,7 @@
 #include "VKImage2D.h"
 #include "VKShaderManager.h"
 #include "VKshader.h"
-#include "VKpipeLineHandle.h"
+#include "pipeLineHandle.h"
 #include "VKbarrier2.h"
 #include "VKCommadBufferHander.h"
 #include "VKbuffer2.h"
@@ -31,7 +31,7 @@ int main(int argc, char* argv[]) {
     std::vector<const char*> requiredInstanceExtensions = {};
     bool useSwapchain = false;
 
-    VkContext ctx(requiredInstanceExtensions, useSwapchain);
+    VKcontext ctx(requiredInstanceExtensions, useSwapchain);
     VkDevice device = ctx.getDevice()->logicaldevice;
 
     const uint32_t width = 640;
@@ -58,7 +58,7 @@ int main(int argc, char* argv[]) {
         }
     );
 
-    VKPipeLineHandle samplePipeline(ctx, shaderManager, "sample_pipeline",
+    PipeLineHandle samplePipeline(ctx, shaderManager, "sample_pipeline",
         VK_FORMAT_R8G8B8A8_UNORM, VK_FORMAT_UNDEFINED, VK_SAMPLE_COUNT_1_BIT);
 
     VKCommandBufferHander commandGrapicsHander = ctx.createGrapicsCommandBufferHander(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
@@ -83,7 +83,7 @@ int main(int argc, char* argv[]) {
     vkCmdBeginRendering(commandGrapicsHander.getCommandBuffer(), &renderingInfo);
 
     vkCmdBindPipeline(commandGrapicsHander.getCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS,
-        *samplePipeline.getPipeline());
+        samplePipeline.getPipeline());
 
     VkViewport viewport{ 0.0f, 0.0f, static_cast<float>(width), static_cast<float>(height),
                         0.0f, 1.0f };
@@ -102,13 +102,8 @@ int main(int argc, char* argv[]) {
 
     VkDeviceSize imageSize = width * height * 4;
 
-    VkBaseBuffer2 statingBuffer;
-    statingBuffer.device = device;
-    statingBuffer.size = imageSize;
-    statingBuffer.usageFlags = VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
-    statingBuffer.memoryPropertyFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
-    statingBuffer.createBuffer(ctx.getDevice()->physicalDevice);
-    statingBuffer.mapToMeBuffer(imageSize, 0);
+    VKBaseBuffer2 statingBuffer(ctx);
+    statingBuffer.createStagingBuffer(imageSize, nullptr);
 
     VKCommandBufferHander copyCmdBufferHander = ctx.createGrapicsCommandBufferHander(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
     
@@ -119,14 +114,14 @@ int main(int argc, char* argv[]) {
         copyCmdBufferHander.getCommandBuffer(),
         texture.getImage(),
         VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-        statingBuffer.buffer,
+        statingBuffer.Buffer(),
         1,
         &copyRegion
     );
 
     copyCmdBufferHander.submitAndWait();
 
-    cUChar* data = static_cast<unsigned char*>(statingBuffer.mapped);
+    cUChar* data = static_cast<unsigned char*>(statingBuffer.Mapped());
     cString outputImageFilename = "output.jpg";
 
     if (stbi_write_jpg(outputImageFilename.c_str(), width, height, 4, data, 90))

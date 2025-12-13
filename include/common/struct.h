@@ -325,8 +325,14 @@ struct TextureResourceBase
     cUint32_t layerCount = 0;
     cUChar* data = nullptr;         //< 리소스 데이터 포인터
 
-    virtual bool createResource(cString path = "", cChar* name = "", TextureType textureType = TextureType::Texture_rgb_alpha) = 0; // 리소스 생성 함수, 경로를 인자로 받음
-
+    virtual cBool createResource(
+        cString path = "", 
+        cChar* name = "", 
+        TextureType textureType = TextureType::Texture_rgb_alpha) = 0; // 리소스 생성 함수, 경로를 인자로 받음
+    virtual cBool createResource2(
+        cString path = "", 
+        cChar* name = "", 
+        TextureType textureType = TextureType::Texture_rgb_alpha) = 0;
 };
 
 struct TextureResourcePNG : public TextureResourceBase {
@@ -425,11 +431,15 @@ struct TextureResourcePNG : public TextureResourceBase {
 
         return true;
     }
+     cBool createResource2(cString path = "", cChar* name = "", TextureType textureType = TextureType::Texture_rgb_alpha) {
+        return false;
+    }
 };
 
 struct TextureResourceKTX : public TextureResourceBase {
 
     ktxTexture* texture = nullptr; // KTX 텍스처 포인터
+    ktxTexture2* texture2 = nullptr; // KTX 텍스처 포인터
 
     TextureResourceKTX() {
         this->name = ""; // 이름 초기화
@@ -446,6 +456,12 @@ struct TextureResourceKTX : public TextureResourceBase {
         if (texture) {
             ktxTexture_Destroy(texture); // KTX 텍스처 해제
         }
+
+        if (texture2)
+        {
+            ktxTexture_Destroy(ktxTexture(texture2));
+        }
+
         texWidth = 0; // 너비 초기화
         texHeight = 0; // 높이 초기화
         texChannels = 0; // 채널 초기화
@@ -454,7 +470,7 @@ struct TextureResourceKTX : public TextureResourceBase {
         texture = nullptr; // 포인터 초기화
     }
 
-    virtual bool createResource(cString path = "", cChar* name = "") {
+    virtual cBool createResource(cString path = "", cChar* name = "", TextureType textureType = TextureType::Texture_rgb_alpha) {
         if (texture) {
             ktxTexture_Destroy(texture); // KTX 텍스처 해제
         }
@@ -472,6 +488,28 @@ struct TextureResourceKTX : public TextureResourceBase {
         this->layerCount = texture->numLayers;
         this->texChannels = 4; // 기본적으로 RGBA로 설정
         this->name = name;
+
+        return true;
+    }
+
+    virtual cBool createResource2(cString path, cChar* name = "", TextureType textureType = TextureType::Texture_rgb_alpha) {
+        
+        if (this->texture2) {
+            ktxTexture2_Destroy(this->texture2); // KTX 텍스처 해제
+        }
+
+        ktxResult result = ktxTexture2_CreateFromNamedFile(path.c_str(), KTX_TEXTURE_CREATE_LOAD_IMAGE_DATA_BIT, &this->texture2);
+
+        if (result != KTX_SUCCESS)
+        {
+            vkengine::Log::EXIT_TO_LOGGER("Failed to load KTX2 texture: %s", path.c_str());
+            return false;
+        }
+
+        this->texWidth = texture2->baseWidth;
+        this->texHeight = texture2->baseHeight;
+        this->mipLevels = texture2->numLevels;
+        this->layerCount = texture2->numLayers;
 
         return true;
     }

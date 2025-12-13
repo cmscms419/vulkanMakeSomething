@@ -9,58 +9,55 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\app\source\engine\VKbuffer.cpp">
+    <ClInclude Include="..\..\include\engine\VKDescriptor.h">
       <Filter>source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\app\source\engine\VKdevice.cpp">
+    </ClInclude>
+    <ClInclude Include="..\..\include\engine\VKDescriptorManager.h">
       <Filter>source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\app\source\engine\VKengine.cpp">
+    </ClInclude>
+    <ClInclude Include="..\..\include\engine\VKdevice.h">
       <Filter>source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\app\source\engine\VKswapchain.cpp">
+    </ClInclude>
+    <ClInclude Include="..\..\include\engine\VKengine.h">
       <Filter>source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\app\common\VKmath.cpp">
+    </ClInclude>
+    <ClInclude Include="..\..\include\engine\VKmemoryAlloc.h">
       <Filter>source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\app\source\engine\VKDescriptor.cpp">
+    </ClInclude>
+    <ClInclude Include="..\..\include\engine\VKswapchain.h">
       <Filter>source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\app\source\engine\VKtexture.cpp">
+    </ClInclude>
+    <ClInclude Include="..\..\include\engine\VKtexture.h">
       <Filter>source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\app\source\engine\VKDescriptorManager.cpp">
+    </ClInclude>
+    <ClInclude Include="..\..\include\engine\VKbuffer.h">
       <Filter>source</Filter>
-    </ClCompile>
+    </ClInclude>
+    <ClInclude Include="..\..\include\engine\VKinputEvent.h">
+      <Filter>source</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\include\source\engine\VKbuffer.h">
+    <ClCompile Include="..\..\app\engine\VKDescriptorManager.cpp">
       <Filter>source</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\source\engine\VKdevice.h">
+    </ClCompile>
+    <ClCompile Include="..\..\app\engine\VKdevice.cpp">
       <Filter>source</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\source\engine\VKengine.h">
+    </ClCompile>
+    <ClCompile Include="..\..\app\engine\VKengine.cpp">
       <Filter>source</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\source\engine\VKswapchain.h">
+    </ClCompile>
+    <ClCompile Include="..\..\app\engine\VKswapchain.cpp">
       <Filter>source</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\common\VKmath.h">
+    </ClCompile>
+    <ClCompile Include="..\..\app\engine\VKtexture.cpp">
       <Filter>source</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\source\engine\VKDescriptor.h">
+    </ClCompile>
+    <ClCompile Include="..\..\app\engine\VKbuffer.cpp">
       <Filter>source</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\source\engine\VKtexture.h">
+    </ClCompile>
+    <ClCompile Include="..\..\app\engine\VKDescriptor.cpp">
       <Filter>source</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\source\engine\VKmemoryAlloc.h">
-      <Filter>source</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\source\engine\VKDescriptorManager.h">
-      <Filter>source</Filter>
-    </ClInclude>
+    </ClCompile>
   </ItemGroup>
 </Project>

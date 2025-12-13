@@ -63,7 +63,7 @@ namespace vkengine {
         this->modelObject->setTexturePNG(resourcePNG);
         this->modelObject->RotationAngle(-90.0f, glm::vec3(1.0f, 0.0f, 0.0f));
 
-        helper::loadModel::loadModelOBJ(modelPath, *this->modelObject->getVertices(), *this->modelObject->getIndices());
+        helper::loadModel::OBJ::loadAsset(modelPath, *this->modelObject->getVertices(), *this->modelObject->getIndices());
         this->modelObject->createTexture(VK_FORMAT_R8G8B8A8_SRGB);
 
         this->createVertexbuffer();
@@ -336,7 +336,7 @@ namespace vkengine {
     {
         //this->cubeObject.createIndexBuffer(cubeindices_);
         this->modelObject->createIndexBuffer(*this->modelObject->getIndices());
-        this->cubeSkybox->createIndexBuffer(const_cast<std::vector<uint16_t>&>(skyboxIndices));
+        this->cubeSkybox->createIndexBuffer(const_cast<std::vector<cUint32_t>&>(skyboxIndices));
     }
 
     void Load3DModelEngine::createUniformBuffers()
@@ -429,13 +429,13 @@ namespace vkengine {
 
             VkDescriptorImageInfo imageInfo{};
             imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-            imageInfo.imageView = this->cubeSkybox->getTexture()->imageData->imageView;
-            imageInfo.sampler = this->cubeSkybox->getTexture()->imageData->sampler;
+            imageInfo.imageView = this->cubeSkybox->getTexture()->imageData[0].imageView;
+            imageInfo.sampler = this->cubeSkybox->getTexture()->imageData[0].sampler;
 
             VkDescriptorImageInfo imageInfo2{};
             imageInfo2.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-            imageInfo2.imageView = this->modelObject->getTexture()->imageData->imageView;
-            imageInfo2.sampler = this->modelObject->getTexture()->imageData->sampler;
+            imageInfo2.imageView = this->modelObject->getTexture()->imageData[0].imageView;
+            imageInfo2.sampler = this->modelObject->getTexture()->imageData[0].sampler;
 
             std::array<VkWriteDescriptorSet, 3> descriptorWrites{};
 

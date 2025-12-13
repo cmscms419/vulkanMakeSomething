@@ -18,7 +18,7 @@ namespace vkengine
         VK_DYNAMIC_STATE_SCISSOR
     };
 
-    const cString RESOURSE_PATH = "../../../../../../source/";
+    const cString RESOURSE_PATH = "../../../../../../resource/";
     const cString SHADER_PATH = "../../../../../../shader/";
     const cString MODEL_PATH = "viking_room.obj";
     const cString TEXTURE_PATH = "viking_room.png";
