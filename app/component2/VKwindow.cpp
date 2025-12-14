@@ -244,7 +244,10 @@ namespace vkengine {
 
             object::Camera2* glfwWindow::getCamera()
             {
-                return this->camera.get();
+                if (this->camera != nullptr)
+                    return this->camera.get();
+                else
+                    return nullptr;
             }
 
             void glfwWindow::framebufferSizeCallback(GLFWwindow* window, cInt width, cInt height)
@@ -290,36 +293,37 @@ namespace vkengine {
 
                 // Retrieve the glfwWindow instance associated with this GLFWwindow
                 glfwWindow* instance = reinterpret_cast<glfwWindow*>(glfwGetWindowUserPointer(window));
-                if (!instance) {
-                    return; // If no instance is associated, exit early
-                }
-
-
-                if (action == GLFW_PRESS) {
-                    switch (button) {
-                    case GLFW_MOUSE_BUTTON_LEFT:
-                        instance->mouseState.buttons.left = true;
-                        break;
-                    case GLFW_MOUSE_BUTTON_RIGHT:
-                        instance->mouseState.buttons.right = true;
-                        break;
-                    case GLFW_MOUSE_BUTTON_MIDDLE:
-                        instance->mouseState.buttons.middle = true;
-                        break;
-                    }
-                }
-                else if (action == GLFW_RELEASE) {
-                    switch (button) {
-                    case GLFW_MOUSE_BUTTON_LEFT:
-                        instance->mouseState.buttons.left = false;
-                        break;
-                    case GLFW_MOUSE_BUTTON_RIGHT:
-                        instance->mouseState.buttons.right = false;
-                        instance->mouseState.move = false;
-                        break;
-                    case GLFW_MOUSE_BUTTON_MIDDLE:
-                        instance->mouseState.buttons.middle = false;
-                        break;
+                if (instance != nullptr)
+                {
+                    if (instance->mouseState.clicked)
+                    {
+                        if (action == GLFW_PRESS) {
+                            switch (button) {
+                            case GLFW_MOUSE_BUTTON_LEFT:
+                                instance->mouseState.buttons.left = true;
+                                break;
+                            case GLFW_MOUSE_BUTTON_RIGHT:
+                                instance->mouseState.buttons.right = true;
+                                break;
+                            case GLFW_MOUSE_BUTTON_MIDDLE:
+                                instance->mouseState.buttons.middle = true;
+                                break;
+                            }
+                        }
+                        else if (action == GLFW_RELEASE) {
+                            switch (button) {
+                            case GLFW_MOUSE_BUTTON_LEFT:
+                                instance->mouseState.buttons.left = false;
+                                break;
+                            case GLFW_MOUSE_BUTTON_RIGHT:
+                                instance->mouseState.buttons.right = false;
+                                instance->mouseState.move = false;
+                                break;
+                            case GLFW_MOUSE_BUTTON_MIDDLE:
+                                instance->mouseState.buttons.middle = false;
+                                break;
+                            }
+                        }
                     }
                 }
             }
@@ -331,45 +335,63 @@ namespace vkengine {
 
                 // Retrieve the glfwWindow instance associated with this GLFWwindow
                 glfwWindow* instance = reinterpret_cast<glfwWindow*>(glfwGetWindowUserPointer(window));
-                if (!instance) {
-                    return; // If no instance is associated, exit early
-                }
 
-                if (instance->mouseState.buttons.right)
+                if (instance != nullptr)
                 {
-                    if (!instance->mouseState.move)
+                    if (instance->mouseState.CameraMove)
                     {
-                        instance->mouseState.position.x = static_cast<cFloat>(xpos);
-                        instance->mouseState.position.y = static_cast<cFloat>(ypos);
-                        instance->mouseState.move = true;
-                        return;
+                        if (instance->mouseState.buttons.right)
+                        {
+                            if (!instance->mouseState.move)
+                            {
+                                instance->mouseState.position.x = static_cast<cFloat>(xpos);
+                                instance->mouseState.position.y = static_cast<cFloat>(ypos);
+                                instance->mouseState.move = true;
+                            }
+                            else
+                            {
+                                cFloat xoffset = instance->mouseState.position.x - static_cast<cFloat>(xpos);
+                                cFloat yoffset = instance->mouseState.position.y - static_cast<cFloat>(ypos);
+
+                                cVec3 force = cVec3(xoffset, yoffset, 0.0f);
+
+                                if (object::Camera2* cam = instance->getCamera())
+                                {
+                                    cam->RotateDeltaRotation(force);
+                                }
+
+                                instance->mouseState.position.x = static_cast<cFloat>(xpos);
+                                instance->mouseState.position.y = static_cast<cFloat>(ypos);
+                            }
+                        }
+                        else
+                        {
+                            instance->mouseState.position.x = static_cast<cFloat>(xpos);
+                            instance->mouseState.position.y = static_cast<cFloat>(ypos);
+                        }
                     }
-
-                    cFloat xoffset = instance->mouseState.position.x - static_cast<cFloat>(xpos);
-                    cFloat yoffset = instance->mouseState.position.y - static_cast<cFloat>(ypos);
-
-                    cVec3 force = cVec3(xoffset, yoffset, 0.0f);
-                    instance->getCamera()->RotateDeltaRotation(force);
                 }
 
-
-                instance->mouseState.position.x = static_cast<cFloat>(xpos);
-                instance->mouseState.position.y = static_cast<cFloat>(ypos);
-
-
+                return;
             }
 
             void glfwWindow::scrollCallback(GLFWwindow* window, cDouble xoffset, cDouble yoffset)
             {
                 glfwWindow* instance = reinterpret_cast<glfwWindow*>(glfwGetWindowUserPointer(window));
 
-                if (yoffset > 0) {
-                    cFloat fov = instance->getCamera()->getFov() - 1.0f;
-                    instance->getCamera()->setFov(fov);
-                }
-                else if (yoffset < 0) {
-                    cFloat fov = instance->getCamera()->getFov() + 1.0f;
-                    instance->getCamera()->setFov(fov);
+                if (instance != nullptr)
+                {
+                    if (instance->mouseState.scrolled)
+                    {
+                        if (yoffset > 0) {
+                            cFloat fov = instance->getCamera()->getFov() - 1.0f;
+                            instance->getCamera()->setFov(fov);
+                        }
+                        else if (yoffset < 0) {
+                            cFloat fov = instance->getCamera()->getFov() + 1.0f;
+                            instance->getCamera()->setFov(fov);
+                        }
+                    }
                 }
             }
 

@@ -47,6 +47,7 @@ namespace vkengine {
         VkPipelineCache getPipelineCache() { return VKpipelineCache; }
         depthStencill* getDepthStencil() { return &VKdepthStencill; }
 
+        void waitIdle();
         void waitGraphicsQueueIdle();
 
     private:

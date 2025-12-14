@@ -23,36 +23,6 @@ using namespace vkengine::Log;
 
 using namespace vkengine;
 
-// Scene data UBO structure matching skybox.vert
-struct SceneDataUBO
-{
-    glm::mat4 projection;
-    glm::mat4 view;
-    glm::vec3 cameraPos;
-    float padding1;
-    glm::vec3 directionalLightDir{ -1.0f, -1.0f, -1.0f };
-    float padding2;
-    glm::vec3 directionalLightColor{ 1.0f, 1.0f, 1.0f };
-    float padding3;
-    glm::mat4 lightSpaceMatrix{ 1.0f };
-};
-
-// HDR skybox-specific control options
-struct SkyOptionsUBO
-{
-    // HDR Environment mapping controls
-    float environmentIntensity = 1.0f; // Environment map intensity multiplier
-    float roughnessLevel = 0.5f;       // Mip level for prefiltered map (0.0 = sharpest)
-    uint32_t useIrradianceMap = 0;     // 0 = use prefiltered, 1 = use irradiance
-
-    // Skybox visualization and debug
-    uint32_t showMipLevels = 0; // Visualize mip levels as colors
-    uint32_t showCubeFaces = 0; // Visualize cube faces as colors
-    float padding1;
-    float padding2;
-    float padding3;
-};
-
 SceneDataUBO sceneDataUBO = {};
 SkyOptionsUBO skyOptionsUBO = {};
 
@@ -294,7 +264,6 @@ int main(int argc, char* argv[]) {
     createInfo.title = "Vulkan Engine Window";
     std::shared_ptr<vkengine::object::Camera2> camera = std::make_shared<vkengine::object::Camera2>();
 
-
     std::unique_ptr<platform::VirtualWindows> window = platform::WindowFactory::create(
         platform::WindowFactory::Backend::GLFW,
         createInfo,
@@ -330,7 +299,7 @@ int main(int argc, char* argv[]) {
           {"sky", {"vertskybox2.spv", "fragskybox2.spv"}} 
         }
     );
-    gui::VKimguiRenderer guiRenderer(vkContext, shaderManager, swapChain.getSwapChainImageFormat());
+    gui::VKimguiRenderer guiRenderer(vkContext, shaderManager, swapChain.getSwapChainImageFormat(), root_path);
     std::vector<VKCommandBufferHander> commandBuffers = vkContext.createGrapicsCommandBufferHanders(MAX_FRAMES_IN_FLIGHT);
     uint32_t imageCount = swapChain.getSwapChainImageCount();
     std::vector<VkSemaphore> presentSemaphores;

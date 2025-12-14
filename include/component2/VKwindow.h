@@ -17,6 +17,10 @@ namespace vkengine {
         // Mouse state structure (similar to Application class)
         struct MouseState
         {
+            cBool scrolled = true;     // mouse scroll
+            cBool clicked = true;      // mouse click
+            cBool CameraMove = true;   // mouse camera move
+
             struct
             {
                 cBool left = false;
@@ -52,9 +56,8 @@ namespace vkengine {
             cBool resizable = true;
             cBool visible = true;
             cBool decorated = true;
-            cBool focused = true;
-            cBool maximized = false;
-            cBool vsync = true;
+            cBool maximized = false;    // windows max size able
+            cBool vsync = true;         // vsync
         };
 
         class VirtualWindows {

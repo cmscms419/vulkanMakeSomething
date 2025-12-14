@@ -27,7 +27,7 @@ namespace vkengine {
 
         class VKimguiRenderer {
         public:
-            VKimguiRenderer(VKcontext& context, VKShaderManager& shaderManager, VkFormat colorFormat);
+            VKimguiRenderer(VKcontext& context, VKShaderManager& shaderManager, VkFormat colorFormat, std::string path);
             ~VKimguiRenderer();
 
             void draw(const VkCommandBuffer cmd, VkImageView swapchainImageView, VkViewport viewport);

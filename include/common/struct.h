@@ -14,11 +14,11 @@ struct QueueFamilyIndices {
     cBool graphicsAndComputeFamilyHasValue = false;
     cBool presentFamilyHasValue = false;
 
-    void setgraphicsAndComputeFamily(cUint32_t index) {
+    cVoid setgraphicsAndComputeFamily(cUint32_t index) {
         graphicsAndComputeFamily = index;
         graphicsAndComputeFamilyHasValue = true;
     }
-    void setPresentFamily(cUint32_t index) {
+    cVoid setPresentFamily(cUint32_t index) {
         presentFamily = index;
         presentFamilyHasValue = true;
     }
@@ -51,7 +51,7 @@ struct QueueFamilyIndices {
     cBool isComplete() const {
         return this->graphicsAndComputeFamilyHasValue && this->presentFamilyHasValue;
     }
-    void reset() {
+    cVoid reset() {
         this->graphicsAndComputeFamily = 0;
         this->presentFamily = 0;
         this->graphicsAndComputeFamilyHasValue = false;
@@ -70,15 +70,15 @@ struct QueueFamilyIndices2 {
     cBool computerFamilyHasValue = false;
     cBool transferFamilyHasValue = false;
 
-    void setGrapicFamily(cUint32_t index) {
+    cVoid setGrapicFamily(cUint32_t index) {
         grapicFamily = index;
         grapicFamilyHasValue = true;
     }
-    void setComputerFamily(cUint32_t index) {
+    cVoid setComputerFamily(cUint32_t index) {
         computerFamily = index;
         computerFamilyHasValue = true;
     }
-    void setTransferFamily(cUint32_t index) {
+    cVoid setTransferFamily(cUint32_t index) {
         transferFamily = index;
         transferFamilyHasValue = true;
     }
@@ -111,7 +111,7 @@ struct QueueFamilyIndices2 {
     cBool isComplete() const {
         return this->grapicFamilyHasValue && this->computerFamilyHasValue && this->transferFamilyHasValue;
     }
-    void reset() {
+    cVoid reset() {
         this->grapicFamily = 0;
         this->computerFamily = 0;
         this->transferFamily = 0;
@@ -186,9 +186,9 @@ struct Vertex {
 struct subUniformBuffer {
     VkBuffer buffer;
     VkDeviceMemory memory;
-    void* Mapped;
+    cVoid* Mapped;
 
-    void cleanup(VkDevice device) const {
+    cVoid cleanup(VkDevice device) const {
         vkDestroyBuffer(device, buffer, nullptr);
         vkFreeMemory(device, memory, nullptr);
     }
@@ -246,7 +246,7 @@ struct depthStencill {
     VkDeviceMemory depthImageMemory{ VK_NULL_HANDLE };
     VkImageView depthImageView{ VK_NULL_HANDLE };
 
-    void cleanup(VkDevice device) const {
+    cVoid cleanup(VkDevice device) const {
         vkDestroyImageView(device, depthImageView, nullptr);
         vkDestroyImage(device, depthImage, nullptr);
         vkFreeMemory(device, depthImageMemory, nullptr);
@@ -597,6 +597,65 @@ struct UniformBufferSkymapParams
     cVec4 lightPos[4] = { cVec4(0.0f) }; // 조명 위치
     cFloat exposure = 0.0f;
     cFloat gamma = 0.0f;
+};
+
+struct SceneDataUBO
+{
+    glm::mat4 projection;
+    glm::mat4 view;
+    glm::vec3 cameraPos;
+    cFloat padding1;
+    glm::vec3 directionalLightDir{ -1.0f, -1.0f, -1.0f };
+    cFloat padding2;
+    glm::vec3 directionalLightColor{ 1.0f, 1.0f, 1.0f };
+    cFloat padding3;
+    glm::mat4 lightSpaceMatrix{ 1.0f };
+};
+
+// HDR skybox-specific control options
+struct SkyOptionsUBO
+{
+    // HDR Environment mapping controls
+    cFloat environmentIntensity = 1.0f; // Environment map intensity multiplier
+    cFloat roughnessLevel = 0.5f;       // Mip level for prefiltered map (0.0 = sharpest)
+    uint32_t useIrradianceMap = 0;     // 0 = use prefiltered, 1 = use irradiance
+
+    // Skybox visualization and debug
+    uint32_t showMipLevels = 0; // Visualize mip levels as colors
+    uint32_t showCubeFaces = 0; // Visualize cube faces as colors
+    cFloat padding1;
+    cFloat padding2;
+    cFloat padding3;
+};
+
+// Post-processing options uniform buffer structure
+struct PostProcessingOptionsUBO
+{
+    // Tone mapping options
+    cUint32_t toneMappingType = 2; // 0=None, 1=Reinhard, 2=ACES, 3=Uncharted2, 4=GT, 5=Lottes,
+    // 6=Exponential, 7=ReinhardExtended, 8=Luminance, 9=Hable
+    cFloat exposure = 1.0f;       // HDR exposure adjustment
+    cFloat gamma = 2.2f;          // Gamma correction value
+    cFloat maxWhite = 11.2f;      // For extended Reinhard tone mapping
+
+    // Color grading
+    cFloat contrast = 1.0f;   // Contrast adjustment
+    cFloat brightness = 0.0f; // Brightness adjustment
+    cFloat saturation = 1.0f; // Color saturation
+    cFloat vibrance = 0.0f;   // Vibrance (smart saturation)
+
+    // Effects
+    cFloat vignetteStrength = 0.0f;    // Vignette effect strength
+    cFloat vignetteRadius = 0.8f;      // Vignette radius
+    cFloat filmGrainStrength = 0.0f;   // Film grain noise strength
+    cFloat chromaticAberration = 0.0f; // Chromatic aberration strength
+
+    // Debug and visualization
+    cUint32_t debugMode =
+        0; // 0=Off, 1=Show tone mapping comparison, 2=Show color channels, 3=Split comparison
+    cFloat debugSplit = 0.5f;     // Split position for comparison (0.0-1.0)
+    cUint32_t showOnlyChannel = 0; // 0=All, 1=Red, 2=Green, 3=Blue, 4=Alpha, 5=Luminance
+    cFloat padding1 = 0.0f;
 };
 
 extern const std::vector<Vertex> cube;

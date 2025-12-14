@@ -322,4 +322,9 @@ namespace vkengine {
     {
         vkQueueWaitIdle(this->VKdevice.graphicsVKQueue);
     }
+    
+    void VKcontext::waitIdle()
+    {
+        vkDeviceWaitIdle(this->VKdevice.logicaldevice);
+    }
 }

@@ -63,6 +63,7 @@ typedef glm::vec3 cVec3;
 typedef glm::vec4 cVec4;
 typedef glm::mat4 cMat4;
 typedef glm::quat cQuat;
+typedef void cVoid;
 
 constexpr cInt WIDTH = 1280;
 constexpr cInt HEIGHT = 720;

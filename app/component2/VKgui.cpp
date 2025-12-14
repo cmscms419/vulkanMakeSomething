@@ -5,7 +5,7 @@ using namespace vkengine::Log;
 namespace vkengine {
     namespace gui {
         
-        VKimguiRenderer::VKimguiRenderer(VKcontext& context, VKShaderManager& shaderManager, VkFormat colorFormat)
+        VKimguiRenderer::VKimguiRenderer(VKcontext& context, VKShaderManager& shaderManager, VkFormat colorFormat, std::string path)
             : ctx(context), shaderManager(shaderManager), VertexBuffer(context), IndexBuffer(context),
             fontImage(context), fontSampler(context), pushConsts(context), pipelineHandle(context, shaderManager)
         {
@@ -39,7 +39,7 @@ namespace vkengine {
                 // 폰트 경로를 재수정 해야한다.
                 // TODO
                 const cString fontFileName =
-                    "C:/cmscms419/vulkanMakeSomething/resource/Noto_Sans_KR/static/NotoSansKR_SemiBold.ttf"; // Korean Font
+                    path + "../../../../../../resource/noGit/Noto_Sans_KR/static/NotoSansKR_SemiBold.ttf"; // Korean Font
 
                 unsigned char* fontData = nullptr;
                 int texWidth, texHeight;
