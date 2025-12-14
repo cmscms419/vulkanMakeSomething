@@ -467,6 +467,14 @@ external/common/x64/Release/common.lib
 external/common/x64/Debug/common.idb
 external/common/x64/Release/common.idb
 
+external/component2/x64/Debug/component2.lib
+external/component2/x64/Release/component2.lib
+external/component2/x64/Debug/component2.idb
+external/component2/x64/Release/component2.idb
+
+.clang-format
+
+
 ### VisualStudio Patch ###
 # Additional files built by Visual Studio
 
