@@ -65,8 +65,8 @@ typedef glm::mat4 cMat4;
 typedef glm::quat cQuat;
 typedef void cVoid;
 
-constexpr cInt WIDTH = 1280;
-constexpr cInt HEIGHT = 720;
+constexpr cInt WIDTH = 1920;
+constexpr cInt HEIGHT = 1080;
 constexpr cInt MAX_FRAMES = 4;
 constexpr cInt MAX_FRAMES_IN_FLIGHT = 2;
 constexpr cInt MAX_FRAMES_IN_FLIGHT_UI_VERSION = 3;

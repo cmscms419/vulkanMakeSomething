@@ -15,6 +15,7 @@
 #include "PushConstants.h"
 
 #include <imgui.h>
+#include <imgui_internal.h>
 
 namespace vkengine {
     namespace gui {
@@ -31,7 +32,7 @@ namespace vkengine {
             ~VKimguiRenderer();
 
             void draw(const VkCommandBuffer cmd, VkImageView swapchainImageView, VkViewport viewport);
-            void resize(uint32_t width, uint32_t height);
+            void resize(cUint32_t width, cUint32_t height);
 
             bool update();
             PipeLineHandle& imguiPipeLine();

@@ -264,11 +264,12 @@ int main(int argc, char* argv[]) {
     createInfo.title = "Vulkan Engine Window";
     std::shared_ptr<vkengine::object::Camera2> camera = std::make_shared<vkengine::object::Camera2>();
 
-    std::unique_ptr<platform::VirtualWindows> window = platform::WindowFactory::create(
+    std::unique_ptr<platform::VirtualWindows> window = 
+        platform::WindowFactory::create(
         platform::WindowFactory::Backend::GLFW,
-        createInfo,
-        camera);
+        createInfo);
 
+    window->setCamera(camera);
     int windowWidth = 0;
     int windowHeight = 0;
 
@@ -299,7 +300,7 @@ int main(int argc, char* argv[]) {
           {"sky", {"vertskybox2.spv", "fragskybox2.spv"}} 
         }
     );
-    gui::VKimguiRenderer guiRenderer(vkContext, shaderManager, swapChain.getSwapChainImageFormat(), root_path);
+    gui::VKimguiRenderer guiRenderer(vkContext, shaderManager, swapChain.getSwapChainImageFormat(), root_path + "../../../../../../resource/");
     std::vector<VKCommandBufferHander> commandBuffers = vkContext.createGrapicsCommandBufferHanders(MAX_FRAMES_IN_FLIGHT);
     uint32_t imageCount = swapChain.getSwapChainImageCount();
     std::vector<VkSemaphore> presentSemaphores;
@@ -307,7 +308,10 @@ int main(int argc, char* argv[]) {
     std::vector<VkFence> inFlightFences;
 
     PipeLineHandle skyboxpipeline(vkContext, shaderManager);
-    skyboxpipeline.createByName("sky", swapChain.getSwapChainImageFormat(), vkContext.getDepthStencil()->depthFormat,
+    skyboxpipeline.createByName(
+        "sky", 
+        swapChain.getSwapChainImageFormat(), 
+        vkContext.getDepthStencil()->depthFormat,
         VK_SAMPLE_COUNT_1_BIT);
     guiRenderer.resize(extent.width, extent.height);
     
@@ -326,7 +330,6 @@ int main(int argc, char* argv[]) {
         renderSemaphores,
         inFlightFences
     );
-
 
 
     // GUI √ ±‚»≠

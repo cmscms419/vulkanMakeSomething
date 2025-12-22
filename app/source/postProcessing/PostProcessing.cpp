@@ -1,175 +1,199 @@
-#include "Ex11_PostProcessingExample.h"
-#include "engine/Logger.h"
+﻿#include "PostProcessing.h"
 
-#include <chrono>
 #include <thread>
 #include <filesystem>
 #include <stdexcept>
 
-using namespace hlab;
+#define IMGUI_DEFINE_MATH_OPERATORS
+using namespace vkengine;
+using namespace vkengine::gui;
 
-Ex11_PostProcessingExample::Ex11_PostProcessingExample()
-    : window_{}, ctx_{window_.getRequiredExtensions(), true},
-      windowSize_{window_.getFramebufferSize()},
-      swapchain_{ctx_, window_.createSurface(ctx_.instance()), windowSize_, true},
-      shaderManager_{ctx_,
-                     kShaderPathPrefix,
-                     {{"gui", {"imgui.vert", "imgui.frag"}},
-                      {"sky", {"skybox.vert.spv", "skybox.frag.spv"}},
-                      {"post", {"post.vert", "post.frag"}}}},
-      guiRenderer_{ctx_, shaderManager_, swapchain_.colorFormat()}, skyTextures_{ctx_},
-      skyPipeline_(ctx_, shaderManager_), postPipeline_(ctx_, shaderManager_),
-      hdrColorBuffer_(ctx_), samplerLinearRepeat_(ctx_), samplerLinearClamp_(ctx_)
+PostProcessingExample::PostProcessingExample(std::string root_path, cBool useSwapchain)
+    : 
+    VulkanEngineWin2(root_path, useSwapchain),
+     shaderManager{*this->cxt,
+                     RootPath + Path + "shader/",
+                     { 
+                      {"gui", {"vertimgui.spv", "fragimgui.spv"}},
+                      {"sky", {"vertskybox2.spv", "fragskybox2.spv"}},
+                      {"post", {"vertpost.spv", "fragpost.spv"}}
+                     }
+    },
+      guiRenderer{ *this->cxt, shaderManager, swapChain->getSwapChainImageFormat(), RootPath + Path + "resource/" },
+      skyTextures{ *this->cxt },
+      skyPipeline(*this->cxt, shaderManager),
+      postPipeline(*this->cxt, shaderManager),
+      hdrColorBuffer(*this->cxt),
+      samplerLinearRepeat(*this->cxt),
+      samplerLinearClamp(*this->cxt)
 {
-    printLog("Current working directory: {}", std::filesystem::current_path().string());
-
-    // Set up GLFW callbacks
-    window_.setKeyCallback(keyCallback);
-    window_.setMouseButtonCallback(mouseButtonCallback);
-    window_.setCursorPosCallback(cursorPosCallback);
-    window_.setScrollCallback(scrollCallback);
-
-    // Store this instance in GLFW user pointer for callback access
-    window_.setUserPointer(this);
-
-    // Setup frame resources
-    commandBuffers_ = ctx_.createGraphicsCommandBuffers(kMaxFramesInFlight);
-
-    uint32_t imageCount = swapchain_.imageCount();
-
-    // Create semaphores
-    presentSemaphores_.resize(imageCount);
-    renderSemaphores_.resize(imageCount);
-    for (size_t i = 0; i < imageCount; i++) {
-        VkSemaphoreCreateInfo semaphoreCI{VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO};
-        check(vkCreateSemaphore(ctx_.device(), &semaphoreCI, nullptr, &presentSemaphores_[i]));
-        check(vkCreateSemaphore(ctx_.device(), &semaphoreCI, nullptr, &renderSemaphores_[i]));
-    }
-
-    // Create fences
-    inFlightFences_.resize(kMaxFramesInFlight);
-    for (size_t i = 0; i < kMaxFramesInFlight; i++) {
-        VkFenceCreateInfo fenceCreateInfo{VK_STRUCTURE_TYPE_FENCE_CREATE_INFO};
-        fenceCreateInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
-        check(vkCreateFence(ctx_.device(), &fenceCreateInfo, nullptr, &inFlightFences_[i]));
-    }
+    PRINT_TO_LOGGER("Current working directory: %s", this->RootPath);
+    
+    this->commandBuffers = this->cxt->createGrapicsCommandBufferHanders(MAX_FRAMES_IN_FLIGHT);
+    this->camera = std::make_shared<vkengine::object::Camera2>();
+    this->window->setCamera(this->camera);
 
     // Initialize GUI
-    guiRenderer_.resize(windowSize_.width, windowSize_.height);
+    guiRenderer.resize(this->extent.width, this->extent.height);
 
-    samplerLinearRepeat_.createLinearRepeat();
-    samplerLinearClamp_.createLinearClamp();
+    samplerLinearRepeat.createLinearRepeat();
+    samplerLinearClamp.createLinearClamp();
 
-    // Camera setup
-    const float aspectRatio = float(windowSize_.width) / windowSize_.height;
-    camera_.type = hlab::Camera::CameraType::firstperson;
-    camera_.setPosition(glm::vec3(0.0f, 0.0f, -2.5f));
-    camera_.setRotation(glm::vec3(0.0f));
-    camera_.updateViewMatrix();
-    camera_.setPerspective(75.0f, aspectRatio, 0.1f, 256.0f);
+    cFloat aspectRatio = static_cast<cFloat>(this->extent.width) / static_cast<cFloat>(this->extent.height);
+
+    cFloat fov = camera->getFov();
+    cFloat nearP = camera->getNearP();
+    cFloat farP = camera->getFarP();
+
+    camera->setPerspectiveProjection(fov, aspectRatio, nearP, farP);
 
     // Initialize skybox and post-processing
     initializeSkybox();
     initializePostProcessing();
 }
 
-Ex11_PostProcessingExample::~Ex11_PostProcessingExample()
+PostProcessingExample::~PostProcessingExample()
 {
-    ctx_.waitIdle();
 
-    for (auto& semaphore : presentSemaphores_) {
-        vkDestroySemaphore(ctx_.device(), semaphore, nullptr);
-    }
-    for (auto& semaphore : renderSemaphores_) {
-        vkDestroySemaphore(ctx_.device(), semaphore, nullptr);
-    }
-    for (auto& fence : inFlightFences_) {
-        vkDestroyFence(ctx_.device(), fence, nullptr);
-    }
 }
 
-void Ex11_PostProcessingExample::initializeSkybox()
+void PostProcessingExample::recreateSwapchain()
 {
-    // Create HDR color buffer for skybox rendering
-    hdrColorBuffer_.createImage(VK_FORMAT_R16G16B16A16_SFLOAT, windowSize_.width,
-                                windowSize_.height, VK_SAMPLE_COUNT_1_BIT,
-                                VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
-                                VK_IMAGE_ASPECT_COLOR_BIT, 1, 1, 0, VK_IMAGE_VIEW_TYPE_2D);
+    VulkanEngineWin2::recreateSwapchain();
 
-    // Create skybox pipeline (now renders to HDR buffer instead of swapchain)
-    skyPipeline_.createByName("sky", VK_FORMAT_R16G16B16A16_SFLOAT, ctx_.depthFormat(),
-                              VK_SAMPLE_COUNT_1_BIT);
+    guiRenderer.resize(this->extent.width, this->extent.height);
+
+    hdrColorBuffer.createImage(
+        this->extent.width,
+        this->extent.height,
+        VK_FORMAT_R16G16B16A16_SFLOAT,
+        VK_SAMPLE_COUNT_1_BIT,
+        VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+        VK_IMAGE_ASPECT_COLOR_BIT,
+        1, 1,
+        (VkImageCreateFlagBits)0
+    );
+
+    hdrColorBuffer.setSampler(this->samplerLinearClamp.getSampler());
+
+    postProcessingDescriptorSets.clear();
+    postProcessingDescriptorSets.resize(MAX_FRAMES_IN_FLIGHT);
+
+    //  4. Post-processing descriptor sets 재생성
+    for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+        // 기존 descriptor set은 DescriptorSetHander가 자동으로 정리
+        postProcessingDescriptorSets[i].create(
+            *this->cxt,
+            {
+                hdrColorBuffer.ResourceBinding(),
+                postProcessingOptionsUniforms[i].ResourceBinding()
+            });
+    }
+
+    // projection 업데이트
+    cFloat aspectRatio = static_cast<cFloat>(this->extent.width) / static_cast<cFloat>(this->extent.height);
+    cFloat fov = camera->getFov();
+    cFloat nearP = camera->getNearP();
+    cFloat farP = camera->getFarP();
+    camera->setPerspectiveProjection(fov, aspectRatio, nearP, farP);
+}
+
+void PostProcessingExample::initializeSkybox()
+{
+
+    // Set up HDR color buffer sampler
+    hdrColorBuffer.createImage(this->extent.width,
+        this->extent.height,
+        VK_FORMAT_R16G16B16A16_SFLOAT,
+        VK_SAMPLE_COUNT_1_BIT,
+        VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+        VK_IMAGE_ASPECT_COLOR_BIT, 1, 1, (VkImageCreateFlagBits)0
+    );
+
+    // Create skybox pipeline (now renders to HDR buffer instead of swapChain)
+    skyPipeline.createByName("sky", 
+        VK_FORMAT_R16G16B16A16_SFLOAT, 
+        cxt->getDepthStencil()->depthFormat,
+        VK_SAMPLE_COUNT_1_BIT);
 
     // Load IBL textures
-    string path = kAssetsPathPrefix + "textures/golden_gate_hills_4k/";
-    skyTextures_.loadKtxMaps(path + "specularGGX.ktx2", path + "diffuseLambertian.ktx2",
-                             path + "outputLUT.png");
+    std::string path = RootPath + Path + "resource/";
+    skyTextures.LoadKTXMap(
+        path + "cubeMap/specular_out.ktx2",
+        path + "cubeMap/diffuse_out.ktx2",
+        path + "cubeMap/outputLUT.png"
+    );
 
     // Create uniform buffers for each frame
-    sceneDataUniforms_.clear();
-    sceneDataUniforms_.reserve(kMaxFramesInFlight);
-    for (uint32_t i = 0; i < kMaxFramesInFlight; ++i) {
-        sceneDataUniforms_.emplace_back(ctx_, sceneDataUBO_);
+    sceneDataUniforms.clear();
+    sceneDataUniforms.reserve(MAX_FRAMES_IN_FLIGHT);
+    for (uint32_t i = 0; i < MAX_FRAMES_IN_FLIGHT; ++i) {
+        sceneDataUniforms.emplace_back(*this->cxt, sceneDataUBO);
     }
 
     // Create HDR sky options uniform buffers
-    skyOptionsUniforms_.clear();
-    skyOptionsUniforms_.reserve(kMaxFramesInFlight);
-    for (uint32_t i = 0; i < kMaxFramesInFlight; ++i) {
-        skyOptionsUniforms_.emplace_back(ctx_, skyOptionsUBO_);
+    skyOptionsUniforms.clear();
+    skyOptionsUniforms.reserve(MAX_FRAMES_IN_FLIGHT);
+    for (uint32_t i = 0; i < MAX_FRAMES_IN_FLIGHT; ++i) {
+        skyOptionsUniforms.emplace_back(*this->cxt, skyOptionsUBO);
     }
 
     // Create descriptor sets for scene data and options (set 0)
-    sceneDescriptorSets_.resize(kMaxFramesInFlight);
-    for (size_t i = 0; i < kMaxFramesInFlight; i++) {
-        sceneDescriptorSets_[i].create(ctx_,
-                                       {
-                                           sceneDataUniforms_[i].resourceBinding(), // binding 0
-                                           skyOptionsUniforms_[i].resourceBinding() // binding 1
-                                       });
+    sceneDescriptorSets.resize(MAX_FRAMES_IN_FLIGHT);
+    for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+        sceneDescriptorSets[i].create(*this->cxt,
+            {
+                sceneDataUniforms[i].ResourceBinding(), // binding 0
+                skyOptionsUniforms[i].ResourceBinding() // binding 1
+            });
     }
 
     // Create descriptor set for skybox textures (set 1)
-    skyDescriptorSet_.create(ctx_, {skyTextures_.prefiltered().resourceBinding(),
-                                    skyTextures_.irradiance().resourceBinding(),
-                                    skyTextures_.brdfLUT().resourceBinding()});
+    skyDescriptorSet.create(*this->cxt,
+        {
+            skyTextures.Prefiltered().getResourceBinding(),
+            skyTextures.Irradiance().getResourceBinding(),
+            skyTextures.BrdfLUT().getResourceBinding()
+        });
 }
 
-void Ex11_PostProcessingExample::initializePostProcessing()
+void PostProcessingExample::initializePostProcessing()
 {
     // Create post-processing pipeline
-    postPipeline_.createByName("post", swapchain_.colorFormat(), ctx_.depthFormat(),
-                               VK_SAMPLE_COUNT_1_BIT);
+    postPipeline.createByName(
+        "post", 
+        swapChain->getSwapChainImageFormat(), 
+        cxt->getDepthStencil()->depthFormat,
+        VK_SAMPLE_COUNT_1_BIT);
 
-    // Set up HDR color buffer sampler
-    hdrColorBuffer_.setSampler(samplerLinearClamp_.handle());
+
+    hdrColorBuffer.setSampler(this->samplerLinearClamp.getSampler());
 
     // Create post-processing uniform buffers for each frame
-    postProcessingOptionsUniforms_.clear();
-    postProcessingOptionsUniforms_.reserve(kMaxFramesInFlight);
-    for (uint32_t i = 0; i < kMaxFramesInFlight; ++i) {
-        postProcessingOptionsUniforms_.emplace_back(ctx_, postProcessingOptionsUBO_);
+    postProcessingOptionsUniforms.clear();
+    postProcessingOptionsUniforms.reserve(MAX_FRAMES_IN_FLIGHT);
+    for (uint32_t i = 0; i < MAX_FRAMES_IN_FLIGHT; ++i) {
+        postProcessingOptionsUniforms.emplace_back(*this->cxt, postProcessingOptionsUBO);
     }
 
     // Create descriptor sets for post-processing (set 0: HDR texture + options uniform)
-    postProcessingDescriptorSets_.resize(kMaxFramesInFlight);
-    for (size_t i = 0; i < kMaxFramesInFlight; i++) {
-        postProcessingDescriptorSets_[i].create(
-            ctx_,
+    postProcessingDescriptorSets.resize(MAX_FRAMES_IN_FLIGHT);
+    for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+        postProcessingDescriptorSets[i].create(
+            *this->cxt,
             {
-                hdrColorBuffer_.resourceBinding(), // binding 0: sampler2D hdrColorBuffer
-                postProcessingOptionsUniforms_[i]
-                    .resourceBinding() // binding 1: PostProcessingOptions uniform
+                hdrColorBuffer.ResourceBinding(), // binding 0: sampler2D hdrColorBuffer
+                postProcessingOptionsUniforms[i].ResourceBinding() // binding 1: PostProcessingOptions uniform
             });
     }
 }
 
-void Ex11_PostProcessingExample::mainLoop()
+void PostProcessingExample::mainLoop()
 {
     auto lastTime = std::chrono::high_resolution_clock::now();
 
-    while (!window_.isCloseRequested() && !shouldClose_) {
-        window_.pollEvents();
+    while (!window->shouldClose()) {
+        window->pollEvents();
 
         // Calculate delta time for camera updates
         auto currentTime = std::chrono::high_resolution_clock::now();
@@ -179,70 +203,110 @@ void Ex11_PostProcessingExample::mainLoop()
         // Clamp delta time to prevent large jumps
         deltaTime = std::min(deltaTime, 0.033f); // Max 33ms (30 FPS minimum)
 
+        // camera update
+        if (window->getKeyBoardState().m_keyPressed[GLFW_KEY_W])
+        {
+            this->camera->MoveForward(deltaTime);
+        }
+
+        if (window->getKeyBoardState().m_keyPressed[GLFW_KEY_S])
+        {
+            this->camera->MoveForward(-deltaTime);
+        }
+
+        if (window->getKeyBoardState().m_keyPressed[GLFW_KEY_A])
+        {
+            this->camera->MoveRight(-deltaTime);
+        }
+
+        if (window->getKeyBoardState().m_keyPressed[GLFW_KEY_D])
+        {
+            this->camera->MoveRight(deltaTime);
+        }
+
+        if (window->getKeyBoardState().m_keyPressed[GLFW_KEY_Q])
+        {
+            this->camera->MoveUp(-deltaTime);
+        }
+
+        if (window->getKeyBoardState().m_keyPressed[GLFW_KEY_E])
+        {
+            this->camera->MoveUp(deltaTime);
+        }
+
         // Update camera
-        camera_.update(deltaTime);
+         this->camera->update();
 
         // Update scene data UBO
-        sceneDataUBO_.projection = camera_.matrices.perspective;
-        sceneDataUBO_.view = camera_.matrices.view;
-        sceneDataUBO_.cameraPos = camera_.position;
+        sceneDataUBO.projection = camera->getProjectionMatrix();
+        sceneDataUBO.view = camera->getViewMatrix();
+        sceneDataUBO.cameraPos = camera->getPos();
 
-        updateGui(windowSize_);
-        guiRenderer_.update();
+        updateGui(this->extent);
+        guiRenderer.update();
 
         renderFrame();
     }
 }
 
-void Ex11_PostProcessingExample::renderFrame()
+void PostProcessingExample::renderFrame()
 {
-    check(vkWaitForFences(ctx_.device(), 1, &inFlightFences_[currentFrame_], VK_TRUE, UINT64_MAX));
-    check(vkResetFences(ctx_.device(), 1, &inFlightFences_[currentFrame_]));
+    _VK_CHECK_RESULT_(vkWaitForFences(cxt->getDevice()->logicaldevice, 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX));
+    _VK_CHECK_RESULT_(vkResetFences(cxt->getDevice()->logicaldevice, 1, &inFlightFences[currentFrame]));
 
     // Update uniform buffers
-    sceneDataUniforms_[currentFrame_].updateData();
-    skyOptionsUniforms_[currentFrame_].updateData();
-    postProcessingOptionsUniforms_[currentFrame_].updateData(); // Update post-processing options
+    sceneDataUniforms[currentFrame].updateData();
+    skyOptionsUniforms[currentFrame].updateData();
+    postProcessingOptionsUniforms[currentFrame].updateData(); // Update post-processing options
 
     uint32_t imageIndex = 0;
     VkResult acquireResult =
-        swapchain_.acquireNextImage(presentSemaphores_[currentSemaphore_], imageIndex);
+        swapChain->acquireNextImage(presentSemaphores[currentSemaphore], imageIndex);
 
     if (acquireResult == VK_ERROR_OUT_OF_DATE_KHR) {
-        exitWithMessage("Window resize not implemented");
+        this->recreateSwapchain();
+        return;
     } else if (acquireResult != VK_SUCCESS && acquireResult != VK_SUBOPTIMAL_KHR) {
-        exitWithMessage("Failed to acquire swapchain image!");
+        EXIT_TO_LOGGER("Failed to acquire swapChain image!");
     }
 
-    recordCommandBuffer(commandBuffers_[currentFrame_], imageIndex, windowSize_);
+    recordCommandBuffer(commandBuffers[currentFrame], imageIndex, extent);
 
-    submitFrame(commandBuffers_[currentFrame_], presentSemaphores_[currentSemaphore_],
-                renderSemaphores_[currentSemaphore_], inFlightFences_[currentFrame_]);
+    submitFrame(commandBuffers[currentFrame], presentSemaphores[currentSemaphore],
+                renderSemaphores[currentSemaphore], inFlightFences[currentFrame]);
 
     // Present frame
-    VkResult presentResult = swapchain_.queuePresent(ctx_.graphicsQueue(), imageIndex,
-                                                     renderSemaphores_[currentSemaphore_]);
+    VkResult presentResult = swapChain->queuePresent(cxt->getDevice()->graphicsVKQueue, imageIndex,
+                                                     renderSemaphores[currentSemaphore]);
 
-    if (presentResult == VK_ERROR_OUT_OF_DATE_KHR || presentResult == VK_SUBOPTIMAL_KHR) {
-        exitWithMessage("Window resize not implemented");
+    if (presentResult == VK_ERROR_OUT_OF_DATE_KHR) {
+        this->recreateSwapchain();
+        return;
+    }
+    else if (presentResult == VK_SUBOPTIMAL_KHR) {
+        EXIT_TO_LOGGER("Window resize not implemented");
     } else if (presentResult != VK_SUCCESS) {
-        exitWithMessage("Failed to present swapchain image!");
+        EXIT_TO_LOGGER("Failed to present swapChain image!");
     }
 
-    currentFrame_ = (currentFrame_ + 1) % kMaxFramesInFlight;
-    currentSemaphore_ = (currentSemaphore_ + 1) % swapchain_.imageCount();
+    this->caluCurrentValue();
 }
 
-void Ex11_PostProcessingExample::updateGui(VkExtent2D windowSize)
+void PostProcessingExample::updateGui(VkExtent2D windowSize)
 {
     ImGuiIO& io = ImGui::GetIO();
+    vkengine::platform::MouseState& mouseState = this->window->getmouseState();
+
+    cVec3 CameraPosition = this->camera->getPos();
+    cFloat Yaw = this->camera->getYaw();
+    cFloat Pithch = this->camera->getPitch();
 
     // Update ImGui IO state
     io.DisplaySize = ImVec2(float(windowSize.width), float(windowSize.height));
-    io.MousePos = ImVec2(mouseState_.position.x, mouseState_.position.y);
-    io.MouseDown[0] = mouseState_.buttons.left;
-    io.MouseDown[1] = mouseState_.buttons.right;
-    io.MouseDown[2] = mouseState_.buttons.middle;
+    io.MousePos = ImVec2(mouseState.position.x, mouseState.position.y);
+    io.MouseDown[0] = mouseState.buttons.left;
+    io.MouseDown[1] = mouseState.buttons.right;
+    io.MouseDown[2] = mouseState.buttons.middle;
 
     // Begin GUI frame
     ImGui::NewFrame();
@@ -252,23 +316,15 @@ void Ex11_PostProcessingExample::updateGui(VkExtent2D windowSize)
     ImGui::SetNextWindowSize(ImVec2(300, 150), ImGuiCond_FirstUseEver);
 
     if (ImGui::Begin("Camera Control")) {
-        ImGui::Text("Camera Position: (%.2f, %.2f, %.2f)", camera_.position.x, camera_.position.y,
-                    camera_.position.z);
-        ImGui::Text("Camera Rotation: (%.2f, %.2f, %.2f)", camera_.rotation.x, camera_.rotation.y,
-                    camera_.rotation.z);
+        ImGui::Text("Camera Position: (%.2f, %.2f, %.2f)", CameraPosition.x, CameraPosition.y, CameraPosition.z);
+        ImGui::Text("Camera Yaw Pitch: (%.2f, %.2f)", Yaw, Pithch);
 
         ImGui::Separator();
         ImGui::Text("Controls:");
         ImGui::Text("Mouse: Look around");
         ImGui::Text("WASD: Move");
         ImGui::Text("QE: Up/Down");
-        ImGui::Text("F2: Toggle camera mode");
 
-        bool isFirstPerson = camera_.type == hlab::Camera::CameraType::firstperson;
-        if (ImGui::Checkbox("First Person Mode", &isFirstPerson)) {
-            camera_.type = isFirstPerson ? hlab::Camera::CameraType::firstperson
-                                         : hlab::Camera::CameraType::lookat;
-        }
     }
     ImGui::End();
 
@@ -281,7 +337,7 @@ void Ex11_PostProcessingExample::updateGui(VkExtent2D windowSize)
     ImGui::Render();
 }
 
-void Ex11_PostProcessingExample::renderHDRControlWindow()
+void PostProcessingExample::renderHDRControlWindow()
 {
     ImGui::SetNextWindowPos(ImVec2(320, 10), ImGuiCond_FirstUseEver);
     ImGui::SetNextWindowSize(ImVec2(350, 350), ImGuiCond_FirstUseEver);
@@ -293,17 +349,17 @@ void Ex11_PostProcessingExample::renderHDRControlWindow()
 
     // HDR Environment Controls
     if (ImGui::CollapsingHeader("HDR Environment", ImGuiTreeNodeFlags_DefaultOpen)) {
-        ImGui::SliderFloat("Environment Intensity", &skyOptionsUBO_.environmentIntensity, 0.0f,
+        ImGui::SliderFloat("Environment Intensity", &skyOptionsUBO.environmentIntensity, 0.0f,
                            10.0f, "%.2f");
     }
 
     // Environment Map Controls
     if (ImGui::CollapsingHeader("Environment Map", ImGuiTreeNodeFlags_DefaultOpen)) {
-        ImGui::SliderFloat("Roughness Level", &skyOptionsUBO_.roughnessLevel, 0.0f, 8.0f, "%.1f");
+        ImGui::SliderFloat("Roughness Level", &skyOptionsUBO.roughnessLevel, 0.0f, 8.0f, "%.1f");
 
-        bool useIrradiance = skyOptionsUBO_.useIrradianceMap != 0;
+        bool useIrradiance = skyOptionsUBO.useIrradianceMap != 0;
         if (ImGui::Checkbox("Use Irradiance Map", &useIrradiance)) {
-            skyOptionsUBO_.useIrradianceMap = useIrradiance ? 1 : 0;
+            skyOptionsUBO.useIrradianceMap = useIrradiance ? 1 : 0;
         }
         ImGui::SameLine();
         if (ImGui::Button("?")) {
@@ -317,49 +373,49 @@ void Ex11_PostProcessingExample::renderHDRControlWindow()
 
     // Debug Visualization
     if (ImGui::CollapsingHeader("Debug Visualization")) {
-        bool showMipLevels = skyOptionsUBO_.showMipLevels != 0;
+        bool showMipLevels = skyOptionsUBO.showMipLevels != 0;
         if (ImGui::Checkbox("Show Mip Levels", &showMipLevels)) {
-            skyOptionsUBO_.showMipLevels = showMipLevels ? 1 : 0;
+            skyOptionsUBO.showMipLevels = showMipLevels ? 1 : 0;
         }
 
-        bool showCubeFaces = skyOptionsUBO_.showCubeFaces != 0;
+        bool showCubeFaces = skyOptionsUBO.showCubeFaces != 0;
         if (ImGui::Checkbox("Show Cube Faces", &showCubeFaces)) {
-            skyOptionsUBO_.showCubeFaces = showCubeFaces ? 1 : 0;
+            skyOptionsUBO.showCubeFaces = showCubeFaces ? 1 : 0;
         }
     }
 
     // Simplified Presets
     if (ImGui::CollapsingHeader("Presets")) {
         if (ImGui::Button("Default")) {
-            skyOptionsUBO_.environmentIntensity = 1.0f;
-            skyOptionsUBO_.roughnessLevel = 0.5f;
-            skyOptionsUBO_.useIrradianceMap = 0;
-            skyOptionsUBO_.showMipLevels = 0;
-            skyOptionsUBO_.showCubeFaces = 0;
+            skyOptionsUBO.environmentIntensity = 1.0f;
+            skyOptionsUBO.roughnessLevel = 0.5f;
+            skyOptionsUBO.useIrradianceMap = 0;
+            skyOptionsUBO.showMipLevels = 0;
+            skyOptionsUBO.showCubeFaces = 0;
         }
         ImGui::SameLine();
         if (ImGui::Button("High Exposure")) {
-            skyOptionsUBO_.environmentIntensity = 1.5f;
+            skyOptionsUBO.environmentIntensity = 1.5f;
         }
         ImGui::SameLine();
         if (ImGui::Button("Low Exposure")) {
-            skyOptionsUBO_.environmentIntensity = 0.8f;
+            skyOptionsUBO.environmentIntensity = 0.8f;
         }
 
         if (ImGui::Button("Sharp Reflections")) {
-            skyOptionsUBO_.roughnessLevel = 0.0f;
-            skyOptionsUBO_.useIrradianceMap = 0;
+            skyOptionsUBO.roughnessLevel = 0.0f;
+            skyOptionsUBO.useIrradianceMap = 0;
         }
         ImGui::SameLine();
         if (ImGui::Button("Diffuse Lighting")) {
-            skyOptionsUBO_.useIrradianceMap = 1;
+            skyOptionsUBO.useIrradianceMap = 1;
         }
     }
 
     ImGui::End();
 }
 
-void Ex11_PostProcessingExample::renderPostProcessingControlWindow()
+void PostProcessingExample::renderPostProcessingControlWindow()
 {
     ImGui::SetNextWindowPos(ImVec2(680, 10), ImGuiCond_FirstUseEver);
     ImGui::SetNextWindowSize(ImVec2(400, 600), ImGuiCond_FirstUseEver);
@@ -375,39 +431,39 @@ void Ex11_PostProcessingExample::renderPostProcessingControlWindow()
                                           "Uncharted 2", "GT (Gran Turismo)", "Lottes",
                                           "Exponential", "Reinhard Extended", "Luminance",
                                           "Hable"};
-        ImGui::Combo("Tone Mapping Type", &postProcessingOptionsUBO_.toneMappingType,
+        ImGui::Combo("Tone Mapping Type", &postProcessingOptionsUBO.toneMappingType,
                      toneMappingNames, IM_ARRAYSIZE(toneMappingNames));
 
-        ImGui::SliderFloat("Exposure", &postProcessingOptionsUBO_.exposure, 0.1f, 5.0f, "%.2f");
-        ImGui::SliderFloat("Gamma", &postProcessingOptionsUBO_.gamma, 1.0f / 2.2f, 2.2f, "%.2f");
+        ImGui::SliderFloat("Exposure", &postProcessingOptionsUBO.exposure, 0.1f, 5.0f, "%.2f");
+        ImGui::SliderFloat("Gamma", &postProcessingOptionsUBO.gamma, 1.0f / 2.2f, 2.2f, "%.2f");
 
-        if (postProcessingOptionsUBO_.toneMappingType == 7) { // Reinhard Extended
-            ImGui::SliderFloat("Max White", &postProcessingOptionsUBO_.maxWhite, 1.0f, 20.0f,
+        if (postProcessingOptionsUBO.toneMappingType == 7) { // Reinhard Extended
+            ImGui::SliderFloat("Max White", &postProcessingOptionsUBO.maxWhite, 1.0f, 20.0f,
                                "%.1f");
         }
     }
 
     // Color Grading Controls
     if (ImGui::CollapsingHeader("Color Grading", ImGuiTreeNodeFlags_DefaultOpen)) {
-        ImGui::SliderFloat("Contrast", &postProcessingOptionsUBO_.contrast, 0.0f, 3.0f, "%.2f");
-        ImGui::SliderFloat("Brightness", &postProcessingOptionsUBO_.brightness, -1.0f, 1.0f,
+        ImGui::SliderFloat("Contrast", &postProcessingOptionsUBO.contrast, 0.0f, 3.0f, "%.2f");
+        ImGui::SliderFloat("Brightness", &postProcessingOptionsUBO.brightness, -1.0f, 1.0f,
                            "%.2f");
-        ImGui::SliderFloat("Saturation", &postProcessingOptionsUBO_.saturation, 0.0f, 2.0f, "%.2f");
-        ImGui::SliderFloat("Vibrance", &postProcessingOptionsUBO_.vibrance, -1.0f, 1.0f, "%.2f");
+        ImGui::SliderFloat("Saturation", &postProcessingOptionsUBO.saturation, 0.0f, 2.0f, "%.2f");
+        ImGui::SliderFloat("Vibrance", &postProcessingOptionsUBO.vibrance, -1.0f, 1.0f, "%.2f");
     }
 
     // Effects Controls
     if (ImGui::CollapsingHeader("Effects")) {
-        ImGui::SliderFloat("Vignette Strength", &postProcessingOptionsUBO_.vignetteStrength, 0.0f,
+        ImGui::SliderFloat("Vignette Strength", &postProcessingOptionsUBO.vignetteStrength, 0.0f,
                            1.0f, "%.2f");
-        if (postProcessingOptionsUBO_.vignetteStrength > 0.0f) {
-            ImGui::SliderFloat("Vignette Radius", &postProcessingOptionsUBO_.vignetteRadius, 0.1f,
+        if (postProcessingOptionsUBO.vignetteStrength > 0.0f) {
+            ImGui::SliderFloat("Vignette Radius", &postProcessingOptionsUBO.vignetteRadius, 0.1f,
                                1.5f, "%.2f");
         }
 
-        ImGui::SliderFloat("Film Grain", &postProcessingOptionsUBO_.filmGrainStrength, 0.0f, 0.2f,
+        ImGui::SliderFloat("Film Grain", &postProcessingOptionsUBO.filmGrainStrength, 0.0f, 0.2f,
                            "%.3f");
-        ImGui::SliderFloat("Chromatic Aberration", &postProcessingOptionsUBO_.chromaticAberration,
+        ImGui::SliderFloat("Chromatic Aberration", &postProcessingOptionsUBO.chromaticAberration,
                            0.0f, 5.0f, "%.1f");
     }
 
@@ -415,18 +471,18 @@ void Ex11_PostProcessingExample::renderPostProcessingControlWindow()
     if (ImGui::CollapsingHeader("Debug Visualization")) {
         const char* debugModeNames[] = {"Off", "Tone Mapping Comparison", "Color Channels",
                                         "Split Comparison"};
-        ImGui::Combo("Debug Mode", &postProcessingOptionsUBO_.debugMode, debugModeNames,
+        ImGui::Combo("Debug Mode", &postProcessingOptionsUBO.debugMode, debugModeNames,
                      IM_ARRAYSIZE(debugModeNames));
 
-        if (postProcessingOptionsUBO_.debugMode == 2) { // Color Channels
+        if (postProcessingOptionsUBO.debugMode == 2) { // Color Channels
             const char* channelNames[] = {"All",       "Red Only", "Green Only",
                                           "Blue Only", "Alpha",    "Luminance"};
-            ImGui::Combo("Show Channel", &postProcessingOptionsUBO_.showOnlyChannel, channelNames,
+            ImGui::Combo("Show Channel", &postProcessingOptionsUBO.showOnlyChannel, channelNames,
                          IM_ARRAYSIZE(channelNames));
         }
 
-        if (postProcessingOptionsUBO_.debugMode == 3) { // Split Comparison
-            ImGui::SliderFloat("Split Position", &postProcessingOptionsUBO_.debugSplit, 0.0f, 1.0f,
+        if (postProcessingOptionsUBO.debugMode == 3) { // Split Comparison
+            ImGui::SliderFloat("Split Position", &postProcessingOptionsUBO.debugSplit, 0.0f, 1.0f,
                                "%.2f");
         }
     }
@@ -434,70 +490,73 @@ void Ex11_PostProcessingExample::renderPostProcessingControlWindow()
     // Presets
     if (ImGui::CollapsingHeader("Presets")) {
         if (ImGui::Button("Default")) {
-            postProcessingOptionsUBO_.toneMappingType = 2; // ACES
-            postProcessingOptionsUBO_.exposure = 1.0f;
-            postProcessingOptionsUBO_.gamma = 2.2f;
-            postProcessingOptionsUBO_.contrast = 1.0f;
-            postProcessingOptionsUBO_.brightness = 0.0f;
-            postProcessingOptionsUBO_.saturation = 1.0f;
-            postProcessingOptionsUBO_.vibrance = 0.0f;
-            postProcessingOptionsUBO_.vignetteStrength = 0.0f;
-            postProcessingOptionsUBO_.filmGrainStrength = 0.0f;
-            postProcessingOptionsUBO_.chromaticAberration = 0.0f;
-            postProcessingOptionsUBO_.debugMode = 0;
+            postProcessingOptionsUBO.toneMappingType = 2; // ACES
+            postProcessingOptionsUBO.exposure = 1.0f;
+            postProcessingOptionsUBO.gamma = 2.2f;
+            postProcessingOptionsUBO.contrast = 1.0f;
+            postProcessingOptionsUBO.brightness = 0.0f;
+            postProcessingOptionsUBO.saturation = 1.0f;
+            postProcessingOptionsUBO.vibrance = 0.0f;
+            postProcessingOptionsUBO.vignetteStrength = 0.0f;
+            postProcessingOptionsUBO.filmGrainStrength = 0.0f;
+            postProcessingOptionsUBO.chromaticAberration = 0.0f;
+            postProcessingOptionsUBO.debugMode = 0;
         }
         ImGui::SameLine();
         if (ImGui::Button("Cinematic")) {
-            postProcessingOptionsUBO_.toneMappingType = 3; // Uncharted 2
-            postProcessingOptionsUBO_.exposure = 1.2f;
-            postProcessingOptionsUBO_.contrast = 1.1f;
-            postProcessingOptionsUBO_.saturation = 0.9f;
-            postProcessingOptionsUBO_.vignetteStrength = 0.3f;
-            postProcessingOptionsUBO_.vignetteRadius = 0.8f;
-            postProcessingOptionsUBO_.filmGrainStrength = 0.02f;
+            postProcessingOptionsUBO.toneMappingType = 3; // Uncharted 2
+            postProcessingOptionsUBO.exposure = 1.2f;
+            postProcessingOptionsUBO.contrast = 1.1f;
+            postProcessingOptionsUBO.saturation = 0.9f;
+            postProcessingOptionsUBO.vignetteStrength = 0.3f;
+            postProcessingOptionsUBO.vignetteRadius = 0.8f;
+            postProcessingOptionsUBO.filmGrainStrength = 0.02f;
         }
 
         if (ImGui::Button("High Contrast")) {
-            postProcessingOptionsUBO_.contrast = 1.5f;
-            postProcessingOptionsUBO_.brightness = 0.1f;
-            postProcessingOptionsUBO_.saturation = 1.3f;
-            postProcessingOptionsUBO_.vignetteStrength = 0.2f;
+            postProcessingOptionsUBO.contrast = 1.5f;
+            postProcessingOptionsUBO.brightness = 0.1f;
+            postProcessingOptionsUBO.saturation = 1.3f;
+            postProcessingOptionsUBO.vignetteStrength = 0.2f;
         }
         ImGui::SameLine();
         if (ImGui::Button("Low Contrast")) {
-            postProcessingOptionsUBO_.contrast = 0.7f;
-            postProcessingOptionsUBO_.brightness = 0.05f;
-            postProcessingOptionsUBO_.saturation = 0.8f;
+            postProcessingOptionsUBO.contrast = 0.7f;
+            postProcessingOptionsUBO.brightness = 0.05f;
+            postProcessingOptionsUBO.saturation = 0.8f;
         }
 
         if (ImGui::Button("Show Tone Mapping")) {
-            postProcessingOptionsUBO_.debugMode = 1;
-            postProcessingOptionsUBO_.exposure = 2.0f;
+            postProcessingOptionsUBO.debugMode = 1;
+            postProcessingOptionsUBO.exposure = 2.0f;
         }
     }
 
     ImGui::End();
 }
 
-void Ex11_PostProcessingExample::recordCommandBuffer(CommandBuffer& cmd, uint32_t imageIndex,
+void PostProcessingExample::recordCommandBuffer(VKCommandBufferHander& cmd, uint32_t imageIndex,
                                                      VkExtent2D windowSize)
 {
-    vkResetCommandBuffer(cmd.handle(), 0);
+    vkResetCommandBuffer(cmd.getCommandBuffer(), 0);
     VkCommandBufferBeginInfo cmdBufferBeginInfo{VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO};
-    check(vkBeginCommandBuffer(cmd.handle(), &cmdBufferBeginInfo));
+    _VK_CHECK_RESULT_(vkBeginCommandBuffer(cmd.getCommandBuffer(), &cmdBufferBeginInfo));
 
     // === PASS 1: Render skybox to HDR color buffer ===
-
+    
     // Transition HDR color buffer to color attachment
-    hdrColorBuffer_.transitionTo(cmd.handle(), VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT,
-                                 VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-                                 VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT);
+    hdrColorBuffer.transitionTo(
+        cmd.getCommandBuffer(), 
+        VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+        VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT,
+        VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT
+    );
 
     // HDR skybox rendering pass
     VkClearColorValue hdrClearColorValue = {{0.0f, 0.0f, 0.0f, 1.0f}}; // Black clear for HDR
 
     VkRenderingAttachmentInfo hdrColorAttachment{VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO};
-    hdrColorAttachment.imageView = hdrColorBuffer_.view();
+    hdrColorAttachment.imageView = hdrColorBuffer.getImageView();
     hdrColorAttachment.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
     hdrColorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
     hdrColorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
@@ -509,47 +568,50 @@ void Ex11_PostProcessingExample::recordCommandBuffer(CommandBuffer& cmd, uint32_
     hdrRenderingInfo.colorAttachmentCount = 1;
     hdrRenderingInfo.pColorAttachments = &hdrColorAttachment;
 
-    vkCmdBeginRendering(cmd.handle(), &hdrRenderingInfo);
+    vkCmdBeginRendering(cmd.getCommandBuffer(), &hdrRenderingInfo);
 
     // Set viewport and scissor
     VkViewport viewport{0.0f, 0.0f, (float)windowSize.width, (float)windowSize.height, 0.0f, 1.0f};
     VkRect2D scissor{0, 0, windowSize.width, windowSize.height};
-    vkCmdSetViewport(cmd.handle(), 0, 1, &viewport);
-    vkCmdSetScissor(cmd.handle(), 0, 1, &scissor);
+    vkCmdSetViewport(cmd.getCommandBuffer(), 0, 1, &viewport);
+    vkCmdSetScissor(cmd.getCommandBuffer(), 0, 1, &scissor);
 
     // Render skybox to HDR buffer
-    vkCmdBindPipeline(cmd.handle(), VK_PIPELINE_BIND_POINT_GRAPHICS, skyPipeline_.pipeline());
+    vkCmdBindPipeline(cmd.getCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, skyPipeline.getPipeline());
 
-    const auto skyDescriptorSets =
-        std::vector{sceneDescriptorSets_[currentFrame_].handle(), skyDescriptorSet_.handle()};
+    const auto skyDescriptorSets = std::vector{ sceneDescriptorSets[currentFrame].get(), skyDescriptorSet.get() };
 
     vkCmdBindDescriptorSets(
-        cmd.handle(), VK_PIPELINE_BIND_POINT_GRAPHICS, skyPipeline_.pipelineLayout(), 0,
-        static_cast<uint32_t>(skyDescriptorSets.size()), skyDescriptorSets.data(), 0, nullptr);
+        cmd.getCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, skyPipeline.getPipelineLayout(), 0,
+        static_cast<cUint32_t>(skyDescriptorSets.size()), skyDescriptorSets.data(), 0, nullptr);
 
     // Draw skybox - 36 vertices from hardcoded data in shader
-    vkCmdDraw(cmd.handle(), 36, 1, 0, 0);
+    vkCmdDraw(cmd.getCommandBuffer(), 36, 1, 0, 0);
 
-    vkCmdEndRendering(cmd.handle());
+    vkCmdEndRendering(cmd.getCommandBuffer());
 
-    // === PASS 2: Post-process HDR buffer to swapchain ===
+    // === PASS 2: Post-process HDR buffer to swapChain ===
 
     // Transition HDR color buffer to shader read
-    hdrColorBuffer_.transitionTo(cmd.handle(), VK_ACCESS_2_SHADER_READ_BIT,
-                                 VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-                                 VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT);
+    hdrColorBuffer.transitionTo(
+        cmd.getCommandBuffer(), 
+        VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+        VK_ACCESS_2_SHADER_READ_BIT,
+        VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT);
 
-    // Transition swapchain image to color attachment
-    swapchain_.barrierHelper(imageIndex)
-        .transitionTo(cmd.handle(), VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT,
-                      VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-                      VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT);
+    // Transition swapChain image to color attachment
+    swapChain->transitionTo(
+        cmd.getCommandBuffer(),
+        imageIndex,
+        VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+        VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT,
+        VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT);
 
     // Post-processing rendering pass
     VkClearColorValue postClearColorValue = {{0.0f, 0.0f, 0.0f, 1.0f}};
 
     VkRenderingAttachmentInfo postColorAttachment{VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO};
-    postColorAttachment.imageView = swapchain_.imageView(imageIndex);
+    postColorAttachment.imageView = swapChain->getSwapChainImageView(imageIndex);
     postColorAttachment.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
     postColorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
     postColorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
@@ -561,40 +623,42 @@ void Ex11_PostProcessingExample::recordCommandBuffer(CommandBuffer& cmd, uint32_
     postRenderingInfo.colorAttachmentCount = 1;
     postRenderingInfo.pColorAttachments = &postColorAttachment;
 
-    vkCmdBeginRendering(cmd.handle(), &postRenderingInfo);
+    vkCmdBeginRendering(cmd.getCommandBuffer(), &postRenderingInfo);
 
-    vkCmdSetViewport(cmd.handle(), 0, 1, &viewport);
-    vkCmdSetScissor(cmd.handle(), 0, 1, &scissor);
+    vkCmdSetViewport(cmd.getCommandBuffer(), 0, 1, &viewport);
+    vkCmdSetScissor(cmd.getCommandBuffer(), 0, 1, &scissor);
 
     // Render post-processing fullscreen quad
-    vkCmdBindPipeline(cmd.handle(), VK_PIPELINE_BIND_POINT_GRAPHICS, postPipeline_.pipeline());
+    vkCmdBindPipeline(cmd.getCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, postPipeline.getPipeline());
 
-    const auto postDescriptorSets =
-        std::vector{postProcessingDescriptorSets_[currentFrame_].handle()};
+    const auto postDescriptorSets = std::vector{ postProcessingDescriptorSets[currentFrame].get() };
 
     vkCmdBindDescriptorSets(
-        cmd.handle(), VK_PIPELINE_BIND_POINT_GRAPHICS, postPipeline_.pipelineLayout(), 0,
+        cmd.getCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, postPipeline.getPipelineLayout(), 0,
         static_cast<uint32_t>(postDescriptorSets.size()), postDescriptorSets.data(), 0, nullptr);
 
     // Draw fullscreen quad - 6 vertices from hardcoded data in post.vert
-    vkCmdDraw(cmd.handle(), 6, 1, 0, 0);
+    vkCmdDraw(cmd.getCommandBuffer(), 6, 1, 0, 0);
 
-    vkCmdEndRendering(cmd.handle());
+    vkCmdEndRendering(cmd.getCommandBuffer());
 
     // === PASS 3: Draw GUI on top ===
 
     // Draw GUI on top of the post-processed image
-    guiRenderer_.draw(cmd.handle(), swapchain_.imageView(imageIndex), viewport);
+    guiRenderer.draw(cmd.getCommandBuffer(), swapChain->getSwapChainImageView(imageIndex), viewport);
 
-    // Transition swapchain image to present
-    swapchain_.barrierHelper(imageIndex)
-        .transitionTo(cmd.handle(), VK_ACCESS_2_NONE, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
-                      VK_PIPELINE_STAGE_2_BOTTOM_OF_PIPE_BIT);
+    // Transition swapChain image to present
+    swapChain->transitionTo(
+        cmd.getCommandBuffer(), 
+        imageIndex,
+        VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+        VK_ACCESS_2_NONE, 
+        VK_PIPELINE_STAGE_2_BOTTOM_OF_PIPE_BIT);
 
-    check(vkEndCommandBuffer(cmd.handle()));
+    _VK_CHECK_RESULT_(vkEndCommandBuffer(cmd.getCommandBuffer()));
 }
 
-void Ex11_PostProcessingExample::submitFrame(CommandBuffer& commandBuffer,
+void PostProcessingExample::submitFrame(VKCommandBufferHander& commandBuffer,
                                              VkSemaphore waitSemaphore, VkSemaphore signalSemaphore,
                                              VkFence fence)
 {
@@ -611,7 +675,7 @@ void Ex11_PostProcessingExample::submitFrame(CommandBuffer& commandBuffer,
     signalSemaphoreInfo.deviceIndex = 0;
 
     VkCommandBufferSubmitInfo cmdBufferInfo{VK_STRUCTURE_TYPE_COMMAND_BUFFER_SUBMIT_INFO};
-    cmdBufferInfo.commandBuffer = commandBuffer.handle();
+    cmdBufferInfo.commandBuffer = commandBuffer.getCommandBuffer();
     cmdBufferInfo.deviceMask = 0;
 
     VkSubmitInfo2 submitInfo{VK_STRUCTURE_TYPE_SUBMIT_INFO_2};
@@ -622,176 +686,5 @@ void Ex11_PostProcessingExample::submitFrame(CommandBuffer& commandBuffer,
     submitInfo.signalSemaphoreInfoCount = 1;
     submitInfo.pSignalSemaphoreInfos = &signalSemaphoreInfo;
 
-    check(vkQueueSubmit2(commandBuffer.queue(), 1, &submitInfo, fence));
-}
-
-void Ex11_PostProcessingExample::handleMouseMove(int32_t x, int32_t y)
-{
-    int32_t dx = (int32_t)mouseState_.position.x - x;
-    int32_t dy = (int32_t)mouseState_.position.y - y;
-
-    // Don't handle mouse input if ImGui wants to capture it
-    if (ImGui::GetIO().WantCaptureMouse) {
-        mouseState_.position = glm::vec2((float)x, (float)y);
-        return;
-    }
-
-    if (mouseState_.buttons.left) {
-        camera_.rotate(glm::vec3(-dy * camera_.rotationSpeed, -dx * camera_.rotationSpeed, 0.0f));
-    }
-
-    if (mouseState_.buttons.right) {
-        camera_.translate(glm::vec3(-0.0f, 0.0f, dy * .005f));
-    }
-
-    if (mouseState_.buttons.middle) {
-        camera_.translate(glm::vec3(-dx * 0.005f, dy * 0.005f, 0.0f));
-    }
-
-    mouseState_.position = glm::vec2((float)x, (float)y);
-}
-
-// Static callback implementations
-void Ex11_PostProcessingExample::keyCallback(GLFWwindow* window, int key, int scancode, int action,
-                                             int mods)
-{
-    Ex11_PostProcessingExample* example =
-        static_cast<Ex11_PostProcessingExample*>(glfwGetWindowUserPointer(window));
-    if (example) {
-        example->handleKeyInput(key, scancode, action, mods);
-    }
-}
-
-void Ex11_PostProcessingExample::mouseButtonCallback(GLFWwindow* window, int button, int action,
-                                                     int mods)
-{
-    Ex11_PostProcessingExample* example =
-        static_cast<Ex11_PostProcessingExample*>(glfwGetWindowUserPointer(window));
-    if (example) {
-        example->handleMouseButton(button, action, mods);
-    }
-}
-
-void Ex11_PostProcessingExample::cursorPosCallback(GLFWwindow* window, double xpos, double ypos)
-{
-    Ex11_PostProcessingExample* example =
-        static_cast<Ex11_PostProcessingExample*>(glfwGetWindowUserPointer(window));
-    if (example) {
-        example->handleCursorPos(xpos, ypos);
-    }
-}
-
-void Ex11_PostProcessingExample::scrollCallback(GLFWwindow* window, double xoffset, double yoffset)
-{
-    Ex11_PostProcessingExample* example =
-        static_cast<Ex11_PostProcessingExample*>(glfwGetWindowUserPointer(window));
-    if (example) {
-        example->handleScroll(xoffset, yoffset);
-    }
-}
-
-// Instance callback handlers
-void Ex11_PostProcessingExample::handleKeyInput(int key, int scancode, int action, int mods)
-{
-    if (action == GLFW_PRESS) {
-        switch (key) {
-        case GLFW_KEY_ESCAPE:
-            shouldClose_ = true;
-            break;
-        case GLFW_KEY_F2:
-            if (camera_.type == hlab::Camera::CameraType::lookat) {
-                camera_.type = hlab::Camera::CameraType::firstperson;
-            } else {
-                camera_.type = hlab::Camera::CameraType::lookat;
-            }
-            break;
-        }
-
-        // First person camera controls
-        if (camera_.type == hlab::Camera::firstperson) {
-            switch (key) {
-            case GLFW_KEY_W:
-                camera_.keys.forward = true;
-                break;
-            case GLFW_KEY_S:
-                camera_.keys.backward = true;
-                break;
-            case GLFW_KEY_A:
-                camera_.keys.left = true;
-                break;
-            case GLFW_KEY_D:
-                camera_.keys.right = true;
-                break;
-            case GLFW_KEY_E:
-                camera_.keys.down = true;
-                break;
-            case GLFW_KEY_Q:
-                camera_.keys.up = true;
-                break;
-            }
-        }
-    } else if (action == GLFW_RELEASE) {
-        // First person camera controls
-        if (camera_.type == hlab::Camera::firstperson) {
-            switch (key) {
-            case GLFW_KEY_W:
-                camera_.keys.forward = false;
-                break;
-            case GLFW_KEY_S:
-                camera_.keys.backward = false;
-                break;
-            case GLFW_KEY_A:
-                camera_.keys.left = false;
-                break;
-            case GLFW_KEY_D:
-                camera_.keys.right = false;
-                break;
-            case GLFW_KEY_E:
-                camera_.keys.down = false;
-                break;
-            case GLFW_KEY_Q:
-                camera_.keys.up = false;
-                break;
-            }
-        }
-    }
-}
-
-void Ex11_PostProcessingExample::handleMouseButton(int button, int action, int mods)
-{
-    if (action == GLFW_PRESS) {
-        switch (button) {
-        case GLFW_MOUSE_BUTTON_LEFT:
-            mouseState_.buttons.left = true;
-            break;
-        case GLFW_MOUSE_BUTTON_RIGHT:
-            mouseState_.buttons.right = true;
-            break;
-        case GLFW_MOUSE_BUTTON_MIDDLE:
-            mouseState_.buttons.middle = true;
-            break;
-        }
-    } else if (action == GLFW_RELEASE) {
-        switch (button) {
-        case GLFW_MOUSE_BUTTON_LEFT:
-            mouseState_.buttons.left = false;
-            break;
-        case GLFW_MOUSE_BUTTON_RIGHT:
-            mouseState_.buttons.right = false;
-            break;
-        case GLFW_MOUSE_BUTTON_MIDDLE:
-            mouseState_.buttons.middle = false;
-            break;
-        }
-    }
-}
-
-void Ex11_PostProcessingExample::handleCursorPos(double xpos, double ypos)
-{
-    handleMouseMove(static_cast<int32_t>(xpos), static_cast<int32_t>(ypos));
-}
-
-void Ex11_PostProcessingExample::handleScroll(double xoffset, double yoffset)
-{
-    camera_.translate(glm::vec3(0.0f, 0.0f, (float)yoffset * 0.05f));
+    _VK_CHECK_RESULT_(vkQueueSubmit2(commandBuffer.getQueue(), 1, &submitInfo, fence));
 }

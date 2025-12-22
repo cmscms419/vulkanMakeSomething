@@ -16,17 +16,11 @@
     <ClCompile Include="..\..\app\component2\VKgui.cpp" />
     <ClCompile Include="..\..\app\component2\VKwindow.cpp" />
     <ClCompile Include="..\..\app\component\imgui\imgui.cpp" />
-    <ClCompile Include="..\..\app\component\imgui\imgui_demo.cpp" />
     <ClCompile Include="..\..\app\component\imgui\imgui_draw.cpp" />
-    <ClCompile Include="..\..\app\component\imgui\imgui_impl_glfw.cpp" />
-    <ClCompile Include="..\..\app\component\imgui\imgui_impl_vulkan.cpp" />
     <ClCompile Include="..\..\app\component\imgui\imgui_tables.cpp" />
     <ClCompile Include="..\..\app\component\imgui\imgui_widgets.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\app\component\imgui\imstb_rectpack.h" />
-    <ClInclude Include="..\..\app\component\imgui\imstb_textedit.h" />
-    <ClInclude Include="..\..\app\component\imgui\imstb_truetype.h" />
     <ClInclude Include="..\..\include\component2\Camera2.h" />
     <ClInclude Include="..\..\include\component2\VKengine2.h" />
     <ClInclude Include="..\..\include\component2\VKgui.h" />

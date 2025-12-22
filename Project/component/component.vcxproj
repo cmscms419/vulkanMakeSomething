@@ -30,9 +30,6 @@
     <ClCompile Include="..\..\app\engine\VKinputEvent.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\app\component\imgui\imstb_rectpack.h" />
-    <ClInclude Include="..\..\app\component\imgui\imstb_textedit.h" />
-    <ClInclude Include="..\..\app\component\imgui\imstb_truetype.h" />
     <ClInclude Include="..\..\include\component\Camera.h" />
     <ClInclude Include="..\..\include\component\object3D.h" />
     <ClInclude Include="..\..\include\component\VKGeometryGenerator.h" />

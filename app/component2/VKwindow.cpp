@@ -39,12 +39,12 @@ namespace vkengine {
             m_focusCallback = std::move(callback);
         }
 
-        std::unique_ptr<VirtualWindows> WindowFactory::create(Backend backend, WindowCreateInfo info, std::shared_ptr<object::Camera2> camera) {
+        std::unique_ptr<VirtualWindows> WindowFactory::create(Backend backend, WindowCreateInfo info) {
             std::unique_ptr<VirtualWindows> window;
 
             switch (backend) {
             case Backend::GLFW:
-                window = std::make_unique<glfw::glfwWindow>(info, camera);
+                window = std::make_unique<glfw::glfwWindow>(info);
                 break;
             default:
                 window = nullptr;
@@ -99,16 +99,12 @@ namespace vkengine {
                 this->createWindow(WindowCreateInfo());
             }
 
-            glfwWindow::glfwWindow(const WindowCreateInfo& createInfo, std::shared_ptr<object::Camera2> camera)
+            glfwWindow::glfwWindow(const WindowCreateInfo& createInfo)
             {
+            
                 if (!glfwInit()) {
                     EXIT_TO_LOGGER("Failed to initialize GLFW\n");
                     return;
-                }
-
-                if (camera != nullptr)
-                {
-                    this->camera = camera;
                 }
 
                 m_isCreated = false; // 초기화 상태 설정
@@ -248,6 +244,16 @@ namespace vkengine {
                     return this->camera.get();
                 else
                     return nullptr;
+            }
+
+            void glfwWindow::setCamera(std::shared_ptr<object::Camera2> camera)
+            {
+                this->camera = camera;
+            }
+
+            GLFWwindow* glfwWindow::getGLFWwindow()
+            {
+                return this->m_window;
             }
 
             void glfwWindow::framebufferSizeCallback(GLFWwindow* window, cInt width, cInt height)

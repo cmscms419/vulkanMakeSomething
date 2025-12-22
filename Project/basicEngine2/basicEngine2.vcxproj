@@ -23,6 +23,7 @@
     <ClCompile Include="..\..\app\engine2\VKImage2D.cpp" />
     <ClCompile Include="..\..\app\engine2\VKPipelineGui.cpp" />
     <ClCompile Include="..\..\app\engine2\pipeLineHandle.cpp" />
+    <ClCompile Include="..\..\app\engine2\VKPostProcessing.cpp" />
     <ClCompile Include="..\..\app\engine2\VKsampler.cpp" />
     <ClCompile Include="..\..\app\engine2\VKshader.cpp" />
     <ClCompile Include="..\..\app\engine2\VKShaderManager.cpp" />

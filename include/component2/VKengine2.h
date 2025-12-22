@@ -28,10 +28,11 @@ using namespace vkengine::Log;
 using namespace vkengine;
 
 namespace vkengine {
+
     class VulkanEngineWin2
     {
     public:
-        VulkanEngineWin2(std::string root_path, const std::vector<const char*>& requiredInstanceExtensions, cBool useSwapchain);
+        VulkanEngineWin2(std::string root_path, cBool useSwapchain);
         ~VulkanEngineWin2();
         void init();
         void cleanup();
@@ -42,17 +43,17 @@ namespace vkengine {
 
     protected:
 
-        virtual void initWindow();
-        virtual void initVulkan(const std::vector<const char*>& requiredInstanceExtensions, cBool useSwapchain);
         void caluCurrentValue();
+        virtual void recreateSwapchain();
 
         std::string RootPath{};
-        std::unique_ptr<platform::VirtualWindows> window;
+        std::string Path = "../../../../../../";
+
         
         // Core Vulkan objects
         std::shared_ptr<VKcontext> cxt;
         std::shared_ptr<VKSwapChain> swapChain;
-        std::shared_ptr<VKShaderManager> shaderManager;
+        std::unique_ptr<platform::VirtualWindows> window;
 
         // Frame resources
         std::vector<VKCommandBufferHander> commandBuffers;

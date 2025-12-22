@@ -4,10 +4,6 @@ using namespace vkengine::Log;
 
 namespace vkengine {
 
-    VKBarrierHelper::VKBarrierHelper() {}
-
-    VKBarrierHelper::VKBarrierHelper(const VkImage& image) : image(image) {}
-
     VkCommandBuffer VKBarrierHelper::beginSingleTimeCommands2(VkDevice device, VkCommandPool commandPool, VkCommandBufferLevel level, cBool oneTime)
     {
         VkCommandBuffer buffer{ VK_NULL_HANDLE }; // 커맨드 버퍼 핸들
@@ -73,17 +69,9 @@ namespace vkengine {
         vkFreeCommandBuffers(device, commandPool, 1, &commandBuffer);
     }
 
-    void VKBarrierHelper::transitionImageLayout2(
-        VkCommandBuffer commandBuffer,
-        VkImageLayout newLayout,
-        VkAccessFlags2 newAccess,
-        VkPipelineStageFlags2 newStage,
-        cUint32_t baseMipLevel,
-        cUint32_t levelCount,
-        cUint32_t baseArrayLayer,
-        cUint32_t layerCount)
+    void VKBarrierHelper::transitionImageLayout2(VkCommandBuffer commandBuffer,VkImage image,VkImageLayout newLayout,VkAccessFlags2 newAccess,VkPipelineStageFlags2 newStage,cUint32_t baseMipLevel,cUint32_t levelCount,cUint32_t baseArrayLayer,cUint32_t layerCount)
     {
-        if (this->image == VK_NULL_HANDLE)
+        if (image == VK_NULL_HANDLE)
         {
             return;
         }
@@ -103,7 +91,7 @@ namespace vkengine {
         // 기본적으로 색상 정보를 대상으로 하지만, 이후 조건에 따라 수정됩니다.
         VkImageMemoryBarrier2 barrier2{ VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2 };
 
-        barrier2.image = this->image; // 전환할 이미지 핸들 설정
+        barrier2.image = image; // 전환할 이미지 핸들 설정
         barrier2.srcStageMask = (currentStage != VK_PIPELINE_STAGE_2_NONE)  // 파이프라인 단계 설정
             ? currentStage : VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT;
         barrier2.dstStageMask = newStage;                                  // 파이프라인 단계에 적용될 flag

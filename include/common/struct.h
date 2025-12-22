@@ -632,8 +632,7 @@ struct SkyOptionsUBO
 struct PostProcessingOptionsUBO
 {
     // Tone mapping options
-    cUint32_t toneMappingType = 2; // 0=None, 1=Reinhard, 2=ACES, 3=Uncharted2, 4=GT, 5=Lottes,
-    // 6=Exponential, 7=ReinhardExtended, 8=Luminance, 9=Hable
+    cInt toneMappingType = 2; // 0=None, 1=Reinhard, 2=ACES, 3=Uncharted2, 4=GT, 5=Lottes, 6=Exponential, 7=ReinhardExtended, 8=Luminance, 9=Hable
     cFloat exposure = 1.0f;       // HDR exposure adjustment
     cFloat gamma = 2.2f;          // Gamma correction value
     cFloat maxWhite = 11.2f;      // For extended Reinhard tone mapping
@@ -651,10 +650,10 @@ struct PostProcessingOptionsUBO
     cFloat chromaticAberration = 0.0f; // Chromatic aberration strength
 
     // Debug and visualization
-    cUint32_t debugMode =
+    cInt debugMode =
         0; // 0=Off, 1=Show tone mapping comparison, 2=Show color channels, 3=Split comparison
     cFloat debugSplit = 0.5f;     // Split position for comparison (0.0-1.0)
-    cUint32_t showOnlyChannel = 0; // 0=All, 1=Red, 2=Green, 3=Blue, 4=Alpha, 5=Luminance
+    cInt showOnlyChannel = 0; // 0=All, 1=Red, 2=Green, 3=Blue, 4=Alpha, 5=Luminance
     cFloat padding1 = 0.0f;
 };
 

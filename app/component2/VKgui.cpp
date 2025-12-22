@@ -37,9 +37,8 @@ namespace vkengine {
 
             {
                 // 폰트 경로를 재수정 해야한다.
-                // TODO
                 const cString fontFileName =
-                    path + "../../../../../../resource/noGit/Noto_Sans_KR/static/NotoSansKR_SemiBold.ttf"; // Korean Font
+                    path + "/noGit/Noto_Sans_KR/static/NotoSansKR_SemiBold.ttf"; // Korean Font
 
                 unsigned char* fontData = nullptr;
                 int texWidth, texHeight;
@@ -146,7 +145,7 @@ namespace vkengine {
 
             vkCmdEndRendering(cmd);
         }
-        
+
         void VKimguiRenderer::resize(cUint32_t width, cUint32_t height)
         {
             ImGuiIO& io = ImGui::GetIO();

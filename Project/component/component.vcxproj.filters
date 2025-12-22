@@ -71,15 +71,6 @@
     <ClInclude Include="..\..\include\component\Camera.h">
       <Filter>component</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\app\component\imgui\imstb_rectpack.h">
-      <Filter>component\imgui</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\app\component\imgui\imstb_textedit.h">
-      <Filter>component\imgui</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\app\component\imgui\imstb_truetype.h">
-      <Filter>component\imgui</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\include\component\VKengineOBJLoader.h">
       <Filter>component</Filter>
     </ClInclude>

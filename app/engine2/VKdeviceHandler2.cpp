@@ -180,6 +180,7 @@ namespace vkengine {
 
         if (useSwapChain) {
             deviceExtensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
+            deviceExtensions.push_back(VK_KHR_SHADER_NON_SEMANTIC_INFO_EXTENSION_NAME);// 디버깅할 때를 위해서 임시로 추가
         }
 
         enabledFeatures.samplerAnisotropy = features.samplerAnisotropy;

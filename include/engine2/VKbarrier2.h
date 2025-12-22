@@ -12,10 +12,7 @@ namespace vkengine {
     {
     public:
 
-        VKBarrierHelper();
-
-        VKBarrierHelper(const VkImage& image);
-
+        VKBarrierHelper() = default;
         // Move constructor
         VKBarrierHelper(VKBarrierHelper&& other) noexcept
             : mipLevels(other.mipLevels),
@@ -50,10 +47,9 @@ namespace vkengine {
             return *this;
         }
 
-        void update(VkImage image, VkFormat format, cUint32_t mipLevels, cUint32_t arrayLayers)
+        void update(VkFormat format, cUint32_t mipLevels, cUint32_t arrayLayers)
         {
             this->format = format;
-            this->image = image;
             this->mipLevels = mipLevels;
             this->arrayLayers = arrayLayers;
         }
@@ -110,6 +106,7 @@ namespace vkengine {
          */
         void transitionImageLayout2(
             VkCommandBuffer commandBuffer,
+            VkImage image,
             VkImageLayout newLayout,
             VkAccessFlags2 newAccess,
             VkPipelineStageFlags2 newStage,
@@ -122,10 +119,9 @@ namespace vkengine {
         VkImageLayout& Currentlayout() { return this->currentLayout; }
         VkAccessFlags2& Currentaccess() { return this->currentAccess; }
         VkPipelineStageFlags2& Currentstage() { return this->currentStage; }
-        VkImage& Image() { return this->image;}
         VkFormat& Format() { return this->format; }
-        uint32_t& MipLevels() { return this->mipLevels; }
-        uint32_t& ArrayLayers() { return this->arrayLayers; }
+        cUint32_t& MipLevels() { return this->mipLevels; }
+        cUint32_t& ArrayLayers() { return this->arrayLayers; }
 
     private:
         VkImageAspectFlags getAspectFlagsFromLayout(VkFormat format)
@@ -164,10 +160,9 @@ namespace vkengine {
         VkAccessFlags2 currentAccess = VK_ACCESS_2_NONE;
         VkPipelineStageFlags2 currentStage = VK_PIPELINE_STAGE_2_NONE;
 
-        VkImage image{ VK_NULL_HANDLE };
         VkFormat format{ VK_FORMAT_UNDEFINED };
-        uint32_t mipLevels{ 1 };
-        uint32_t arrayLayers{ 1 };
+        cUint32_t mipLevels{ 1 };
+        cUint32_t arrayLayers{ 1 };
 
     };
 

@@ -72,6 +72,15 @@ namespace vkengine {
                 Log::EXIT_TO_LOGGER("outColorFormat, depthFormat, and msaaSamples required for %s", this->name);
             }
         }
+        else if (name == "post")
+        {
+            this->createPostProcessingPipeLine
+            (
+                outColorFormat.value(),
+                depthFormat.value(),
+                msaaSamples.value()
+            );
+        }
         else {
             PRINT_TO_LOGGER("Error: Unknown pipeline name: " + name);
         }

@@ -56,6 +56,7 @@ namespace vkengine {
             cBool resizable = true;
             cBool visible = true;
             cBool decorated = true;
+            cBool focused = true;
             cBool maximized = false;    // windows max size able
             cBool vsync = true;         // vsync
         };
@@ -92,6 +93,8 @@ namespace vkengine {
             virtual MouseState& getmouseState() = 0;
             virtual KeyboardState& getKeyBoardState() = 0;
             virtual object::Camera2* getCamera() = 0;
+            virtual void setCamera(std::shared_ptr<object::Camera2> camera) = 0;
+            virtual GLFWwindow* getGLFWwindow() = 0;
         };
 
         class BaseWindow : public VirtualWindows {
@@ -114,6 +117,7 @@ namespace vkengine {
 
             cBool isCreated() const { return m_isCreated; }
             const WindowCreateInfo& getCreateInfo() const { return m_createInfo; }
+            virtual GLFWwindow* getGLFWwindow() = 0;
              
         protected:
             WindowCreateInfo m_createInfo;
@@ -140,8 +144,7 @@ namespace vkengine {
 
             static std::unique_ptr<VirtualWindows> create(
                 Backend backend = Backend::GLFW, 
-                WindowCreateInfo info = WindowCreateInfo(),
-                std::shared_ptr<object::Camera2> camera = nullptr
+                WindowCreateInfo info = WindowCreateInfo()
             );
         };
 
@@ -163,7 +166,7 @@ namespace vkengine {
             class glfwWindow : public BaseWindow {
             public:
                 glfwWindow();
-                glfwWindow(const WindowCreateInfo& createInfo, std::shared_ptr<object::Camera2> camera);
+                glfwWindow(const WindowCreateInfo& createInfo);
                 ~glfwWindow() override;
 
                 // glfw 윈도우 생성
@@ -188,6 +191,8 @@ namespace vkengine {
                 MouseState& getmouseState() override;
                 KeyboardState& getKeyBoardState() override;
                 object::Camera2* getCamera() override;
+                void setCamera(std::shared_ptr<object::Camera2> camera) override;
+                virtual GLFWwindow* getGLFWwindow() override;
 
             private:
                 GLFWwindow* m_window = nullptr;

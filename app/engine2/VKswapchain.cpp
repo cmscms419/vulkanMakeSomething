@@ -85,6 +85,8 @@ namespace vkengine
             createInfo.queueFamilyIndexCount = 0;                     // Optional
         }
 
+        VkSwapchainKHR oldSwapchain = this->swapChain;
+
         createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
         createInfo.surface = this->surface;                                       // 스왑 체인이 연결될 표면을 설정합니다.
         createInfo.minImageCount = imageCount;                                    // 이미지 개수를 설정합니다.
@@ -97,9 +99,13 @@ namespace vkengine
         createInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;            // 알파 블렌딩을 설정합니다.
         createInfo.presentMode = this->selectPresentMode;                                     // 프레젠테이션 모드를 설정합니다.
         createInfo.clipped = VK_TRUE;                                             // 클리핑을 설정합니다. -> 다른 창이 앞에 있기 때문에 가려진 픽셀의 색상을 신경 쓰지 않는다는 의미
-        createInfo.oldSwapchain = swapChain;                                      // 이전 스왑 체인을 설정합니다.
+        createInfo.oldSwapchain = oldSwapchain;                                      // 이전 스왑 체인을 설정합니다.
 
         _VK_CHECK_RESULT_(vkCreateSwapchainKHR(this->ctx.getDevice()->logicaldevice, &createInfo, nullptr, &this->swapChain));
+
+        if (oldSwapchain != VK_NULL_HANDLE) {
+            vkDestroySwapchainKHR(this->ctx.getDevice()->logicaldevice,oldSwapchain,nullptr);
+        }
 
         vkGetSwapchainImagesKHR(this->ctx.getDevice()->logicaldevice, this->swapChain, &imageCount, nullptr);
         this->Images.reserve(imageCount);
@@ -108,10 +114,11 @@ namespace vkengine
 
         this->createImageViews();
 
+        barrierHelpers.clear();
         barrierHelpers.reserve(this->imageCount);
         for (cUint32_t i = 0; i < this->imageCount; i++)
         {
-            barrierHelpers.emplace_back(this->Images[i]);
+            barrierHelpers.emplace_back(VKBarrierHelper());
             barrierHelpers[i].Format() = this->ImageFormat;
             barrierHelpers[i].MipLevels() = 1;   // Swapchain images have 1 mip level
             barrierHelpers[i].ArrayLayers() = 1; // Swapchain images have 1 array layer
@@ -200,6 +207,47 @@ namespace vkengine
         this->ImageFormat = VK_FORMAT_UNDEFINED;
         this->colorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
         this->imageCount = 0;
+    }
+
+    void VKSwapChain::cleanupWithoutSurface()
+    {
+        VkDevice device = this->ctx.getDevice()->logicaldevice;
+        VkInstance instance = this->ctx.getInstance();
+
+        for (auto imageView : this->ImageViews) {
+            vkDestroyImageView(device, imageView, nullptr);
+        }
+
+        this->ImageViews.clear();
+
+        if (this->swapChain != VK_NULL_HANDLE) {
+            vkDestroySwapchainKHR(device, this->swapChain, nullptr);
+            this->swapChain = VK_NULL_HANDLE;
+        }
+
+        this->Images.clear();
+        this->barrierHelpers.clear();
+    }
+
+    void VKSwapChain::transitionTo(
+        VkCommandBuffer commandBuffer,
+        cUint32_t imageIndex,
+        VkImageLayout newLayout, 
+        VkAccessFlags2 newAccess, 
+        VkPipelineStageFlags2 newStage)
+    {
+
+        if (imageIndex < this->barrierHelpers.size())
+        {
+            this->barrierHelpers[imageIndex].transitionImageLayout2(
+                commandBuffer,
+                this->Images[imageIndex],
+                VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+                VK_ACCESS_2_NONE,
+                VK_PIPELINE_STAGE_2_BOTTOM_OF_PIPE_BIT
+            );
+        }
+
     }
 
     // 서피스 포맷을 선택하는 함수

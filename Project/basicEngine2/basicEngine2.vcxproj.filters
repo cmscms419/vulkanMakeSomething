@@ -57,9 +57,6 @@
     <ClCompile Include="..\..\app\engine2\VKPipelineGui.cpp">
       <Filter>pipeLine</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\app\engine2\VKSquarePipeLine.cpp">
-      <Filter>pipeLine</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\app\engine2\PushConstants.cpp">
       <Filter>source2</Filter>
     </ClCompile>
@@ -68,6 +65,12 @@
     </ClCompile>
     <ClCompile Include="..\..\app\engine2\VKSkyTexture.cpp">
       <Filter>source2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\engine2\VKSquarePipeLine.cpp">
+      <Filter>pipeLine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\engine2\VKPostProcessing.cpp">
+      <Filter>pipeLine</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

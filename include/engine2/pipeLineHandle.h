@@ -73,10 +73,17 @@ namespace vkengine {
             VkFormat depthFormat = VK_FORMAT_UNDEFINED,
             VkSampleCountFlagBits msaaSamples = VK_SAMPLE_COUNT_FLAG_BITS_MAX_ENUM);
 
-        void createSkyboxPipeline(VkFormat outColorFormat, VkFormat depthFormat,
+        void createSkyboxPipeline(
+            VkFormat outColorFormat, 
+            VkFormat depthFormat,
             VkSampleCountFlagBits msaaSamples);
 
         void createGuiPipeline(VkFormat outColorFormat = VK_FORMAT_UNDEFINED);
+        void createPostProcessingPipeLine(
+            VkFormat outColorFormat = VK_FORMAT_UNDEFINED,
+            VkFormat depthFormat = VK_FORMAT_UNDEFINED,
+            VkSampleCountFlagBits msaaSamples = VK_SAMPLE_COUNT_FLAG_BITS_MAX_ENUM);
+
 
         VkPipelineLayout getPipelineLayout() { return pipelineLayout; }
         VkPipeline getPipeline() { return pipeline; }

@@ -67,6 +67,7 @@ namespace vkengine {
         VkResult queuePresent(VkQueue queue, cUint32_t imageIndex, VkSemaphore waitSemaphore);
 
         void cleanup();
+        void cleanupWithoutSurface();
 
         VkImage Image(cUint32_t index)
         {
@@ -107,6 +108,14 @@ namespace vkengine {
         VKBarrierHelper& getBarrierHelper(cUint32_t imageIndex) {
             return barrierHelpers[imageIndex];
         }
+
+        void transitionTo(
+            VkCommandBuffer commandBuffer,
+            cUint32_t imageIndex,
+            VkImageLayout newLayout,
+            VkAccessFlags2 newAccess,
+            VkPipelineStageFlags2 newStage
+        );
 
     private:
 

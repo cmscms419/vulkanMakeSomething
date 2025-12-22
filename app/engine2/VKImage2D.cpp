@@ -54,6 +54,12 @@ namespace vkengine
     {
         this->cleanup();
 
+        this->imageFormat = format;
+        this->width = width;
+        this->height = height;
+        this->usageFlags = usage;
+        this->aspectFlags = aspectMask;
+
         // VKimage2D 이미지 생성
         vkengine::helper::createImage2(
             ctx.getDevice()->logicaldevice,
@@ -84,12 +90,18 @@ namespace vkengine
         this->resourceBinding.imageView = this->imageView;
         this->resourceBinding.descriptorCount = 1;
         this->resourceBinding.update();
-        this->getBarrierHelper().update(this->image, this->imageFormat, mipLevels, arrayLayers);
+        this->getBarrierHelper().update(this->imageFormat, mipLevels, arrayLayers);
     }
 
     void VKImage2D::createCubeImage(cUint32_t width, cUint32_t height, VkFormat format, VkSampleCountFlagBits sampleCount, VkImageUsageFlags usage, VkImageAspectFlags aspectMask, uint32_t mipLevels, uint32_t arrayLayers, VkImageCreateFlagBits flags)
     {
         this->cleanup();
+
+        this->imageFormat = format;
+        this->width = width;
+        this->height = height;
+        this->usageFlags = usage;
+        this->aspectFlags = aspectMask;
 
         // VKimage2D 이미지 생성
         vkengine::helper::createImage2(
@@ -120,7 +132,7 @@ namespace vkengine
         this->resourceBinding.imageView = this->imageView;
         this->resourceBinding.descriptorCount = 1;
         this->resourceBinding.update();
-        this->getBarrierHelper().update(this->image, this->imageFormat, mipLevels, arrayLayers);
+        this->getBarrierHelper().update(this->imageFormat, mipLevels, arrayLayers);
     }
 
     void VKImage2D::createTextureFromKtx2(cString filepath, cBool usCubemap)
@@ -223,6 +235,7 @@ namespace vkengine
 
             resourceBinding.getBarrierHelper().transitionImageLayout2(
                 cmb,
+                this->image,
                 VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
                 VK_ACCESS_2_TRANSFER_WRITE_BIT,
                 VK_PIPELINE_STAGE_2_TRANSFER_BIT);
@@ -240,7 +253,8 @@ namespace vkengine
 
             // 이미지 레이아웃 전환 (TRANSFER_DST_OPTIMAL -> SHADER_READ_ONLY_OPTIMAL)
             resourceBinding.getBarrierHelper().transitionImageLayout2(
-                cmb, 
+                cmb,
+                this->image,
                 VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 
                 VK_ACCESS_2_SHADER_READ_BIT, 
                 VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT);
@@ -338,6 +352,7 @@ namespace vkengine
         // 이미지 레이아웃 전환 (UNDEFINED -> TRANSFER_DST_OPTIMAL)
         resourceBinding.getBarrierHelper().transitionImageLayout2(
             cmb,
+            this->image,
             VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
             VK_ACCESS_2_TRANSFER_WRITE_BIT,
             VK_PIPELINE_STAGE_2_TRANSFER_BIT);
@@ -352,6 +367,7 @@ namespace vkengine
         // 이미지 레이아웃 전환 (TRANSFER_DST_OPTIMAL -> SHADER_READ_ONLY_OPTIMAL)
         resourceBinding.getBarrierHelper().transitionImageLayout2(
             cmb,
+            this->image,
             VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
             VK_ACCESS_2_SHADER_READ_BIT,
             VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT);
@@ -380,6 +396,10 @@ namespace vkengine
             vkFreeMemory(ctx.getDevice()->logicaldevice, imageMemory, nullptr);
             imageMemory = VK_NULL_HANDLE;
         }
+
+        this->resourceBinding.getBarrierHelper().Currentlayout() = VK_IMAGE_LAYOUT_UNDEFINED;
+        this->resourceBinding.getBarrierHelper().Currentaccess() = VK_ACCESS_2_NONE;
+        this->resourceBinding.getBarrierHelper().Currentstage() = VK_PIPELINE_STAGE_2_NONE;
 
     }
 

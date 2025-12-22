@@ -7,6 +7,12 @@ namespace vkengine {
         : descriptorManager2(VKdevice.logicaldevice)
     {
         this->createInstance(requiredInstanceExtensions);
+
+        if (enableValidationLayers)
+        {
+            this->setupDebugCallback();
+        }
+
         this->createPysicalDevice();
         this->createLogicalDevice(useSwapchain);
         this->createCommandPools();
@@ -132,6 +138,7 @@ namespace vkengine {
                 debugExtension) != supportedInstanceExtensions.end()) {
                 requiredInstanceExtensions.push_back(debugExtension);
             }
+
         }
         else {
             createInfo.enabledLayerCount = 0;
@@ -262,6 +269,16 @@ namespace vkengine {
         }
 
         return check;
+    }
+
+    cBool VKcontext::setupDebugCallback() {
+
+        VkDebugUtilsMessengerCreateInfoEXT createInfo;
+        debug::populateDebugMessengerCreateInfo(createInfo);
+
+        _VK_CHECK_RESULT_(debug::CreateDebugUtilsMessengerEXT(this->VKinstance, &createInfo, nullptr, &this->VKdebugUtilsMessenger));
+
+        return true;
     }
 
     cBool VKcontext::checkValidationLayerSupport(const cChar* str)

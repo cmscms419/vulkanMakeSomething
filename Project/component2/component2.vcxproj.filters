@@ -24,16 +24,7 @@
     <ClCompile Include="..\..\app\component\imgui\imgui.cpp">
       <Filter>imgui</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\app\component\imgui\imgui_demo.cpp">
-      <Filter>imgui</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\app\component\imgui\imgui_draw.cpp">
-      <Filter>imgui</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\app\component\imgui\imgui_impl_glfw.cpp">
-      <Filter>imgui</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\app\component\imgui\imgui_impl_vulkan.cpp">
       <Filter>imgui</Filter>
     </ClCompile>
     <ClCompile Include="..\..\app\component\imgui\imgui_tables.cpp">
@@ -55,15 +46,6 @@
     </ClInclude>
     <ClInclude Include="..\..\include\component2\VKengine2.h">
       <Filter>component2</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\app\component\imgui\imstb_rectpack.h">
-      <Filter>imgui</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\app\component\imgui\imstb_textedit.h">
-      <Filter>imgui</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\app\component\imgui\imstb_truetype.h">
-      <Filter>imgui</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
