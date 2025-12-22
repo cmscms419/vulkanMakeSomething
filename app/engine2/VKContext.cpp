@@ -26,6 +26,13 @@ namespace vkengine {
     }
 
     void VKcontext::cleanup() {
+
+        if (this->VKdevice.logicaldevice != VK_NULL_HANDLE) {
+            vkDeviceWaitIdle(this->VKdevice.logicaldevice);
+        }
+
+        descriptorManager2.cleanup();
+
         if (VKpipelineCache != VK_NULL_HANDLE) {
             vkDestroyPipelineCache(VKdevice.logicaldevice, VKpipelineCache, nullptr);
             VKpipelineCache = VK_NULL_HANDLE;
@@ -33,10 +40,15 @@ namespace vkengine {
 
         VKdevice.cleanup();
 
+        if (enableValidationLayers) {
+            debug::DestroyDebugUtilsMessengerEXT(this->VKinstance, this->VKdebugUtilsMessenger, nullptr);
+        }
+
         if (VKinstance != VK_NULL_HANDLE) {
             vkDestroyInstance(VKinstance, nullptr);
             VKinstance = VK_NULL_HANDLE;
         }
+
     }
     
     cBool VKcontext::createInstance(std::vector<const char*> requiredInstanceExtensions)
@@ -109,10 +121,8 @@ namespace vkengine {
         appInfo.pApplicationName = "Vulkan egine";              // 애플리케이션 이름을 지정합니다.
         appInfo.pEngineName = "vulkanEngine";                   // 엔진 이름을 지정합니다.
         appInfo.apiVersion = VK_API_VERSION_1_3;                // 사용할 Vulkan API 버전을 지정합니다.
-        
-        // 임시로 주석 처리
-        // appInfo.applicationVersion = VK_MAKE_VERSION(0, 0, 0);  // 애플리케이션 버전을 지정합니다.
-        // appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);       // 엔진 버전을 지정합니다.
+        appInfo.applicationVersion = VK_MAKE_VERSION(0, 0, 1);  // 애플리케이션 버전을 지정합니다.
+        appInfo.engineVersion = VK_MAKE_VERSION(0, 2, 2);       // 엔진 버전을 지정합니다.
 
          // VkInstanceCreateInfo 구조체는 Vulkan 인스턴스를 생성하기 위한 정보를 제공합니다.
         VkInstanceCreateInfo createInfo = {};
@@ -126,7 +136,7 @@ namespace vkengine {
         if (enableValidationLayers) {
             VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo{};
 
-            createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
+            createInfo.enabledLayerCount = static_cast<cUint32_t>(validationLayers.size());
             createInfo.ppEnabledLayerNames = validationLayers.data();
 
             vkengine::debug::populateDebugMessengerCreateInfo(debugCreateInfo);
@@ -146,7 +156,7 @@ namespace vkengine {
         }
 
         // 최종 extension 설정
-        createInfo.enabledExtensionCount = static_cast<uint32_t>(requiredInstanceExtensions.size());
+        createInfo.enabledExtensionCount = static_cast<cUint32_t>(requiredInstanceExtensions.size());
         createInfo.ppEnabledExtensionNames = requiredInstanceExtensions.data();
 
         _VK_CHECK_RESULT_(vkCreateInstance(&createInfo, nullptr, &VKinstance));
@@ -158,7 +168,7 @@ namespace vkengine {
     cBool VKcontext::createPysicalDevice()
     {
         // 물리 디바이스 목록을 가져옵니다.
-        uint32_t deviceCount = 0;
+        cUint32_t deviceCount = 0;
         vkEnumeratePhysicalDevices(this->VKinstance, &deviceCount, nullptr);
 
         assert(deviceCount != 0);
@@ -195,8 +205,6 @@ namespace vkengine {
             }
             i++;
         }
-
-        //this->VKmsaaSamples = helper::getMaxUsableSampleCount(this->VKphysicalDevice);
 
         if (Score == 0)
         {
@@ -283,7 +291,7 @@ namespace vkengine {
 
     cBool VKcontext::checkValidationLayerSupport(const cChar* str)
     {
-        uint32_t layerCount;
+        cUint32_t layerCount;
         vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
 
         std::vector<VkLayerProperties> availableLayers(layerCount);

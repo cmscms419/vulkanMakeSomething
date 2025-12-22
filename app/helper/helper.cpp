@@ -993,7 +993,7 @@ namespace vkengine {
             std::vector<VkExtensionProperties> availableExtensions(extensionCount);
             vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, availableExtensions.data());
 
-            std::set<cString> requiredExtensions(deviceExtensions.begin(), deviceExtensions.end());
+            std::set<cString> requiredExtensions(coreDeviceExtensions.begin(), coreDeviceExtensions.end());
 
             for (const auto& extension : availableExtensions) {
 

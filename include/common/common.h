@@ -78,7 +78,7 @@ constexpr cFloat XM_2PI = 6.283185307f;
 namespace vkengine
 {
     extern const std::vector<const char*> validationLayers;
-    extern const std::vector<const char*> deviceExtensions;
+    extern const std::vector<const char*> coreDeviceExtensions;
     extern const std::vector<VkDynamicState> dynamicStates;
     extern const cString RESOURSE_PATH;
     extern const cString SHADER_PATH;

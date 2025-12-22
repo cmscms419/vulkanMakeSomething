@@ -54,9 +54,9 @@ namespace vkengine {
         std::vector<VkDescriptorSetLayout> getLayoutsForPipeline(const cString& pipelineName);
 
         const VkDescriptorSetLayout& getDescriptorSetLayout(const std::vector<VkDescriptorSetLayoutBinding>& bindings);
+        void cleanup();
 
     private:
-        void cleanup();
 
         VkDevice& logicaldevice;
 

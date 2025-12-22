@@ -54,7 +54,7 @@ PostProcessingExample::PostProcessingExample(std::string root_path, cBool useSwa
 
 PostProcessingExample::~PostProcessingExample()
 {
-
+    vkDeviceWaitIdle(this->cxt->getDevice()->logicaldevice);
 }
 
 void PostProcessingExample::recreateSwapchain()
@@ -247,6 +247,7 @@ void PostProcessingExample::mainLoop()
 
         renderFrame();
     }
+
 }
 
 void PostProcessingExample::renderFrame()

@@ -176,11 +176,10 @@ namespace vkengine {
             queueFamilyIndices.transferFamily = queueFamilyIndices.grapicFamily;
         }
 
-        std::vector<const char*> deviceExtensions(enabledDeviceExtensions);
+        std::vector<const cChar*> deviceExtensions;
 
         if (useSwapChain) {
-            deviceExtensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
-            deviceExtensions.push_back(VK_KHR_SHADER_NON_SEMANTIC_INFO_EXTENSION_NAME);// 디버깅할 때를 위해서 임시로 추가
+            deviceExtensions = coreDeviceExtensions;
         }
 
         enabledFeatures.samplerAnisotropy = features.samplerAnisotropy;
@@ -312,7 +311,6 @@ namespace vkengine {
 
     void VKdeviceHandler2::cleanup()
     {
-
         std::set<VkCommandPool> uniquePools;
 
         if (graphicsCommandPool != VK_NULL_HANDLE) {

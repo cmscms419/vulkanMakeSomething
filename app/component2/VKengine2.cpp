@@ -2,7 +2,6 @@
 
 namespace vkengine
 {
-    constexpr cBool bUseValidationLayers = false;
     VulkanEngineWin2* loadedEngine = nullptr;
 
     static void framebufferResizeCallback(GLFWwindow* window, int width, int height) {
@@ -63,8 +62,13 @@ namespace vkengine
                 vkDestroyFence(this->cxt->getDevice()->logicaldevice, fence, nullptr);
             }
 
+            for (auto& commandbuffer : this->commandBuffers) {
+                commandbuffer.cleanup();
+            }
+
             this->swapChain.reset();
             this->cxt.reset();
+
         }
     }
 
