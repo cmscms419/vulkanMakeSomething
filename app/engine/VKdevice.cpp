@@ -70,8 +70,8 @@ namespace vkengine {
         createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;                            // 구조체 타입을 지정합니다.
         createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());   // 큐 생성 정보의 개수를 설정합니다.
         createInfo.pQueueCreateInfos = queueCreateInfos.data();                             // 큐 생성 정보 포인터를 설정합니다.
-        createInfo.enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size());  // 활성화할 확장 개수를 설정합니다.
-        createInfo.ppEnabledExtensionNames = deviceExtensions.data();                       // 활성화할 확장 목록을 설정합니다.
+        createInfo.enabledExtensionCount = static_cast<uint32_t>(coreDeviceExtensions.size());  // 활성화할 확장 개수를 설정합니다.
+        createInfo.ppEnabledExtensionNames = coreDeviceExtensions.data();                       // 활성화할 확장 목록을 설정합니다.
         createInfo.pEnabledFeatures = &this->features;                                      // 물리 장치 기능 포인터를 설정합니다.
 
         if (enableValidationLayers) {
@@ -308,10 +308,10 @@ namespace vkengine {
             queueFamilyIndices.transferFamily = queueFamilyIndices.grapicFamily;
         }
 
-        std::vector<const char*> deviceExtensions(enabledDeviceExtensions);
+        std::vector<const char*> coreDeviceExtensions(enabledDeviceExtensions);
 
         if (useSwapChain) {
-            deviceExtensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
+            coreDeviceExtensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
         }
 
         enabledFeatures.samplerAnisotropy = features.samplerAnisotropy;
@@ -324,8 +324,8 @@ namespace vkengine {
         createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;                            // 구조체 타입을 지정합니다.
         createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());   // 큐 생성 정보의 개수를 설정합니다.
         createInfo.pQueueCreateInfos = queueCreateInfos.data();
-        createInfo.enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size());  // 활성화할 확장 개수를 설정합니다.
-        createInfo.ppEnabledExtensionNames = deviceExtensions.data();                       // 활성화할 확장 목록을 설정합니다.
+        createInfo.enabledExtensionCount = static_cast<uint32_t>(coreDeviceExtensions.size());  // 활성화할 확장 개수를 설정합니다.
+        createInfo.ppEnabledExtensionNames = coreDeviceExtensions.data();                       // 활성화할 확장 목록을 설정합니다.
 
         VkPhysicalDeviceFeatures2 physicalDeviceFeatures2{};
         physicalDeviceFeatures2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;

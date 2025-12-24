@@ -47,6 +47,7 @@ namespace vkengine {
         VkInstance getInstance() { return VKinstance; }
         VkPipelineCache getPipelineCache() { return VKpipelineCache; }
         depthStencill* getDepthStencil() { return &VKdepthStencill; }
+        cBool getUSEdepthStencil() { return useDepthStencil; }
 
         void waitIdle();
         void waitGraphicsQueueIdle();
@@ -58,7 +59,7 @@ namespace vkengine {
         depthStencill VKdepthStencill{};                      // 깊이 스텐실 -> 깊이 스텐실 이미지와 메모리
         DescriptorManager2 descriptorManager2;               // 디스크립터 매니저 -> 디스크립터 세트 레이아웃과 디스크립터 풀 관리
         VkDebugUtilsMessengerEXT VKdebugUtilsMessenger{};  // 디버그 메신저 -> 디버깅을 위한 메신저
-
+        cBool useDepthStencil = false;
     };
 }
 

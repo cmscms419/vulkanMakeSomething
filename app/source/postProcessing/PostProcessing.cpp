@@ -62,6 +62,8 @@ void PostProcessingExample::recreateSwapchain()
     VulkanEngineWin2::recreateSwapchain();
 
     guiRenderer.resize(this->extent.width, this->extent.height);
+    
+    this->samplerLinearClamp.createLinearClamp();
 
     hdrColorBuffer.createImage(
         this->extent.width,

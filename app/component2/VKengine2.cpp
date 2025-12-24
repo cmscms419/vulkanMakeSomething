@@ -102,7 +102,9 @@ namespace vkengine
         this->swapChain->createSwapChain();
 
         // 8. Depth/Stencil 府家胶 犁积己 (鞘夸茄 版快)
-        if (this->cxt->getDepthStencil()) {
+        if (this->cxt->getUSEdepthStencil()) {
+
+            this->cxt->getDepthStencil()->cleanup(this->cxt->getDevice()->logicaldevice);
             VkFormat depthFormat = this->cxt->getDepthStencil()->depthFormat;
 
             // Depth image 犁积己

@@ -247,9 +247,19 @@ struct depthStencill {
     VkImageView depthImageView{ VK_NULL_HANDLE };
 
     cVoid cleanup(VkDevice device) const {
-        vkDestroyImageView(device, depthImageView, nullptr);
-        vkDestroyImage(device, depthImage, nullptr);
-        vkFreeMemory(device, depthImageMemory, nullptr);
+        
+        if (depthImageView != VK_NULL_HANDLE)
+        {
+            vkDestroyImageView(device, depthImageView, nullptr);
+        }
+        if (depthImage != VK_NULL_HANDLE)
+        {
+            vkDestroyImage(device, depthImage, nullptr);
+        }
+        if (depthImageMemory != VK_NULL_HANDLE)
+        {
+            vkFreeMemory(device, depthImageMemory, nullptr);
+        }
     }
 };
 

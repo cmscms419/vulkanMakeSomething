@@ -38,6 +38,7 @@ namespace vkengine {
             VKpipelineCache = VK_NULL_HANDLE;
         }
 
+        this->VKdepthStencill.cleanup(this->VKdevice.logicaldevice);
         VKdevice.cleanup();
 
         if (enableValidationLayers) {
