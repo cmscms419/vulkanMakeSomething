@@ -143,6 +143,56 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "00.renderGUI", "00.renderGU
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "06.GLTF", "06.GLTF\06.GLTF.vcxproj", "{BCBE19C8-8A27-4AFB-AD3B-9276C2BA0F36}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "shader", "shader", "{139851B6-2406-47EF-83C7-554588008509}"
+	ProjectSection(SolutionItems) = preProject
+		..\shader\computerShdaer.comp = ..\shader\computerShdaer.comp
+		..\shader\CSsample.comp = ..\shader\CSsample.comp
+		..\shader\cube.frag = ..\shader\cube.frag
+		..\shader\cube.vert = ..\shader\cube.vert
+		..\shader\filtercube.vert = ..\shader\filtercube.vert
+		..\shader\genbrdflut.frag = ..\shader\genbrdflut.frag
+		..\shader\genbrdflut.vert = ..\shader\genbrdflut.vert
+		..\shader\IBLpbr.frag = ..\shader\IBLpbr.frag
+		..\shader\IBLpbr.vert = ..\shader\IBLpbr.vert
+		..\shader\IBLskybox.frag = ..\shader\IBLskybox.frag
+		..\shader\IBLskybox.vert = ..\shader\IBLskybox.vert
+		..\shader\imgui.frag = ..\shader\imgui.frag
+		..\shader\imgui.vert = ..\shader\imgui.vert
+		..\shader\irradiancecube.frag = ..\shader\irradiancecube.frag
+		..\shader\loadmodel.frag = ..\shader\loadmodel.frag
+		..\shader\loadmodel.vert = ..\shader\loadmodel.vert
+		..\shader\loadmodel2.frag = ..\shader\loadmodel2.frag
+		..\shader\mesh.frag = ..\shader\mesh.frag
+		..\shader\mesh.vert = ..\shader\mesh.vert
+		..\shader\NormalShader.frag = ..\shader\NormalShader.frag
+		..\shader\NormalShader.vert = ..\shader\NormalShader.vert
+		..\shader\ParticleFS.frag = ..\shader\ParticleFS.frag
+		..\shader\ParticleVS.vert = ..\shader\ParticleVS.vert
+		..\shader\pbr.frag = ..\shader\pbr.frag
+		..\shader\pbr.vert = ..\shader\pbr.vert
+		..\shader\pbrModel.frag = ..\shader\pbrModel.frag
+		..\shader\pbrModel.vert = ..\shader\pbrModel.vert
+		..\shader\pbrtexture.frag = ..\shader\pbrtexture.frag
+		..\shader\pbrtexture.vert = ..\shader\pbrtexture.vert
+		..\shader\post.frag = ..\shader\post.frag
+		..\shader\post.vert = ..\shader\post.vert
+		..\shader\prefilterenvmap.frag = ..\shader\prefilterenvmap.frag
+		..\shader\reflect.frag = ..\shader\reflect.frag
+		..\shader\reflect.vert = ..\shader\reflect.vert
+		..\shader\shader.frag = ..\shader\shader.frag
+		..\shader\shader.vert = ..\shader\shader.vert
+		..\shader\skybox.frag = ..\shader\skybox.frag
+		..\shader\skybox.vert = ..\shader\skybox.vert
+		..\shader\skybox2.frag = ..\shader\skybox2.frag
+		..\shader\skybox2.vert = ..\shader\skybox2.vert
+		..\shader\Square.frag = ..\shader\Square.frag
+		..\shader\Square.vert = ..\shader\Square.vert
+		..\shader\Texture.frag = ..\shader\Texture.frag
+		..\shader\Texture.vert = ..\shader\Texture.vert
+		..\shader\triangle.frag = ..\shader\triangle.frag
+		..\shader\triangle.vert = ..\shader\triangle.vert
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
