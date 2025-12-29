@@ -61,6 +61,8 @@ Multisampling 챕터까지 완성했습니다.
 [GLTF-Sample](https://github.com/KhronosGroup/glTF-Sample-Models/tree/main)
 
 ## 출처
+코드는 아래 출처에서 가져 와서 사용했습니다.
+
 KhronosGroup에서 개발한 [SPIRV-Reflect](https://github.com/KhronosGroup/SPIRV-Reflect) (common 프로젝트에 포함되어서 static lib로 빌드)
 
 [skybox.vert, skybox.frag 출처](https://github.com/SaschaWillems/Vulkan/tree/master/shaders/glsl/texturecubemap)
@@ -69,4 +71,4 @@ KhronosGroup에서 개발한 [SPIRV-Reflect](https://github.com/KhronosGroup/SPI
 
 [image base lighting PBR 코드 출처](https://github.com/SaschaWillems/Vulkan/tree/master/examples/pbribl)
 
-basicEngine2 등 여러 프로젝트에서 만드는 코드들은 [HonglabVulkan](https://github.com/HongLabInc/HonglabVulkan)에서 가져온 것이 많습니다.
+[HonglabVulkan](https://github.com/HongLabInc/HonglabVulkan)에서 만든 것을 가져왔습니다.
