@@ -1,5 +1,7 @@
-#include "gltf_example.h"
+ï»¿#include "gltf_example.h"
 #include "log.h"
+
+
 using namespace vkengine;
 using namespace vkengine::Log;
 
@@ -13,10 +15,18 @@ int main(int argc, char* argv[]) {
         root_path = path;
     }
     else {
-        EXIT_TO_LOGGER("°æ·Î¸¦ °¡Á®¿À´Â µ¥ ½ÇÆĞÇß½À´Ï´Ù.");
+        EXIT_TO_LOGGER("ê²½ë¡œë¥¼ ê°€ì ¸ì˜¤ëŠ” ë° ì‹¤íŒ¨í–ˆìŠµë‹ˆë‹¤.");
     }
+    ApplicationConfig config;
 
+    config.models.push_back(ModelConfig("DamagedHelmet.glb", "Helmet")
+        .setTransform(
+                glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f))
+        ));
+    
+    std::unique_ptr<Application2> app2 = std::make_unique<Application2>(config, root_path);
 
+    app2->update();
     
     return 0;
 }

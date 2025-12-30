@@ -81,6 +81,24 @@ namespace vkengine {
                 msaaSamples.value()
             );
         }
+        else if (name == "ssao")
+        {
+            this->createSSAOPipeline();
+        }
+        else if (name == "shadowMap")
+        {
+            this->createShadowMapPipeline(
+                depthFormat.value()
+            );
+        }
+        else if (name == "pbrForward")
+        {
+            this->createForwardPBRPipeline(
+                outColorFormat.value(),
+                depthFormat.value(),
+                msaaSamples.value()
+            );
+        }
         else {
             PRINT_TO_LOGGER("Error: Unknown pipeline name: " + name);
         }

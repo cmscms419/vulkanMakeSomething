@@ -33,6 +33,12 @@
     <ClCompile Include="..\..\app\component\imgui\imgui_widgets.cpp">
       <Filter>imgui</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\app\component2\Application2.cpp">
+      <Filter>component2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\component2\VKrenderer.cpp">
+      <Filter>component2</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\include\component2\Camera2.h">
@@ -45,6 +51,12 @@
       <Filter>component2</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\component2\VKengine2.h">
+      <Filter>component2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\component2\Application2.h">
+      <Filter>component2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\component2\VKrenderer.h">
       <Filter>component2</Filter>
     </ClInclude>
   </ItemGroup>

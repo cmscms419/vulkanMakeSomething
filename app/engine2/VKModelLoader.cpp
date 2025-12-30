@@ -1,8 +1,11 @@
-﻿#define _CRT_SECURE_NO_WARNINGS
-
+﻿
 #include "VKModelLoader.h"
 #include "VKModel.h"
 #include "VKContext.h"
+
+#define _CRT_SECURE_NO_WARNINGS
+#define STB_IMAGE_IMPLEMENTATION
+#define STB_IMAGE_WRITE_IMPLEMENTATION
 
 #include <chrono>
 #include <filesystem>
@@ -57,10 +60,10 @@ namespace vkengine {
                 auto duration =
                     std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime);
 
-                PRINT_TO_LOGGER("Successfully loaded model from cache: {}", cachePath.string());
-                PRINT_TO_LOGGER("  Meshes: {}", model.meshes.size());
-                PRINT_TO_LOGGER("  Materials: {}", model.materials.size());
-                PRINT_TO_LOGGER("  Loading time: {} ms", duration.count());
+                PRINT_TO_LOGGER("Successfully loaded model from cache: %s", cachePath.string());
+                PRINT_TO_LOGGER("  Meshes: %u", model.meshes.size());
+                PRINT_TO_LOGGER("  Materials: %u", model.materials.size());
+                PRINT_TO_LOGGER("  Loading time: %u ms", duration.count());
                 return;
             }
             else {
@@ -84,7 +87,7 @@ namespace vkengine {
         const aiScene* scene = importer.ReadFile(modelFilename, importFlags);
 
         if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
-            EXIT_TO_LOGGER("ERROR::ASSIMP: {}", importer.GetErrorString());
+            EXIT_TO_LOGGER("ERROR::ASSIMP: %s\n", importer.GetErrorString());
             return;
         }
 
@@ -95,7 +98,7 @@ namespace vkengine {
             directory = "."; // Current directory if no path specified
         }
 
-        PRINT_TO_LOGGER("VKModel directory: {}", directory);
+        PRINT_TO_LOGGER("VKModel directory: %s\n", directory.c_str());
 
         // Store global inverse transform for the VKModel class
         mat4 globalInverseTransform =
@@ -116,14 +119,14 @@ namespace vkengine {
         // IMPORTANT: Process animations and bones BEFORE processing nodes/meshes
         // This ensures the VKAnimation system has the global bone mapping ready
         // when processMesh needs to assign global bone indices to vertices
-        PRINT_TO_LOGGER("Processing animations and bones before mesh processing...");
+        PRINT_TO_LOGGER("Processing animations and bones before mesh processing...\n");
         processAnimations(scene);
         processBones(scene);
 
         // AFTER animation processing, synchronize the global inverse transform
         if (model.animation) {
             model.animation->setGlobalInverseTransform(globalInverseTransform);
-            PRINT_TO_LOGGER("Synchronized global inverse transform between VKModel and VKAnimation systems");
+            PRINT_TO_LOGGER("Synchronized global inverse transform between VKModel and VKAnimation systems\n");
         }
 
         // Now process nodes and meshes - they can use the global bone indices
@@ -185,19 +188,19 @@ namespace vkengine {
                             free(data); // Free manually allocated memory
                         }
 
-                        PRINT_TO_LOGGER("Loaded embedded texture {} ({}x{}) with {} format", textureIndex,
+                        PRINT_TO_LOGGER("Loaded embedded texture %u (%ux%u) with %s format\n", textureIndex,
                             width, height,
                             model.textureSRgb[model.textures.size() - 1] ? "sRGB" : "linear");
                     }
                     else {
-                        PRINT_TO_LOGGER("WARNING: Failed to decode embedded texture {}", textureIndex);
+                        PRINT_TO_LOGGER("WARNING: Failed to decode embedded texture %u\n", textureIndex);
                         if (aiTex->mHeight == 0) {
-                            PRINT_TO_LOGGER("  Reason: {}", stbi_failure_reason());
+                            PRINT_TO_LOGGER("  Reason: %s\n", stbi_failure_reason());
                         }
                     }
                 }
                 else {
-                    PRINT_TO_LOGGER("WARNING: Embedded texture index {} out of range (max: {})", textureIndex,
+                    PRINT_TO_LOGGER("WARNING: Embedded texture index %u out of range (max: %u)\n", textureIndex,
                         scene ? scene->mNumTextures : 0);
                 }
             }
@@ -214,7 +217,7 @@ namespace vkengine {
                 string shortFilename =
                     readBistroObj ? filename : filesystem::path(filename).filename().string();
 
-                PRINT_TO_LOGGER("Texture filename: {}", prefix + shortFilename);
+                PRINT_TO_LOGGER("Texture filename: %s\n", prefix + shortFilename);
 
                 model.textures.back().createTextureFromImage(
                     prefix + shortFilename, false, model.textureSRgb[model.textures.size() - 1]);
@@ -225,15 +228,15 @@ namespace vkengine {
         auto endTime = std::chrono::high_resolution_clock::now();
         auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime);
 
-        PRINT_TO_LOGGER("Successfully loaded model: {}", modelFilename);
-        PRINT_TO_LOGGER("  Meshes: {}", model.meshes.size());
-        PRINT_TO_LOGGER("  Materials: {}", model.materials.size());
-        PRINT_TO_LOGGER("  Loading time: {} ms", duration.count());
+        PRINT_TO_LOGGER("Successfully loaded model: %s\n", modelFilename.c_str());
+        PRINT_TO_LOGGER("  Meshes: %u\n", model.meshes.size());
+        PRINT_TO_LOGGER("  Materials: %u\n", model.materials.size());
+        PRINT_TO_LOGGER("  Loading time: %u ms\n", duration.count());
 
         if (readBistroObj && !useCache) {
             optimizeMeshesBistro();
             writeToCache(cachePath.string());
-            PRINT_TO_LOGGER("VKModel cached to: {}", cachePath.string());
+            PRINT_TO_LOGGER("VKModel cached to: %s\n", cachePath.string());
         }
 
         return;
@@ -669,7 +672,7 @@ namespace vkengine {
 
                 if (globalBoneIndex == -1) {
                     PRINT_TO_LOGGER(
-                        "WARNING: Bone '{}' not found in global bone mapping, using local index {}",
+                        "WARNING: Bone '%s' not found in global bone mapping, using local index %u",
                         boneName, boneIndex);
                     globalBoneIndex = static_cast<int>(boneIndex); // Fallback to local index
                 }
@@ -766,16 +769,16 @@ namespace vkengine {
             mat.ubo.emissiveTextureIndex = getTextureIndex(texturePath.C_Str(), false);
         }
 
-        PRINT_TO_LOGGER("Processed materialIndex {}:\n", materialIndex);
+        PRINT_TO_LOGGER("Processed materialIndex %u:\n", materialIndex);
         PRINT_TO_LOGGER("  Base color: %f, %f, %f, %f\n", mat.ubo.baseColorFactor.x, mat.ubo.baseColorFactor.y, mat.ubo.baseColorFactor.z, mat.ubo.baseColorFactor.w);
         PRINT_TO_LOGGER("  Metallic factor: %f \n", mat.ubo.metallicFactor);
         PRINT_TO_LOGGER("  Roughness factor: %f \n", mat.ubo.roughness);
         PRINT_TO_LOGGER("  Emissive factor: %f, %f, %f, %f\n", mat.ubo.emissiveFactor.x, mat.ubo.emissiveFactor.y, mat.ubo.emissiveFactor.z, mat.ubo.emissiveFactor.w);
-        PRINT_TO_LOGGER("  Base color texture: {}\n", mat.ubo.baseColorTextureIndex != -1 ? "Loaded" : "None");
-        PRINT_TO_LOGGER("  MetallicRoughness texture: {}\n", mat.ubo.metallicRoughnessTextureIndex != -1 ? "Loaded" : "None"); 
-        PRINT_TO_LOGGER("  Normal texture: {}\n", mat.ubo.normalTextureIndex != -1 ? "Loaded" : "None");
-        PRINT_TO_LOGGER("  Occlusion texture : {}\n", mat.ubo.occlusionTextureIndex != -1 ? "Loaded" : "None");
-        PRINT_TO_LOGGER("  Emissive texture : {}\n", mat.ubo.emissiveTextureIndex != -1 ? "Loaded" : "None");
+        PRINT_TO_LOGGER("  Base color texture: %s\n", mat.ubo.baseColorTextureIndex != -1 ? "Loaded" : "None");
+        PRINT_TO_LOGGER("  MetallicRoughness texture: %s\n", mat.ubo.metallicRoughnessTextureIndex != -1 ? "Loaded" : "None"); 
+        PRINT_TO_LOGGER("  Normal texture: %s\n", mat.ubo.normalTextureIndex != -1 ? "Loaded" : "None");
+        PRINT_TO_LOGGER("  Occlusion texture : %s\n", mat.ubo.occlusionTextureIndex != -1 ? "Loaded" : "None");
+        PRINT_TO_LOGGER("  Emissive texture : %s\n", mat.ubo.emissiveTextureIndex != -1 ? "Loaded" : "None");
     }
 
     void ModelLoader::processMaterialBistro(aiMaterial* aiMat, const aiScene* scene,
@@ -948,11 +951,11 @@ namespace vkengine {
 
     void ModelLoader::printVerticesAndIndices() const
     {
-        PRINT_TO_LOGGER("\nModel Vertices and Indices");
-        PRINT_TO_LOGGER("  File: {}", directory);
-        PRINT_TO_LOGGER("  Total meshes: {}", model.meshes.size());
-        PRINT_TO_LOGGER("  Total materials: {}", model.materials.size());
-        PRINT_TO_LOGGER("  VKModel bounding box: min({}, {}, {}), max({}, {}, {})", model.boundingBoxMin.x,
+        PRINT_TO_LOGGER("\nModel Vertices and Indices\n");
+        PRINT_TO_LOGGER("  File: %s", directory);
+        PRINT_TO_LOGGER("  Total meshes: %u", model.meshes.size());
+        PRINT_TO_LOGGER("  Total materials: %u", model.materials.size());
+        PRINT_TO_LOGGER("  VKModel bounding box: min(%u, %u, %u), max(%u, %u, %u)", model.boundingBoxMin.x,
             model.boundingBoxMin.y, model.boundingBoxMin.z, model.boundingBoxMax.x,
             model.boundingBoxMax.y, model.boundingBoxMax.z);
 
@@ -961,19 +964,19 @@ namespace vkengine {
         for (size_t meshIdx = 0; meshIdx < model.meshes.size(); ++meshIdx) {
             const Mesh& mesh = model.meshes[meshIdx];
 
-            PRINT_TO_LOGGER("  Mesh {}: vertices = {}, indices = {}, material = {}", meshIdx,
+            PRINT_TO_LOGGER("  Mesh %u: vertices = %u, indices = %u, material = %u", meshIdx,
                 mesh.vertices.size(), mesh.materialIndex, mesh.indices.size(),
                 mesh.materialIndex);
-            PRINT_TO_LOGGER("  Mesh bounding box: min({}, {}, {}), max({}, {}, {})", mesh.minBounds.x,
+            PRINT_TO_LOGGER("  Mesh bounding box: min(%u, %u, %u), max(%u, %u, %u)", mesh.minBounds.x,
                 mesh.minBounds.y, mesh.minBounds.z, mesh.maxBounds.x, mesh.maxBounds.y,
                 mesh.maxBounds.z);
 
             // Print vertices (limit to first 10 to avoid spam)
             // size_t maxVertices = std::min(mesh.vertices.size(), static_cast<size_t>(10));
-            // print("Vertices (first {}):\n", maxVertices);
+            // print("Vertices (first %u):\n", maxVertices);
             // for (size_t i = 0; i < maxVertices; ++i) {
             //    const Vertex &v = mesh.vertices[i];
-            //    print("  [{}] pos: ({}, {}, {})\n", i, v.position.x, v.position.y, v.position.z);
+            //    print("  [%u] pos: (%u, {}, {})\n", i, v.position.x, v.position.y, v.position.z);
             //    print("       normal: ({}, {}, {})\n", v.normal.x, v.normal.y, v.normal.z);
             //    print("       texCoord: ({}, {})\n", v.texCoord.x, v.texCoord.y);
             //    print("       tangent: ({}, {}, {})\n", v.tangent.x, v.tangent.y, v.tangent.z);
@@ -1068,10 +1071,10 @@ namespace vkengine {
                 if (file) {
                     std::fwrite(aiTex->pcData, 1, aiTex->mWidth, file);
                     std::fclose(file);
-                    PRINT_TO_LOGGER("Wrote compressed texture {}: {} ({} bytes)", i, filename, aiTex->mWidth);
+                    PRINT_TO_LOGGER("Wrote compressed texture %s: %u (%u bytes)", i, filename, aiTex->mWidth);
                 }
                 else {
-                    PRINT_TO_LOGGER("Failed to write compressed texture {}: {}", i, filename);
+                    PRINT_TO_LOGGER("Failed to write compressed texture %u: %s", i, filename);
                 }
             }
             else {
@@ -1127,7 +1130,7 @@ namespace vkengine {
             }
 
             if (meshIndicesToMerge.size() < 2) {
-                PRINT_TO_LOGGER("No meshes found with material name '{}', skipping merge.", name);
+                PRINT_TO_LOGGER("No meshes found with material name '%s', skipping merge.", name);
                 continue;
             }
 
@@ -1166,7 +1169,7 @@ namespace vkengine {
 
             firstMesh.calculateBounds();
 
-            PRINT_TO_LOGGER("Merged {} meshes with material '{}' into mesh {}", meshIndicesToMerge.size(),
+            PRINT_TO_LOGGER("Merged %u meshes with material '%s' into mesh %u", meshIndicesToMerge.size(),
                 name, meshIndicesToMerge[0]);
         }
 
@@ -1184,9 +1187,9 @@ namespace vkengine {
         meshes.erase(writeIter, meshes.end());
 
         PRINT_TO_LOGGER("Successfully optimized Bistro model");
-        PRINT_TO_LOGGER("  Merged {} meshes", totalMergedMeshes);
-        PRINT_TO_LOGGER("  Meshes after optimization: {}", meshes.size());
-        PRINT_TO_LOGGER("  Materials: {}", materials.size());
+        PRINT_TO_LOGGER("  Merged %u meshes", totalMergedMeshes);
+        PRINT_TO_LOGGER("  Meshes after optimization: %u", meshes.size());
+        PRINT_TO_LOGGER("  Materials: %u", materials.size());
     }
 
     void ModelLoader::processAnimations(const aiScene* scene)
@@ -1197,20 +1200,20 @@ namespace vkengine {
         }
 
         PRINT_TO_LOGGER("Processing animations in VKModel...");
-        PRINT_TO_LOGGER("  Scene has {} animations", scene->mNumAnimations);
+        PRINT_TO_LOGGER("  Scene has %u animations", scene->mNumAnimations);
 
         // Load animation data using our VKAnimation class
         // The VKAnimation system will calculate its own global inverse transform in loadFromScene
         model.animation->loadFromScene(scene);
 
         if (model.animation->hasAnimations()) {
-            PRINT_TO_LOGGER("Successfully loaded {} animation clips", model.animation->getAnimationCount());
-            PRINT_TO_LOGGER("  Current animation: '{}'", model.animation->getCurrentAnimationName());
+            PRINT_TO_LOGGER("Successfully loaded %u animation clips", model.animation->getAnimationCount());
+            PRINT_TO_LOGGER("  Current animation: '%s'", model.animation->getCurrentAnimationName());
             PRINT_TO_LOGGER("  Duration: {:.2f} seconds", model.animation->getDuration());
         }
 
         if (model.animation->hasBones()) {
-            PRINT_TO_LOGGER("Successfully loaded {} bones for skeletal animation",
+            PRINT_TO_LOGGER("Successfully loaded %u bones for skeletal animation",
                 model.animation->getBoneCount());
         }
     }
@@ -1242,7 +1245,7 @@ namespace vkengine {
             }
         }
 
-        PRINT_TO_LOGGER("Total bones across all meshes: {}", totalBones);
+        PRINT_TO_LOGGER("Total bones across all meshes: %u", totalBones);
     }
 
 } // namespace vkengine

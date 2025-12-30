@@ -83,7 +83,13 @@ namespace vkengine {
             VkFormat outColorFormat = VK_FORMAT_UNDEFINED,
             VkFormat depthFormat = VK_FORMAT_UNDEFINED,
             VkSampleCountFlagBits msaaSamples = VK_SAMPLE_COUNT_FLAG_BITS_MAX_ENUM);
-
+        void createSSAOPipeline();
+        void createShadowMapPipeline(
+            VkFormat depthFormat = VK_FORMAT_UNDEFINED);
+        void createForwardPBRPipeline(
+            VkFormat outColorFormat,
+            VkFormat depthFormat,
+            VkSampleCountFlagBits msaaSamples);
 
         VkPipelineLayout getPipelineLayout() { return pipelineLayout; }
         VkPipeline getPipeline() { return pipeline; }

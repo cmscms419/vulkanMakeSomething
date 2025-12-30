@@ -27,7 +27,7 @@
     <ClCompile Include="..\..\app\engine2\VKImage2D.cpp">
       <Filter>source2</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\app\engine2\pipeLineHandle.cpp">
+    <ClCompile Include="..\..\app\engine2\VKpipeLineHandle.cpp">
       <Filter>source2</Filter>
     </ClCompile>
     <ClCompile Include="..\..\app\engine2\VKshader.cpp">
@@ -51,25 +51,58 @@
     <ClCompile Include="..\..\app\engine2\VKsampler.cpp">
       <Filter>source2</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\app\engine2\DescriptorSet.cpp">
+    <ClCompile Include="..\..\app\engine2\VKDescriptorSet.cpp">
       <Filter>source2</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\app\engine2\VKPipelineGui.cpp">
-      <Filter>pipeLine</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\app\engine2\PushConstants.cpp">
+    <ClCompile Include="..\..\app\engine2\VKPushConstants.cpp">
       <Filter>source2</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\app\engine2\VKSkybox.cpp">
-      <Filter>pipeLine</Filter>
     </ClCompile>
     <ClCompile Include="..\..\app\engine2\VKSkyTexture.cpp">
       <Filter>source2</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\app\engine2\VKSquarePipeLine.cpp">
+    <ClCompile Include="..\..\app\engine2\VKAnimation.cpp">
+      <Filter>source2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\engine2\VKMaterial.cpp">
+      <Filter>source2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\engine2\VKMesh.cpp">
+      <Filter>source2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\engine2\VKModel.cpp">
+      <Filter>source2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\engine2\VKModelLoader.cpp">
+      <Filter>source2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\engine2\VKModelNode.cpp">
+      <Filter>source2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\engine2\VKViewFrustum.cpp">
+      <Filter>source2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\engine2\VKStorageBuffer.cpp">
+      <Filter>source2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\engine2\VKComputepiPipeline.cpp">
       <Filter>pipeLine</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\app\engine2\VKPostProcessing.cpp">
+    <ClCompile Include="..\..\app\engine2\VKForwardPbrPipeline.cpp">
+      <Filter>pipeLine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\engine2\VKGuipiPipeline.cpp">
+      <Filter>pipeLine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\engine2\VKPostProcessingpiPipeline.cpp">
+      <Filter>pipeLine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\engine2\VKShadowMapPiPipeline.cpp">
+      <Filter>pipeLine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\engine2\VKSkyboxpiPipeline.cpp">
+      <Filter>pipeLine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\engine2\VKSquarepiPipeline.cpp">
       <Filter>pipeLine</Filter>
     </ClCompile>
   </ItemGroup>
@@ -81,9 +114,6 @@
       <Filter>source2</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\engine2\pipeLineHandle.h">
-      <Filter>source2</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\engine2\VKResourceBindingData.h">
       <Filter>source2</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\engine2\VKshader.h">
@@ -116,16 +146,49 @@
     <ClInclude Include="..\..\include\engine2\VKsampler.h">
       <Filter>source2</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\engine2\DescriptorSet.h">
-      <Filter>source2</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\engine2\PushConstants.h">
+    <ClInclude Include="..\..\include\engine2\VKPushConstants.h">
       <Filter>source2</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\engine2\VKSkyTexture.h">
       <Filter>source2</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\engine2\VKUniformBuffer2.h">
+      <Filter>source2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\engine2\VKAnimation.h">
+      <Filter>source2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\engine2\VKMaterial.h">
+      <Filter>source2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\engine2\VKMesh.h">
+      <Filter>source2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\engine2\VKModel.h">
+      <Filter>source2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\engine2\VKModelLoader.h">
+      <Filter>source2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\engine2\VKModelNode.h">
+      <Filter>source2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\engine2\VKResourceBindingData.h">
+      <Filter>source2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\engine2\VKDescriptorSet.h">
+      <Filter>source2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\engine2\VKViewFrustum.h">
+      <Filter>source2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\engine2\VKDepthStencil.h">
+      <Filter>source2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\engine2\VKStorageBuffer.h">
+      <Filter>source2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\engine2\VKshadowMap.h">
       <Filter>source2</Filter>
     </ClInclude>
   </ItemGroup>

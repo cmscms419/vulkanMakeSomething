@@ -48,14 +48,16 @@ void VKModel::createDescriptorManager2(VKSampler& sampler, VKImage2D& dummyTextu
 {
     for (size_t i = 0; i < materials.size(); i++) {
         auto& mat = materials[i];
-        materialUBO.emplace_back(ctx, mat.ubo);
+        materialUBO.emplace_back(this->ctx, mat.ubo);
     }
 
     for (auto& t : textures) {
         t.setSampler(sampler.getSampler());
     }
 
+    materialDescriptorSetHander.reserve(materials.size());
     materialDescriptorSetHander.resize(materials.size());
+
     for (size_t i = 0; i < materials.size(); i++) {
         auto& mat = materials[i];
         auto& b1 = mat.ubo.baseColorTextureIndex < 0
@@ -73,7 +75,8 @@ void VKModel::createDescriptorManager2(VKSampler& sampler, VKImage2D& dummyTextu
         auto& b6 = mat.ubo.occlusionTextureIndex < 0
                        ? dummyTexture
                        : this->GetTexture(mat.ubo.occlusionTextureIndex);
-        materialDescriptorSetHander[i].create(ctx, {materialUBO[i].ResourceBinding(),
+        materialDescriptorSetHander[i].create(ctx, 
+                                                 {materialUBO[i].ResourceBinding(),
                                                  b1.ResourceBinding(), b2.ResourceBinding(),
                                                  b3.ResourceBinding(), b4.ResourceBinding(),
                                                  b5.ResourceBinding(), b6.ResourceBinding()});

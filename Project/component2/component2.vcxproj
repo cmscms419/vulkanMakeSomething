@@ -11,9 +11,11 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\app\component2\Application2.cpp" />
     <ClCompile Include="..\..\app\component2\Camera2.cpp" />
     <ClCompile Include="..\..\app\component2\VKengine2.cpp" />
     <ClCompile Include="..\..\app\component2\VKgui.cpp" />
+    <ClCompile Include="..\..\app\component2\VKrenderer.cpp" />
     <ClCompile Include="..\..\app\component2\VKwindow.cpp" />
     <ClCompile Include="..\..\app\component\imgui\imgui.cpp" />
     <ClCompile Include="..\..\app\component\imgui\imgui_draw.cpp" />
@@ -21,9 +23,11 @@
     <ClCompile Include="..\..\app\component\imgui\imgui_widgets.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\include\component2\Application2.h" />
     <ClInclude Include="..\..\include\component2\Camera2.h" />
     <ClInclude Include="..\..\include\component2\VKengine2.h" />
     <ClInclude Include="..\..\include\component2\VKgui.h" />
+    <ClInclude Include="..\..\include\component2\VKrenderer.h" />
     <ClInclude Include="..\..\include\component2\VKwindow.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
@@ -74,7 +78,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>DEBUG_;WIN32;WIN64;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <LanguageStandard_C>stdc11</LanguageStandard_C>
-      <AdditionalIncludeDirectories>./;$(CudaToolkitDir)/include;$(VULKAN_SDK)/include;../../include/common;../../include/engine2/;../../include/component2/;../../include/helper/;../../external/ktx/include;../../external/GLFW/include;../../external/imgui;../../external/tinygltf/;../../external/include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>./;$(CudaToolkitDir)/include;$(VULKAN_SDK)/include;../../include/common;../../include/engine2/;../../include/component2/;../../include/helper/;../../external/ktx/include;../../external/GLFW/include;../../external/imgui;../../external/tinygltf/;../../external/include;../../external/assimp/include/</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
@@ -94,7 +98,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;WIN64;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <LanguageStandard_C>stdc11</LanguageStandard_C>
-      <AdditionalIncludeDirectories>./;$(CudaToolkitDir)/include;$(VULKAN_SDK)/include;../../include/common;../../include/engine2/;../../include/component2/;../../include/helper/;../../external/ktx/include;../../external/GLFW/include;../../external/imgui;../../external/tinygltf/;../../external/include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>./;$(CudaToolkitDir)/include;$(VULKAN_SDK)/include;../../include/common;../../include/engine2/;../../include/component2/;../../include/helper/;../../external/ktx/include;../../external/GLFW/include;../../external/imgui;../../external/tinygltf/;../../external/include;../../external/assimp/include/</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>

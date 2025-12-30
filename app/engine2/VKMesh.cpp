@@ -13,10 +13,10 @@ void Mesh::createBuffers(VKcontext& ctx)
     VkDeviceSize vertexBufferSize = sizeof(vertices[0]) * vertices.size();
     VkDeviceSize indexBufferSize = sizeof(indices[0]) * indices.size();
 
-    VKBaseBuffer2 staging = VKBaseBuffer2(ctx);
-    staging.createStagingBuffer(vertexBufferSize + indexBufferSize, vertices.data());
+    VkDeviceMemory stagingBufferMemory;
+    VkBuffer stagingBuffer;
 
-    /*VkBufferCreateInfo bufferInfo{VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO};
+    VkBufferCreateInfo bufferInfo{VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO};
     bufferInfo.size = vertexBufferSize + indexBufferSize;
     bufferInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
     bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
@@ -36,15 +36,14 @@ void Mesh::createBuffers(VKcontext& ctx)
     _VK_CHECK_RESULT_(vkBindBufferMemory(ctx.getDevice()->logicaldevice, stagingBuffer, stagingBufferMemory, 0));
 
     void* data;
-    check(vkMapMemory(ctx.device(), stagingBufferMemory, 0, vertexBufferSize + indexBufferSize, 0,
-                      &data));
+    _VK_CHECK_RESULT_(vkMapMemory(ctx.getDevice()->logicaldevice, stagingBufferMemory, 0, vertexBufferSize + indexBufferSize, 0, &data));
     memcpy(data, vertices.data(), static_cast<size_t>(vertexBufferSize));
     memcpy(static_cast<char*>(data) + vertexBufferSize, indices.data(),
            static_cast<size_t>(indexBufferSize));
-    vkUnmapMemory(ctx.device(), stagingBufferMemory);*/
+    vkUnmapMemory(ctx.getDevice()->logicaldevice, stagingBufferMemory);
 
-    this->vertex->createVertexBuffer(vertexBufferSize, nullptr);
-    this->index->createIndexBuffer(indexBufferSize, nullptr);
+    this->vertex->createModelVertexBuffer(vertexBufferSize, nullptr);
+    this->index->createModeIndexBuffer(indexBufferSize, nullptr);
 
     /*bufferInfo.size = vertexBufferSize;
     bufferInfo.usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
@@ -68,25 +67,24 @@ void Mesh::createBuffers(VKcontext& ctx)
         ctx.getMemoryTypeIndex(memRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
     check(vkAllocateMemory(ctx.device(), &allocInfo, nullptr, &indexMemory));
-    check(vkBindBufferMemory(ctx.device(), indexBuffer, indexMemory, 0));*/
+    check(vkBindBufferMemory(ctx.device(), indexBuffer, indexMemory, 0));
+    */
 
     VKCommandBufferHander cmd = ctx.createGrapicsCommandBufferHander(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
 
     VkBufferCopy copyRegion{};
     copyRegion.size = vertexBufferSize;
-    vkCmdCopyBuffer(cmd.getCommandBuffer(), staging.Buffer(), this->vertex->Buffer(), 1, &copyRegion);
+    vkCmdCopyBuffer(cmd.getCommandBuffer(), stagingBuffer, this->vertex->Buffer(), 1, &copyRegion);
 
     copyRegion.srcOffset = vertexBufferSize;
     copyRegion.dstOffset = 0;
     copyRegion.size = indexBufferSize;
-    vkCmdCopyBuffer(cmd.getCommandBuffer(), staging.Buffer(), this->index->Buffer(), 1, &copyRegion);
+    vkCmdCopyBuffer(cmd.getCommandBuffer(), stagingBuffer, this->index->Buffer(), 1, &copyRegion);
 
     cmd.submitAndWait();
 
-    staging.cleanup();
-
-    //vkDestroyBuffer(ctx.device(), stagingBuffer, nullptr);
-    //vkFreeMemory(ctx.device(), stagingBufferMemory, nullptr);
+    vkDestroyBuffer(ctx.getDevice()->logicaldevice, stagingBuffer, nullptr);
+    vkFreeMemory(ctx.getDevice()->logicaldevice, stagingBufferMemory, nullptr);
 
     calculateBounds();
 }

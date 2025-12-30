@@ -40,6 +40,8 @@ namespace vkengine {
         void createIndexBuffer(VkDeviceSize size, void* data);
         void createStagingBuffer(VkDeviceSize size, void* data);
         void createUniformBuffer(VkDeviceSize size, void* data);
+        void createModelVertexBuffer(VkDeviceSize size, void* data);
+        void createModeIndexBuffer(VkDeviceSize size, void* data);
 
         void updateData(const void* data, VkDeviceSize size, VkDeviceSize offset);
         void flush() const;

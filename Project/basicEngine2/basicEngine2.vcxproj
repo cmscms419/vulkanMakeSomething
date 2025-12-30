@@ -11,8 +11,13 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\app\engine2\DescriptorSet.cpp" />
-    <ClCompile Include="..\..\app\engine2\PushConstants.cpp" />
+    <ClCompile Include="..\..\app\engine2\VKComputepiPipeline.cpp" />
+    <ClCompile Include="..\..\app\engine2\VKDescriptorSet.cpp" />
+    <ClCompile Include="..\..\app\engine2\VKAnimation.cpp" />
+    <ClCompile Include="..\..\app\engine2\VKForwardPbrPipeline.cpp" />
+    <ClCompile Include="..\..\app\engine2\VKGuipiPipeline.cpp" />
+    <ClCompile Include="..\..\app\engine2\VKPostProcessingpiPipeline.cpp" />
+    <ClCompile Include="..\..\app\engine2\VKPushConstants.cpp" />
     <ClCompile Include="..\..\app\engine2\VKbarrier2.cpp" />
     <ClCompile Include="..\..\app\engine2\VKbuffer2.cpp" />
     <ClCompile Include="..\..\app\engine2\VKCommadBufferHander.cpp" />
@@ -21,20 +26,29 @@
     <ClCompile Include="..\..\app\engine2\VKdescriptorPool.cpp" />
     <ClCompile Include="..\..\app\engine2\VKdeviceHandler2.cpp" />
     <ClCompile Include="..\..\app\engine2\VKImage2D.cpp" />
-    <ClCompile Include="..\..\app\engine2\VKPipelineGui.cpp" />
-    <ClCompile Include="..\..\app\engine2\pipeLineHandle.cpp" />
-    <ClCompile Include="..\..\app\engine2\VKPostProcessing.cpp" />
+    <ClCompile Include="..\..\app\engine2\VKMaterial.cpp" />
+    <ClCompile Include="..\..\app\engine2\VKMesh.cpp" />
+    <ClCompile Include="..\..\app\engine2\VKModel.cpp" />
+    <ClCompile Include="..\..\app\engine2\VKModelLoader.cpp" />
+    <ClCompile Include="..\..\app\engine2\VKModelNode.cpp" />
+    <ClCompile Include="..\..\app\engine2\VKpipeLineHandle.cpp" />
     <ClCompile Include="..\..\app\engine2\VKsampler.cpp" />
     <ClCompile Include="..\..\app\engine2\VKshader.cpp" />
     <ClCompile Include="..\..\app\engine2\VKShaderManager.cpp" />
-    <ClCompile Include="..\..\app\engine2\VKSkybox.cpp" />
+    <ClCompile Include="..\..\app\engine2\VKShadowMapPiPipeline.cpp" />
+    <ClCompile Include="..\..\app\engine2\VKSkyboxpiPipeline.cpp" />
     <ClCompile Include="..\..\app\engine2\VKSkyTexture.cpp" />
-    <ClCompile Include="..\..\app\engine2\VKSquarePipeLine.cpp" />
+    <ClCompile Include="..\..\app\engine2\VKSquarepiPipeline.cpp" />
+    <ClCompile Include="..\..\app\engine2\VKStorageBuffer.cpp" />
     <ClCompile Include="..\..\app\engine2\VKswapchain.cpp" />
+    <ClCompile Include="..\..\app\engine2\VKViewFrustum.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\include\engine2\DescriptorSet.h" />
-    <ClInclude Include="..\..\include\engine2\PushConstants.h" />
+    <ClInclude Include="..\..\include\engine2\VKshadowMap.h" />
+    <ClInclude Include="..\..\include\engine2\VKDepthStencil.h" />
+    <ClInclude Include="..\..\include\engine2\VKDescriptorSet.h" />
+    <ClInclude Include="..\..\include\engine2\VKPushConstants.h" />
+    <ClInclude Include="..\..\include\engine2\VKAnimation.h" />
     <ClInclude Include="..\..\include\engine2\VKbarrier2.h" />
     <ClInclude Include="..\..\include\engine2\VKbuffer2.h" />
     <ClInclude Include="..\..\include\engine2\VKCommadBufferHander.h" />
@@ -44,13 +58,20 @@
     <ClInclude Include="..\..\include\engine2\VKdeviceHandler2.h" />
     <ClInclude Include="..\..\include\engine2\VKImage2D.h" />
     <ClInclude Include="..\..\include\engine2\pipeLineHandle.h" />
+    <ClInclude Include="..\..\include\engine2\VKMaterial.h" />
+    <ClInclude Include="..\..\include\engine2\VKMesh.h" />
+    <ClInclude Include="..\..\include\engine2\VKModel.h" />
+    <ClInclude Include="..\..\include\engine2\VKModelLoader.h" />
+    <ClInclude Include="..\..\include\engine2\VKModelNode.h" />
     <ClInclude Include="..\..\include\engine2\VKResourceBindingData.h" />
     <ClInclude Include="..\..\include\engine2\VKsampler.h" />
     <ClInclude Include="..\..\include\engine2\VKshader.h" />
     <ClInclude Include="..\..\include\engine2\VKShaderManager.h" />
     <ClInclude Include="..\..\include\engine2\VKSkyTexture.h" />
+    <ClInclude Include="..\..\include\engine2\VKStorageBuffer.h" />
     <ClInclude Include="..\..\include\engine2\VKswapchain.h" />
     <ClInclude Include="..\..\include\engine2\VKUniformBuffer2.h" />
+    <ClInclude Include="..\..\include\engine2\VKViewFrustum.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{aa7beba8-c275-4c9b-ba08-a371b71683e6}</ProjectGuid>
@@ -100,7 +121,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>DEBUG_;WIN32;WIN64;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <LanguageStandard_C>stdc11</LanguageStandard_C>
-      <AdditionalIncludeDirectories>./;$(CudaToolkitDir)/include;$(VULKAN_SDK)/include;../../include/common;../../include/engine2;../../include/helper/;../../external/imgui;../../external/GLFW/include;../../external/ktx/include;../../external/include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>./;$(CudaToolkitDir)/include;$(VULKAN_SDK)/include;../../include/common;../../include/engine2;../../include/helper/;../../external/imgui;../../external/GLFW/include;../../external/ktx/include;../../external/include/;../../external/assimp/include/</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
@@ -120,7 +141,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;WIN64;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <LanguageStandard_C>stdc11</LanguageStandard_C>
-      <AdditionalIncludeDirectories>./;$(CudaToolkitDir)/include;$(VULKAN_SDK)/include;../../include/common;../../include/engine2;../../include/helper/;../../external/imgui;../../external/GLFW/include;../../external/ktx/include;../../external/include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>./;$(CudaToolkitDir)/include;$(VULKAN_SDK)/include;../../include/common;../../include/engine2;../../include/helper/;../../external/imgui;../../external/GLFW/include;../../external/ktx/include;../../external/include/;../../external/assimp/include/</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>

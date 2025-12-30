@@ -72,7 +72,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>DEBUG_;WIN32;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>./;$(CudaToolkitDir)/include;$(VULKAN_SDK)/include;../../include/common/;../../include/engine2/;../../include/component2;../../include/helper/;../../external/ktx/include;../../external/include;../../external/GLFW/include;../../external/imgui</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>./;$(CudaToolkitDir)/include;$(VULKAN_SDK)/include;../../include/common/;../../include/engine2/;../../include/component2;../../include/helper/;../../external/ktx/include;../../external/include;../../external/GLFW/include;../../external/imgui;../../external/assimp/include/</AdditionalIncludeDirectories>
       <SDLCheck>true</SDLCheck>
       <LanguageStandard_C>stdc11</LanguageStandard_C>
       <LanguageStandard>stdcpp17</LanguageStandard>
@@ -80,9 +80,9 @@
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
-      <AdditionalDependencies>vulkan-1.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;glfw3dll.lib;zlib.lib;libpng.lib;basicEngine2.lib;common.lib;ktx.lib;component2.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>vulkan-1.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;glfw3dll.lib;zlib.lib;libpng.lib;basicEngine2.lib;common.lib;ktx.lib;component2.lib;assimp-vc143-mt.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <LinkTimeCodeGeneration>Default</LinkTimeCodeGeneration>
-      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories);$(CudaToolkitLibDir);../../external/GLFW/lib/$(Configuration)/;../../external/zlib/lib/$(Configuration)/;../../external/libpng/lib/$(Configuration)/;../../external/basicEngine2/$(Platform)/$(Configuration)/;../../external/ktx/lib/;../../external/common/$(Platform)/$(Configuration)/;../../external/component2/$(Platform)/$(Configuration)/</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories);$(CudaToolkitLibDir);../../external/GLFW/lib/$(Configuration)/;../../external/zlib/lib/$(Configuration)/;../../external/libpng/lib/$(Configuration)/;../../external/basicEngine2/$(Platform)/$(Configuration)/;../../external/ktx/lib/;../../external/common/$(Platform)/$(Configuration)/;../../external/component2/$(Platform)/$(Configuration)/;../../external/assimp/lib/$(Configuration)/</AdditionalLibraryDirectories>
     </Link>
     <CudaCompile>
       <TargetMachinePlatform>64</TargetMachinePlatform>
@@ -98,7 +98,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;WIN64;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>./;$(CudaToolkitDir)/include;$(VULKAN_SDK)/include;../../include/common/;../../include/engine2/;../../include/component2;../../include/helper/;../../external/ktx/include;../../external/include;../../external/GLFW/include;../../external/imgui</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>./;$(CudaToolkitDir)/include;$(VULKAN_SDK)/include;../../include/common/;../../include/engine2/;../../include/component2;../../include/helper/;../../external/ktx/include;../../external/include;../../external/GLFW/include;../../external/imgui;../../external/assimp/include/</AdditionalIncludeDirectories>
       <SDLCheck>true</SDLCheck>
       <LanguageStandard_C>stdc11</LanguageStandard_C>
       <LanguageStandard>stdcpp17</LanguageStandard>
@@ -108,9 +108,9 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <SubSystem>Console</SubSystem>
-      <AdditionalDependencies>vulkan-1.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;glfw3dll.lib;zlib.lib;libpng.lib;basicEngine2.lib;common.lib;ktx.lib;component2.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>vulkan-1.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;glfw3dll.lib;zlib.lib;libpng.lib;basicEngine2.lib;common.lib;ktx.lib;component2.lib;assimp-vc143-mt.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <LinkTimeCodeGeneration>Default</LinkTimeCodeGeneration>
-      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories);$(CudaToolkitLibDir);../../external/GLFW/lib/$(Configuration)/;../../external/zlib/lib/$(Configuration)/;../../external/libpng/lib/$(Configuration)/;../../external/basicEngine2/$(Platform)/$(Configuration)/;../../external/ktx/lib/;../../external/common/$(Platform)/$(Configuration)/;../../external/component2/$(Platform)/$(Configuration)/</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories);$(CudaToolkitLibDir);../../external/GLFW/lib/$(Configuration)/;../../external/zlib/lib/$(Configuration)/;../../external/libpng/lib/$(Configuration)/;../../external/basicEngine2/$(Platform)/$(Configuration)/;../../external/ktx/lib/;../../external/common/$(Platform)/$(Configuration)/;../../external/component2/$(Platform)/$(Configuration)/;../../external/assimp/lib/$(Configuration)/</AdditionalLibraryDirectories>
     </Link>
     <CudaCompile>
       <TargetMachinePlatform>64</TargetMachinePlatform>

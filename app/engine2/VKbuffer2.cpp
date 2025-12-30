@@ -114,6 +114,50 @@ namespace vkengine {
         resourceBinding.update();
     }
 
+    void VKBaseBuffer2::createModelVertexBuffer(VkDeviceSize size, void* data)
+    {
+        this->usageFlags = VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+        this->memoryPropertyFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
+        this->size = size;
+        this->offset = 0;
+
+        vkengine::helper::createBuffer2(
+            this->ctx.getDevice()->logicaldevice,
+            this->ctx.getDevice()->physicalDevice,
+            this->size,
+            this->usageFlags,
+            this->memoryPropertyFlags,
+            this->buffer,
+            this->memory,
+            &this->allocatedSize,
+            &this->alignment
+        );
+
+        _VK_CHECK_RESULT_(vkBindBufferMemory(this->ctx.getDevice()->logicaldevice, this->buffer, this->memory, 0));
+    }
+
+    void VKBaseBuffer2::createModeIndexBuffer(VkDeviceSize size, void* data)
+    {
+        this->usageFlags = VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
+        this->memoryPropertyFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
+        this->size = size;
+        this->offset = 0;
+
+        vkengine::helper::createBuffer2(
+            this->ctx.getDevice()->logicaldevice,
+            this->ctx.getDevice()->physicalDevice,
+            this->size,
+            this->usageFlags,
+            this->memoryPropertyFlags,
+            this->buffer,
+            this->memory,
+            &this->allocatedSize,
+            &this->alignment
+        );
+
+        _VK_CHECK_RESULT_(vkBindBufferMemory(this->ctx.getDevice()->logicaldevice, this->buffer, this->memory, 0));
+    }
+
     void VKBaseBuffer2::updateData(const void* data, VkDeviceSize size, VkDeviceSize offset)
     {
         bool check = true;
@@ -156,10 +200,10 @@ namespace vkengine {
     }
 
     VKBaseBuffer2::VKBaseBuffer2(VKBaseBuffer2&& other) noexcept
-        : ctx(other.ctx), name(std::move(other.name)), buffer(buffer),
+        : ctx(other.ctx), name(std::move(other.name)), buffer(other.buffer),
         memory(other.memory), descriptor(other.descriptor), size(other.size),
         offset(other.offset), alignment(other.alignment), usageFlags(other.usageFlags),
-        memoryPropertyFlags(other.memoryPropertyFlags), resourceBinding(std::move(resourceBinding)),
+        memoryPropertyFlags(other.memoryPropertyFlags), resourceBinding(std::move(other.resourceBinding)),
         allocatedSize(other.allocatedSize)
     {
         other.buffer = VK_NULL_HANDLE;
