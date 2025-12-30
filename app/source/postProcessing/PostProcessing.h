@@ -7,7 +7,7 @@
 #include "VKgui.h"
 #include "VKsampler.h"
 #include "VKUniformBuffer2.h"
-#include "DescriptorSet.h"
+#include "VKDescriptorSet.h"
 
 namespace vkengine {
 
@@ -20,6 +20,9 @@ class PostProcessingExample : public vkengine::VulkanEngineWin2
     void mainLoop();
 
   private:
+
+    cString RootPath{};
+    cString Path = "../../../../../../";
 
     VKShaderManager shaderManager;
     vkengine::gui::VKimguiRenderer guiRenderer;

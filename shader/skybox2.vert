@@ -1,4 +1,5 @@
 #version 450
+#extension GL_ARB_shader_draw_parameters : enable
 
 layout(std140, set = 0, binding = 0) uniform SceneDataUBO {
     mat4 projection;
@@ -36,13 +37,17 @@ const int indices[36] = int[36](
 );
 
 void main() {
-    vec3 localPos = pos[indices[gl_VertexIndex]];
-    outLocalPos = localPos;
-    
-    // Remove translation from view matrix for skybox
-    mat4 rotView = mat4(mat3(sceneData.view));
-    vec4 clipPos = sceneData.projection * rotView * vec4(localPos, 1.0);
-    
-    // Ensure skybox is always at far plane
-    gl_Position = clipPos.xyww;
+
+    if (gl_VertexIndex < 36)
+    {
+        vec3 localPos = pos[indices[gl_VertexIndex]];
+        outLocalPos = localPos;
+        
+        // Remove translation from view matrix for skybox
+        mat4 rotView = mat4(mat3(sceneData.view));
+        vec4 clipPos = sceneData.projection * rotView * vec4(localPos, 1.0);
+        
+        // Ensure skybox is always at far plane
+        gl_Position = clipPos.xyww;
+    }
 }

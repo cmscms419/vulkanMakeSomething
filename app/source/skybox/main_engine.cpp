@@ -12,7 +12,7 @@
 #include "VKgui.h"
 #include "VKSkyTexture.h"
 #include "VKUniformBuffer2.h"
-#include "DescriptorSet.h"
+#include "VKDescriptorSet.h"
 
 #include <chrono>
 
@@ -143,10 +143,10 @@ void updateGui(VkExtent2D windowSize, vkengine::platform::MouseState& state, vke
         ImGui::Text("QE: Up/Down");
         ImGui::Text("F2: Toggle camera mode");
 
-        //bool isFirstPerson = camera->type == hlab::Camera::CameraType::firstperson;
+        //bool isFirstPerson = camera->type == vkengine::Camera::CameraType::firstperson;
         //if (ImGui::Checkbox("First Person Mode", &isFirstPerson)) {
-        //    camera->type = isFirstPerson ? hlab::Camera::CameraType::firstperson
-        //        : hlab::Camera::CameraType::lookat;
+        //    camera->type = isFirstPerson ? vkengine::Camera::CameraType::firstperson
+        //        : vkengine::Camera::CameraType::lookat;
         //}
     }
     ImGui::End();
@@ -170,8 +170,9 @@ void recordCommandBuffer(
     VkCommandBufferBeginInfo cmdBufferBeginInfo{ VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO };
     _VK_CHECK_RESULT_(vkBeginCommandBuffer(cmd.getCommandBuffer(), &cmdBufferBeginInfo));
 
-    swapchain.getBarrierHelper(imageIndex).transitionImageLayout2(
+    swapchain.transitionTo(
         cmd.getCommandBuffer(),
+        imageIndex,
         VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
         VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT,
         VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT
@@ -215,9 +216,9 @@ void recordCommandBuffer(
     // Draw GUI on top of the skybox
     guiRenderer.draw(cmd.getCommandBuffer(), swapchain.getSwapChainImageView(imageIndex), viewport);
 
-    swapchain.getBarrierHelper(imageIndex).transitionImageLayout2
-        (
+    swapchain.transitionTo(
             cmd.getCommandBuffer(), 
+            imageIndex,
             VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
             VK_ACCESS_2_NONE, 
             VK_PIPELINE_STAGE_2_BOTTOM_OF_PIPE_BIT

@@ -2,7 +2,7 @@
 
 layout (location = 0) in vec2 inTexCoord;
 
-layout (std140, set = 0, binding = 0) uniform sampler2D hdrColorBuffer;
+layout (set = 0, binding = 0) uniform sampler2D hdrColorBuffer;
 
 layout (std140, set = 0, binding = 1) uniform PostProcessingOptions {
     // Tone mapping options

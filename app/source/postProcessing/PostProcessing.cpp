@@ -1,25 +1,27 @@
-﻿#include "PostProcessing.h"
+﻿#include "Application2.h"
+#include "PostProcessing.h"
 
 #include <thread>
 #include <filesystem>
 #include <stdexcept>
 
 #define IMGUI_DEFINE_MATH_OPERATORS
-using namespace vkengine;
+using namespace vkengine; 
 using namespace vkengine::gui;
 
 PostProcessingExample::PostProcessingExample(std::string root_path, cBool useSwapchain)
     : 
-    VulkanEngineWin2(root_path, useSwapchain),
+    VulkanEngineWin2(useSwapchain),
+    RootPath{ root_path.c_str()},
      shaderManager{*this->cxt,
-                     RootPath + Path + "shader/",
+                     RootPath + SHADER_PATH,
                      { 
                       {"gui", {"vertimgui.spv", "fragimgui.spv"}},
                       {"sky", {"vertskybox2.spv", "fragskybox2.spv"}},
                       {"post", {"vertpost.spv", "fragpost.spv"}}
                      }
     },
-      guiRenderer{ *this->cxt, shaderManager, swapChain->getSwapChainImageFormat(), RootPath + Path + "resource/" },
+      guiRenderer{ *this->cxt, shaderManager, swapChain->getSwapChainImageFormat(), RootPath + RESOURSE_PATH },
       skyTextures{ *this->cxt },
       skyPipeline(*this->cxt, shaderManager),
       postPipeline(*this->cxt, shaderManager),

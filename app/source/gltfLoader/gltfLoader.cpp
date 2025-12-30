@@ -30,7 +30,7 @@ namespace vkengine {
         this->modelObject = new vkengine::object::GLTFmodelObject(this->getDevice());
 
         //cString path = "/glTF2/AntiqueCamera.gltf";
-        cString path = "/sponza/glTF/Sponza.gltf";
+        cString path = "/noGit/sponza/glTF/Sponza.gltf";
         
         helper::loadModel::GLTF::loadAsset(path, this->modelObject);
         this->modelObject->setScale(cVec3(0.3f, 0.3f, 0.3f)); // 모델 크기 조정
