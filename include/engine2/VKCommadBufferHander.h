@@ -33,7 +33,7 @@ namespace vkengine {
 
         VkCommandPool& getCommandPool() { return commandPool; }
         VkQueue& getQueue() { return queue; }
-        VkCommandBuffer getCommandBuffer() { return handle; }
+        VkCommandBuffer& getCommandBuffer() { return handle; }
 
         void submitAndWait();
 

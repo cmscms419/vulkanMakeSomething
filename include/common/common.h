@@ -1,16 +1,10 @@
 ﻿#ifndef INCLUDE_COMMON_H
 #define INCLUDE_COMMON_H
 
-//#include <algorithm>
-//#include <array>
-//#include <chrono>
 //#include <cstdlib>
 //#include <cstring>
 //#include <fstream>
-//#include <set>
 //#include <stdexcept>
-//#include <vector>
-//#include <map>
 
 #include <chrono>
 #include <iostream>
@@ -61,6 +55,7 @@ typedef std::string cString;
 typedef glm::vec2 cVec2;
 typedef glm::vec3 cVec3;
 typedef glm::vec4 cVec4;
+typedef glm::ivec4 cIvec4;
 typedef glm::mat4 cMat4;
 typedef glm::quat cQuat;
 typedef void cVoid;

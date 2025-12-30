@@ -16,7 +16,7 @@
 #include "VKswapchain.h"
 #include "VKSkyTexture.h"
 #include "VKUniformBuffer2.h"
-#include "DescriptorSet.h"
+#include "VKDescriptorSet.h"
 
 #include "Camera2.h"
 #include "VKwindow.h"
@@ -32,7 +32,7 @@ namespace vkengine {
     class VulkanEngineWin2
     {
     public:
-        VulkanEngineWin2(std::string root_path, cBool useSwapchain);
+        VulkanEngineWin2(cBool useSwapchain);
         ~VulkanEngineWin2();
         void init();
         void cleanup();
@@ -46,10 +46,6 @@ namespace vkengine {
         void caluCurrentValue();
         virtual void recreateSwapchain();
 
-        std::string RootPath{};
-        std::string Path = "../../../../../../";
-
-        
         // Core Vulkan objects
         std::shared_ptr<VKcontext> cxt;
         std::shared_ptr<VKSwapChain> swapChain;

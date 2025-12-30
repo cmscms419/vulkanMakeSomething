@@ -10,10 +10,10 @@
 namespace vkengine {
 
     template <typename T>
-    class PushConstants {
+    class VKPushConstants {
 
     public:
-        PushConstants(VKcontext& context) : context(context)
+        VKPushConstants(VKcontext& context) : context(context)
         {
 
         }

@@ -8,7 +8,7 @@ namespace vkengine
 
     const std::vector<const cChar*> coreDeviceExtensions = {
         VK_KHR_SWAPCHAIN_EXTENSION_NAME,                // 스왑체인 확장
-        VK_KHR_SHADER_NON_SEMANTIC_INFO_EXTENSION_NAME  // 디버깅을 위한 확장
+        VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME         // 동적 랜더링 확장자
     };
 
     const std::vector<const cChar*> enabledDeviceExtensions = {};

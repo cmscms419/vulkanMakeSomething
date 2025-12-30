@@ -22,7 +22,7 @@ namespace vkengine {
 
         VkExtent2D getWindowSize() const { return this->windowSize; }
         VkFormat getSwapChainImageFormat() const { return this->ImageFormat; }
-        VkSwapchainKHR getSwapChain() const { return this->swapChain; }
+        VkSwapchainKHR& getSwapChain() { return this->swapChain; }
 
         VkImage& getSwapChainImage(cUint32_t imageindex) {
             if (imageindex >= this->Images.size()) {

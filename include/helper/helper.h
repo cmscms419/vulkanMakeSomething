@@ -204,7 +204,7 @@ namespace vkengine {
 
         // 최대 사용 가능한 샘플링 수를 반환하는 함수
 
-        //VkSampleCountFlagBits getMaxUsableSampleCount(VkPhysicalDevice physicalDevice);
+        VkSampleCountFlagBits getMaxUsableSampleCount(VkPhysicalDevice physicalDevice);
 
         // setupCommandBuffer 나중에 추가
         // flushSetupCommands 나중에 추가

@@ -10,9 +10,9 @@
 #include "VKsampler.h"
 #include "VKShaderManager.h"
 #include "VKDescriptorManager2.h"
-#include "DescriptorSet.h"
+#include "VKDescriptorSet.h"
 #include "pipeLineHandle.h"
-#include "PushConstants.h"
+#include "VKPushConstants.h"
 
 #include <imgui.h>
 #include <imgui_internal.h>
@@ -51,7 +51,7 @@ namespace vkengine {
             PipeLineHandle pipelineHandle;
 
             DescriptorSetHander fontSet;
-            PushConstants<PushConstBlock> pushConsts;
+            VKPushConstants<PushConstBlock> pushConsts;
 
             bool visible{ true };
             bool updated{ false };

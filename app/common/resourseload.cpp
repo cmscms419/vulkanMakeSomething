@@ -71,10 +71,6 @@ cUChar* load_png_rgba(const cChar* filename, cUint32_t* width, cUint32_t* height
 
 ktxTexture* load_ktx_texture(const cChar* filename, ktxTexture* texture)
 {
-    FILE* fp = NULL;
-    fopen_s(&fp, filename, "rb");
-    if (!fp) return NULL;
-
     ktxVulkanDeviceInfo kvdi;
     
     KTX_error_code ktxresult;
@@ -82,7 +78,6 @@ ktxTexture* load_ktx_texture(const cChar* filename, ktxTexture* texture)
     ktxresult = ktxTexture_CreateFromNamedFile(filename, KTX_TEXTURE_CREATE_LOAD_IMAGE_DATA_BIT, &texture);
 
     if (ktxresult != KTX_SUCCESS) {
-        fclose(fp);
         _PRINT_TO_CONSOLE_("Failed to load KTX texture from %s: %s\n", filename, ktxErrorString(ktxresult));
         return NULL;
     }

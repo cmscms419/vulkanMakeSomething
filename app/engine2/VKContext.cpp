@@ -344,6 +344,51 @@ namespace vkengine {
         return commandBufferHanders;
     }
 
+    VKCommandBufferHander VKcontext::createTransferCommandBufferHander(VkCommandBufferLevel level, cBool begin)
+    {
+        return VKCommandBufferHander(this->VKdevice.logicaldevice, this->VKdevice.transferCommandPool, this->VKdevice.transferVKQueue, level, begin);
+    }
+
+    std::vector<VKCommandBufferHander> VKcontext::createTransferCommandBufferHanders(cUint32_t count)
+    {
+        const VkCommandBufferLevel level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+
+        std::vector<VkCommandBuffer> commandBuffers(count);
+
+        VkCommandBufferAllocateInfo cmdBufAllocInfo{ VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO };
+        cmdBufAllocInfo.commandPool = this->VKdevice.graphicsCommandPool;
+        cmdBufAllocInfo.level = level;
+        cmdBufAllocInfo.commandBufferCount = count;
+
+        _VK_CHECK_RESULT_(
+            vkAllocateCommandBuffers(
+                this->VKdevice.logicaldevice,
+                &cmdBufAllocInfo, commandBuffers.data()));
+
+        std::vector<VKCommandBufferHander> commandBufferHanders;
+
+        for (cUint32_t i = 0; i < count; i++) {
+            commandBufferHanders.emplace_back(this->VKdevice.logicaldevice, commandBuffers[i], this->VKdevice.transferCommandPool, this->VKdevice.transferVKQueue);
+        }
+
+        return commandBufferHanders;
+    }
+
+    cUint32_t VKcontext::getMemoryTypeIndex(cUint32_t typeBits, VkMemoryPropertyFlags properties)
+    {
+        for (cUint32_t i = 0; i < this->VKdevice.memoryProperties.memoryTypeCount; i++) {
+            if ((typeBits & 1) == 1) {
+                if ((this->VKdevice.memoryProperties.memoryTypes[i].propertyFlags & properties) == properties) {
+                    return i;
+                }
+            }
+            typeBits >>= 1;
+        }
+
+        EXIT_TO_LOGGER("Could not find a suitable memory type.\n");
+        return cUint32_t(-1);
+    }
+
     void VKcontext::waitGraphicsQueueIdle()
     {
         vkQueueWaitIdle(this->VKdevice.graphicsVKQueue);

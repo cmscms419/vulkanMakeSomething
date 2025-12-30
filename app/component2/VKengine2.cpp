@@ -9,8 +9,7 @@ namespace vkengine
         app->framebufferResized = true;
     }
     
-    VulkanEngineWin2::VulkanEngineWin2(std::string root_path, cBool useSwapchain)
-        : RootPath(root_path)
+    VulkanEngineWin2::VulkanEngineWin2(cBool useSwapchain)
     {
         this->window = platform::WindowFactory::create(
             platform::WindowFactory::Backend::GLFW,

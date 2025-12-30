@@ -1,5 +1,5 @@
-#ifndef VK_PIPELINEhANDLE_H_
-#define VK_PIPELINEhANDLE_H_
+#ifndef VK_PIPELIN_INCLUDE_H_
+#define VK_PIPELIN_INCLUDE_H_
 
 #include "common.h"
 #include "struct.h"
@@ -100,4 +100,4 @@ namespace vkengine {
     };
 }
 
-#endif // !VK_PIPELINEhANDLE_H_
+#endif // !VK_PIPELIN_INCLUDE_H_

@@ -6,6 +6,42 @@ using namespace vkengine::Log;
 namespace vkengine {
     namespace helper {
 
+        VkSampleCountFlagBits getMaxUsableSampleCount(VkPhysicalDevice physicalDevice) {
+            VkSampleCountFlagBits value = VK_SAMPLE_COUNT_1_BIT;
+
+            VkPhysicalDeviceProperties physicalDeviceProperties;
+            vkGetPhysicalDeviceProperties(physicalDevice, &physicalDeviceProperties);
+
+            VkSampleCountFlags counts = physicalDeviceProperties.limits.framebufferColorSampleCounts & physicalDeviceProperties.limits.framebufferDepthSampleCounts;
+
+            if (counts & VK_SAMPLE_COUNT_64_BIT)
+            {
+                value = VK_SAMPLE_COUNT_64_BIT;
+            }
+            if (counts & VK_SAMPLE_COUNT_32_BIT)
+            {
+                value = VK_SAMPLE_COUNT_32_BIT;
+            }
+            if (counts & VK_SAMPLE_COUNT_16_BIT)
+            {
+                value = VK_SAMPLE_COUNT_16_BIT;
+            }
+            if (counts & VK_SAMPLE_COUNT_8_BIT)
+            {
+                value = VK_SAMPLE_COUNT_8_BIT;
+            }
+            if (counts & VK_SAMPLE_COUNT_4_BIT)
+            {
+                value = VK_SAMPLE_COUNT_4_BIT;
+            }
+            if (counts & VK_SAMPLE_COUNT_2_BIT)
+            {
+                value = VK_SAMPLE_COUNT_2_BIT;
+            }
+
+            return value;
+        }
+
         cString shaderStageFlagsToString(VkShaderStageFlags flags)
         {
             std::string result;

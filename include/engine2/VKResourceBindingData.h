@@ -14,6 +14,7 @@ namespace vkengine {
         friend class VKImage2D;
         friend class VKBaseBuffer2;
         friend class DescriptorSetHander;
+        friend class VKShadowMap;
         
         void update() {
             if (buffer != VK_NULL_HANDLE)
@@ -45,6 +46,7 @@ namespace vkengine {
             this->sampler = sampler;
             update();
         }
+
         VKBarrierHelper& getBarrierHelper() { return barrierHelper; }
     
     private:

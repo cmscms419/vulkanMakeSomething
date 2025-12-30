@@ -121,7 +121,6 @@ struct QueueFamilyIndices2 {
     }
 };
 
-
 struct SwapChainSupportDetails {
     VkSurfaceCapabilitiesKHR capabilities = {};
     std::vector<VkSurfaceFormatKHR> formats;
@@ -179,6 +178,72 @@ struct Vertex {
             normal == other.normal &&
             texCoord == other.texCoord &&
             inTangent == other.inTangent;
+    }
+
+};
+
+struct Vertex2 {
+    alignas(4) cVec3 pos;
+    alignas(4) cVec3 normal;
+    alignas(4) cVec2 texCoord;
+    alignas(4) cVec3 inTangent;
+    alignas(4) cVec3 Bitangent;
+
+    // Skeletal animation support
+    alignas(4) cVec4 BoneWeights;  // 16 bytes - bone influence weights (up to 4 bones per vertex)
+    alignas(4) cIvec4 BoneIndices; // 16 bytes - bone indices (up to 4 bones per vertex)
+
+    // Default constructor
+    Vertex2()
+        : pos(0.0f), normal(0.0f, 1.0f, 0.0f), texCoord(0.0f), inTangent(1.0f, 0.0f, 0.0f),
+        Bitangent(0.0f, 0.0f, 1.0f), BoneWeights(0.0f), BoneIndices(-1)
+    {
+    }
+
+    // Constructor for regular vertices (without animation)
+    Vertex2(const cVec3& pos, const cVec3& norm, const cVec2& tex)
+        : pos(pos), normal(norm), texCoord(tex), inTangent(1.0f, 0.0f, 0.0f),
+        Bitangent(0.0f, 0.0f, 1.0f), BoneWeights(0.0f), BoneIndices(-1)
+    {
+    }
+
+    // Constructor for animated vertices
+    Vertex2(const cVec3& pos, const cVec3& norm, const cVec2& tex, const cVec4& weights,
+        const cIvec4& indices)
+        : pos(pos), normal(norm), texCoord(tex), inTangent(1.0f, 0.0f, 0.0f),
+        Bitangent(0.0f, 0.0f, 1.0f), BoneWeights(weights), BoneIndices(indices)
+    {
+    }
+
+    // 바인딩 설명을 반환하는 함수
+    // 이 구조체의 멤버 변수가 어떻게 바인딩되는지 설명합니다.
+    static VkVertexInputBindingDescription getBindingDescription() {
+        VkVertexInputBindingDescription bindingDescription{};
+
+        bindingDescription.binding = 0;
+        bindingDescription.stride = sizeof(Vertex2);
+        bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+
+        return bindingDescription;
+    }
+
+    // 어트리뷰트 설명을 반환하는 함수
+    std::array<VkVertexInputAttributeDescription, 4> getAttributeDescriptionsBasic();
+    std::array<VkVertexInputAttributeDescription, 7> getAttributeDescriptionsAnimated();
+
+    void addBoneData(cUint32_t boneIndex, cFloat weight);
+    void normalizeBoneWeights();
+    bool hasValidBoneData() const;
+
+    cBool operator==(const Vertex2& other) const {
+        return
+            pos == other.pos &&
+            normal == other.normal &&
+            texCoord == other.texCoord &&
+            inTangent == other.inTangent &&
+            Bitangent == other.Bitangent &&
+            BoneWeights == other.BoneWeights &&
+            BoneIndices == other.BoneIndices;
     }
 
 };
@@ -308,14 +373,12 @@ struct ComputerFrameData {
     VkFence VkinFlightFences;
 };
 
-
 struct UniformBufferObject {
     cMat4 model;
     cMat4 inverseTranspose;
     cMat4 view;
     cMat4 proj;
 };
-
 
 struct TextureResourceBase
 {
@@ -602,6 +665,22 @@ struct cMaterial
     }
 };
 
+struct cMaterial2
+{
+    alignas(16) cVec4 emissiveFactor = cVec4(0.0f);
+    alignas(16) cVec4 baseColorFactor = cVec4(1.0f);
+    alignas(4) cFloat roughness = 1.0f;
+    alignas(4) cFloat transparencyFactor = 1.0f;
+    alignas(4) cFloat discardAlpha = 0.0f;
+    alignas(4) cFloat metallicFactor = 0.0f;
+    alignas(4) cInt baseColorTextureIndex = -1;
+    alignas(4) cInt emissiveTextureIndex = -1;
+    alignas(4) cInt normalTextureIndex = -1;
+    alignas(4) cInt opacityTextureIndex = -1;
+    alignas(4) cInt metallicRoughnessTextureIndex = -1;
+    alignas(4) cInt occlusionTextureIndex = -1;
+};
+
 struct UniformBufferSkymapParams
 {
     cVec4 lightPos[4] = { cVec4(0.0f) }; // 조명 위치
@@ -665,6 +744,143 @@ struct PostProcessingOptionsUBO
     cFloat debugSplit = 0.5f;     // Split position for comparison (0.0-1.0)
     cInt showOnlyChannel = 0; // 0=All, 1=Red, 2=Green, 3=Blue, 4=Alpha, 5=Luminance
     cFloat padding1 = 0.0f;
+};
+
+struct Plane
+{
+    cVec3 normal;
+    cFloat distance; 
+
+    Plane() = default;
+    Plane(const cVec3& p1, const cVec3& p2, const cVec3& p3);
+    Plane(const cVec3& normal, const cVec3& point);
+
+    cFloat distanceToPoint(const cVec3& point) const;
+};
+
+struct AABB
+{
+    cVec3 min = cVec3(0.0f);
+    cVec3 max = cVec3(0.0f);
+
+    AABB() = default;
+    AABB(const cVec3& min_, const cVec3& max_) : min(min_), max(max_)
+    {
+    }
+
+    cVec3 getCenter() const
+    {
+        return (min + max) * 0.5f;
+    }
+    cVec3 getExtents() const
+    {
+        return (max - min) * 0.5f;
+    }
+
+    // Transform AABB by matrix
+    AABB transform(const cMat4& matrix) const;
+};
+
+struct BoneDataUniform
+{
+    alignas(16) cMat4 boneMatrices[256]; // 16,384 bytes (already 16-byte aligned)
+    alignas(16) cVec4 animationData;     // x = hasAnimation (0.0/1.0), y,z,w = future use
+};
+
+struct OptionsUniform
+{
+    alignas(4) cInt textureOn = 1;   // Use int instead of bool, 1 = true, 0 = false
+    alignas(4) cInt shadowOn = 1;    // Use int instead of bool, 1 = true, 0 = false
+    alignas(4) cInt discardOn = 1;   // Use int instead of bool, 1 = true, 0 = false
+    alignas(4) cInt animationOn = 1; // Use int instead of bool, 1 = true, 0 = false
+    alignas(4) cFloat ssaoRadius = 0.5f;
+    alignas(4) cFloat ssaoBias = 0.025f;
+    alignas(4) cInt ssaoSampleCount = 16;
+    alignas(4) cFloat ssaoPower = 2.0f;
+};
+
+// NEW: Model configuration structure
+struct ModelConfig
+{
+    cString filePath;                       // Relative to assets path
+    cString displayName;                    // Display name for GUI
+    cMat4 transform = cMat4(1.0f); // Model transformation matrix
+    cBool isBistroObj = false;              // Special handling for Bistro models
+
+    // Animation settings
+    cBool autoPlayAnimation = true;      // Start animation automatically
+    cUint32_t initialAnimationIndex = 0; // Which animation to start with
+    cFloat animationSpeed = 1.0f;        // Animation playback speed
+    cBool loopAnimation = true;          // Loop the animation
+
+    // Helper constructors
+    ModelConfig() = default;
+
+    ModelConfig(const cString& path, const cString& name = "",
+        const cMat4& trans = cMat4(1.0f), cBool bistro = false)
+        : filePath(path), displayName(name.empty() ? path : name), transform(trans),
+        isBistroObj(bistro)
+    {
+    }
+
+    // Fluent interface for easy configuration
+    ModelConfig& setName(const cString& name)
+    {
+        displayName = name;
+        return *this;
+    }
+    ModelConfig& setTransform(const cMat4& trans)
+    {
+        transform = trans;
+        return *this;
+    }
+    ModelConfig& setBistroModel(cBool bistro)
+    {
+        isBistroObj = bistro;
+        return *this;
+    }
+    ModelConfig& setAnimation(cBool autoPlay, cUint32_t index = 0, cFloat speed = 1.0f,
+        cBool loop = true)
+    {
+        autoPlayAnimation = autoPlay;
+        initialAnimationIndex = index;
+        animationSpeed = speed;
+        loopAnimation = loop;
+        return *this;
+    }
+};
+
+// NEW: Application configuration structure
+struct ApplicationConfig
+{
+    std::vector<ModelConfig> models;
+
+    static ApplicationConfig createDefault()
+    {
+        ApplicationConfig config;
+
+        // Character model
+        ModelConfig character("characters/Leonard/Bboy Hip Hop Move.fbx", "캐릭터");
+        character.transform = glm::rotate(
+            glm::scale(
+            glm::translate(
+            glm::mat4(1.0f), 
+            glm::vec3(-6.719f, 0.375f, -1.860f)),
+            glm::vec3(0.012f)),
+            glm::radians(-90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        character.autoPlayAnimation = true;
+
+        // Bistro scene
+        ModelConfig bistro("models/AmazonLumberyardBistroMorganMcGuire/exterior.obj", "거리",
+            glm::scale(glm::mat4(1.0f), glm::vec3(0.01f)),
+            true // isBistroObj
+        );
+        bistro.autoPlayAnimation = false;
+
+        config.models = { character, bistro };
+
+        return config;
+    }
 };
 
 extern const std::vector<Vertex> cube;

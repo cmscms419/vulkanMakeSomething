@@ -30,6 +30,8 @@ namespace vkengine {
         void createTextureFromKtx2(cString filepath, cBool usCubemap);
         void createTextureFromImage(cString filepath, cBool usCubemap, cBool sRGB);
         void createTextureFromPixelData(cUChar* pixelData, cUint32_t width, cUint32_t height, cUint32_t channels, cBool sRGB);
+        void createMsaaColorBuffer(cUint16_t width, cUint16_t height, VkSampleCountFlagBits sampleCount);
+        void createGeneralStorage(cUint16_t width, cUint32_t height);
         void updateResourceBindingAfterTransition()
         {
             VkImageLayout currentLayout = resourceBinding.barrierHelper.Currentlayout();

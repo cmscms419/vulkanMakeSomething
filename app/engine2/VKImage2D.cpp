@@ -48,8 +48,8 @@ namespace vkengine
         VkSampleCountFlagBits sampleCount,
         VkImageUsageFlags usage,
         VkImageAspectFlags aspectMask,
-        uint32_t mipLevels,
-        uint32_t arrayLayers,
+        cUint32_t mipLevels,
+        cUint32_t arrayLayers,
         VkImageCreateFlagBits flags)
     {
         this->cleanup();
@@ -93,7 +93,7 @@ namespace vkengine
         this->getBarrierHelper().update(this->imageFormat, mipLevels, arrayLayers);
     }
 
-    void VKImage2D::createCubeImage(cUint32_t width, cUint32_t height, VkFormat format, VkSampleCountFlagBits sampleCount, VkImageUsageFlags usage, VkImageAspectFlags aspectMask, uint32_t mipLevels, uint32_t arrayLayers, VkImageCreateFlagBits flags)
+    void VKImage2D::createCubeImage(cUint32_t width, cUint32_t height, VkFormat format, VkSampleCountFlagBits sampleCount, VkImageUsageFlags usage, VkImageAspectFlags aspectMask, cUint32_t mipLevels, cUint32_t arrayLayers, VkImageCreateFlagBits flags)
     {
         this->cleanup();
 
@@ -377,6 +377,24 @@ namespace vkengine
             ctx.getDevice()->transferCommandPool,
             ctx.getDevice()->transferVKQueue,
             cmb);
+    }
+
+    void VKImage2D::createMsaaColorBuffer(cUint16_t width, cUint16_t height, VkSampleCountFlagBits sampleCount)
+    {
+        this->createImage(static_cast<cUint32_t>(width), static_cast<cUint32_t>(height),
+            VK_FORMAT_R16G16B16A16_SFLOAT, sampleCount, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
+            VK_IMAGE_ASPECT_COLOR_BIT, 1, 1, static_cast<VkImageCreateFlagBits>(0));
+    }
+
+    void VKImage2D::createGeneralStorage(cUint16_t width, cUint32_t height)
+    {
+        VkImageUsageFlags usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT |
+            VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT |
+            VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+
+        createImage(static_cast<cUint32_t>(width), static_cast<cUint32_t>(height), 
+            VK_FORMAT_R16G16B16A16_SFLOAT, VK_SAMPLE_COUNT_1_BIT, usage,
+            VK_IMAGE_ASPECT_COLOR_BIT, 1, 1, static_cast<VkImageCreateFlagBits>(0));
     }
 
     void VKImage2D::cleanup()

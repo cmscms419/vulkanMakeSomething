@@ -7,7 +7,6 @@
 
 #include "common.h"
 #include "vkmath.h"
-#include "struct.h"
 
 #include "log.h"
 
@@ -99,6 +98,5 @@ namespace vkengine {
         };
     }
 }
-
 
 #endif // ! INCLUDE_CAMERA_2_H_

@@ -36,7 +36,11 @@ namespace vkengine {
         cBool checkValidationLayerSupport(const cChar* str); // 검증 레이어 지원 확인
         VKCommandBufferHander createGrapicsCommandBufferHander(VkCommandBufferLevel level, cBool begin); // 커맨드 버퍼 생성
         std::vector<VKCommandBufferHander> createGrapicsCommandBufferHanders(cUint32_t count); // 여러개의 grapics 커맨드 버퍼 생성
+        VKCommandBufferHander createTransferCommandBufferHander(VkCommandBufferLevel level, cBool begin);
+        std::vector<VKCommandBufferHander> createTransferCommandBufferHanders(cUint32_t count); // 여러개의 grapics 커맨드 버퍼 생성
 
+        
+        cUint32_t getMemoryTypeIndex(cUint32_t typeBits, VkMemoryPropertyFlags properties);
 
         VkQueue grapicsQueue() { return this->VKdevice.graphicsVKQueue; }
         VkQueue computerQueue() { return this->VKdevice.computerVKQueue; }
