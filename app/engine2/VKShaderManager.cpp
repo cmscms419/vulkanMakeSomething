@@ -5,7 +5,7 @@ namespace vkengine {
     VKShaderManager::VKShaderManager(VKcontext& ctx, cString shaderPathPrefix, const std::initializer_list<std::pair<cString, std::vector<cString>>>& pipelineShaders)
         : ctx(ctx)
     {
-        // shahder Á¤º¸¸¦ ÀĞ¾î¼­ ÀúÀå
+        // shahder ì •ë³´ë¥¼ ì½ì–´ì„œ ì €ì¥
         createFromShaders(shaderPathPrefix, pipelineShaders);
 
         collectLayoutInfos();
@@ -34,8 +34,8 @@ namespace vkengine {
     }
     void VKShaderManager::collectLayoutInfos()
     {
-        // ¸ğµç ÆÄÀÌÇÁ¶óÀÎ¿¡ ´ëÇØ ·¹ÀÌ¾Æ¿ô Á¤º¸¸¦ ¼öÁıÇÏ±â À§ÇÑ ÄÁÅ×ÀÌ³Ê
-        // Key: Á¤±ÔÈ­µÈ ¹ÙÀÎµù º¤ÅÍ (stageFlags=0), Value: ÆÄÀÌÇÁ¶óÀÎ¸í°ú setIndex ½ÖÀÇ º¤ÅÍ
+        // ëª¨ë“  íŒŒì´í”„ë¼ì¸ì— ëŒ€í•´ ë ˆì´ì•„ì›ƒ ì •ë³´ë¥¼ ìˆ˜ì§‘í•˜ê¸° ìœ„í•œ ì»¨í…Œì´ë„ˆ
+        // Key: ì •ê·œí™”ëœ ë°”ì¸ë”© ë²¡í„° (stageFlags=0), Value: íŒŒì´í”„ë¼ì¸ëª…ê³¼ setIndex ìŒì˜ ë²¡í„°
         std::unordered_map<
             std::vector<VkDescriptorSetLayoutBinding>,
             std::vector<std::tuple<cString, cUint32_t>>,
@@ -44,11 +44,11 @@ namespace vkengine {
 
         for (const auto& [pipelineName, shaders] : this->pipelineShaders)
         {
-            // ÆÄÀÌÇÁ¶óÀÎº° ¹ÙÀÎµù ¼öÁı±â: setIndex -> bindingIndex -> VkDescriptorSetLayoutBinding
+            // íŒŒì´í”„ë¼ì¸ë³„ ë°”ì¸ë”© ìˆ˜ì§‘ê¸°: setIndex -> bindingIndex -> VkDescriptorSetLayoutBinding
             std::map<cUint32_t, std::map<cUint32_t, VkDescriptorSetLayoutBinding>> pipelineBindingCollector;
             collectPerPipelineBindings(pipelineName, pipelineBindingCollector);
 
-            // setIndexº°·Î LayoutInfo »ı¼º
+            // setIndexë³„ë¡œ LayoutInfo ìƒì„±
             for (const auto& [setIndex, bindingsMap] : pipelineBindingCollector)
             {
                 if (bindingsMap.empty())
@@ -56,46 +56,46 @@ namespace vkengine {
                     continue;
                 }
 
-                // ·¹ÀÌ¾Æ¿ô Á¤º¸ »ı¼º
+                // ë ˆì´ì•„ì›ƒ ì •ë³´ ìƒì„±
                 std::vector< VkDescriptorSetLayoutBinding> bindings;
 
                 bindings.reserve(bindingsMap.size());
-                // mapÀ» vector·Î º¯È¯
+                // mapì„ vectorë¡œ ë³€í™˜
                 for (const auto& [bindingIndex, layoutBinding] : bindingsMap)
                 {
                     bindings.push_back(layoutBinding);
                 }
 
-                // stageFlags¸¦ Á¦¿ÜÇÑ ³ª¸ÓÁö ¼Ó¼ºÀÌ µ¿ÀÏÇÏ¸é °°Àº ·¹ÀÌ¾Æ¿ôÀ¸·Î °£ÁÖ
+                // stageFlagsë¥¼ ì œì™¸í•œ ë‚˜ë¨¸ì§€ ì†ì„±ì´ ë™ì¼í•˜ë©´ ê°™ì€ ë ˆì´ì•„ì›ƒìœ¼ë¡œ ê°„ì£¼
                 std::vector<VkDescriptorSetLayoutBinding> normalizedBindings = bindings;
                 VkShaderStageFlags accumulatedStageFlags = 0;
 
-                // ¸ğµç ¹ÙÀÎµùÀÇ stageFlags¸¦ ´©Àû
+                // ëª¨ë“  ë°”ì¸ë”©ì˜ stageFlagsë¥¼ ëˆ„ì 
                 for (const auto& binding : bindings) {
                     accumulatedStageFlags |= binding.stageFlags;
                 }
 
-                // ¸ğµç ¹ÙÀÎµùÀÇ stageFlags¸¦ 0À¸·Î ¼³Á¤ÇÏ¿© ºñ±³
+                // ëª¨ë“  ë°”ì¸ë”©ì˜ stageFlagsë¥¼ 0ìœ¼ë¡œ ì„¤ì •í•˜ì—¬ ë¹„êµ
                 for (auto& binding : normalizedBindings) {
                     binding.stageFlags = 0;
                 }
 
-                // try_emplace´Â C++17ºÎÅÍ Áö¿øµÇ´Â ÇÔ¼ö·Î, ¸Ê¿¡ Å°°¡ ¾øÀ» ¶§¸¸ »õ·Î »ğÀÔ
+                // try_emplaceëŠ” C++17ë¶€í„° ì§€ì›ë˜ëŠ” í•¨ìˆ˜ë¡œ, ë§µì— í‚¤ê°€ ì—†ì„ ë•Œë§Œ ìƒˆë¡œ ì‚½ì…
                 auto [it, inserted] = bindingCollector.try_emplace(
                     normalizedBindings,
                     std::vector<std::tuple<cString, cUint32_t>>{ std::make_tuple(pipelineName, setIndex) });
 
-                // »õ·Î¿î ·¹ÀÌ¾Æ¿ôÀÌ Ãß°¡µÈ °æ¿ì
+                // ìƒˆë¡œìš´ ë ˆì´ì•„ì›ƒì´ ì¶”ê°€ëœ ê²½ìš°
                 if (!inserted) {
                     for (size_t i = 0; i < it->first.size(); i++)
                     {
                         accumulatedStageFlags |= it->first[i].stageFlags;
                     }
-                    // ÀÌ¹Ì Á¸ÀçÇÏ´Â ·¹ÀÌ¾Æ¿ôÀÎ °æ¿ì, ÆÄÀÌÇÁ¶óÀÎ°ú setIndex Ãß°¡
+                    // ì´ë¯¸ ì¡´ì¬í•˜ëŠ” ë ˆì´ì•„ì›ƒì¸ ê²½ìš°, íŒŒì´í”„ë¼ì¸ê³¼ setIndex ì¶”ê°€
                     it->second.emplace_back(pipelineName, setIndex);
                 }
 
-                // ¿øº» ¹ÙÀÎµù º¤ÅÍÀÇ stageFlags¸¦ ´©ÀûµÈ °ªÀ¸·Î ¾÷µ¥ÀÌÆ®
+                // ì›ë³¸ ë°”ì¸ë”© ë²¡í„°ì˜ stageFlagsë¥¼ ëˆ„ì ëœ ê°’ìœ¼ë¡œ ì—…ë°ì´íŠ¸
                 auto& keyBindings = const_cast<std::vector<VkDescriptorSetLayoutBinding>&>(it->first);
                 for (auto& binding : keyBindings) {
                     binding.stageFlags = accumulatedStageFlags;
@@ -106,7 +106,7 @@ namespace vkengine {
         this->layoutInfos.clear();
         this->layoutInfos.reserve(bindingCollector.size());
 
-        // ¼öÁıµÈ ·¹ÀÌ¾Æ¿ô Á¤º¸¸¦ LayoutInfo ±¸Á¶Ã¼·Î º¯È¯ÇÏ¿© ÀúÀå
+        // ìˆ˜ì§‘ëœ ë ˆì´ì•„ì›ƒ ì •ë³´ë¥¼ LayoutInfo êµ¬ì¡°ì²´ë¡œ ë³€í™˜í•˜ì—¬ ì €ì¥
         for (const auto& [bindings, pipelineinfo] : bindingCollector) {
             this->layoutInfos.emplace_back(LayoutInfo{ bindings, std::move(pipelineinfo) });
         }
@@ -117,19 +117,19 @@ namespace vkengine {
         const cString& pipelineName,
         std::map<cUint32_t, std::map<cUint32_t, VkDescriptorSetLayoutBinding>>& bindingCollector) const
     {
-        // ÆÄÀÌÇÁ¶óÀÎ¿¡ ¼ÓÇÑ ¸ğµç ½¦ÀÌ´õÀÇ ¹ÙÀÎµù Á¤º¸¸¦ ¼öÁı
+        // íŒŒì´í”„ë¼ì¸ì— ì†í•œ ëª¨ë“  ì‰ì´ë”ì˜ ë°”ì¸ë”© ì •ë³´ë¥¼ ìˆ˜ì§‘
         const auto& shaders = this->pipelineShaders.at(pipelineName);
 
-        // °¢ ½¦ÀÌ´õÀÇ ¹ÙÀÎµù Á¤º¸¸¦ ¼øÈ¸ÇÏ¸ç ¼öÁı
+        // ê° ì‰ì´ë”ì˜ ë°”ì¸ë”© ì •ë³´ë¥¼ ìˆœíšŒí•˜ë©° ìˆ˜ì§‘
         for (const auto& shader : shaders) {
 
-            // Reflect ¸ğµâ¿¡¼­ ¹ÙÀÎµù Á¤º¸ ÃßÃâ
+            // Reflect ëª¨ë“ˆì—ì„œ ë°”ì¸ë”© ì •ë³´ ì¶”ì¶œ
             const auto& reflectModule = shader.reflectModule;
 
-            // °¢ ¹ÙÀÎµù Á¤º¸¸¦ ¼øÈ¸ÇÏ¸ç ¼öÁı
+            // ê° ë°”ì¸ë”© ì •ë³´ë¥¼ ìˆœíšŒí•˜ë©° ìˆ˜ì§‘
             for (cUint32_t i = 0; i < reflectModule.descriptor_binding_count; ++i) {
 
-                // ¹ÙÀÎµù Á¤º¸ ÃßÃâ
+                // ë°”ì¸ë”© ì •ë³´ ì¶”ì¶œ
                 const SpvReflectDescriptorBinding* binding = &reflectModule.descriptor_bindings[i];
 
                 if (!binding->name)
@@ -141,18 +141,18 @@ namespace vkengine {
                 cUint32_t setIndex = binding->set;
                 cUint32_t bindingIndex = binding->binding;
 
-                // ·¹ÀÌ¾Æ¿ô ¹ÙÀÎµù »ı¼º
-                // ¸¸¾à, ÀÌ¹Ì ÇØ´ç set°ú bindingÀÌ Á¸ÀçÇÑ´Ù¸é stageFlags¸¸ ¾÷µ¥ÀÌÆ®
-                // try_emplace´Â C++17ºÎÅÍ Áö¿øµÇ´Â ÇÔ¼ö·Î, ¸Ê¿¡ Å°°¡ ¾øÀ» ¶§¸¸ »õ·Î »ğÀÔ
-                // ¹İÈ¯°ªÀº »ğÀÔµÈ ¿ä¼ÒÀÇ ¹İº¹ÀÚ¿Í »ğÀÔ ¿©ºÎ¸¦ ³ªÅ¸³»´Â ºÒ¸®¾ğ °ª
+                // ë ˆì´ì•„ì›ƒ ë°”ì¸ë”© ìƒì„±
+                // ë§Œì•½, ì´ë¯¸ í•´ë‹¹ setê³¼ bindingì´ ì¡´ì¬í•œë‹¤ë©´ stageFlagsë§Œ ì—…ë°ì´íŠ¸
+                // try_emplaceëŠ” C++17ë¶€í„° ì§€ì›ë˜ëŠ” í•¨ìˆ˜ë¡œ, ë§µì— í‚¤ê°€ ì—†ì„ ë•Œë§Œ ìƒˆë¡œ ì‚½ì…
+                // ë°˜í™˜ê°’ì€ ì‚½ì…ëœ ìš”ì†Œì˜ ë°˜ë³µìì™€ ì‚½ì… ì—¬ë¶€ë¥¼ ë‚˜íƒ€ë‚´ëŠ” ë¶ˆë¦¬ì–¸ ê°’
                 auto [bindingIt, inserted] = bindingCollector[setIndex].try_emplace(bindingIndex);
 
                 if (inserted) {
-                    // »õ·Î¿î ¹ÙÀÎµùÀÌ Ãß°¡µÈ °æ¿ì
+                    // ìƒˆë¡œìš´ ë°”ì¸ë”©ì´ ì¶”ê°€ëœ ê²½ìš°
                     bindingIt->second = createLayoutBindingFromReflect(binding, static_cast<VkShaderStageFlagBits>(shader.stage));
                 }
                 else {
-                    // ÀÌ¹Ì Á¸ÀçÇÏ´Â ¹ÙÀÎµùÀÎ °æ¿ì, stageFlags ¾÷µ¥ÀÌÆ®
+                    // ì´ë¯¸ ì¡´ì¬í•˜ëŠ” ë°”ì¸ë”©ì¸ ê²½ìš°, stageFlags ì—…ë°ì´íŠ¸
                     bindingIt->second.stageFlags |= static_cast<VkShaderStageFlagBits>(shader.stage);
                 }
 
@@ -167,8 +167,8 @@ namespace vkengine {
         layoutBinding.binding = binding->binding;
         layoutBinding.descriptorType = static_cast<VkDescriptorType>(binding->descriptor_type);
 
-        // ¸¸¾à, SAMPLED_IMAGE Å¸ÀÔÀÌ¶ó¸é COMBINED_IMAGE_SAMPLER·Î º¯°æ
-        // Vulkan¿¡¼­´Â ÀÌ¹ÌÁö¿Í »ùÇÃ·¯¸¦ º°µµ·Î ¹ÙÀÎµùÇÏ´Â °æ¿ì°¡ µå¹°±â ¶§¹®
+        // ë§Œì•½, SAMPLED_IMAGE íƒ€ì…ì´ë¼ë©´ COMBINED_IMAGE_SAMPLERë¡œ ë³€ê²½
+        // Vulkanì—ì„œëŠ” ì´ë¯¸ì§€ì™€ ìƒ˜í”ŒëŸ¬ë¥¼ ë³„ë„ë¡œ ë°”ì¸ë”©í•˜ëŠ” ê²½ìš°ê°€ ë“œë¬¼ê¸° ë•Œë¬¸
         if (layoutBinding.descriptorType == VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE)
         {
             layoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
@@ -203,7 +203,7 @@ namespace vkengine {
             shaderStageCI.stage = shader.stage; // ex: VK_SHADER_STAGE_VERTEX_BIT
             shaderStageCI.module = shader.module;
             shaderStageCI.pName = shader.reflectModule.entry_point_name; // ex: "main"
-            shaderStageCI.pSpecializationInfo = nullptr;                  // ÇÊ¿äÇÏ¸é Ãß°¡
+            shaderStageCI.pSpecializationInfo = nullptr;                  // í•„ìš”í•˜ë©´ ì¶”ê°€
 
             shaderStages.push_back(shaderStageCI);
         }

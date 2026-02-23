@@ -26,20 +26,20 @@ namespace vkengine
 
     protected:
         virtual bool init_sync_structures() override;
-        virtual void recordCommandBuffer(FrameData* framedata, uint32_t imageIndex) override; // Ä¿¸Çµå ¹öÆÛ ·¹ÄÚµå
+        virtual void recordCommandBuffer(FrameData* framedata, uint32_t imageIndex) override; // ì»¤ë§¨ë“œ ë²„í¼ ë ˆì½”ë“œ
     private:
 
-        // °¢ 3d ¸ğµ¨À» »ı¼ºÇÏ±â À§ÇÑ ÇÔ¼ö
+        // ê° 3d ëª¨ë¸ì„ ìƒì„±í•˜ê¸° ìœ„í•œ í•¨ìˆ˜
         void createVertexbuffer();
         void createIndexBuffer();
         void createUniformBuffers();
 
-        // DescriptorÀÇ set, pool, layoutÀ» »ı¼ºÇÏ±â À§ÇÑ ÇÔ¼öµé
+        // Descriptorì˜ set, pool, layoutì„ ìƒì„±í•˜ê¸° ìœ„í•œ í•¨ìˆ˜ë“¤
         void createDescriptorSetLayout();
         void createDescriptorPool();
         void createDescriptorSets();
 
-        // grapics pipelineÀ» »ı¼ºÇÏ±â À§ÇÑ ÇÔ¼ö
+        // grapics pipelineì„ ìƒì„±í•˜ê¸° ìœ„í•œ í•¨ìˆ˜
         void createGraphicsPipeline();
         void createGraphicsPipeline2();
 
@@ -47,7 +47,7 @@ namespace vkengine
 
         void cleanupSwapcChain();
 
-        // imgui °ü·Ã
+        // imgui ê´€ë ¨
         void initUI();
         vkGUI* vkGUI = nullptr;
 
@@ -60,8 +60,8 @@ namespace vkengine
         std::vector<subUniformBuffer> VKuniformBuffer = {};
         std::vector<subUniformBuffer> VKuniformBuffer2 = {};
 
-        VkPipeline VKgraphicsPipeline = VK_NULL_HANDLE;                      // ±×·¡ÇÈ½º ÆÄÀÌÇÁ¶óÀÎ -> ±×·¡ÇÈ½º ÆÄÀÌÇÁ¶óÀÎÀ» »ı¼º
-        VkPipeline VKCubeMapPipeline = VK_NULL_HANDLE;                       // Å¥ºê¸Ê ÆÄÀÌÇÁ¶óÀÎ -> Å¥ºê¸Ê ÆÄÀÌÇÁ¶óÀÎÀ» »ı¼º
+        VkPipeline VKgraphicsPipeline = VK_NULL_HANDLE;                      // ê·¸ë˜í”½ìŠ¤ íŒŒì´í”„ë¼ì¸ -> ê·¸ë˜í”½ìŠ¤ íŒŒì´í”„ë¼ì¸ì„ ìƒì„±
+        VkPipeline VKCubeMapPipeline = VK_NULL_HANDLE;                       // íë¸Œë§µ íŒŒì´í”„ë¼ì¸ -> íë¸Œë§µ íŒŒì´í”„ë¼ì¸ì„ ìƒì„±
 
         VkPipelineLayout VKpipelineLayout{ VK_NULL_HANDLE };
         VkDescriptorPool VKdescriptorPoolMouse{ VK_NULL_HANDLE };

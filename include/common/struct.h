@@ -7,8 +7,8 @@
 #include "resourseload.h"
 
 struct QueueFamilyIndices {
-    cUint32_t graphicsAndComputeFamily = 0;  // ±×·¡ÇÈ½º/ÄÄÇ»ÆÃ Å¥ ÆĞ¹Ğ¸® ÀÎµ¦½º (±×·¡ÇÈ½º/ÄÄÇ»ÆÃ ¸í·ÉÀ» Ã³¸®ÇÏ´Â Å¥)
-    cUint32_t presentFamily = 0;             // ÇÁ·¹Á¨Æ® Å¥ ÆĞ¹Ğ¸® ÀÎµ¦½º (À©µµ¿ì ½Ã½ºÅÛ°ú VulkanÀ» ¿¬°áÇÏ´Â ÀÎÅÍÆäÀÌ½º)
+    cUint32_t graphicsAndComputeFamily = 0;  // ê·¸ë˜í”½ìŠ¤/ì»´í“¨íŒ… í íŒ¨ë°€ë¦¬ ì¸ë±ìŠ¤ (ê·¸ë˜í”½ìŠ¤/ì»´í“¨íŒ… ëª…ë ¹ì„ ì²˜ë¦¬í•˜ëŠ” í)
+    cUint32_t presentFamily = 0;             // í”„ë ˆì  íŠ¸ í íŒ¨ë°€ë¦¬ ì¸ë±ìŠ¤ (ìœˆë„ìš° ì‹œìŠ¤í…œê³¼ Vulkanì„ ì—°ê²°í•˜ëŠ” ì¸í„°í˜ì´ìŠ¤)
     VkQueueFamilyProperties queueFamilyProperties = {};
 
     cBool graphicsAndComputeFamilyHasValue = false;
@@ -61,9 +61,9 @@ struct QueueFamilyIndices {
 };
 
 struct QueueFamilyIndices2 {
-    cUint32_t grapicFamily = 0;  // ±×·¡ÇÈ½º Å¥ ÆĞ¹Ğ¸® ÀÎµ¦½º (±×·¡ÇÈ½º ¸í·ÉÀ» Ã³¸®ÇÏ´Â Å¥)
-    cUint32_t computerFamily = 0; // ÄÄÇ»ÆÃ Å¥ ÆĞ¹Ğ¸® ÀÎµ¦½º (ÄÄÇ»ÆÃ ¸í·ÉÀ» Ã³¸®ÇÏ´Â Å¥)
-    cUint32_t transferFamily = 0; // Æ®·£½ºÆÛ Å¥ ÆĞ¹Ğ¸® ÀÎµ¦½º (Æ®·£½ºÆÛ ¸í·ÉÀ» Ã³¸®ÇÏ´Â Å¥)
+    cUint32_t grapicFamily = 0;  // ê·¸ë˜í”½ìŠ¤ í íŒ¨ë°€ë¦¬ ì¸ë±ìŠ¤ (ê·¸ë˜í”½ìŠ¤ ëª…ë ¹ì„ ì²˜ë¦¬í•˜ëŠ” í)
+    cUint32_t computerFamily = 0; // ì»´í“¨íŒ… í íŒ¨ë°€ë¦¬ ì¸ë±ìŠ¤ (ì»´í“¨íŒ… ëª…ë ¹ì„ ì²˜ë¦¬í•˜ëŠ” í)
+    cUint32_t transferFamily = 0; // íŠ¸ëœìŠ¤í¼ í íŒ¨ë°€ë¦¬ ì¸ë±ìŠ¤ (íŠ¸ëœìŠ¤í¼ ëª…ë ¹ì„ ì²˜ë¦¬í•˜ëŠ” í)
     VkQueueFamilyProperties queueFamilyProperties = {};
 
     cBool grapicFamilyHasValue = false;
@@ -133,8 +133,8 @@ struct Vertex {
     cVec3 texCoord;
     cVec4 inTangent;
 
-    // ¹ÙÀÎµù ¼³¸íÀ» ¹İÈ¯ÇÏ´Â ÇÔ¼ö
-    // ÀÌ ±¸Á¶Ã¼ÀÇ ¸â¹ö º¯¼ö°¡ ¾î¶»°Ô ¹ÙÀÎµùµÇ´ÂÁö ¼³¸íÇÕ´Ï´Ù.
+    // ë°”ì¸ë”© ì„¤ëª…ì„ ë°˜í™˜í•˜ëŠ” í•¨ìˆ˜
+    // ì´ êµ¬ì¡°ì²´ì˜ ë©¤ë²„ ë³€ìˆ˜ê°€ ì–´ë–»ê²Œ ë°”ì¸ë”©ë˜ëŠ”ì§€ ì„¤ëª…í•©ë‹ˆë‹¤.
     static VkVertexInputBindingDescription getBindingDescription() {
         VkVertexInputBindingDescription bindingDescription{};
 
@@ -145,7 +145,7 @@ struct Vertex {
         return bindingDescription;
     }
 
-    // ¾îÆ®¸®ºäÆ® ¼³¸íÀ» ¹İÈ¯ÇÏ´Â ÇÔ¼ö
+    // ì–´íŠ¸ë¦¬ë·°íŠ¸ ì„¤ëª…ì„ ë°˜í™˜í•˜ëŠ” í•¨ìˆ˜
     static std::array<VkVertexInputAttributeDescription, 4> getAttributeDescriptions() {
         std::array<VkVertexInputAttributeDescription, 4> attributeDescriptions{};
 
@@ -215,8 +215,8 @@ struct Vertex2 {
     {
     }
 
-    // ¹ÙÀÎµù ¼³¸íÀ» ¹İÈ¯ÇÏ´Â ÇÔ¼ö
-    // ÀÌ ±¸Á¶Ã¼ÀÇ ¸â¹ö º¯¼ö°¡ ¾î¶»°Ô ¹ÙÀÎµùµÇ´ÂÁö ¼³¸íÇÕ´Ï´Ù.
+    // ë°”ì¸ë”© ì„¤ëª…ì„ ë°˜í™˜í•˜ëŠ” í•¨ìˆ˜
+    // ì´ êµ¬ì¡°ì²´ì˜ ë©¤ë²„ ë³€ìˆ˜ê°€ ì–´ë–»ê²Œ ë°”ì¸ë”©ë˜ëŠ”ì§€ ì„¤ëª…í•©ë‹ˆë‹¤.
     static VkVertexInputBindingDescription getBindingDescription() {
         VkVertexInputBindingDescription bindingDescription{};
 
@@ -227,7 +227,7 @@ struct Vertex2 {
         return bindingDescription;
     }
 
-    // ¾îÆ®¸®ºäÆ® ¼³¸íÀ» ¹İÈ¯ÇÏ´Â ÇÔ¼ö
+    // ì–´íŠ¸ë¦¬ë·°íŠ¸ ì„¤ëª…ì„ ë°˜í™˜í•˜ëŠ” í•¨ìˆ˜
     static std::array<VkVertexInputAttributeDescription, 4> getAttributeDescriptionsBasic();
     static std::array<VkVertexInputAttributeDescription, 7> getAttributeDescriptionsAnimated();
 
@@ -384,24 +384,24 @@ struct TextureResourceBase
 {
     enum TYPE
     {
-        NONE = 0,          // ¸®¼Ò½º ¾øÀ½
-        PNG = 1,          // PNG ¸®¼Ò½º
-        KTX = 2,          // KTX ¸®¼Ò½º
+        NONE = 0,          // ë¦¬ì†ŒìŠ¤ ì—†ìŒ
+        PNG = 1,          // PNG ë¦¬ì†ŒìŠ¤
+        KTX = 2,          // KTX ë¦¬ì†ŒìŠ¤
     };
 
-    cChar* name = "";                              // ¸®¼Ò½º ÀÌ¸§
-    TYPE type = NONE;                               // ¸®¼Ò½º Å¸ÀÔ (PNG, KTX µî)
-    cUint32_t texWidth = 0;                         // ÅØ½ºÃ³ ³Êºñ
-    cUint32_t texHeight = 0;                        // ÅØ½ºÃ³ ³ôÀÌ
-    cUint32_t texChannels = 0;                      // ÅØ½ºÃ³ Ã¤³Î
+    cChar* name = "";                              // ë¦¬ì†ŒìŠ¤ ì´ë¦„
+    TYPE type = NONE;                               // ë¦¬ì†ŒìŠ¤ íƒ€ì… (PNG, KTX ë“±)
+    cUint32_t texWidth = 0;                         // í…ìŠ¤ì²˜ ë„ˆë¹„
+    cUint32_t texHeight = 0;                        // í…ìŠ¤ì²˜ ë†’ì´
+    cUint32_t texChannels = 0;                      // í…ìŠ¤ì²˜ ì±„ë„
     cUint32_t mipLevels = 0;
     cUint32_t layerCount = 0;
-    cUChar* data = nullptr;         //< ¸®¼Ò½º µ¥ÀÌÅÍ Æ÷ÀÎÅÍ
+    cUChar* data = nullptr;         //< ë¦¬ì†ŒìŠ¤ ë°ì´í„° í¬ì¸í„°
 
     virtual cBool createResource(
         cString path = "", 
         cChar* name = "", 
-        TextureType textureType = TextureType::Texture_rgb_alpha) = 0; // ¸®¼Ò½º »ı¼º ÇÔ¼ö, °æ·Î¸¦ ÀÎÀÚ·Î ¹ŞÀ½
+        TextureType textureType = TextureType::Texture_rgb_alpha) = 0; // ë¦¬ì†ŒìŠ¤ ìƒì„± í•¨ìˆ˜, ê²½ë¡œë¥¼ ì¸ìë¡œ ë°›ìŒ
     virtual cBool createResource2(
         cString path = "", 
         cChar* name = "", 
@@ -411,29 +411,29 @@ struct TextureResourceBase
 struct TextureResourcePNG : public TextureResourceBase {
 
 
-    // »ı¼ºÀÚ
+    // ìƒì„±ì
     TextureResourcePNG() {
-        this->name = ""; // ÀÌ¸§ ÃÊ±âÈ­
+        this->name = ""; // ì´ë¦„ ì´ˆê¸°í™”
         this->texWidth = 0;
         this->texHeight = 0;
         this->texChannels = 0;
-        this->data = nullptr; // ¸®¼Ò½º µ¥ÀÌÅÍ ÃÊ±âÈ­
-        this->type = TYPE::PNG; // ¸®¼Ò½º Å¸ÀÔÀ» PNG·Î ¼³Á¤
+        this->data = nullptr; // ë¦¬ì†ŒìŠ¤ ë°ì´í„° ì´ˆê¸°í™”
+        this->type = TYPE::PNG; // ë¦¬ì†ŒìŠ¤ íƒ€ì…ì„ PNGë¡œ ì„¤ì •
     }
 
-    // ¼Ò¸êÀÚ
+    // ì†Œë©¸ì
     ~TextureResourcePNG() {
 
         if (data) {
-            free(data); // ¸®¼Ò½º µ¥ÀÌÅÍ ÇØÁ¦
+            free(data); // ë¦¬ì†ŒìŠ¤ ë°ì´í„° í•´ì œ
         }
-        texWidth = 0; // ³Êºñ ÃÊ±âÈ­
-        texHeight = 0; // ³ôÀÌ ÃÊ±âÈ­
-        texChannels = 0; // Ã¤³Î ÃÊ±âÈ­
-        data = nullptr; // Æ÷ÀÎÅÍ ÃÊ±âÈ­
+        texWidth = 0; // ë„ˆë¹„ ì´ˆê¸°í™”
+        texHeight = 0; // ë†’ì´ ì´ˆê¸°í™”
+        texChannels = 0; // ì±„ë„ ì´ˆê¸°í™”
+        data = nullptr; // í¬ì¸í„° ì´ˆê¸°í™”
     }
 
-    // º¹»ç »ı¼ºÀÚ
+    // ë³µì‚¬ ìƒì„±ì
     TextureResourcePNG(const TextureResourcePNG& other) {
         texWidth = other.texWidth;
         texHeight = other.texHeight;
@@ -456,7 +456,7 @@ struct TextureResourcePNG : public TextureResourceBase {
         }
     }
 
-    // ´ëÀÔ ¿¬»êÀÚ
+    // ëŒ€ì… ì—°ì‚°ì
     TextureResourcePNG& operator=(const TextureResourcePNG& other) {
         if (this == &other) return *this;
         if (data) free(data);
@@ -493,7 +493,7 @@ struct TextureResourcePNG : public TextureResourceBase {
             free(data);
         }
 
-        this->texChannels = textureType; // ±âº»ÀûÀ¸·Î RGBA·Î ¼³Á¤
+        this->texChannels = textureType; // ê¸°ë³¸ì ìœ¼ë¡œ RGBAë¡œ ì„¤ì •
 
         data = load_png_rgba(path.c_str(), &this->texWidth, &this->texHeight, this->texChannels);
 
@@ -511,23 +511,23 @@ struct TextureResourcePNG : public TextureResourceBase {
 
 struct TextureResourceKTX : public TextureResourceBase {
 
-    ktxTexture* texture = nullptr; // KTX ÅØ½ºÃ³ Æ÷ÀÎÅÍ
-    ktxTexture2* texture2 = nullptr; // KTX ÅØ½ºÃ³ Æ÷ÀÎÅÍ
+    ktxTexture* texture = nullptr; // KTX í…ìŠ¤ì²˜ í¬ì¸í„°
+    ktxTexture2* texture2 = nullptr; // KTX í…ìŠ¤ì²˜ í¬ì¸í„°
 
     TextureResourceKTX() {
-        this->name = ""; // ÀÌ¸§ ÃÊ±âÈ­
+        this->name = ""; // ì´ë¦„ ì´ˆê¸°í™”
         this->texWidth = 0;
         this->texHeight = 0;
         this->texChannels = 0;
         this->mipLevels = 0;
         this->layerCount = 0;
-        this->texture = nullptr; // KTX ÅØ½ºÃ³ ÃÊ±âÈ­
+        this->texture = nullptr; // KTX í…ìŠ¤ì²˜ ì´ˆê¸°í™”
         this->type = TYPE::KTX;
     }
 
     ~TextureResourceKTX() {
         if (texture) {
-            ktxTexture_Destroy(texture); // KTX ÅØ½ºÃ³ ÇØÁ¦
+            ktxTexture_Destroy(texture); // KTX í…ìŠ¤ì²˜ í•´ì œ
         }
 
         if (texture2)
@@ -535,17 +535,17 @@ struct TextureResourceKTX : public TextureResourceBase {
             ktxTexture_Destroy(ktxTexture(texture2));
         }
 
-        texWidth = 0; // ³Êºñ ÃÊ±âÈ­
-        texHeight = 0; // ³ôÀÌ ÃÊ±âÈ­
-        texChannels = 0; // Ã¤³Î ÃÊ±âÈ­
+        texWidth = 0; // ë„ˆë¹„ ì´ˆê¸°í™”
+        texHeight = 0; // ë†’ì´ ì´ˆê¸°í™”
+        texChannels = 0; // ì±„ë„ ì´ˆê¸°í™”
         mipLevels = 0;
         layerCount = 0;
-        texture = nullptr; // Æ÷ÀÎÅÍ ÃÊ±âÈ­
+        texture = nullptr; // í¬ì¸í„° ì´ˆê¸°í™”
     }
 
     virtual cBool createResource(cString path = "", cChar* name = "", TextureType textureType = TextureType::Texture_rgb_alpha) {
         if (texture) {
-            ktxTexture_Destroy(texture); // KTX ÅØ½ºÃ³ ÇØÁ¦
+            ktxTexture_Destroy(texture); // KTX í…ìŠ¤ì²˜ í•´ì œ
         }
 
         this->texture = load_ktx_texture(path.c_str(), texture);
@@ -559,7 +559,7 @@ struct TextureResourceKTX : public TextureResourceBase {
         this->texHeight = texture->baseHeight;
         this->mipLevels = texture->numLevels;
         this->layerCount = texture->numLayers;
-        this->texChannels = 4; // ±âº»ÀûÀ¸·Î RGBA·Î ¼³Á¤
+        this->texChannels = 4; // ê¸°ë³¸ì ìœ¼ë¡œ RGBAë¡œ ì„¤ì •
         this->name = name;
 
         return true;
@@ -568,7 +568,7 @@ struct TextureResourceKTX : public TextureResourceBase {
     virtual cBool createResource2(cString path, cChar* name = "", TextureType textureType = TextureType::Texture_rgb_alpha) {
         
         if (this->texture2) {
-            ktxTexture2_Destroy(this->texture2); // KTX ÅØ½ºÃ³ ÇØÁ¦
+            ktxTexture2_Destroy(this->texture2); // KTX í…ìŠ¤ì²˜ í•´ì œ
         }
 
         ktxResult result = ktxTexture2_CreateFromNamedFile(path.c_str(), KTX_TEXTURE_CREATE_LOAD_IMAGE_DATA_BIT, &this->texture2);
@@ -589,14 +589,14 @@ struct TextureResourceKTX : public TextureResourceBase {
 
 };
 
-// ÇÁ¸®¹ÌÆ¼ºê´Â ´ÜÀÏ µå·Î¿ì Äİ¿¡ ´ëÇÑ µ¥ÀÌÅÍ¸¦ Æ÷ÇÔÇÕ´Ï´Ù.
+// í”„ë¦¬ë¯¸í‹°ë¸ŒëŠ” ë‹¨ì¼ ë“œë¡œìš° ì½œì— ëŒ€í•œ ë°ì´í„°ë¥¼ í¬í•¨í•©ë‹ˆë‹¤.
 struct Primitive {
     cUint32_t firstIndex;
     cUint32_t indexCount;
     cInt32_t materialIndex;
 };
 
-// ³ëµåÀÇ (¼±ÅÃ »çÇ×) ±âÇÏÇĞÀ» Æ÷ÇÔÇÏ°í ÀÓÀÇÀÇ ¼öÀÇ ±âº» ¿ä¼Ò·Î ±¸¼ºµÉ ¼ö ÀÖ½À´Ï´Ù.
+// ë…¸ë“œì˜ (ì„ íƒ ì‚¬í•­) ê¸°í•˜í•™ì„ í¬í•¨í•˜ê³  ì„ì˜ì˜ ìˆ˜ì˜ ê¸°ë³¸ ìš”ì†Œë¡œ êµ¬ì„±ë  ìˆ˜ ìˆìŠµë‹ˆë‹¤.
 struct Mesh {
     std::vector<::Primitive> primitives;
 };
@@ -683,7 +683,7 @@ struct cMaterial2
 
 struct UniformBufferSkymapParams
 {
-    cVec4 lightPos[4] = { cVec4(0.0f) }; // Á¶¸í À§Ä¡
+    cVec4 lightPos[4] = { cVec4(0.0f) }; // ì¡°ëª… ìœ„ì¹˜
     cFloat exposure = 0.0f;
     cFloat gamma = 0.0f;
 };
@@ -860,7 +860,7 @@ struct ApplicationConfig
         ApplicationConfig config;
 
         // Character model
-        ModelConfig character("characters/Leonard/Bboy Hip Hop Move.fbx", "Ä³¸¯ÅÍ");
+        ModelConfig character("characters/Leonard/Bboy Hip Hop Move.fbx", "ìºë¦­í„°");
         character.transform = glm::rotate(
             glm::scale(
             glm::translate(
@@ -871,7 +871,7 @@ struct ApplicationConfig
         character.autoPlayAnimation = true;
 
         // Bistro scene
-        ModelConfig bistro("models/AmazonLumberyardBistroMorganMcGuire/exterior.obj", "°Å¸®",
+        ModelConfig bistro("models/AmazonLumberyardBistroMorganMcGuire/exterior.obj", "ê±°ë¦¬",
             glm::scale(glm::mat4(1.0f), glm::vec3(0.01f)),
             true // isBistroObj
         );

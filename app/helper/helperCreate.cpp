@@ -69,58 +69,58 @@ namespace vkengine {
 
         void createBuffer(VkDevice device, VkPhysicalDevice physicalDevice, VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory)
         {
-            // ¹öÆÛ »ı¼º Á¤º¸¸¦ ´ãÀº ±¸Á¶Ã¼¸¦ ÃÊ±âÈ­ÇÑ´Ù.
+            // ë²„í¼ ìƒì„± ì •ë³´ë¥¼ ë‹´ì€ êµ¬ì¡°ì²´ë¥¼ ì´ˆê¸°í™”í•œë‹¤.
             VkBufferCreateInfo bufferInfo{};
 
-            bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;        // ±¸Á¶Ã¼ Å¸ÀÔÀ» ÁöÁ¤ÇÑ´Ù.
-            bufferInfo.size = size;                                         // »ı¼ºÇÒ ¹öÆÛÀÇ Å©±â¸¦ ¼³Á¤ÇÑ´Ù.
-            bufferInfo.usage = usage;                                       // ¹öÆÛ »ç¿ë ¸ñÀûÀ» ÁöÁ¤ÇÑ´Ù (¿¹: vertex, index µî).
-            bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;             // ¹öÆÛÀÇ °øÀ¯ ¸ğµå¸¦ µ¶Á¡À¸·Î ¼³Á¤ÇÑ´Ù.
+            bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;        // êµ¬ì¡°ì²´ íƒ€ì…ì„ ì§€ì •í•œë‹¤.
+            bufferInfo.size = size;                                         // ìƒì„±í•  ë²„í¼ì˜ í¬ê¸°ë¥¼ ì„¤ì •í•œë‹¤.
+            bufferInfo.usage = usage;                                       // ë²„í¼ ì‚¬ìš© ëª©ì ì„ ì§€ì •í•œë‹¤ (ì˜ˆ: vertex, index ë“±).
+            bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;             // ë²„í¼ì˜ ê³µìœ  ëª¨ë“œë¥¼ ë…ì ìœ¼ë¡œ ì„¤ì •í•œë‹¤.
 
-            // ÁöÁ¤µÈ Á¤º¸¸¦ ¹ÙÅÁÀ¸·Î ¹öÆÛ¸¦ »ı¼º
+            // ì§€ì •ëœ ì •ë³´ë¥¼ ë°”íƒ•ìœ¼ë¡œ ë²„í¼ë¥¼ ìƒì„±
             _VK_CHECK_RESULT_(vkCreateBuffer(device, &bufferInfo, nullptr, &buffer));
 
-            // »ı¼ºµÈ ¹öÆÛ¿¡ ÇÊ¿äÇÑ ¸Ş¸ğ¸® ¿ä±¸»çÇ× Á¤º¸¸¦ °¡Á®¿Â´Ù.
+            // ìƒì„±ëœ ë²„í¼ì— í•„ìš”í•œ ë©”ëª¨ë¦¬ ìš”êµ¬ì‚¬í•­ ì •ë³´ë¥¼ ê°€ì ¸ì˜¨ë‹¤.
             VkMemoryRequirements memRequirements;
             vkGetBufferMemoryRequirements(device, buffer, &memRequirements);
 
-            // ¸Ş¸ğ¸® ÇÒ´ç Á¤º¸¸¦ ´ãÀº ±¸Á¶Ã¼¸¦ ÃÊ±âÈ­ÇÑ´Ù.
+            // ë©”ëª¨ë¦¬ í• ë‹¹ ì •ë³´ë¥¼ ë‹´ì€ êµ¬ì¡°ì²´ë¥¼ ì´ˆê¸°í™”í•œë‹¤.
             VkMemoryAllocateInfo allocInfo{};
 
-            allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;                                                   // ±¸Á¶Ã¼ Å¸ÀÔÀ» ÁöÁ¤ÇÑ´Ù.    
-            allocInfo.allocationSize = memRequirements.size;                                                            // ¹öÆÛ¸¦ À§ÇÑ ¸Ş¸ğ¸® Å©±â¸¦ ¼³Á¤ÇÑ´Ù.
-            allocInfo.memoryTypeIndex = vkengine::helper::findMemoryType(physicalDevice, memRequirements.memoryTypeBits, properties);     // ¿ä±¸»çÇ×¿¡ ¸Â´Â ¸Ş¸ğ¸® Å¸ÀÔ ÀÎµ¦½º¸¦ Ã£¾Æ¼­ ÁöÁ¤ÇÑ´Ù.
+            allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;                                                   // êµ¬ì¡°ì²´ íƒ€ì…ì„ ì§€ì •í•œë‹¤.    
+            allocInfo.allocationSize = memRequirements.size;                                                            // ë²„í¼ë¥¼ ìœ„í•œ ë©”ëª¨ë¦¬ í¬ê¸°ë¥¼ ì„¤ì •í•œë‹¤.
+            allocInfo.memoryTypeIndex = vkengine::helper::findMemoryType(physicalDevice, memRequirements.memoryTypeBits, properties);     // ìš”êµ¬ì‚¬í•­ì— ë§ëŠ” ë©”ëª¨ë¦¬ íƒ€ì… ì¸ë±ìŠ¤ë¥¼ ì°¾ì•„ì„œ ì§€ì •í•œë‹¤.
 
-            _VK_CHECK_RESULT_(vkAllocateMemory(device, &allocInfo, nullptr, &bufferMemory));  // À§ Á¤º¸¸¦ ¹ÙÅÁÀ¸·Î ¸Ş¸ğ¸®¸¦ ÇÒ´çÇÏ°í ¼º°ø ¿©ºÎ¸¦ °Ë»çÇÑ´Ù.
-            _VK_CHECK_RESULT_(vkBindBufferMemory(device, buffer, bufferMemory, 0));           // ÇÒ´çµÈ ¸Ş¸ğ¸®¸¦ ¹öÆÛ¿Í ¹ÙÀÎµùÇÏ¿© GPU¿¡¼­ »ç¿ëÇÒ ¼ö ÀÖ°Ô ÇÑ´Ù.
+            _VK_CHECK_RESULT_(vkAllocateMemory(device, &allocInfo, nullptr, &bufferMemory));  // ìœ„ ì •ë³´ë¥¼ ë°”íƒ•ìœ¼ë¡œ ë©”ëª¨ë¦¬ë¥¼ í• ë‹¹í•˜ê³  ì„±ê³µ ì—¬ë¶€ë¥¼ ê²€ì‚¬í•œë‹¤.
+            _VK_CHECK_RESULT_(vkBindBufferMemory(device, buffer, bufferMemory, 0));           // í• ë‹¹ëœ ë©”ëª¨ë¦¬ë¥¼ ë²„í¼ì™€ ë°”ì¸ë”©í•˜ì—¬ GPUì—ì„œ ì‚¬ìš©í•  ìˆ˜ ìˆê²Œ í•œë‹¤.
         }
 
         void createBuffer2(VkDevice device, VkPhysicalDevice physicalDevice, VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory, VkDeviceSize* allocatedSize, VkDeviceSize* alignment)
         {
-            // ¹öÆÛ »ı¼º Á¤º¸¸¦ ´ãÀº ±¸Á¶Ã¼¸¦ ÃÊ±âÈ­ÇÑ´Ù.
+            // ë²„í¼ ìƒì„± ì •ë³´ë¥¼ ë‹´ì€ êµ¬ì¡°ì²´ë¥¼ ì´ˆê¸°í™”í•œë‹¤.
             VkBufferCreateInfo bufferInfo{};
 
-            bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;        // ±¸Á¶Ã¼ Å¸ÀÔÀ» ÁöÁ¤ÇÑ´Ù.
-            bufferInfo.size = size;                                         // »ı¼ºÇÒ ¹öÆÛÀÇ Å©±â¸¦ ¼³Á¤ÇÑ´Ù.
-            bufferInfo.usage = usage;                                       // ¹öÆÛ »ç¿ë ¸ñÀûÀ» ÁöÁ¤ÇÑ´Ù (¿¹: vertex, index µî).
-            bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;             // ¹öÆÛÀÇ °øÀ¯ ¸ğµå¸¦ µ¶Á¡À¸·Î ¼³Á¤ÇÑ´Ù.
+            bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;        // êµ¬ì¡°ì²´ íƒ€ì…ì„ ì§€ì •í•œë‹¤.
+            bufferInfo.size = size;                                         // ìƒì„±í•  ë²„í¼ì˜ í¬ê¸°ë¥¼ ì„¤ì •í•œë‹¤.
+            bufferInfo.usage = usage;                                       // ë²„í¼ ì‚¬ìš© ëª©ì ì„ ì§€ì •í•œë‹¤ (ì˜ˆ: vertex, index ë“±).
+            bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;             // ë²„í¼ì˜ ê³µìœ  ëª¨ë“œë¥¼ ë…ì ìœ¼ë¡œ ì„¤ì •í•œë‹¤.
 
-            // ÁöÁ¤µÈ Á¤º¸¸¦ ¹ÙÅÁÀ¸·Î ¹öÆÛ¸¦ »ı¼º
+            // ì§€ì •ëœ ì •ë³´ë¥¼ ë°”íƒ•ìœ¼ë¡œ ë²„í¼ë¥¼ ìƒì„±
             _VK_CHECK_RESULT_(vkCreateBuffer(device, &bufferInfo, nullptr, &buffer));
 
-            // »ı¼ºµÈ ¹öÆÛ¿¡ ÇÊ¿äÇÑ ¸Ş¸ğ¸® ¿ä±¸»çÇ× Á¤º¸¸¦ °¡Á®¿Â´Ù.
+            // ìƒì„±ëœ ë²„í¼ì— í•„ìš”í•œ ë©”ëª¨ë¦¬ ìš”êµ¬ì‚¬í•­ ì •ë³´ë¥¼ ê°€ì ¸ì˜¨ë‹¤.
             VkMemoryRequirements memRequirements;
             vkGetBufferMemoryRequirements(device, buffer, &memRequirements);
 
-            *allocatedSize = memRequirements.size; // ½ÇÁ¦ ÇÒ´çµÈ Å©±â
-            *alignment = memRequirements.alignment; // Á¤·Ä ¹æ½Ä
+            *allocatedSize = memRequirements.size; // ì‹¤ì œ í• ë‹¹ëœ í¬ê¸°
+            *alignment = memRequirements.alignment; // ì •ë ¬ ë°©ì‹
 
             PRINT_TO_LOGGER("allocatedSize : %d, alignment : %d \n", *allocatedSize, *alignment);
 
-            // ¸Ş¸ğ¸® ÇÒ´ç Á¤º¸¸¦ ´ãÀº ±¸Á¶Ã¼¸¦ ÃÊ±âÈ­ÇÑ´Ù.
+            // ë©”ëª¨ë¦¬ í• ë‹¹ ì •ë³´ë¥¼ ë‹´ì€ êµ¬ì¡°ì²´ë¥¼ ì´ˆê¸°í™”í•œë‹¤.
             VkMemoryAllocateInfo allocInfo{};
 
-            // ¸¸¾à, ¹öÆÛ¸¦ Æ÷ÀÎÆ® ±â¹İÀ¸·Î »ç¿ëÇÑ´Ù¸é, ÇØ´ç if¹®À» Å¸°í »ç¿ëÇÒ ¼ö ÀÖ´Ù.
+            // ë§Œì•½, ë²„í¼ë¥¼ í¬ì¸íŠ¸ ê¸°ë°˜ìœ¼ë¡œ ì‚¬ìš©í•œë‹¤ë©´, í•´ë‹¹ ifë¬¸ì„ íƒ€ê³  ì‚¬ìš©í•  ìˆ˜ ìˆë‹¤.
             VkMemoryAllocateFlagsInfoKHR allocFlagsInfo{};
             if (usage & VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT) {
                 allocFlagsInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_FLAGS_INFO_KHR;
@@ -128,11 +128,11 @@ namespace vkengine {
                 allocInfo.pNext = &allocFlagsInfo;
             }
 
-            allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;                                                   // ±¸Á¶Ã¼ Å¸ÀÔÀ» ÁöÁ¤ÇÑ´Ù.    
-            allocInfo.allocationSize = memRequirements.size;                                                            // ¹öÆÛ¸¦ À§ÇÑ ¸Ş¸ğ¸® Å©±â¸¦ ¼³Á¤ÇÑ´Ù.
-            allocInfo.memoryTypeIndex = vkengine::helper::findMemoryType(physicalDevice, memRequirements.memoryTypeBits, properties);     // ¿ä±¸»çÇ×¿¡ ¸Â´Â ¸Ş¸ğ¸® Å¸ÀÔ ÀÎµ¦½º¸¦ Ã£¾Æ¼­ ÁöÁ¤ÇÑ´Ù.
+            allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;                                                   // êµ¬ì¡°ì²´ íƒ€ì…ì„ ì§€ì •í•œë‹¤.    
+            allocInfo.allocationSize = memRequirements.size;                                                            // ë²„í¼ë¥¼ ìœ„í•œ ë©”ëª¨ë¦¬ í¬ê¸°ë¥¼ ì„¤ì •í•œë‹¤.
+            allocInfo.memoryTypeIndex = vkengine::helper::findMemoryType(physicalDevice, memRequirements.memoryTypeBits, properties);     // ìš”êµ¬ì‚¬í•­ì— ë§ëŠ” ë©”ëª¨ë¦¬ íƒ€ì… ì¸ë±ìŠ¤ë¥¼ ì°¾ì•„ì„œ ì§€ì •í•œë‹¤.
 
-            _VK_CHECK_RESULT_(vkAllocateMemory(device, &allocInfo, nullptr, &bufferMemory));  // À§ Á¤º¸¸¦ ¹ÙÅÁÀ¸·Î ¸Ş¸ğ¸®¸¦ ÇÒ´çÇÏ°í ¼º°ø ¿©ºÎ¸¦ °Ë»çÇÑ´Ù.
+            _VK_CHECK_RESULT_(vkAllocateMemory(device, &allocInfo, nullptr, &bufferMemory));  // ìœ„ ì •ë³´ë¥¼ ë°”íƒ•ìœ¼ë¡œ ë©”ëª¨ë¦¬ë¥¼ í• ë‹¹í•˜ê³  ì„±ê³µ ì—¬ë¶€ë¥¼ ê²€ì‚¬í•œë‹¤.
         }
 
         VkImageView createImageView(VkDevice device, VkImage image, VkFormat format, VkImageAspectFlags aspectFlags, uint32_t mipLevels, cSize imageCount)

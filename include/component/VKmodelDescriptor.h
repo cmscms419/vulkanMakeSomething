@@ -12,8 +12,8 @@
 
 namespace vkengine {
 
-    // ÀÌ°ÍÀº ¾È»ç¿ëÇÒ ¿¹Á¤
-    // È°¿ëÇÏ±â°¡ ¾î·Æ´Ù.
+    // ì´ê²ƒì€ ì•ˆì‚¬ìš©í•  ì˜ˆì •
+    // í™œìš©í•˜ê¸°ê°€ ì–´ë µë‹¤.
     struct VK3DModelDescriptor : public VKDescriptor
     {
     public:
@@ -22,7 +22,7 @@ namespace vkengine {
         virtual void createDescriptorSetLayout(bool useTexture) override;
 
         // <summary>
-        // descriptorCount´Â µğ½ºÅ©¸³ÅÍ Ç®ÀÇ °³¼ö¸¦ ÀÇ¹ÌÇÕ´Ï´Ù. Ç®¿¡ ¸î °³ÀÇ uniform buffer µğ½ºÅ©¸³ÅÍ¸¦ ¸¸µé ¼ö ÀÖ´ÂÁö¸¦ ÁöÁ¤ÇÏ´Â °ªÀÔ´Ï´Ù.
+        // descriptorCountëŠ” ë””ìŠ¤í¬ë¦½í„° í’€ì˜ ê°œìˆ˜ë¥¼ ì˜ë¯¸í•©ë‹ˆë‹¤. í’€ì— ëª‡ ê°œì˜ uniform buffer ë””ìŠ¤í¬ë¦½í„°ë¥¼ ë§Œë“¤ ìˆ˜ ìˆëŠ”ì§€ë¥¼ ì§€ì •í•˜ëŠ” ê°’ì…ë‹ˆë‹¤.
         // </summary>
         virtual void createDescriptorPool(bool useTexture) override;
 
@@ -36,17 +36,17 @@ namespace vkengine {
 
         void setObject(object::Object3d* object) { this->objects.push_back(object); }
 
-        virtual cUint16_t getDescriptorCount() { return static_cast<cUint16_t>(this->objects.size()); } // µğ½ºÅ©¸³ÅÍ °³¼ö ¹İÈ¯
-        virtual VkPipelineLayout getPipelineLayout() { return this->VKpipelineLayout; } // ÆÄÀÌÇÁ¶óÀÎ ·¹ÀÌ¾Æ¿ô ¹İÈ¯
+        virtual cUint16_t getDescriptorCount() { return static_cast<cUint16_t>(this->objects.size()); } // ë””ìŠ¤í¬ë¦½í„° ê°œìˆ˜ ë°˜í™˜
+        virtual VkPipelineLayout getPipelineLayout() { return this->VKpipelineLayout; } // íŒŒì´í”„ë¼ì¸ ë ˆì´ì•„ì›ƒ ë°˜í™˜
 
     private:
         // 0: Uniform buffer (Vertex shader)
         // 1: Texture sampler (texture Fragment shader)
 
-        VkDescriptorPoolSize poolSizes[MAX_UNIFORM_BUFFER_COUNT]{}; // µğ½ºÅ©¸³ÅÍ Ç® »çÀÌÁî(ÀÓ½ÃÀû)
-        VkDescriptorSetLayoutBinding uboLayoutBinding[MAX_UNIFORM_BUFFER_COUNT]{}; // µğ½ºÅ©¸³ÅÍ ¼¼Æ® ·¹ÀÌ¾Æ¿ô ¹ÙÀÎµù
+        VkDescriptorPoolSize poolSizes[MAX_UNIFORM_BUFFER_COUNT]{}; // ë””ìŠ¤í¬ë¦½í„° í’€ ì‚¬ì´ì¦ˆ(ì„ì‹œì )
+        VkDescriptorSetLayoutBinding uboLayoutBinding[MAX_UNIFORM_BUFFER_COUNT]{}; // ë””ìŠ¤í¬ë¦½í„° ì„¸íŠ¸ ë ˆì´ì•„ì›ƒ ë°”ì¸ë”©
 
-        std::vector<object::Object3d*> objects{}; // 3D ¸ğµ¨ °´Ã¼µé
+        std::vector<object::Object3d*> objects{}; // 3D ëª¨ë¸ ê°ì²´ë“¤
     };
 
 } // namespace vkengine

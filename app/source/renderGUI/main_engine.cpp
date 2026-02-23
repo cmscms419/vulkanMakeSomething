@@ -150,7 +150,7 @@ void recordCommanBuffer(
     VkViewport viewport{ 0.0f, 0.0f, (float)windowSize.width, (float)windowSize.height, 0.0f, 1.0f };
     guiRenderer.draw(cmd.getCommandBuffer(), swapchain.ImageView(imageIndex), viewport);
 
-    // COLOR_ATTACHMENT_OPTIMAL¿¡¼­ PRESENT_SRC_KHR·Î ÀüÈ¯
+    // COLOR_ATTACHMENT_OPTIMALì—ì„œ PRESENT_SRC_KHRë¡œ ì „í™˜
     swapchain.getBarrierHelper(imageIndex).transitionImageLayout2(
         cmd.getCommandBuffer(),
         VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
@@ -221,7 +221,7 @@ int main(int argc, char* argv[]) {
         root_path = path;
     }
     else {
-        EXIT_TO_LOGGER("°æ·Î¸¦ °¡Á®¿À´Â µ¥ ½ÇÆÐÇß½À´Ï´Ù.");
+        EXIT_TO_LOGGER("ê²½ë¡œë¥¼ ê°€ì ¸ì˜¤ëŠ” ë° ì‹¤íŒ¨í–ˆìŠµë‹ˆë‹¤.");
     }
 
     VKShaderManager shaderManager
@@ -251,7 +251,7 @@ int main(int argc, char* argv[]) {
     cUint32_t currentFrame = 0;
     cUint32_t currentSemaphore = 0;
 
-    // GUI ÃÊ±âÈ­
+    // GUI ì´ˆê¸°í™”
     guiRenderer.resize(extent.width, extent.height);
     
     while (!window->shouldClose())
@@ -269,8 +269,8 @@ int main(int argc, char* argv[]) {
         VkResult acquireResult = swapChain.acquireNextImage(presentSemaphores[currentSemaphore], imageIndex);
 
         if (acquireResult == VK_ERROR_OUT_OF_DATE_KHR) {
-            //this->recreateSwapChain(); // ½º¿Ò Ã¼ÀÎÀ» ´Ù½Ã »ý¼ºÇÕ´Ï´Ù.
-            // TODO ´Ù½Ã ¸¸µé¾î¾ß ÇÑ´Ù. 
+            //this->recreateSwapChain(); // ìŠ¤ì™‘ ì²´ì¸ì„ ë‹¤ì‹œ ìƒì„±í•©ë‹ˆë‹¤.
+            // TODO ë‹¤ì‹œ ë§Œë“¤ì–´ì•¼ í•œë‹¤. 
             EXIT_TO_LOGGER("Window resize not implemented\n");
         }
         else if (acquireResult != VK_SUCCESS && acquireResult != VK_SUBOPTIMAL_KHR)
@@ -286,7 +286,7 @@ int main(int argc, char* argv[]) {
         submitFrame(commandBuffers[currentFrame], presentSemaphores[currentSemaphore],
             renderSemaphores[currentSemaphore], inFlightFences[currentFrame]);
 
-        // window¿¡ Ãâ·ÂÇØÁÖ´Â frame
+        // windowì— ì¶œë ¥í•´ì£¼ëŠ” frame
         VkResult presentResult = swapChain.queuePresent(
             vkContext.getDevice()->graphicsVKQueue, imageIndex,
             renderSemaphores[currentSemaphore]);

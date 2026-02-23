@@ -14,19 +14,19 @@ namespace vkengine {
     public:
         VKBaseBuffer2(VKcontext& ctx);
 
-        // ÀÌµ¿ ¿¬»êÀÚ °¡´É
-        // VKBaseBuffer2 a = std::move(b) °¡´É
+        // ì´ë™ ì—°ì‚°ì ê°€ëŠ¥
+        // VKBaseBuffer2 a = std::move(b) ê°€ëŠ¥
         VKBaseBuffer2(VKBaseBuffer2&&) noexcept;
 
-        // º¹»ç x
-        // VKBaseBuffer2 a = b ºÒ°¡´É
+        // ë³µì‚¬ x
+        // VKBaseBuffer2 a = b ë¶ˆê°€ëŠ¥
         VKBaseBuffer2(const VKBaseBuffer2&) = delete;
 
-        // º¹»ç ´ëÀÔ ¿¬»êÀÚ x
-        // a = b ºÒ°¡´É
+        // ë³µì‚¬ ëŒ€ì… ì—°ì‚°ì x
+        // a = b ë¶ˆê°€ëŠ¥
         VKBaseBuffer2& operator=(const VKBaseBuffer2&) = delete;
         
-        // ÀÌµ¿ ´ëÀÔ ¿¬»êÀÚ x
+        // ì´ë™ ëŒ€ì… ì—°ì‚°ì x
         // a = std::move(b) x
         VKBaseBuffer2& operator=(VKBaseBuffer2&&) = delete;
 
@@ -34,7 +34,7 @@ namespace vkengine {
             cleanup();
         }
 
-        void cleanup(); ///< ¹öÆÛ Á¤¸® ÇÔ¼ö
+        void cleanup(); ///< ë²„í¼ ì •ë¦¬ í•¨ìˆ˜
 
         void createVertexBuffer(VkDeviceSize size, void* data);
         void createIndexBuffer(VkDeviceSize size, void* data);
@@ -46,7 +46,7 @@ namespace vkengine {
         void updateData(const void* data, VkDeviceSize size, VkDeviceSize offset);
         void flush() const;
 
-        virtual void createDescriptorBufferInfo() ///< µğ½ºÅ©¸³ÅÍ ¹öÆÛ Á¤º¸ »ı¼º ÇÔ¼ö
+        virtual void createDescriptorBufferInfo() ///< ë””ìŠ¤í¬ë¦½í„° ë²„í¼ ì •ë³´ ìƒì„± í•¨ìˆ˜
         {
             this->descriptor.buffer = this->buffer;
             this->descriptor.offset = 0;
@@ -72,17 +72,17 @@ namespace vkengine {
         cString name = "Default";
         VKcontext& ctx;
 
-        VkBuffer buffer = VK_NULL_HANDLE; //< Vulkan ¹öÆÛ ÇÚµé
-        VkDeviceMemory memory = VK_NULL_HANDLE; ///< Vulkan ÀåÄ¡ ¸Ş¸ğ¸® ÇÚµé
-        VkDescriptorBufferInfo descriptor{}; ///< Vulkan µğ½ºÅ©¸³ÅÍ ¹öÆÛ Á¤º¸
-        VkDeviceSize size = 0; ///< ¹öÆÛ Å©±â
-        VkDeviceSize offset = 0; ///< ¹öÆÛ °£°İ
-        VkDeviceSize allocatedSize = 0; ///< createBuffer ÇÒ ¶§, ¸¸µé¾îÁö´Â ¹öÆÛÀÇ Å©±â
-        VkDeviceSize alignment = 0; ///< ¹öÆÛ Á¤·Ä
+        VkBuffer buffer = VK_NULL_HANDLE; //< Vulkan ë²„í¼ í•¸ë“¤
+        VkDeviceMemory memory = VK_NULL_HANDLE; ///< Vulkan ì¥ì¹˜ ë©”ëª¨ë¦¬ í•¸ë“¤
+        VkDescriptorBufferInfo descriptor{}; ///< Vulkan ë””ìŠ¤í¬ë¦½í„° ë²„í¼ ì •ë³´
+        VkDeviceSize size = 0; ///< ë²„í¼ í¬ê¸°
+        VkDeviceSize offset = 0; ///< ë²„í¼ ê°„ê²©
+        VkDeviceSize allocatedSize = 0; ///< createBuffer í•  ë•Œ, ë§Œë“¤ì–´ì§€ëŠ” ë²„í¼ì˜ í¬ê¸°
+        VkDeviceSize alignment = 0; ///< ë²„í¼ ì •ë ¬
 
-        VkBufferUsageFlags usageFlags = 0; ///< ¹öÆÛ »ç¿ë ÇÃ·¡±×
-        VkMemoryPropertyFlags memoryPropertyFlags = 0; ///< ¸Ş¸ğ¸® ¼Ó¼º ÇÃ·¡±×
-        void* mapped = nullptr; ///< ¸ÅÇÎµÈ ¸Ş¸ğ¸® Æ÷ÀÎÅÍ
+        VkBufferUsageFlags usageFlags = 0; ///< ë²„í¼ ì‚¬ìš© í”Œë˜ê·¸
+        VkMemoryPropertyFlags memoryPropertyFlags = 0; ///< ë©”ëª¨ë¦¬ ì†ì„± í”Œë˜ê·¸
+        void* mapped = nullptr; ///< ë§¤í•‘ëœ ë©”ëª¨ë¦¬ í¬ì¸í„°
 
         VKResourceBinding resourceBinding;
     };

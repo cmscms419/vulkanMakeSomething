@@ -50,19 +50,19 @@ namespace vkengine {
         }
         this->skyBox->createTexture(VK_FORMAT_R8G8B8A8_SRGB);
 
-        this->defaultMaterial.metallic = 1.0f; // ±âº» ¸ÓÆ¼¸®¾ó ¸ŞÅ»¸¯ °ª
-        this->defaultMaterial.roughness = 0.1f; // ±âº» ¸ÓÆ¼¸®¾ó ·¯ÇÁ´Ï½º °ª
+        this->defaultMaterial.metallic = 1.0f; // ê¸°ë³¸ ë¨¸í‹°ë¦¬ì–¼ ë©”íƒˆë¦­ ê°’
+        this->defaultMaterial.roughness = 0.1f; // ê¸°ë³¸ ë¨¸í‹°ë¦¬ì–¼ ëŸ¬í”„ë‹ˆìŠ¤ ê°’
         this->defaultMaterial.r = 0.659777f;
         this->defaultMaterial.r = 0.608679f;
         this->defaultMaterial.r = 0.525649f;
         this->defaultMaterial.r = 1.0f;
 
-        // ¸ğµ¨ ¿ÀºêÁ§Æ® »ı¼º
+        // ëª¨ë¸ ì˜¤ë¸Œì íŠ¸ ìƒì„±
         this->modelObject = new object::ModelObject(this->getDevice());
         this->modelObject->setName("sphere");
         
         TextureResourcePNG* resourcePNG = new TextureResourcePNG();
-        resourcePNG->createResource(defaltPath); // ÅØ½ºÃÄ ·Îµå
+        resourcePNG->createResource(defaltPath); // í…ìŠ¤ì³ ë¡œë“œ
 
         if (resourcePNG->data == nullptr) {
             _PRINT_TO_CONSOLE_("Failed to load texture from %s\n", defaltPath.c_str());
@@ -124,7 +124,7 @@ namespace vkengine {
 
             vkDestroyDescriptorPool(this->VKdevice->logicaldevice, this->VKdescriptorPool, nullptr);
 
-            // object Á¦°Å
+            // object ì œê±°
             this->skyBox->cleanup();
             this->modelObject->cleanup();
             this->vikingRoomObject->cleanup();
@@ -156,12 +156,12 @@ namespace vkengine {
 
     void PBRbasuceEngine::drawFrame()
     {
-        // ·»´õ¸µÀ» ½ÃÀÛÇÏ±â Àü¿¡ ÇÁ·¹ÀÓÀ» ·»´õ¸µÇÒ ÁØºñ°¡ µÇ¾ú´ÂÁö È®ÀÎÇÕ´Ï´Ù.
+        // ë Œë”ë§ì„ ì‹œì‘í•˜ê¸° ì „ì— í”„ë ˆì„ì„ ë Œë”ë§í•  ì¤€ë¹„ê°€ ë˜ì—ˆëŠ”ì§€ í™•ì¸í•©ë‹ˆë‹¤.
         _VK_CHECK_RESULT_(vkWaitForFences(this->VKdevice->logicaldevice, 1, &this->getCurrnetFrameData().VkinFlightFences, VK_TRUE, UINT64_MAX));
 
-        // ÀÌ¹ÌÁö¸¦ °¡Á®¿À±â À§ÇØ ½º¿Ò Ã¼ÀÎ¿¡¼­ ÀÌ¹ÌÁö ÀÎµ¦½º¸¦ °¡Á®¿É´Ï´Ù.
-        // ÁÖ¾îÁø ½º¿ÒÃ¼ÀÎ¿¡¼­ ´ÙÀ½ ÀÌ¹ÌÁö¸¦ È¹µæÇÏ°í, 
-        // ¼±ÅÃÀûÀ¸·Î ¼¼¸¶Æ÷¾î¿Í Ææ½º¸¦ »ç¿ëÇÏ¿© µ¿±âÈ­¸¦ °ü¸®ÇÏ´Â Vulkan APIÀÇ ÇÔ¼öÀÔ´Ï´Ù.
+        // ì´ë¯¸ì§€ë¥¼ ê°€ì ¸ì˜¤ê¸° ìœ„í•´ ìŠ¤ì™‘ ì²´ì¸ì—ì„œ ì´ë¯¸ì§€ ì¸ë±ìŠ¤ë¥¼ ê°€ì ¸ì˜µë‹ˆë‹¤.
+        // ì£¼ì–´ì§„ ìŠ¤ì™‘ì²´ì¸ì—ì„œ ë‹¤ìŒ ì´ë¯¸ì§€ë¥¼ íšë“í•˜ê³ , 
+        // ì„ íƒì ìœ¼ë¡œ ì„¸ë§ˆí¬ì–´ì™€ íœìŠ¤ë¥¼ ì‚¬ìš©í•˜ì—¬ ë™ê¸°í™”ë¥¼ ê´€ë¦¬í•˜ëŠ” Vulkan APIì˜ í•¨ìˆ˜ì…ë‹ˆë‹¤.
         uint32_t imageIndex = 0;
         VulkanEngine::prepareFame(&imageIndex);
 
@@ -175,42 +175,42 @@ namespace vkengine {
         memcpy(this->material.mapped, &this->defaultMaterial, sizeof(cMaterial));
         memcpy(this->subUniform.mapped, &this->subUniform.subUniform, sizeof(subData));
 
-        // ÇÃ·¡±×¸¦ Àç¼³Á¤ÇÕ´Ï´Ù. -> ·»´õ¸µÀÌ ³¡³ª¸é ÇÃ·¡±×¸¦ Àç¼³Á¤ÇÕ´Ï´Ù.
+        // í”Œë˜ê·¸ë¥¼ ì¬ì„¤ì •í•©ë‹ˆë‹¤. -> ë Œë”ë§ì´ ëë‚˜ë©´ í”Œë˜ê·¸ë¥¼ ì¬ì„¤ì •í•©ë‹ˆë‹¤.
         vkResetFences(this->VKdevice->logicaldevice, 1, &this->getCurrnetFrameData().VkinFlightFences);
 
-        // ·»´õ¸µÀ» ½ÃÀÛÇÏ±â Àü¿¡ ÀÌ¹ÌÁö¸¦ ·»´õ¸µÇÒ ÁØºñ°¡ µÇ¾ú´ÂÁö È®ÀÎÇÕ´Ï´Ù.
-        // ÁöÁ¤µÈ ¸í·É ¹öÆÛ¸¦ ÃÊ±âÈ­ÇÏ°í, ¼±ÅÃÀûÀ¸·Î ÇÃ·¡±×¸¦ »ç¿ëÇÏ¿© ÃÊ±âÈ­ µ¿ÀÛÀ» Á¦¾î
+        // ë Œë”ë§ì„ ì‹œì‘í•˜ê¸° ì „ì— ì´ë¯¸ì§€ë¥¼ ë Œë”ë§í•  ì¤€ë¹„ê°€ ë˜ì—ˆëŠ”ì§€ í™•ì¸í•©ë‹ˆë‹¤.
+        // ì§€ì •ëœ ëª…ë ¹ ë²„í¼ë¥¼ ì´ˆê¸°í™”í•˜ê³ , ì„ íƒì ìœ¼ë¡œ í”Œë˜ê·¸ë¥¼ ì‚¬ìš©í•˜ì—¬ ì´ˆê¸°í™” ë™ì‘ì„ ì œì–´
         vkResetCommandBuffer(this->VKframeData[this->currentFrame].mainCommandBuffer, 0);
 
-        // ·»´õ¸µÀ» ½ÃÀÛÇÏ±â Àü¿¡ Ä¿¸Çµå ¹öÆÛ¸¦ Àç¼³Á¤ÇÕ´Ï´Ù.
+        // ë Œë”ë§ì„ ì‹œì‘í•˜ê¸° ì „ì— ì»¤ë§¨ë“œ ë²„í¼ë¥¼ ì¬ì„¤ì •í•©ë‹ˆë‹¤.
         this->recordCommandBuffer(&this->VKframeData[this->currentFrame], imageIndex);
 
-        // VkSubmitInfo ±¸Á¶Ã¼´Â Å¥¿¡ Á¦ÃâÇÒ ¸í·É ¹öÆÛ¸¦ ÁöÁ¤ÇÕ´Ï´Ù.
+        // VkSubmitInfo êµ¬ì¡°ì²´ëŠ” íì— ì œì¶œí•  ëª…ë ¹ ë²„í¼ë¥¼ ì§€ì •í•©ë‹ˆë‹¤.
         VKsubmitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
-        // ·»´õ¸µÀ» ½ÃÀÛÇÏ±â Àü¿¡ ¼¼¸¶Æ÷¾î¸¦ ¼³Á¤ÇÕ´Ï´Ù.
+        // ë Œë”ë§ì„ ì‹œì‘í•˜ê¸° ì „ì— ì„¸ë§ˆí¬ì–´ë¥¼ ì„¤ì •í•©ë‹ˆë‹¤.
         VkSemaphore waitSemaphores[] = { this->VKframeData[this->currentFrame].VkimageavailableSemaphore };
         VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
         VKsubmitInfo.waitSemaphoreCount = 1;
         VKsubmitInfo.pWaitSemaphores = waitSemaphores;
         VKsubmitInfo.pWaitDstStageMask = waitStages;
 
-        // ·»´õ¸µÀ» ½ÃÀÛÇÏ±â Àü¿¡ Ä¿¸Çµå ¹öÆÛ¸¦ ¼³Á¤ÇÕ´Ï´Ù.
+        // ë Œë”ë§ì„ ì‹œì‘í•˜ê¸° ì „ì— ì»¤ë§¨ë“œ ë²„í¼ë¥¼ ì„¤ì •í•©ë‹ˆë‹¤.
         VKsubmitInfo.commandBufferCount = 1;
         VKsubmitInfo.pCommandBuffers = &this->VKframeData[this->currentFrame].mainCommandBuffer;
 
-        // ·»´õ¸µÀ» ½ÃÀÛÇÏ±â Àü¿¡ ¼¼¸¶Æ÷¾î¸¦ ¼³Á¤ÇÕ´Ï´Ù.
+        // ë Œë”ë§ì„ ì‹œì‘í•˜ê¸° ì „ì— ì„¸ë§ˆí¬ì–´ë¥¼ ì„¤ì •í•©ë‹ˆë‹¤.
         VkSemaphore signalSemaphores[] = { this->VKframeData[this->currentFrame].VkrenderFinishedSemaphore };
         VKsubmitInfo.signalSemaphoreCount = 1;
         VKsubmitInfo.pSignalSemaphores = signalSemaphores;
 
-        // ÇÃ·¡±×¸¦ Àç¼³Á¤ÇÕ´Ï´Ù. -> ·»´õ¸µÀÌ ³¡³ª¸é ÇÃ·¡±×¸¦ Àç¼³Á¤ÇÕ´Ï´Ù.
+        // í”Œë˜ê·¸ë¥¼ ì¬ì„¤ì •í•©ë‹ˆë‹¤. -> ë Œë”ë§ì´ ëë‚˜ë©´ í”Œë˜ê·¸ë¥¼ ì¬ì„¤ì •í•©ë‹ˆë‹¤.
         vkResetFences(this->VKdevice->logicaldevice, 1, &this->VKframeData[this->currentFrame].VkinFlightFences);
 
-        // ·»´õ¸µÀ» ½ÃÀÛÇÕ´Ï´Ù.
+        // ë Œë”ë§ì„ ì‹œì‘í•©ë‹ˆë‹¤.
         _VK_CHECK_RESULT_(vkQueueSubmit(this->VKdevice->graphicsVKQueue, 1, &VKsubmitInfo, this->VKframeData[this->currentFrame].VkinFlightFences));
 
-        // ·»´õ¸µ Á¾·á ÈÄ, ÇÁ·¹Á¨Æ®¸¦ ½ÃÀÛÇÕ´Ï´Ù.
+        // ë Œë”ë§ ì¢…ë£Œ í›„, í”„ë ˆì  íŠ¸ë¥¼ ì‹œì‘í•©ë‹ˆë‹¤.
         VulkanEngine::presentFrame(&imageIndex);
 
         this->currentFrame = (this->currentFrame + 1) % this->frames;
@@ -376,17 +376,17 @@ namespace vkengine {
 
     void PBRbasuceEngine::recordCommandBuffer(FrameData* framedata, uint32_t imageIndex)
     {
-        // Ä¿¸Çµå ¹öÆÛ ±â·ÏÀ» ½ÃÀÛÇÕ´Ï´Ù.
+        // ì»¤ë§¨ë“œ ë²„í¼ ê¸°ë¡ì„ ì‹œì‘í•©ë‹ˆë‹¤.
         VkCommandBufferBeginInfo beginInfo = framedata->commandBufferBeginInfo(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
 
         _VK_CHECK_RESULT_(vkBeginCommandBuffer(framedata->mainCommandBuffer, &beginInfo));
 
-        // ·»´õ ÆĞ½º¸¦ ½ÃÀÛÇÏ±â À§ÇÑ Å¬¸®¾î °ª ¼³Á¤
+        // ë Œë” íŒ¨ìŠ¤ë¥¼ ì‹œì‘í•˜ê¸° ìœ„í•œ í´ë¦¬ì–´ ê°’ ì„¤ì •
         std::array<VkClearValue, 2> clearValues{};
         clearValues[0].color = { {0.2f, 0.2f, 0.2f, 1.0f} };
         clearValues[1].depthStencil = { 1.0f, 0 };
 
-        // ·»´õ ÆĞ½º ½ÃÀÛ Á¤º¸ ±¸Á¶Ã¼¸¦ ÃÊ±âÈ­ÇÕ´Ï´Ù.
+        // ë Œë” íŒ¨ìŠ¤ ì‹œì‘ ì •ë³´ êµ¬ì¡°ì²´ë¥¼ ì´ˆê¸°í™”í•©ë‹ˆë‹¤.
         VkRenderPassBeginInfo renderPassInfo{};
         renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
         renderPassInfo.renderPass = *this->VKrenderPass.get();
@@ -396,7 +396,7 @@ namespace vkengine {
         renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());;
         renderPassInfo.pClearValues = clearValues.data();
 
-        // ·»´õ ÆĞ½º¸¦ ½ÃÀÛÇÕ´Ï´Ù.
+        // ë Œë” íŒ¨ìŠ¤ë¥¼ ì‹œì‘í•©ë‹ˆë‹¤.
         vkCmdBeginRenderPass(framedata->mainCommandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
         {
             VkViewport viewport{};
@@ -441,7 +441,7 @@ namespace vkengine {
 
         vkCmdEndRenderPass(framedata->mainCommandBuffer);
 
-        // Ä¿¸Çµå ¹öÆÛ ±â·ÏÀ» Á¾·áÇÕ´Ï´Ù.
+        // ì»¤ë§¨ë“œ ë²„í¼ ê¸°ë¡ì„ ì¢…ë£Œí•©ë‹ˆë‹¤.
         _VK_CHECK_RESULT_(vkEndCommandBuffer(framedata->mainCommandBuffer));
     }
 
@@ -476,7 +476,7 @@ namespace vkengine {
         this->vikingRoomObject->getModelViewProjUniformBuffer(0)->createDescriptorBufferInfo();
         this->vikingRoomObject->getModelViewProjUniformBuffer(1)->createDescriptorBufferInfo();
 
-        // ¸ÓÆ¼¸®¾ó ¹öÆÛ »ı¼º
+        // ë¨¸í‹°ë¦¬ì–¼ ë²„í¼ ìƒì„±
         VkDeviceSize bufferSize = sizeof(cMaterial);
 
         material.device = this->VKdevice->logicaldevice;
@@ -504,60 +504,60 @@ namespace vkengine {
     void PBRbasuceEngine::createDescriptor()
     {
         
-        // ¸ğµ¨ ¿ÀºêÁ§Æ® µğ½ºÅ©¸³ÅÍ »ı¼º
+        // ëª¨ë¸ ì˜¤ë¸Œì íŠ¸ ë””ìŠ¤í¬ë¦½í„° ìƒì„±
         this->modeltDescriptor2 = new VKDescriptor2(this->VKdevice->logicaldevice, this->frames);
 
-        cUint frameCount = this->frames * 2; // object°¡ ÇÑ°³´Ù -> virtual object°¡ 2°³ÀÌ±â¿¡ frames * 2À» Àû¿ë
+        cUint frameCount = this->frames * 2; // objectê°€ í•œê°œë‹¤ -> virtual objectê°€ 2ê°œì´ê¸°ì— frames * 2ì„ ì ìš©
 
         // pool create
         std::vector<VkDescriptorPoolSize> poolSizes = {
-            helper::descriptorPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, frameCount), // Ä«¸Ş¶ó
-            helper::descriptorPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, frameCount), // ÅØ½ºÃÄ
-            helper::descriptorPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, frameCount), // ¸ÓÆ¼¸®¾ó
-            helper::descriptorPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, frameCount) // ¼­ºê À¯´ÏÆû
+            helper::descriptorPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, frameCount), // ì¹´ë©”ë¼
+            helper::descriptorPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, frameCount), // í…ìŠ¤ì³
+            helper::descriptorPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, frameCount), // ë¨¸í‹°ë¦¬ì–¼
+            helper::descriptorPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, frameCount) // ì„œë¸Œ ìœ ë‹ˆí¼
         };
-        // cube¸¸ ÀÖ±â¿¡ 1À» Àû¿ë
-        // virtual object°¡ 2°³ÀÌ±â¿¡ frames * 2À» Àû¿ë
+        // cubeë§Œ ìˆê¸°ì— 1ì„ ì ìš©
+        // virtual objectê°€ 2ê°œì´ê¸°ì— frames * 2ì„ ì ìš©
         this->modeltDescriptor2->poolInfo = helper::descriptorPoolCreateInfo(poolSizes, frameCount);
         this->modeltDescriptor2->createDescriptorPool();
 
         // layout create
         std::vector<VkDescriptorSetLayoutBinding> setLayoutBindings = {
-            helper::descriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0), // Ä«¸Ş¶ó
-            helper::descriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, 1), // ÅØ½ºÃÄ
-            helper::descriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_FRAGMENT_BIT, 2), // ¸ÓÆ¼¸®¾ó
+            helper::descriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0), // ì¹´ë©”ë¼
+            helper::descriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, 1), // í…ìŠ¤ì³
+            helper::descriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_FRAGMENT_BIT, 2), // ë¨¸í‹°ë¦¬ì–¼
             helper::descriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 3) // subUniform
         };
         this->modeltDescriptor2->layoutInfo = helper::descriptorSetLayoutCreateInfo(setLayoutBindings);
         this->modeltDescriptor2->createDescriptorSetLayout();
 
-        // descriptor set »ı¼º
+        // descriptor set ìƒì„±
         std::vector<VkDescriptorSetLayout> layouts2(this->modeltDescriptor2->frames * 2, this->modeltDescriptor2->VKdescriptorSetLayout);
         this->modeltDescriptor2->allocInfo = helper::descriptorSetAllocateInfo(
             this->modeltDescriptor2->VKdescriptorPool,
             *layouts2.data(),
-            frameCount); // object°¡ ÇÑ°³´Ù -> virtual object°¡ 2°³ÀÌ±â¿¡ frames * 2À» Àû¿ë
+            frameCount); // objectê°€ í•œê°œë‹¤ -> virtual objectê°€ 2ê°œì´ê¸°ì— frames * 2ì„ ì ìš©
 
-        this->modeltDescriptor2->VKdescriptorSets.resize(frameCount); // object 2°³
+        this->modeltDescriptor2->VKdescriptorSets.resize(frameCount); // object 2ê°œ
         this->modeltDescriptor2->createAllocateDescriptorSets();
 
-        // descriptor set ¾÷µ¥ÀÌÆ®
+        // descriptor set ì—…ë°ì´íŠ¸
         std::vector<VkWriteDescriptorSet> writeDescriptorSets_PBR_object01 = {
             helper::writeDescriptorSet(
                 this->modeltDescriptor2->VKdescriptorSets[0],
                 VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
                 0,
-                &this->modelObject->getModelViewProjUniformBuffer(0)->descriptor), // Ä«¸Ş¶ó
+                &this->modelObject->getModelViewProjUniformBuffer(0)->descriptor), // ì¹´ë©”ë¼
             helper::writeDescriptorSet(
                 this->modeltDescriptor2->VKdescriptorSets[0],
                 VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
                 1,
-                &this->modelObject->getTexture()->imageData[0].imageInfo), // ÅØ½ºÃÄ
+                &this->modelObject->getTexture()->imageData[0].imageInfo), // í…ìŠ¤ì³
             helper::writeDescriptorSet(
                 this->modeltDescriptor2->VKdescriptorSets[0],
                 VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
                 2,
-                &this->material.descriptor), // ¸ÓÆ¼¸®¾ó
+                &this->material.descriptor), // ë¨¸í‹°ë¦¬ì–¼
             helper::writeDescriptorSet(
                 this->modeltDescriptor2->VKdescriptorSets[0],
                 VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
@@ -570,17 +570,17 @@ namespace vkengine {
                 this->modeltDescriptor2->VKdescriptorSets[1],
                 VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
                 0,
-                &this->modelObject->getModelViewProjUniformBuffer(1)->descriptor), // Ä«¸Ş¶ó
+                &this->modelObject->getModelViewProjUniformBuffer(1)->descriptor), // ì¹´ë©”ë¼
             helper::writeDescriptorSet(
                 this->modeltDescriptor2->VKdescriptorSets[1],
                 VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
                 1,
-                &this->modelObject->getTexture()->imageData[0].imageInfo), // ÅØ½ºÃÄ
+                &this->modelObject->getTexture()->imageData[0].imageInfo), // í…ìŠ¤ì³
             helper::writeDescriptorSet(
                 this->modeltDescriptor2->VKdescriptorSets[1],
                 VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
                 2,
-                &this->material.descriptor), // ¸ÓÆ¼¸®¾ó
+                &this->material.descriptor), // ë¨¸í‹°ë¦¬ì–¼
             helper::writeDescriptorSet(
                 this->modeltDescriptor2->VKdescriptorSets[1],
                 VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
@@ -593,17 +593,17 @@ namespace vkengine {
                 this->modeltDescriptor2->VKdescriptorSets[2],
                 VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
                 0,
-                &this->vikingRoomObject->getModelViewProjUniformBuffer(0)->descriptor), // Ä«¸Ş¶ó
+                &this->vikingRoomObject->getModelViewProjUniformBuffer(0)->descriptor), // ì¹´ë©”ë¼
             helper::writeDescriptorSet(
                 this->modeltDescriptor2->VKdescriptorSets[2],
                 VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
                 1,
-                &this->vikingRoomObject->getTexture()->imageData[0].imageInfo), // ÅØ½ºÃÄ
+                &this->vikingRoomObject->getTexture()->imageData[0].imageInfo), // í…ìŠ¤ì³
             helper::writeDescriptorSet(
                 this->modeltDescriptor2->VKdescriptorSets[2],
                 VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
                 2,
-                &this->material.descriptor), // ¸ÓÆ¼¸®¾ó
+                &this->material.descriptor), // ë¨¸í‹°ë¦¬ì–¼
             helper::writeDescriptorSet(
                 this->modeltDescriptor2->VKdescriptorSets[2],
                 VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
@@ -616,17 +616,17 @@ namespace vkengine {
                 this->modeltDescriptor2->VKdescriptorSets[3],
                 VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
                 0,
-                &this->vikingRoomObject->getModelViewProjUniformBuffer(1)->descriptor), // Ä«¸Ş¶ó
+                &this->vikingRoomObject->getModelViewProjUniformBuffer(1)->descriptor), // ì¹´ë©”ë¼
             helper::writeDescriptorSet(
                 this->modeltDescriptor2->VKdescriptorSets[3],
                 VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
                 1,
-                &this->vikingRoomObject->getTexture()->imageData[0].imageInfo), // ÅØ½ºÃÄ
+                &this->vikingRoomObject->getTexture()->imageData[0].imageInfo), // í…ìŠ¤ì³
             helper::writeDescriptorSet(
                 this->modeltDescriptor2->VKdescriptorSets[3],
                 VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
                 2,
-                &this->material.descriptor), // ¸ÓÆ¼¸®¾ó
+                &this->material.descriptor), // ë¨¸í‹°ë¦¬ì–¼
             helper::writeDescriptorSet(
                 this->modeltDescriptor2->VKdescriptorSets[3],
                 VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
@@ -652,59 +652,59 @@ namespace vkengine {
             static_cast<uint32_t>(writeDescriptorSets_PBR_object04.size()),
             writeDescriptorSets_PBR_object04.data(), 0, nullptr);
 
-        // SkyBox µğ½ºÅ©¸³ÅÍ »ı¼º
+        // SkyBox ë””ìŠ¤í¬ë¦½í„° ìƒì„±
         this->skyboxDescriptor2 = new VKDescriptor2(this->VKdevice->logicaldevice, this->frames);
 
         // pool create
         std::vector<VkDescriptorPoolSize> skyboxPoolSizes = {
-            helper::descriptorPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, this->frames), // Ä«¸Ş¶ó
-            helper::descriptorPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, this->frames) // ÅØ½ºÃÄ
+            helper::descriptorPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, this->frames), // ì¹´ë©”ë¼
+            helper::descriptorPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, this->frames) // í…ìŠ¤ì³
         };
         this->skyboxDescriptor2->poolInfo = helper::descriptorPoolCreateInfo(skyboxPoolSizes, this->frames);
         this->skyboxDescriptor2->createDescriptorPool();
 
         // layout create
         std::vector<VkDescriptorSetLayoutBinding> setLayoutBindingsSkyBox = {
-            helper::descriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0), // Ä«¸Ş¶ó
-            helper::descriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, 1) // ÅØ½ºÃÄ
+            helper::descriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0), // ì¹´ë©”ë¼
+            helper::descriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, 1) // í…ìŠ¤ì³
         };
         this->skyboxDescriptor2->layoutInfo = helper::descriptorSetLayoutCreateInfo(setLayoutBindingsSkyBox);
         this->skyboxDescriptor2->createDescriptorSetLayout();
 
-        // descriptor set »ı¼º
+        // descriptor set ìƒì„±
         std::vector<VkDescriptorSetLayout> layouts(this->skyboxDescriptor2->frames, this->skyboxDescriptor2->VKdescriptorSetLayout);
         this->skyboxDescriptor2->allocInfo = helper::descriptorSetAllocateInfo(
             this->skyboxDescriptor2->VKdescriptorPool,
             *layouts.data(),
-            this->frames); // object°¡ ÇÑ°³´Ù
+            this->frames); // objectê°€ í•œê°œë‹¤
         this->skyboxDescriptor2->VKdescriptorSets.resize(this->frames);
         this->skyboxDescriptor2->createAllocateDescriptorSets();
 
-        // descriptor set ¾÷µ¥ÀÌÆ®
+        // descriptor set ì—…ë°ì´íŠ¸
         std::vector<VkWriteDescriptorSet> writeDescriptorSets_skyBox01 = {
             helper::writeDescriptorSet(
                 this->skyboxDescriptor2->VKdescriptorSets[0],
                 VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
                 0,
-                &this->skyBox->getModelViewProjUniformBuffer(0)->descriptor), // Ä«¸Ş¶ó
+                &this->skyBox->getModelViewProjUniformBuffer(0)->descriptor), // ì¹´ë©”ë¼
             helper::writeDescriptorSet(
                 this->skyboxDescriptor2->VKdescriptorSets[0],
                 VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
                 1,
-                &this->skyBox->getTexture()->imageData[0].imageInfo) // ÅØ½ºÃÄ
+                &this->skyBox->getTexture()->imageData[0].imageInfo) // í…ìŠ¤ì³
         };
-        // descriptor set ¾÷µ¥ÀÌÆ®
+        // descriptor set ì—…ë°ì´íŠ¸
         std::vector<VkWriteDescriptorSet> writeDescriptorSets_skyBox02 = {
             helper::writeDescriptorSet(
                 this->skyboxDescriptor2->VKdescriptorSets[1],
                 VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
                 0,
-                &this->skyBox->getModelViewProjUniformBuffer(1)->descriptor), // Ä«¸Ş¶ó
+                &this->skyBox->getModelViewProjUniformBuffer(1)->descriptor), // ì¹´ë©”ë¼
             helper::writeDescriptorSet(
                 this->skyboxDescriptor2->VKdescriptorSets[1],
                 VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
                 1,
-                &this->skyBox->getTexture()->imageData[0].imageInfo) // ÅØ½ºÃÄ
+                &this->skyBox->getTexture()->imageData[0].imageInfo) // í…ìŠ¤ì³
         };
 
         vkUpdateDescriptorSets(
@@ -761,12 +761,12 @@ namespace vkengine {
         VkPipelineDynamicStateCreateInfo dynamicState = helper::pipelineDynamicStateCreateInfo(dynamicStates);
         VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
 
-        pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO; // ±¸Á¶Ã¼ Å¸ÀÔÀ» ¼³Á¤
-        pipelineLayoutInfo.pNext = nullptr;                                       // ´ÙÀ½ ±¸Á¶Ã¼ Æ÷ÀÎÅÍ¸¦ ¼³Á¤
-        pipelineLayoutInfo.setLayoutCount = 1;                                    // ·¹ÀÌ¾Æ¿ô °³¼ö¸¦ ¼³Á¤
-        pipelineLayoutInfo.pSetLayouts = &this->modeltDescriptor2->VKdescriptorSetLayout;            // ·¹ÀÌ¾Æ¿ô Æ÷ÀÎÅÍ¸¦ ¼³Á¤
-        pipelineLayoutInfo.pushConstantRangeCount = 0;                            // Çª½Ã »ó¼ö ¹üÀ§ °³¼ö¸¦ ¼³Á¤
-        pipelineLayoutInfo.pPushConstantRanges = nullptr;                         // Çª½Ã »ó¼ö ¹üÀ§ Æ÷ÀÎÅÍ¸¦ ¼³Á¤
+        pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO; // êµ¬ì¡°ì²´ íƒ€ì…ì„ ì„¤ì •
+        pipelineLayoutInfo.pNext = nullptr;                                       // ë‹¤ìŒ êµ¬ì¡°ì²´ í¬ì¸í„°ë¥¼ ì„¤ì •
+        pipelineLayoutInfo.setLayoutCount = 1;                                    // ë ˆì´ì•„ì›ƒ ê°œìˆ˜ë¥¼ ì„¤ì •
+        pipelineLayoutInfo.pSetLayouts = &this->modeltDescriptor2->VKdescriptorSetLayout;            // ë ˆì´ì•„ì›ƒ í¬ì¸í„°ë¥¼ ì„¤ì •
+        pipelineLayoutInfo.pushConstantRangeCount = 0;                            // í‘¸ì‹œ ìƒìˆ˜ ë²”ìœ„ ê°œìˆ˜ë¥¼ ì„¤ì •
+        pipelineLayoutInfo.pPushConstantRanges = nullptr;                         // í‘¸ì‹œ ìƒìˆ˜ ë²”ìœ„ í¬ì¸í„°ë¥¼ ì„¤ì •
 
         _VK_CHECK_RESULT_(vkCreatePipelineLayout(this->VKdevice->logicaldevice, &pipelineLayoutInfo, nullptr, &this->modeltDescriptor2->VKpipelineLayout));
 
@@ -839,12 +839,12 @@ namespace vkengine {
         VkPipelineDynamicStateCreateInfo dynamicState = helper::pipelineDynamicStateCreateInfo(dynamicStates);
         
         VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
-        pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO; // ±¸Á¶Ã¼ Å¸ÀÔÀ» ¼³Á¤
-        pipelineLayoutInfo.pNext = nullptr;                                       // ´ÙÀ½ ±¸Á¶Ã¼ Æ÷ÀÎÅÍ¸¦ ¼³Á¤
-        pipelineLayoutInfo.setLayoutCount = 1;                                    // ·¹ÀÌ¾Æ¿ô °³¼ö¸¦ ¼³Á¤
-        pipelineLayoutInfo.pSetLayouts = &this->skyboxDescriptor2->VKdescriptorSetLayout;            // ·¹ÀÌ¾Æ¿ô Æ÷ÀÎÅÍ¸¦ ¼³Á¤
-        pipelineLayoutInfo.pushConstantRangeCount = 0;                            // Çª½Ã »ó¼ö ¹üÀ§ °³¼ö¸¦ ¼³Á¤
-        pipelineLayoutInfo.pPushConstantRanges = nullptr;                         // Çª½Ã »ó¼ö ¹üÀ§ Æ÷ÀÎÅÍ¸¦ ¼³Á¤
+        pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO; // êµ¬ì¡°ì²´ íƒ€ì…ì„ ì„¤ì •
+        pipelineLayoutInfo.pNext = nullptr;                                       // ë‹¤ìŒ êµ¬ì¡°ì²´ í¬ì¸í„°ë¥¼ ì„¤ì •
+        pipelineLayoutInfo.setLayoutCount = 1;                                    // ë ˆì´ì•„ì›ƒ ê°œìˆ˜ë¥¼ ì„¤ì •
+        pipelineLayoutInfo.pSetLayouts = &this->skyboxDescriptor2->VKdescriptorSetLayout;            // ë ˆì´ì•„ì›ƒ í¬ì¸í„°ë¥¼ ì„¤ì •
+        pipelineLayoutInfo.pushConstantRangeCount = 0;                            // í‘¸ì‹œ ìƒìˆ˜ ë²”ìœ„ ê°œìˆ˜ë¥¼ ì„¤ì •
+        pipelineLayoutInfo.pPushConstantRanges = nullptr;                         // í‘¸ì‹œ ìƒìˆ˜ ë²”ìœ„ í¬ì¸í„°ë¥¼ ì„¤ì •
 
         _VK_CHECK_RESULT_(vkCreatePipelineLayout(this->VKdevice->logicaldevice, &pipelineLayoutInfo, nullptr, &this->skyboxDescriptor2->VKpipelineLayout));
 

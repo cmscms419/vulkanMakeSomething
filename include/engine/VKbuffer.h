@@ -9,23 +9,23 @@ namespace vkengine {
 
     struct VkBaseBuffer {
         cString name = "Default";
-        VkDevice device = VK_NULL_HANDLE; ///< Vulkan ÀåÄ¡ ÇÚµé
-        VkBuffer buffer = VK_NULL_HANDLE; ///< Vulkan ¹öÆÛ ÇÚµé
-        VkDeviceMemory memory = VK_NULL_HANDLE; ///< Vulkan ÀåÄ¡ ¸Þ¸ð¸® ÇÚµé
-        VkDescriptorBufferInfo descriptor{}; ///< Vulkan µð½ºÅ©¸³ÅÍ ¹öÆÛ Á¤º¸
-        VkDeviceSize size = 0; ///< ¹öÆÛ Å©±â
-        VkDeviceSize alignment = 0; ///< ¹öÆÛ Á¤·Ä
+        VkDevice device = VK_NULL_HANDLE; ///< Vulkan ìž¥ì¹˜ í•¸ë“¤
+        VkBuffer buffer = VK_NULL_HANDLE; ///< Vulkan ë²„í¼ í•¸ë“¤
+        VkDeviceMemory memory = VK_NULL_HANDLE; ///< Vulkan ìž¥ì¹˜ ë©”ëª¨ë¦¬ í•¸ë“¤
+        VkDescriptorBufferInfo descriptor{}; ///< Vulkan ë””ìŠ¤í¬ë¦½í„° ë²„í¼ ì •ë³´
+        VkDeviceSize size = 0; ///< ë²„í¼ í¬ê¸°
+        VkDeviceSize alignment = 0; ///< ë²„í¼ ì •ë ¬
 
-        VkBufferUsageFlags usageFlags = 0; ///< ¹öÆÛ »ç¿ë ÇÃ·¡±×
-        VkMemoryPropertyFlags memoryPropertyFlags = 0; ///< ¸Þ¸ð¸® ¼Ó¼º ÇÃ·¡±×
-        void* mapped = nullptr; ///< ¸ÅÇÎµÈ ¸Þ¸ð¸® Æ÷ÀÎÅÍ
+        VkBufferUsageFlags usageFlags = 0; ///< ë²„í¼ ì‚¬ìš© í”Œëž˜ê·¸
+        VkMemoryPropertyFlags memoryPropertyFlags = 0; ///< ë©”ëª¨ë¦¬ ì†ì„± í”Œëž˜ê·¸
+        void* mapped = nullptr; ///< ë§¤í•‘ëœ ë©”ëª¨ë¦¬ í¬ì¸í„°
 
-        void cleanup(); ///< ¹öÆÛ Á¤¸® ÇÔ¼ö
-        VkResult mapToMeBuffer(VkDeviceSize size, VkDeviceSize offset); ///< ¹öÆÛ ¸ÅÇÎ ÇÔ¼ö
-        void copyToMeBuffer(void* data, VkDeviceSize size); ///< ¹öÆÛ·Î µ¥ÀÌÅÍ º¹»ç ÇÔ¼ö
-        void createBuffer(VkPhysicalDevice physicalDevice); ///< ¹öÆÛ »ý¼º ÇÔ¼ö
+        void cleanup(); ///< ë²„í¼ ì •ë¦¬ í•¨ìˆ˜
+        VkResult mapToMeBuffer(VkDeviceSize size, VkDeviceSize offset); ///< ë²„í¼ ë§¤í•‘ í•¨ìˆ˜
+        void copyToMeBuffer(void* data, VkDeviceSize size); ///< ë²„í¼ë¡œ ë°ì´í„° ë³µì‚¬ í•¨ìˆ˜
+        void createBuffer(VkPhysicalDevice physicalDevice); ///< ë²„í¼ ìƒì„± í•¨ìˆ˜
         
-        virtual void createDescriptorBufferInfo() ///< µð½ºÅ©¸³ÅÍ ¹öÆÛ Á¤º¸ »ý¼º ÇÔ¼ö
+        virtual void createDescriptorBufferInfo() ///< ë””ìŠ¤í¬ë¦½í„° ë²„í¼ ì •ë³´ ìƒì„± í•¨ìˆ˜
         {
             this->descriptor.buffer = this->buffer;
             this->descriptor.offset = 0;

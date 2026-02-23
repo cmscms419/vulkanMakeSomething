@@ -15,7 +15,7 @@ namespace vkengine {
     class DescriptorSetHander {
 
     public:
-        // ¸®¼Ò½º ÇØÁ¦¿¡ ´ëÇÑ Ã¥ÀÓÀÌ ¾ø±â ¶§¹®¿¡ Context¸¦ ¸â¹ö·Î °®°í ÀÖÀ» ÇÊ¿ä°¡ ¾øÀ½
+        // ë¦¬ì†ŒìŠ¤ í•´ì œì— ëŒ€í•œ ì±…ì„ì´ ì—†ê¸° ë•Œë¬¸ì— Contextë¥¼ ë©¤ë²„ë¡œ ê°–ê³  ìˆì„ í•„ìš”ê°€ ì—†ìŒ
         void create(VKcontext& context, const std::vector<std::reference_wrapper< VKResourceBinding>>& resourceBindings)
         {
             std::vector< VkDescriptorSetLayoutBinding> layoutBindings(resourceBindings.size());
@@ -31,20 +31,20 @@ namespace vkengine {
                 layoutBindings[i].pImmutableSamplers = nullptr; // Not using immutable samplers
             }
 
-            // bindings¸¦ ±â¹İÀ¸·Î Descriptor Set Layout »ı¼º  
+            // bindingsë¥¼ ê¸°ë°˜ìœ¼ë¡œ Descriptor Set Layout ìƒì„±  
             VkDescriptorSetLayout layout = context.getDescriptorManager()->getDescriptorSetLayout(layoutBindings);
 
             layoutBindings = context.getDescriptorManager()->layoutToBindings(layout);
 
-            // resourceBindingsÀÇ Á¤º¸¸¦ ±â¹İÀ¸·Î Descriptor Set ÇÒ´ç
-            // ¼ÎÀÌ´õ¿¡¼­ °áÁ¤
+            // resourceBindingsì˜ ì •ë³´ë¥¼ ê¸°ë°˜ìœ¼ë¡œ Descriptor Set í• ë‹¹
+            // ì…°ì´ë”ì—ì„œ ê²°ì •
             for (size_t i = 0; i < resourceBindings.size(); i++) {
                 resourceBindings[i].get().stageFlags = layoutBindings[i].stageFlags;
             }
 
             this->descriptorSet = context.getDescriptorManager()->allocateDescriptorSet(layout);
 
-            // Descriptor Set ¾÷µ¥ÀÌÆ®
+            // Descriptor Set ì—…ë°ì´íŠ¸
             std::vector<VkWriteDescriptorSet> writeDescriptorSets(resourceBindings.size());
 
             for (size_t i = 0; i < resourceBindings.size(); i++)

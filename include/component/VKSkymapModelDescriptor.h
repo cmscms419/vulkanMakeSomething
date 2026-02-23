@@ -16,8 +16,8 @@ struct VKSkyMapModelDescriptor : public VKDescriptor {
   virtual void createDescriptorSetLayout(bool useTexture) override;
 
   /// <summary>
-  /// descriptorCount´Â µğ½ºÅ©¸³ÅÍ Ç®ÀÇ °³¼ö¸¦ ÀÇ¹ÌÇÕ´Ï´Ù. Ç®¿¡ ¸î °³ÀÇ uniform
-  /// buffer µğ½ºÅ©¸³ÅÍ¸¦ ¸¸µé ¼ö ÀÖ´ÂÁö¸¦ ÁöÁ¤ÇÏ´Â °ªÀÔ´Ï´Ù.
+  /// descriptorCountëŠ” ë””ìŠ¤í¬ë¦½í„° í’€ì˜ ê°œìˆ˜ë¥¼ ì˜ë¯¸í•©ë‹ˆë‹¤. í’€ì— ëª‡ ê°œì˜ uniform
+  /// buffer ë””ìŠ¤í¬ë¦½í„°ë¥¼ ë§Œë“¤ ìˆ˜ ìˆëŠ”ì§€ë¥¼ ì§€ì •í•˜ëŠ” ê°’ì…ë‹ˆë‹¤.
   /// </summary>
 
   virtual void createDescriptorPool(bool useTexture) override;
@@ -34,22 +34,22 @@ struct VKSkyMapModelDescriptor : public VKDescriptor {
 
   virtual uint16_t getDescriptorCount() {
       return static_cast<uint16_t>(this->objects.size());
-  }  // µğ½ºÅ©¸³ÅÍ °³¼ö ¹İÈ¯
+  }  // ë””ìŠ¤í¬ë¦½í„° ê°œìˆ˜ ë°˜í™˜
 
   virtual VkPipelineLayout getPipelineLayout() {
     return this->VKpipelineLayout;
-  }  // ÆÄÀÌÇÁ¶óÀÎ ·¹ÀÌ¾Æ¿ô ¹İÈ¯
+  }  // íŒŒì´í”„ë¼ì¸ ë ˆì´ì•„ì›ƒ ë°˜í™˜
 
   private:
   // 0: Uniform buffer (Vertex shader)
   // 1: Texture sampler (cubmap Fragment shader)
   // 2: Texture sampler (textureArray Fragment shader)
 
-  VkDescriptorPoolSize poolSizes[MAX_UNIFORM_BUFFER_COUNT_SKYMAP]{};  // µğ½ºÅ©¸³ÅÍ Ç® »çÀÌÁî(ÀÓ½ÃÀû)
-  VkDescriptorSetLayoutBinding uboLayoutBinding[MAX_UNIFORM_BUFFER_COUNT_SKYMAP]{};  // µğ½ºÅ©¸³ÅÍ ¼¼Æ® ·¹ÀÌ¾Æ¿ô ¹ÙÀÎµù
+  VkDescriptorPoolSize poolSizes[MAX_UNIFORM_BUFFER_COUNT_SKYMAP]{};  // ë””ìŠ¤í¬ë¦½í„° í’€ ì‚¬ì´ì¦ˆ(ì„ì‹œì )
+  VkDescriptorSetLayoutBinding uboLayoutBinding[MAX_UNIFORM_BUFFER_COUNT_SKYMAP]{};  // ë””ìŠ¤í¬ë¦½í„° ì„¸íŠ¸ ë ˆì´ì•„ì›ƒ ë°”ì¸ë”©
 
-  std::vector<object::Object3d*> objects{};  // 3D ¸ğµ¨ °´Ã¼µé
-  bool useTexture = false;  // ÅØ½ºÃ³ »ç¿ë ¿©ºÎ
+  std::vector<object::Object3d*> objects{};  // 3D ëª¨ë¸ ê°ì²´ë“¤
+  bool useTexture = false;  // í…ìŠ¤ì²˜ ì‚¬ìš© ì—¬ë¶€
 
 };
 }  // namespace vkengine

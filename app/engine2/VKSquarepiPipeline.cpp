@@ -49,17 +49,17 @@ namespace vkengine {
         VkPipelineColorBlendStateCreateInfo colorBlending = helper::pipelineColorBlendStateCreateInfo(
             1, &colorBlendAttachment);
 
-        // dynamic states¿¡¼­ ºäÆ÷Æ®¿Í ½ÃÀú¸¦ ¼³Á¤
-        // ÆÄÀÌÇÁ¶óÀÎ »ı¼º ÈÄ¿¡ Ä¿¸Çµå ¹öÆÛ¿¡¼­ ¼³Á¤ °¡´É
+        // dynamic statesì—ì„œ ë·°í¬íŠ¸ì™€ ì‹œì €ë¥¼ ì„¤ì •
+        // íŒŒì´í”„ë¼ì¸ ìƒì„± í›„ì— ì»¤ë§¨ë“œ ë²„í¼ì—ì„œ ì„¤ì • ê°€ëŠ¥
         VkPipelineDynamicStateCreateInfo dynamicState =
             helper::pipelineDynamicStateCreateInfo(dynamicStates);
 
-        // ½¦ÀÌ´õ ½ºÅ×ÀÌÁö »ı¼º
-        // ½¦ÀÌ´õ ¸ğµâÀ» ·ÎµåÇÏ°í ÆÄÀÌÇÁ¶óÀÎ ½¦ÀÌ´õ ½ºÅ×ÀÌÁö »ı¼º Á¤º¸¸¦ ¸¸µì´Ï´Ù.
+        // ì‰ì´ë” ìŠ¤í…Œì´ì§€ ìƒì„±
+        // ì‰ì´ë” ëª¨ë“ˆì„ ë¡œë“œí•˜ê³  íŒŒì´í”„ë¼ì¸ ì‰ì´ë” ìŠ¤í…Œì´ì§€ ìƒì„± ì •ë³´ë¥¼ ë§Œë“­ë‹ˆë‹¤.
         std::vector<VkPipelineShaderStageCreateInfo> shaderStages =
             this->shaderManager.createPipelineShaderStageCIs(this->name);
 
-        // vulkan 1.3À» À§ÇÑ Dynamic rendering ¼¼ÆÃÀ» ÇØ¾ßÇÑ´Ù.
+        // vulkan 1.3ì„ ìœ„í•œ Dynamic rendering ì„¸íŒ…ì„ í•´ì•¼í•œë‹¤.
         /*std::vector<VkFormat> colorFormats = { outColorFormat };
         VkPipelineRenderingCreateInfo pipelineRenderingCreateInfo = helper::pipelineRenderingCreateInfo
         (

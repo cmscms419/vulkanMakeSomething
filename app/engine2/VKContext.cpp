@@ -56,7 +56,7 @@ namespace vkengine {
     {
         cBool check = false;
 
-        // debug °¡´ÉÇÑÁö È®ÀÎ
+        // debug ê°€ëŠ¥í•œì§€ í™•ì¸
         for (const cChar* layerName : validationLayers) {
             if (enableValidationLayers && !checkValidationLayerSupport(layerName)) {
                 PRINT_TO_LOGGER("validation layer not supported: %s", layerName);
@@ -116,22 +116,22 @@ namespace vkengine {
             }
         }
 
-        // VkApplicationInfo ±¸Á¶Ã¼´Â ¾ÖÇÃ¸®ÄÉÀÌ¼Ç¿¡ ´ëÇÑ Á¤º¸¸¦ Vulkan¿¡°Ô Á¦°øÇÏ±â À§ÇØ »ç¿ëµË´Ï´Ù.
+        // VkApplicationInfo êµ¬ì¡°ì²´ëŠ” ì• í”Œë¦¬ì¼€ì´ì…˜ì— ëŒ€í•œ ì •ë³´ë¥¼ Vulkanì—ê²Œ ì œê³µí•˜ê¸° ìœ„í•´ ì‚¬ìš©ë©ë‹ˆë‹¤.
         VkApplicationInfo appInfo = {};
-        appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;     // ±¸Á¶Ã¼ Å¸ÀÔÀ» ÁöÁ¤ÇÕ´Ï´Ù.
-        appInfo.pApplicationName = "Vulkan egine";              // ¾ÖÇÃ¸®ÄÉÀÌ¼Ç ÀÌ¸§À» ÁöÁ¤ÇÕ´Ï´Ù.
-        appInfo.pEngineName = "vulkanEngine";                   // ¿£Áø ÀÌ¸§À» ÁöÁ¤ÇÕ´Ï´Ù.
-        appInfo.apiVersion = VK_API_VERSION_1_3;                // »ç¿ëÇÒ Vulkan API ¹öÀüÀ» ÁöÁ¤ÇÕ´Ï´Ù.
-        appInfo.applicationVersion = VK_MAKE_VERSION(0, 0, 1);  // ¾ÖÇÃ¸®ÄÉÀÌ¼Ç ¹öÀüÀ» ÁöÁ¤ÇÕ´Ï´Ù.
-        appInfo.engineVersion = VK_MAKE_VERSION(0, 2, 2);       // ¿£Áø ¹öÀüÀ» ÁöÁ¤ÇÕ´Ï´Ù.
+        appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;     // êµ¬ì¡°ì²´ íƒ€ì…ì„ ì§€ì •í•©ë‹ˆë‹¤.
+        appInfo.pApplicationName = "Vulkan egine";              // ì• í”Œë¦¬ì¼€ì´ì…˜ ì´ë¦„ì„ ì§€ì •í•©ë‹ˆë‹¤.
+        appInfo.pEngineName = "vulkanEngine";                   // ì—”ì§„ ì´ë¦„ì„ ì§€ì •í•©ë‹ˆë‹¤.
+        appInfo.apiVersion = VK_API_VERSION_1_3;                // ì‚¬ìš©í•  Vulkan API ë²„ì „ì„ ì§€ì •í•©ë‹ˆë‹¤.
+        appInfo.applicationVersion = VK_MAKE_VERSION(0, 0, 1);  // ì• í”Œë¦¬ì¼€ì´ì…˜ ë²„ì „ì„ ì§€ì •í•©ë‹ˆë‹¤.
+        appInfo.engineVersion = VK_MAKE_VERSION(0, 2, 2);       // ì—”ì§„ ë²„ì „ì„ ì§€ì •í•©ë‹ˆë‹¤.
 
-         // VkInstanceCreateInfo ±¸Á¶Ã¼´Â Vulkan ÀÎ½ºÅÏ½º¸¦ »ı¼ºÇÏ±â À§ÇÑ Á¤º¸¸¦ Á¦°øÇÕ´Ï´Ù.
+         // VkInstanceCreateInfo êµ¬ì¡°ì²´ëŠ” Vulkan ì¸ìŠ¤í„´ìŠ¤ë¥¼ ìƒì„±í•˜ê¸° ìœ„í•œ ì •ë³´ë¥¼ ì œê³µí•©ë‹ˆë‹¤.
         VkInstanceCreateInfo createInfo = {};
-        createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO; // ±¸Á¶Ã¼ Å¸ÀÔÀ» ÁöÁ¤ÇÕ´Ï´Ù.
-        createInfo.pApplicationInfo = &appInfo;                    // VkApplicationInfo ±¸Á¶Ã¼¸¦ ÂüÁ¶ÇÕ´Ï´Ù.
+        createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO; // êµ¬ì¡°ì²´ íƒ€ì…ì„ ì§€ì •í•©ë‹ˆë‹¤.
+        createInfo.pApplicationInfo = &appInfo;                    // VkApplicationInfo êµ¬ì¡°ì²´ë¥¼ ì°¸ì¡°í•©ë‹ˆë‹¤.
 
         if (portabilityAlreadyAdded) {
-            createInfo.flags |= VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR; // Æ÷ÅÍºí ºñÆ® ¼³Á¤
+            createInfo.flags |= VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR; // í¬í„°ë¸” ë¹„íŠ¸ ì„¤ì •
         }
 
         if (enableValidationLayers) {
@@ -156,7 +156,7 @@ namespace vkengine {
             createInfo.ppEnabledLayerNames = nullptr;
         }
 
-        // ÃÖÁ¾ extension ¼³Á¤
+        // ìµœì¢… extension ì„¤ì •
         createInfo.enabledExtensionCount = static_cast<cUint32_t>(requiredInstanceExtensions.size());
         createInfo.ppEnabledExtensionNames = requiredInstanceExtensions.data();
 
@@ -168,7 +168,7 @@ namespace vkengine {
 
     cBool VKcontext::createPysicalDevice()
     {
-        // ¹°¸® µğ¹ÙÀÌ½º ¸ñ·ÏÀ» °¡Á®¿É´Ï´Ù.
+        // ë¬¼ë¦¬ ë””ë°”ì´ìŠ¤ ëª©ë¡ì„ ê°€ì ¸ì˜µë‹ˆë‹¤.
         cUint32_t deviceCount = 0;
         vkEnumeratePhysicalDevices(this->VKinstance, &deviceCount, nullptr);
 
@@ -177,9 +177,9 @@ namespace vkengine {
         std::vector<VkPhysicalDevice> devices(deviceCount);
         vkEnumeratePhysicalDevices(this->VKinstance, &deviceCount, devices.data());
 
-        // ¹°¸® µğ¹ÙÀÌ½º¸¦ ¼±ÅÃÇÑ´Ù.
-        // ¸ÕÀú ¹°¸® µğ¹ÙÀÌ½º¸¦ ¼±ÅÃÇÏ±â À§ÇÑ ÇÔ¼ö¸¦ Á¤ÀÇÇÑ´Ù.
-        // Score¸¦ ±âÁØÀ¸·Î °¡Àå ³ôÀº Á¡¼öÀÇ ¹°¸® µğ¹ÙÀÌ½º¸¦ ¼±ÅÃÇÑ´Ù.
+        // ë¬¼ë¦¬ ë””ë°”ì´ìŠ¤ë¥¼ ì„ íƒí•œë‹¤.
+        // ë¨¼ì € ë¬¼ë¦¬ ë””ë°”ì´ìŠ¤ë¥¼ ì„ íƒí•˜ê¸° ìœ„í•œ í•¨ìˆ˜ë¥¼ ì •ì˜í•œë‹¤.
+        // Scoreë¥¼ ê¸°ì¤€ìœ¼ë¡œ ê°€ì¥ ë†’ì€ ì ìˆ˜ì˜ ë¬¼ë¦¬ ë””ë°”ì´ìŠ¤ë¥¼ ì„ íƒí•œë‹¤.
         std::multimap<int, VkPhysicalDevice> candidates;
         std::vector<QueueFamilyIndices2> indices(deviceCount);
 

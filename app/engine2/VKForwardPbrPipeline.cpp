@@ -140,7 +140,7 @@ namespace vkengine {
         multisampleStateCI.alphaToCoverageEnable = VK_FALSE;
         multisampleStateCI.alphaToOneEnable = VK_FALSE;
 
-        /** VkPipelineRenderingCreateInfo colorAttachment Âü°í
+        /** VkPipelineRenderingCreateInfo colorAttachment ì°¸ê³ 
         // In your fragment shader:
          layout(location = 0) out vec4 outColor;    // Maps to colorFormats[0]
          layout(location = 1) out vec4 outNormal;   // Maps to colorFormats[1]
@@ -148,9 +148,9 @@ namespace vkengine {
 
         // In VkPipelineRenderingCreateInfo:
          vector<VkFormat> colorFormats = {
-             VK_FORMAT_R8G8B8A8_UNORM,      // Index 0 ¡æ layout(location = 0)
-             VK_FORMAT_R16G16B16A16_SFLOAT, // Index 1 ¡æ layout(location = 1)
-             VK_FORMAT_R32_SFLOAT           // Index 2 ¡æ layout(location = 2)
+             VK_FORMAT_R8G8B8A8_UNORM,      // Index 0 â†’ layout(location = 0)
+             VK_FORMAT_R16G16B16A16_SFLOAT, // Index 1 â†’ layout(location = 1)
+             VK_FORMAT_R32_SFLOAT           // Index 2 â†’ layout(location = 2)
          };
         */
 

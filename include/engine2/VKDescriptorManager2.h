@@ -1,8 +1,8 @@
 #ifndef INCLUDE_VK_DESCRIPTOR_MANAGER_s_H_
 #define INCLUDE_VK_DESCRIPTOR_MANAGER_s_H_
 
-// ÇØ´ç ÄÚµå´Â Real-Time Rendering with Vulkan ÀÌ¶ó´Â °­ÀÇ¿¡¼­ ¹ßÃéÇÑ ÄÚµåÀÔ´Ï´Ù.
-// ÇØ´ç °­ÀÇ ÁÖ¼Ò : https://www.honglab.ai/courses/real-time-vulkan
+// í•´ë‹¹ ì½”ë“œëŠ” Real-Time Rendering with Vulkan ì´ë¼ëŠ” ê°•ì˜ì—ì„œ ë°œì·Œí•œ ì½”ë“œì…ë‹ˆë‹¤.
+// í•´ë‹¹ ê°•ì˜ ì£¼ì†Œ : https://www.honglab.ai/courses/real-time-vulkan
 
 #include "common.h"
 #include "struct.h"
@@ -28,27 +28,27 @@ namespace vkengine {
         DescriptorManager2(VkDevice& device) : logicaldevice(device) {};
         ~DescriptorManager2();
 
-        // ½ºÅ©¸³Æ®·ÎºÎÅÍ descriptor poolÀ» »ı¼ºÇÑ´Ù.
+        // ìŠ¤í¬ë¦½íŠ¸ë¡œë¶€í„° descriptor poolì„ ìƒì„±í•œë‹¤.
         void createFromScript();
 
-        // ÇöÀç ³²¾ÆÀÖ´Â capacity·ÎºÎÅÍ descriptor setÀ» ÇÒ´çÇÒ ¼ö ÀÖ´ÂÁö È®ÀÎÇÑ´Ù.
+        // í˜„ì¬ ë‚¨ì•„ìˆëŠ” capacityë¡œë¶€í„° descriptor setì„ í• ë‹¹í•  ìˆ˜ ìˆëŠ”ì§€ í™•ì¸í•œë‹¤.
         cBool canAllocateFromRemaining(const std::unordered_map<VkDescriptorType, cUint32_t>& requiredTypeCounts,
             cUint32_t requiredNumSets) const;
 
-        // »õ·Î¿î descriptor poolÀ» »ı¼ºÇÑ´Ù.
+        // ìƒˆë¡œìš´ descriptor poolì„ ìƒì„±í•œë‹¤.
         void createNewPool(const std::vector<VkDescriptorPoolSize>& typeCounts, cUint32_t maxSets);
 
-        // remaining capacity¸¦ ¾÷µ¥ÀÌÆ® ÇÑ´Ù.
+        // remaining capacityë¥¼ ì—…ë°ì´íŠ¸ í•œë‹¤.
         void updateRemainingCapacity(const std::vector<VkDescriptorSetLayoutBinding>& bindings,
             uint32_t numSets);
         
-        // allocated capacity¸¦ ¾÷µ¥ÀÌÆ® ÇÑ´Ù.
+        // allocated capacityë¥¼ ì—…ë°ì´íŠ¸ í•œë‹¤.
         VkDescriptorSet allocateDescriptorSet(const VkDescriptorSetLayout layout);
 
-        // layoutµéÀ» »ı¼ºÇÑ´Ù.
+        // layoutë“¤ì„ ìƒì„±í•œë‹¤.
         void createLayouts(const std::vector<LayoutInfo>& layoutInfos);
 
-        // ÇÒ´çµÈ descriptor °³¼ö Åë°è¸¦ Ãâ·ÂÇÑ´Ù.
+        // í• ë‹¹ëœ descriptor ê°œìˆ˜ í†µê³„ë¥¼ ì¶œë ¥í•œë‹¤.
         void printAllocatedStatistics() const;
 
         std::vector<VkDescriptorSetLayout> getLayoutsForPipeline(const cString& pipelineName);

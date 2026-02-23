@@ -12,7 +12,7 @@ namespace vkengine {
             pipelineHandle.createByName("gui", colorFormat);
             pushConsts.setStageFlags(VK_SHADER_STAGE_VERTEX_BIT);
 
-            // ImGUI ÃÊ±âÈ­ ¼³Á¤
+            // ImGUI ì´ˆê¸°í™” ì„¤ì •
             ImGui::CreateContext();
             ImGuiStyle& style = ImGui::GetStyle();
             style.Colors[ImGuiCol_TitleBg] = ImVec4(1.0f, 0.0f, 0.0f, 1.0f);
@@ -36,7 +36,7 @@ namespace vkengine {
             io.FontGlobalScale = this->scale;
 
             {
-                // ÆùÆ® °æ·Î¸¦ Àç¼öÁ¤ ÇØ¾ßÇÑ´Ù.
+                // í°íŠ¸ ê²½ë¡œë¥¼ ì¬ìˆ˜ì • í•´ì•¼í•œë‹¤.
                 const cString fontFileName =
                     path + "/noGit/Noto_Sans_KR/static/NotoSansKR_SemiBold.ttf"; // Korean Font
 
@@ -51,7 +51,7 @@ namespace vkengine {
                     io.Fonts->GetGlyphRangesDefault());
 
                 config.MergeMode = true;
-                config.OversampleH = 2;  // ÆùÆ® Ç°Áú °³¼±
+                config.OversampleH = 2;  // í°íŠ¸ í’ˆì§ˆ ê°œì„ 
                 config.OversampleV = 1;
 
                 io.Fonts->AddFontFromFileTTF(fontFileName.c_str(), 16.0f * this->scale, &config,
@@ -173,7 +173,7 @@ namespace vkengine {
             {
                 this->ctx.waitGraphicsQueueIdle();
                 this->VertexBuffer.createVertexBuffer(vertexBufferSize, nullptr);
-                this->vertexCount = imDrawData->TotalVtxCount; // ¹öÆÛ ¿ë·®À» ÀÇ¹ÌÇÑ´Ù
+                this->vertexCount = imDrawData->TotalVtxCount; // ë²„í¼ ìš©ëŸ‰ì„ ì˜ë¯¸í•œë‹¤
                 updateCmdBuffers = true;
             }
 
@@ -182,7 +182,7 @@ namespace vkengine {
             {
                 this->ctx.waitGraphicsQueueIdle();
                 this->IndexBuffer.createIndexBuffer(indexBufferSize, nullptr);
-                this->indexCount = imDrawData->TotalIdxCount; // ¹öÆÛ ¿ë·®À» ÀÇ¹ÌÇÑ´Ù
+                this->indexCount = imDrawData->TotalIdxCount; // ë²„í¼ ìš©ëŸ‰ì„ ì˜ë¯¸í•œë‹¤
                 updateCmdBuffers = true;
             }
 

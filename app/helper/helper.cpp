@@ -424,8 +424,8 @@ namespace vkengine {
             switch (format)
             {
             case VK_IMAGE_LAYOUT_UNDEFINED:
-                // ÀÌÀü ·¹ÀÌ¾Æ¿ôÀÌ Á¤ÀÇµÇÁö ¾ÊÀº »óÅÂÀÌ¸é ¾î¶² ¾×¼¼½ºµµ º¸ÀåµÇÁö ¾Ê½À´Ï´Ù.
-                // or ±íÀÌ/½ºÅÙ½Ç ÀÌ¹ÌÁö ÃÊ±âÈ­ °æ¿ì·Î, ÀÌÀü ·¹ÀÌ¾Æ¿ôÀÌ »ç¿ë ºÒ°¡´ÉÇÑ »óÅÂ¿¡¼­ ½ÃÀÛÇÔ
+                // ì´ì „ ë ˆì´ì•„ì›ƒì´ ì •ì˜ë˜ì§€ ì•Šì€ ìƒíƒœì´ë©´ ì–´ë–¤ ì•¡ì„¸ìŠ¤ë„ ë³´ì¥ë˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
+                // or ê¹Šì´/ìŠ¤í…ì‹¤ ì´ë¯¸ì§€ ì´ˆê¸°í™” ê²½ìš°ë¡œ, ì´ì „ ë ˆì´ì•„ì›ƒì´ ì‚¬ìš© ë¶ˆê°€ëŠ¥í•œ ìƒíƒœì—ì„œ ì‹œì‘í•¨
                 accessFlags = 0;
                 break;
             case VK_IMAGE_LAYOUT_GENERAL:
@@ -443,7 +443,7 @@ namespace vkengine {
                 accessFlags = VK_ACCESS_TRANSFER_WRITE_BIT;
                 break;
             case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL:
-                // Àü¼Û ¿Ï·á ÈÄ ¼ÎÀÌ´õ ÀĞ±â Àü¿ëÀ¸·Î ÀüÈ¯
+                // ì „ì†¡ ì™„ë£Œ í›„ ì…°ì´ë” ì½ê¸° ì „ìš©ìœ¼ë¡œ ì „í™˜
                 accessFlags = VK_ACCESS_TRANSFER_WRITE_BIT;
                 break;
             case VK_IMAGE_LAYOUT_PREINITIALIZED:
@@ -507,13 +507,13 @@ namespace vkengine {
             switch (format)
             {
             case VK_IMAGE_LAYOUT_UNDEFINED:
-                // ÀÌÀü ·¹ÀÌ¾Æ¿ôÀÌ Á¤ÀÇµÇÁö ¾ÊÀº »óÅÂÀÌ¸é ¾î¶² ¾×¼¼½ºµµ º¸ÀåµÇÁö ¾Ê½À´Ï´Ù.
+                // ì´ì „ ë ˆì´ì•„ì›ƒì´ ì •ì˜ë˜ì§€ ì•Šì€ ìƒíƒœì´ë©´ ì–´ë–¤ ì•¡ì„¸ìŠ¤ë„ ë³´ì¥ë˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
                 accessFlags = 0;
                 break;
             case VK_IMAGE_LAYOUT_GENERAL:
                 break;
             case VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL:
-                // Àü¼Û ¿Ï·á ÈÄ »ö»ó Ã·ºÎ ÃÖÀûÈ­ ·¹ÀÌ¾Æ¿ôÀ¸·Î ÀüÈ¯
+                // ì „ì†¡ ì™„ë£Œ í›„ ìƒ‰ìƒ ì²¨ë¶€ ìµœì í™” ë ˆì´ì•„ì›ƒìœ¼ë¡œ ì „í™˜
                 accessFlags = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
                 break;
             case VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL:
@@ -522,14 +522,14 @@ namespace vkengine {
             case VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL:
                 break;
             case VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL:
-                // Àü¼Û ¿Ï·á ÈÄ ¼ÎÀÌ´õ ÀĞ±â Àü¿ëÀ¸·Î ÀüÈ¯
+                // ì „ì†¡ ì™„ë£Œ í›„ ì…°ì´ë” ì½ê¸° ì „ìš©ìœ¼ë¡œ ì „í™˜
                 accessFlags = VK_ACCESS_SHADER_READ_BIT;
                 break;
             case VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL:
                 accessFlags = VK_ACCESS_TRANSFER_READ_BIT;
                 break;
             case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL:
-                // Àü¼Û ¾²±â ÀÛ¾÷À» À§ÇÑ ¾²±â ¾×¼¼½º Çã¿ë ¼³Á¤
+                // ì „ì†¡ ì“°ê¸° ì‘ì—…ì„ ìœ„í•œ ì“°ê¸° ì•¡ì„¸ìŠ¤ í—ˆìš© ì„¤ì •
                 accessFlags = VK_ACCESS_TRANSFER_WRITE_BIT;
                 break;
             case VK_IMAGE_LAYOUT_PREINITIALIZED:
@@ -654,35 +654,35 @@ namespace vkengine {
 
         cBool isDeviceSuitableWithoutSurface(VkPhysicalDevice device, QueueFamilyIndices2& indices)
         {
-            // 1. Å¥ ÆĞ¹Ğ¸® °Ë»ç (Surface ¾øÀÌ ±×·¡ÇÈ½º Å¥¸¸ È®ÀÎ)
+            // 1. í íŒ¨ë°€ë¦¬ ê²€ì‚¬ (Surface ì—†ì´ ê·¸ë˜í”½ìŠ¤ íë§Œ í™•ì¸)
             QueueFamilyIndices2 indices_ = findQueueFamiliesWithoutSurface(device);
             indices = indices_;
 
-            // 2. µğ¹ÙÀÌ½º È®Àå Áö¿ø °Ë»ç
+            // 2. ë””ë°”ì´ìŠ¤ í™•ì¥ ì§€ì› ê²€ì‚¬
             cBool extensionsSupported = checkDeviceExtensionSupport(device);
 
-            // 3. ¹°¸® µğ¹ÙÀÌ½º Æ¯¼º °Ë»ç
+            // 3. ë¬¼ë¦¬ ë””ë°”ì´ìŠ¤ íŠ¹ì„± ê²€ì‚¬
             VkPhysicalDeviceFeatures supportedFeatures;
             vkGetPhysicalDeviceFeatures(device, &supportedFeatures);
 
-            // 4. µğ¹ÙÀÌ½º ¼Ó¼º °Ë»ç (¿É¼Ç)
+            // 4. ë””ë°”ì´ìŠ¤ ì†ì„± ê²€ì‚¬ (ì˜µì…˜)
             VkPhysicalDeviceProperties deviceProperties;
             vkGetPhysicalDeviceProperties(device, &deviceProperties);
 
-            // ½º¿ÒÃ¼ÀÎ °Ë»ç´Â Á¦¿ÜÇÏ°í ±âº»ÀûÀÎ ÀûÇÕ¼º¸¸ È®ÀÎ
+            // ìŠ¤ì™‘ì²´ì¸ ê²€ì‚¬ëŠ” ì œì™¸í•˜ê³  ê¸°ë³¸ì ì¸ ì í•©ì„±ë§Œ í™•ì¸
             return indices_.isComplete() && extensionsSupported && supportedFeatures.samplerAnisotropy;
         }
 
         const QueueFamilyIndices findQueueFamiliesWitchSurface(VkPhysicalDevice& device, VkSurfaceKHR& VKsurface)
         {
-            QueueFamilyIndices indices; // Å¥ ÆĞ¹Ğ¸®ÀÇ °³¼ö¸¦ ÀúÀåÇÒ º¯¼ö¸¦ ÃÊ±âÈ­
-            QueueFamilyIndices target; // Å¥ ÆĞ¹Ğ¸®ÀÇ °³¼ö¸¦ ÀúÀåÇÒ º¯¼ö¸¦ ÃÊ±âÈ­
+            QueueFamilyIndices indices; // í íŒ¨ë°€ë¦¬ì˜ ê°œìˆ˜ë¥¼ ì €ì¥í•  ë³€ìˆ˜ë¥¼ ì´ˆê¸°í™”
+            QueueFamilyIndices target; // í íŒ¨ë°€ë¦¬ì˜ ê°œìˆ˜ë¥¼ ì €ì¥í•  ë³€ìˆ˜ë¥¼ ì´ˆê¸°í™”
 
-            // ÁÖ¾îÁø ¹°¸® ÀåÄ¡¿¡¼­ Å¥ ÆĞ¹Ğ¸® ¼Ó¼ºÀ» °¡Á®¿È (Ã¹ ¹øÂ° È£ÃâÀº °³¼ö¸¸ °¡Á®¿È)
+            // ì£¼ì–´ì§„ ë¬¼ë¦¬ ì¥ì¹˜ì—ì„œ í íŒ¨ë°€ë¦¬ ì†ì„±ì„ ê°€ì ¸ì˜´ (ì²« ë²ˆì§¸ í˜¸ì¶œì€ ê°œìˆ˜ë§Œ ê°€ì ¸ì˜´)
             uint32_t queueFamilyCount = 0;
             vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);
 
-            // ÁÖ¾îÁø ¹°¸® ÀåÄ¡¿¡¼­ Å¥ ÆĞ¹Ğ¸® ¼Ó¼ºÀ» °¡Á®¿È (µÎ ¹øÂ° È£ÃâÀº ½ÇÁ¦ ¼Ó¼ºÀ» °¡Á®¿È)
+            // ì£¼ì–´ì§„ ë¬¼ë¦¬ ì¥ì¹˜ì—ì„œ í íŒ¨ë°€ë¦¬ ì†ì„±ì„ ê°€ì ¸ì˜´ (ë‘ ë²ˆì§¸ í˜¸ì¶œì€ ì‹¤ì œ ì†ì„±ì„ ê°€ì ¸ì˜´)
             std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
             vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, queueFamilies.data());
 
@@ -693,7 +693,7 @@ namespace vkengine {
             int i = 0;
             cBool selected = false;
             for (const auto& queueFamily : queueFamilies) {
-                // ÇöÀç Å¥ ÆĞ¹Ğ¸®°¡ ±×·¡ÇÈ½º Å¥¸¦ Áö¿øÇÏ´ÂÁö È®ÀÎ
+                // í˜„ì¬ í íŒ¨ë°€ë¦¬ê°€ ê·¸ë˜í”½ìŠ¤ íë¥¼ ì§€ì›í•˜ëŠ”ì§€ í™•ì¸
                 PRINT_TO_LOGGER("QueueFamily %d\n", i);
                 PRINT_TO_LOGGER("QueueFamily queueCount: %d\n", queueFamily.queueCount);
 
@@ -777,7 +777,7 @@ namespace vkengine {
             cBool selected = false;
 
             for (const auto& queueFamily : queueFamilies) {
-                // ±×·¡ÇÈ½º¿Í ÄÄÇ»Æ® Å¥ Áö¿ø È®ÀÎ
+                // ê·¸ë˜í”½ìŠ¤ì™€ ì»´í“¨íŠ¸ í ì§€ì› í™•ì¸
                 PRINT_TO_LOGGER("QueueFamily %d\n", i);
                 PRINT_TO_LOGGER("QueueFamily queueCount: %d\n", queueFamily.queueCount);
                 PRINT_TO_LOGGER("QueueFamily queueFlags: %d\n", queueFamily.queueFlags);
@@ -787,7 +787,7 @@ namespace vkengine {
                 PRINT_TO_LOGGER("QueueFamily minImageTransferGranularity.depth: %d\n", queueFamily.minImageTransferGranularity.depth);
 
 
-                // ±×·¡ÇÈ½º Å¥ Áö¿ø È®ÀÎ
+                // ê·¸ë˜í”½ìŠ¤ í ì§€ì› í™•ì¸
                 if (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT) {
                     PRINT_TO_LOGGER("VK_QUEUE_GRAPHICS_BIT is supported\n");
                     if (!indices.grapicFamilyHasValue) {
@@ -795,7 +795,7 @@ namespace vkengine {
                     }
                 }
 
-                // ÄÄÇ»Æ® Å¥ Áö¿ø È®ÀÎ  
+                // ì»´í“¨íŠ¸ í ì§€ì› í™•ì¸  
                 if (queueFamily.queueFlags & VK_QUEUE_COMPUTE_BIT) {
                     PRINT_TO_LOGGER("VK_QUEUE_COMPUTE_BIT is supported\n");
                     if (!indices.computerFamilyHasValue) {
@@ -803,7 +803,7 @@ namespace vkengine {
                     }
                 }
 
-                // Æ®·£½ºÆÛ Å¥ Áö¿ø È®ÀÎ
+                // íŠ¸ëœìŠ¤í¼ í ì§€ì› í™•ì¸
                 if (queueFamily.queueFlags & VK_QUEUE_TRANSFER_BIT) {
                     PRINT_TO_LOGGER("VK_QUEUE_TRANSFER_BIT is supported\n");
                     if (!indices.transferFamilyHasValue) {
@@ -823,7 +823,7 @@ namespace vkengine {
                     }
                 }
 
-                // Surface°¡ ¾øÀ¸¹Ç·Î Present Å¥ È®ÀÎÀº »ı·«
+                // Surfaceê°€ ì—†ìœ¼ë¯€ë¡œ Present í í™•ì¸ì€ ìƒëµ
                 indices.reset();
                 i++;
             }
@@ -866,7 +866,7 @@ namespace vkengine {
             region.imageOffset = { 0, 0, 0 };
             region.imageExtent = { width, height, 1 };
 
-            // bufferÀÇ µ¥ÀÌÅÍ¸¦ image·Î º¹»çÇÑ´Ù.
+            // bufferì˜ ë°ì´í„°ë¥¼ imageë¡œ ë³µì‚¬í•œë‹¤.
             vkCmdCopyBufferToImage(commandBuffer, buffer, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
 
             endSingleTimeCommands(device, commandPool, graphicsQueue, commandBuffer);
@@ -877,7 +877,7 @@ namespace vkengine {
 
             VkCommandBuffer commandBuffer = beginSingleTimeCommands(device, commandPool);
 
-            // VKBufferImageCopy ¹è¿­À» ¸¸µç´Ù.
+            // VKBufferImageCopy ë°°ì—´ì„ ë§Œë“ ë‹¤.
             std::vector<VkBufferImageCopy> bufferCopyRegions;
             VkDeviceSize offset = 0;
 
@@ -917,7 +917,7 @@ namespace vkengine {
             region.imageSubresource.layerCount = 1;
             region.imageExtent = { width, height, 1 };
 
-            // bufferÀÇ µ¥ÀÌÅÍ¸¦ image·Î º¹»çÇÑ´Ù.
+            // bufferì˜ ë°ì´í„°ë¥¼ imageë¡œ ë³µì‚¬í•œë‹¤.
             vkCmdCopyBufferToImage(cmb, buffer, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
         }
 
@@ -925,7 +925,7 @@ namespace vkengine {
         {
             VkCommandBuffer commandBuffer = beginSingleTimeCommands(device, commandPool);
 
-            // VKBufferImageCopy ¹è¿­À» ¸¸µç´Ù.
+            // VKBufferImageCopy ë°°ì—´ì„ ë§Œë“ ë‹¤.
             std::vector<VkBufferImageCopy> bufferCopyRegions;
 
             for (uint32_t face = 0; face < 6; face++)
@@ -963,7 +963,7 @@ namespace vkengine {
 
         void copyBufferToImageKTX2(VkCommandBuffer cmd, VkBuffer buffer, VkImage image, cUint32_t width, cUint32_t height, cUint32_t mipmapLevels, ktxTexture* textureKTX,cBool useCubmap)
         {
-            // VKBufferImageCopy ¹è¿­À» ¸¸µç´Ù.
+            // VKBufferImageCopy ë°°ì—´ì„ ë§Œë“ ë‹¤.
             std::vector<VkBufferImageCopy> bufferCopyRegions;
 
             if (useCubmap)
@@ -1115,9 +1115,9 @@ namespace vkengine {
                 physicalDevice,
                 { VK_FORMAT_D32_SFLOAT,
                   VK_FORMAT_D32_SFLOAT_S8_UINT,
-                  VK_FORMAT_D24_UNORM_S8_UINT },    // ÈÄº¸ Çü½Ä
-                VK_IMAGE_TILING_OPTIMAL,                                                                // Å¸ÀÏ¸µ
-                VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT                                          // Æ¯Â¡
+                  VK_FORMAT_D24_UNORM_S8_UINT },    // í›„ë³´ í˜•ì‹
+                VK_IMAGE_TILING_OPTIMAL,                                                                // íƒ€ì¼ë§
+                VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT                                          // íŠ¹ì§•
             );
         }
 
@@ -1349,7 +1349,7 @@ namespace vkengine {
 
             barrier.subresourceRange.baseMipLevel = mipLevels - 1;
             barrier.subresourceRange.baseArrayLayer = 0;
-            barrier.subresourceRange.layerCount = 1; // °¢ ·¹ÀÌ¾î¿¡ ´ëÇØ °³º°ÀûÀ¸·Î ÀüÈ¯
+            barrier.subresourceRange.layerCount = 1; // ê° ë ˆì´ì–´ì— ëŒ€í•´ ê°œë³„ì ìœ¼ë¡œ ì „í™˜
             barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
             barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
             barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
@@ -1370,27 +1370,27 @@ namespace vkengine {
         
         VkCommandBuffer beginSingleTimeCommands(VkDevice device, VkCommandPool commandPool)
         {
-            VkCommandBufferAllocateInfo allocInfo{};                          // Ä¿¸Çµå ¹öÆÛ ÇÒ´ç Á¤º¸ ±¸Á¶Ã¼¸¦ ÃÊ±âÈ­ÇÕ´Ï´Ù.
-            allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO; // ±¸Á¶Ã¼ Å¸ÀÔÀ» ¼³Á¤ÇÕ´Ï´Ù.
+            VkCommandBufferAllocateInfo allocInfo{};                          // ì»¤ë§¨ë“œ ë²„í¼ í• ë‹¹ ì •ë³´ êµ¬ì¡°ì²´ë¥¼ ì´ˆê¸°í™”í•©ë‹ˆë‹¤.
+            allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO; // êµ¬ì¡°ì²´ íƒ€ì…ì„ ì„¤ì •í•©ë‹ˆë‹¤.
 
-            // Ä¿¸Çµå ¹öÆÛ ·¹º§À» ¼³Á¤ÇÕ´Ï´Ù.
-            // VK_COMMAND_BUFFER_LEVEL_PRIMARY: ±âº» Ä¿¸Çµå ¹öÆÛ
-            // VK_COMMAND_BUFFER_LEVEL_SECONDARY: º¸Á¶ Ä¿¸Çµå ¹öÆÛ
+            // ì»¤ë§¨ë“œ ë²„í¼ ë ˆë²¨ì„ ì„¤ì •í•©ë‹ˆë‹¤.
+            // VK_COMMAND_BUFFER_LEVEL_PRIMARY: ê¸°ë³¸ ì»¤ë§¨ë“œ ë²„í¼
+            // VK_COMMAND_BUFFER_LEVEL_SECONDARY: ë³´ì¡° ì»¤ë§¨ë“œ ë²„í¼
             allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-            allocInfo.commandPool = commandPool;                              // Ä¿¸Çµå Ç®À» ¼³Á¤ÇÕ´Ï´Ù.
-            allocInfo.commandBufferCount = 1;                                 // Ä¿¸Çµå ¹öÆÛ °³¼ö¸¦ ¼³Á¤ÇÕ´Ï´Ù.
+            allocInfo.commandPool = commandPool;                              // ì»¤ë§¨ë“œ í’€ì„ ì„¤ì •í•©ë‹ˆë‹¤.
+            allocInfo.commandBufferCount = 1;                                 // ì»¤ë§¨ë“œ ë²„í¼ ê°œìˆ˜ë¥¼ ì„¤ì •í•©ë‹ˆë‹¤.
 
             VkCommandBuffer commandBuffer;
-            _VK_CHECK_RESULT_(vkAllocateCommandBuffers(device, &allocInfo, &commandBuffer));  // Ä¿¸Çµå ¹öÆÛ¸¦ ÇÒ´çÇÕ´Ï´Ù.
+            _VK_CHECK_RESULT_(vkAllocateCommandBuffers(device, &allocInfo, &commandBuffer));  // ì»¤ë§¨ë“œ ë²„í¼ë¥¼ í• ë‹¹í•©ë‹ˆë‹¤.
 
             VkCommandBufferBeginInfo beginInfo{};
-            // VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO : ¸í·É ¹öÆÛÀÇ ½ÃÀÛ Á¤º¸¸¦ ¼³Á¤ÇÕ´Ï´Ù.
+            // VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO : ëª…ë ¹ ë²„í¼ì˜ ì‹œì‘ ì •ë³´ë¥¼ ì„¤ì •í•©ë‹ˆë‹¤.
             beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 
-            // VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT : Ä¿¸Çµå ¹öÆÛ¸¦ ÇÑ ¹ø¸¸ »ç¿ëÇÏ·Á´Â °æ¿ì »ç¿ëÇÕ´Ï´Ù.
+            // VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT : ì»¤ë§¨ë“œ ë²„í¼ë¥¼ í•œ ë²ˆë§Œ ì‚¬ìš©í•˜ë ¤ëŠ” ê²½ìš° ì‚¬ìš©í•©ë‹ˆë‹¤.
             beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
 
-            // Ä¿¸Çµå ¹öÆÛ¸¦ ½ÃÀÛÇÕ´Ï´Ù.
+            // ì»¤ë§¨ë“œ ë²„í¼ë¥¼ ì‹œì‘í•©ë‹ˆë‹¤.
             _VK_CHECK_RESULT_(vkBeginCommandBuffer(commandBuffer, &beginInfo));
 
             return commandBuffer;
@@ -1398,21 +1398,21 @@ namespace vkengine {
 
         void endSingleTimeCommands(VkDevice device, VkCommandPool commandPool, VkQueue Queue, VkCommandBuffer commandBuffer)
         {
-            // Ä¿¸Çµå ¹öÆÛ¸¦ Á¾·áÇÕ´Ï´Ù.
+            // ì»¤ë§¨ë“œ ë²„í¼ë¥¼ ì¢…ë£Œí•©ë‹ˆë‹¤.
             _VK_CHECK_RESULT_(vkEndCommandBuffer(commandBuffer));
 
             VkSubmitInfo submitInfo{};
             submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-            submitInfo.commandBufferCount = 1; // Ä¿¸Çµå ¹öÆÛ °³¼ö¸¦ ¼³Á¤ÇÕ´Ï´Ù.
-            submitInfo.pCommandBuffers = &commandBuffer; // Ä¿¸Çµå ¹öÆÛ¸¦ ¼³Á¤ÇÕ´Ï´Ù.
+            submitInfo.commandBufferCount = 1; // ì»¤ë§¨ë“œ ë²„í¼ ê°œìˆ˜ë¥¼ ì„¤ì •í•©ë‹ˆë‹¤.
+            submitInfo.pCommandBuffers = &commandBuffer; // ì»¤ë§¨ë“œ ë²„í¼ë¥¼ ì„¤ì •í•©ë‹ˆë‹¤.
 
-            // Å¥¿¡ Ä¿¸Çµå ¹öÆÛ¸¦ Á¦ÃâÇÕ´Ï´Ù.
+            // íì— ì»¤ë§¨ë“œ ë²„í¼ë¥¼ ì œì¶œí•©ë‹ˆë‹¤.
             _VK_CHECK_RESULT_(vkQueueSubmit(Queue, 1, &submitInfo, VK_NULL_HANDLE));
 
-            // Å¥°¡ ¸ğµç ÀÛ¾÷À» ¿Ï·áÇÒ ¶§±îÁö ´ë±âÇÕ´Ï´Ù.
+            // íê°€ ëª¨ë“  ì‘ì—…ì„ ì™„ë£Œí•  ë•Œê¹Œì§€ ëŒ€ê¸°í•©ë‹ˆë‹¤.
             _VK_CHECK_RESULT_(vkQueueWaitIdle(Queue));
 
-            // Ä¿¸Çµå ¹öÆÛ¸¦ ÇØÁ¦ÇÕ´Ï´Ù.
+            // ì»¤ë§¨ë“œ ë²„í¼ë¥¼ í•´ì œí•©ë‹ˆë‹¤.
             vkFreeCommandBuffers(device, commandPool, 1, &commandBuffer);
         }
 
@@ -1427,34 +1427,34 @@ namespace vkengine {
             cUint32_t levelCount,
             cUint32_t layerCount)
         {
-            // ´ÜÀÏ ½Ã°£ ¸í·É ¹öÆÛ¸¦ ½ÃÀÛÇÕ´Ï´Ù.
+            // ë‹¨ì¼ ì‹œê°„ ëª…ë ¹ ë²„í¼ë¥¼ ì‹œì‘í•©ë‹ˆë‹¤.
             VkCommandBuffer commandBuffer = beginSingleTimeCommands(device, commandPool);
 
-            // ÀÌ¹ÌÁö ¸Ş¸ğ¸® ¹è¸®¾î ±¸Á¶Ã¼¸¦ ÃÊ±âÈ­ÇÏ¿© ·¹ÀÌ¾Æ¿ô ÀüÈ¯ ¹× Á¢±Ù ±ÇÇÑ º¯°æÀ» Á¤ÀÇÇÕ´Ï´Ù.
-            // ±âº»ÀûÀ¸·Î »ö»ó Á¤º¸¸¦ ´ë»óÀ¸·Î ÇÏÁö¸¸, ÀÌÈÄ Á¶°Ç¿¡ µû¶ó ¼öÁ¤µË´Ï´Ù.
+            // ì´ë¯¸ì§€ ë©”ëª¨ë¦¬ ë°°ë¦¬ì–´ êµ¬ì¡°ì²´ë¥¼ ì´ˆê¸°í™”í•˜ì—¬ ë ˆì´ì•„ì›ƒ ì „í™˜ ë° ì ‘ê·¼ ê¶Œí•œ ë³€ê²½ì„ ì •ì˜í•©ë‹ˆë‹¤.
+            // ê¸°ë³¸ì ìœ¼ë¡œ ìƒ‰ìƒ ì •ë³´ë¥¼ ëŒ€ìƒìœ¼ë¡œ í•˜ì§€ë§Œ, ì´í›„ ì¡°ê±´ì— ë”°ë¼ ìˆ˜ì •ë©ë‹ˆë‹¤.
             VkImageMemoryBarrier barrier{};
-            barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER; // ¹è¸®¾îÀÇ ±¸Á¶Ã¼ Å¸ÀÔ ¼³Á¤
-            barrier.oldLayout = oldLayout;                          // ÀüÈ¯ Àü ÀÌ¹ÌÁö ·¹ÀÌ¾Æ¿ô
-            barrier.newLayout = newLayout;                          // ÀüÈ¯ÇÒ ÀÌ¹ÌÁö ·¹ÀÌ¾Æ¿ô
-            barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;  // ¼Ò½º Å¥ ÆĞ¹Ğ¸® ÀÎµ¦½º ¹«½Ã
-            barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;  // ´ë»ó Å¥ ÆĞ¹Ğ¸® ÀÎµ¦½º ¹«½Ã
-            barrier.image = image; // ÀüÈ¯ÇÒ ÀÌ¹ÌÁö ÇÚµé ¼³Á¤
+            barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER; // ë°°ë¦¬ì–´ì˜ êµ¬ì¡°ì²´ íƒ€ì… ì„¤ì •
+            barrier.oldLayout = oldLayout;                          // ì „í™˜ ì „ ì´ë¯¸ì§€ ë ˆì´ì•„ì›ƒ
+            barrier.newLayout = newLayout;                          // ì „í™˜í•  ì´ë¯¸ì§€ ë ˆì´ì•„ì›ƒ
+            barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;  // ì†ŒìŠ¤ í íŒ¨ë°€ë¦¬ ì¸ë±ìŠ¤ ë¬´ì‹œ
+            barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;  // ëŒ€ìƒ í íŒ¨ë°€ë¦¬ ì¸ë±ìŠ¤ ë¬´ì‹œ
+            barrier.image = image; // ì „í™˜í•  ì´ë¯¸ì§€ í•¸ë“¤ ì„¤ì •
             barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-            barrier.subresourceRange.baseMipLevel = 0;       // Ã¹ ¹øÂ° ¹ÌÇÁ¸Ê ·¹º§ºÎÅÍ ½ÃÀÛ
-            barrier.subresourceRange.levelCount = levelCount;// Àû¿ëÇÒ ¹ÌÇÁ¸ÊÀÇ ¼ö
-            barrier.subresourceRange.baseArrayLayer = 0;     // Ã¹ ¹øÂ° ¹è¿­ ·¹ÀÌ¾îºÎÅÍ ½ÃÀÛ
-            barrier.subresourceRange.layerCount = layerCount;         // ¹è¿­ ³» ·¹ÀÌ¾î °³¼ö
+            barrier.subresourceRange.baseMipLevel = 0;       // ì²« ë²ˆì§¸ ë¯¸í”„ë§µ ë ˆë²¨ë¶€í„° ì‹œì‘
+            barrier.subresourceRange.levelCount = levelCount;// ì ìš©í•  ë¯¸í”„ë§µì˜ ìˆ˜
+            barrier.subresourceRange.baseArrayLayer = 0;     // ì²« ë²ˆì§¸ ë°°ì—´ ë ˆì´ì–´ë¶€í„° ì‹œì‘
+            barrier.subresourceRange.layerCount = layerCount;         // ë°°ì—´ ë‚´ ë ˆì´ì–´ ê°œìˆ˜
 
-            VkPipelineStageFlags sourceStage = 0;      // ÀüÈ¯ Àü ÆÄÀÌÇÁ¶óÀÎ ½ºÅ×ÀÌÁö
-            VkPipelineStageFlags destinationStage = 0; // ÀüÈ¯ ÈÄ ÆÄÀÌÇÁ¶óÀÎ ½ºÅ×ÀÌÁö
+            VkPipelineStageFlags sourceStage = 0;      // ì „í™˜ ì „ íŒŒì´í”„ë¼ì¸ ìŠ¤í…Œì´ì§€
+            VkPipelineStageFlags destinationStage = 0; // ì „í™˜ í›„ íŒŒì´í”„ë¼ì¸ ìŠ¤í…Œì´ì§€
 
-            // ÀÌ¹ÌÁö ·¹ÀÌ¾Æ¿ô ÀüÈ¯ ½Ã, ÀûÀıÇÑ ¾×¼¼½º ¸¶½ºÅ© ¹× ÆÄÀÌÇÁ¶óÀÎ ½ºÅ×ÀÌÁö¸¦ ¼³Á¤ÇÕ´Ï´Ù.
+            // ì´ë¯¸ì§€ ë ˆì´ì•„ì›ƒ ì „í™˜ ì‹œ, ì ì ˆí•œ ì•¡ì„¸ìŠ¤ ë§ˆìŠ¤í¬ ë° íŒŒì´í”„ë¼ì¸ ìŠ¤í…Œì´ì§€ë¥¼ ì„¤ì •í•©ë‹ˆë‹¤.
 
             switch (oldLayout)
             {
             case VK_IMAGE_LAYOUT_UNDEFINED:
-                // ÀÌÀü ·¹ÀÌ¾Æ¿ôÀÌ Á¤ÀÇµÇÁö ¾ÊÀº »óÅÂÀÌ¸é ¾î¶² ¾×¼¼½ºµµ º¸ÀåµÇÁö ¾Ê½À´Ï´Ù.
-                // or ±íÀÌ/½ºÅÙ½Ç ÀÌ¹ÌÁö ÃÊ±âÈ­ °æ¿ì·Î, ÀÌÀü ·¹ÀÌ¾Æ¿ôÀÌ »ç¿ë ºÒ°¡´ÉÇÑ »óÅÂ¿¡¼­ ½ÃÀÛÇÔ
+                // ì´ì „ ë ˆì´ì•„ì›ƒì´ ì •ì˜ë˜ì§€ ì•Šì€ ìƒíƒœì´ë©´ ì–´ë–¤ ì•¡ì„¸ìŠ¤ë„ ë³´ì¥ë˜ì§€ ì•ŠìŠµë‹ˆë‹¤.
+                // or ê¹Šì´/ìŠ¤í…ì‹¤ ì´ë¯¸ì§€ ì´ˆê¸°í™” ê²½ìš°ë¡œ, ì´ì „ ë ˆì´ì•„ì›ƒì´ ì‚¬ìš© ë¶ˆê°€ëŠ¥í•œ ìƒíƒœì—ì„œ ì‹œì‘í•¨
                 barrier.srcAccessMask = 0;
                 break;
             case VK_IMAGE_LAYOUT_GENERAL:
@@ -1472,7 +1472,7 @@ namespace vkengine {
                 barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
                 break;
             case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL:
-                // Àü¼Û ¿Ï·á ÈÄ ¼ÎÀÌ´õ ÀĞ±â Àü¿ëÀ¸·Î ÀüÈ¯
+                // ì „ì†¡ ì™„ë£Œ í›„ ì…°ì´ë” ì½ê¸° ì „ìš©ìœ¼ë¡œ ì „í™˜
                 barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
                 break;
             case VK_IMAGE_LAYOUT_PREINITIALIZED:
@@ -1532,7 +1532,7 @@ namespace vkengine {
             case VK_IMAGE_LAYOUT_GENERAL:
                 break;
             case VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL:
-                // Àü¼Û ¿Ï·á ÈÄ »ö»ó Ã·ºÎ ÃÖÀûÈ­ ·¹ÀÌ¾Æ¿ôÀ¸·Î ÀüÈ¯
+                // ì „ì†¡ ì™„ë£Œ í›„ ìƒ‰ìƒ ì²¨ë¶€ ìµœì í™” ë ˆì´ì•„ì›ƒìœ¼ë¡œ ì „í™˜
                 barrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
                 break;
             case VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL:
@@ -1541,14 +1541,14 @@ namespace vkengine {
             case VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL:
                 break;
             case VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL:
-                // Àü¼Û ¿Ï·á ÈÄ ¼ÎÀÌ´õ ÀĞ±â Àü¿ëÀ¸·Î ÀüÈ¯
+                // ì „ì†¡ ì™„ë£Œ í›„ ì…°ì´ë” ì½ê¸° ì „ìš©ìœ¼ë¡œ ì „í™˜
                 barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
                 break;
             case VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL:
                 barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
                 break;
             case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL:
-                // Àü¼Û ¾²±â ÀÛ¾÷À» À§ÇÑ ¾²±â ¾×¼¼½º Çã¿ë ¼³Á¤
+                // ì „ì†¡ ì“°ê¸° ì‘ì—…ì„ ìœ„í•œ ì“°ê¸° ì•¡ì„¸ìŠ¤ í—ˆìš© ì„¤ì •
                 barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
                 break;
             case VK_IMAGE_LAYOUT_PREINITIALIZED:
@@ -1601,11 +1601,11 @@ namespace vkengine {
                 break;
             }
 
-            // »õ·Î¿î ·¹ÀÌ¾Æ¿ôÀÌ ±íÀÌ/½ºÅÙ½Ç¿ëÀÏ °æ¿ì aspectMask¸¦ ¼öÁ¤ÇÕ´Ï´Ù.
+            // ìƒˆë¡œìš´ ë ˆì´ì•„ì›ƒì´ ê¹Šì´/ìŠ¤í…ì‹¤ìš©ì¼ ê²½ìš° aspectMaskë¥¼ ìˆ˜ì •í•©ë‹ˆë‹¤.
             if (newLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL) {
                 barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
 
-                // Æ÷¸Ë¿¡ ½ºÅÙ½Ç ÄÄÆ÷³ÍÆ®°¡ ÀÖ´Ù¸é Ãß°¡ÇÕ´Ï´Ù.
+                // í¬ë§·ì— ìŠ¤í…ì‹¤ ì»´í¬ë„ŒíŠ¸ê°€ ìˆë‹¤ë©´ ì¶”ê°€í•©ë‹ˆë‹¤.
                 if (hasStencilComponent(format))
                 {
                     barrier.subresourceRange.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
@@ -1616,7 +1616,7 @@ namespace vkengine {
             }
 
 
-            // ÀüÈ¯ Å¸ÀÔ¿¡ µû¸¥ ¾×¼¼½º ¸¶½ºÅ© ¹× ÆÄÀÌÇÁ¶óÀÎ ½ºÅ×ÀÌÁö ¼³Á¤
+            // ì „í™˜ íƒ€ì…ì— ë”°ë¥¸ ì•¡ì„¸ìŠ¤ ë§ˆìŠ¤í¬ ë° íŒŒì´í”„ë¼ì¸ ìŠ¤í…Œì´ì§€ ì„¤ì •
             if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL) {
                 sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
                 destinationStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
@@ -1635,8 +1635,8 @@ namespace vkengine {
                 destinationStage = VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT;
             }
             else {
-                // Áö¿øµÇÁö ¾Ê´Â ·¹ÀÌ¾Æ¿ô ÀüÈ¯ ¿äÃ»½Ã ¿¹¿Ü ¹ß»ı
-                // 1, ¸ğµç ÆÄÀÌÇÁ¶óÀÎ ½ºÅ×ÀÌÁö¸¦ »ç¿ëÇÏ¿© ÀüÈ¯
+                // ì§€ì›ë˜ì§€ ì•ŠëŠ” ë ˆì´ì•„ì›ƒ ì „í™˜ ìš”ì²­ì‹œ ì˜ˆì™¸ ë°œìƒ
+                // 1, ëª¨ë“  íŒŒì´í”„ë¼ì¸ ìŠ¤í…Œì´ì§€ë¥¼ ì‚¬ìš©í•˜ì—¬ ì „í™˜
 
                 sourceStage = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT;
                 destinationStage = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT;
@@ -1644,47 +1644,47 @@ namespace vkengine {
                 PRINT_TO_LOGGER("All pass pipeline stage!\n");
             }
 
-            // ÆÄÀÌÇÁ¶óÀÎ ¹è¸®¾î¸¦ Ãß°¡ÇÏ¿© ·¹ÀÌ¾Æ¿ô ÀüÈ¯ ¸í·ÉÀ» ±â·ÏÇÕ´Ï´Ù.
+            // íŒŒì´í”„ë¼ì¸ ë°°ë¦¬ì–´ë¥¼ ì¶”ê°€í•˜ì—¬ ë ˆì´ì•„ì›ƒ ì „í™˜ ëª…ë ¹ì„ ê¸°ë¡í•©ë‹ˆë‹¤.
             vkCmdPipelineBarrier(
                 commandBuffer,
-                sourceStage, destinationStage, // ÀüÈ¯ Àü/ÈÄ ½ºÅ×ÀÌÁö
-                0,                // ¹è¸®¾î ÇÃ·¡±× (»ç¿ëÇÏÁö ¾ÊÀ½)
-                0, nullptr,     // ¸Ş¸ğ¸® ¹è¸®¾î ¾øÀÌ
-                0, nullptr,     // ¹öÆÛ ¹è¸®¾î ¾øÀÌ
-                1, &barrier     // ÇÏ³ªÀÇ ÀÌ¹ÌÁö ¹è¸®¾î »ç¿ë
+                sourceStage, destinationStage, // ì „í™˜ ì „/í›„ ìŠ¤í…Œì´ì§€
+                0,                // ë°°ë¦¬ì–´ í”Œë˜ê·¸ (ì‚¬ìš©í•˜ì§€ ì•ŠìŒ)
+                0, nullptr,     // ë©”ëª¨ë¦¬ ë°°ë¦¬ì–´ ì—†ì´
+                0, nullptr,     // ë²„í¼ ë°°ë¦¬ì–´ ì—†ì´
+                1, &barrier     // í•˜ë‚˜ì˜ ì´ë¯¸ì§€ ë°°ë¦¬ì–´ ì‚¬ìš©
             );
 
-            // ´ÜÀÏ ¸í·É ¹öÆÛ¸¦ Á¦ÃâÇÏ°í, Å¥°¡ ÇØ´ç ÀÛ¾÷À» ¿Ï·áÇÒ ¶§±îÁö ´ë±âÇÕ´Ï´Ù.
+            // ë‹¨ì¼ ëª…ë ¹ ë²„í¼ë¥¼ ì œì¶œí•˜ê³ , íê°€ í•´ë‹¹ ì‘ì—…ì„ ì™„ë£Œí•  ë•Œê¹Œì§€ ëŒ€ê¸°í•©ë‹ˆë‹¤.
             endSingleTimeCommands(device, commandPool, graphicsQueue, commandBuffer);
         }
 
         void updateimageLayoutcmd(VkCommandBuffer cmdbuffer, VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout, cUint32_t levelCount, cUint32_t layerCount)
         {
             VkImageMemoryBarrier barrier{};
-            barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER; // ¹è¸®¾îÀÇ ±¸Á¶Ã¼ Å¸ÀÔ ¼³Á¤
-            barrier.oldLayout = oldLayout;                          // ÀüÈ¯ Àü ÀÌ¹ÌÁö ·¹ÀÌ¾Æ¿ô
-            barrier.newLayout = newLayout;                          // ÀüÈ¯ÇÒ ÀÌ¹ÌÁö ·¹ÀÌ¾Æ¿ô
-            barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;  // ¼Ò½º Å¥ ÆĞ¹Ğ¸® ÀÎµ¦½º ¹«½Ã
-            barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;  // ´ë»ó Å¥ ÆĞ¹Ğ¸® ÀÎµ¦½º ¹«½Ã
-            barrier.image = image; // ÀüÈ¯ÇÒ ÀÌ¹ÌÁö ÇÚµé ¼³Á¤
+            barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER; // ë°°ë¦¬ì–´ì˜ êµ¬ì¡°ì²´ íƒ€ì… ì„¤ì •
+            barrier.oldLayout = oldLayout;                          // ì „í™˜ ì „ ì´ë¯¸ì§€ ë ˆì´ì•„ì›ƒ
+            barrier.newLayout = newLayout;                          // ì „í™˜í•  ì´ë¯¸ì§€ ë ˆì´ì•„ì›ƒ
+            barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;  // ì†ŒìŠ¤ í íŒ¨ë°€ë¦¬ ì¸ë±ìŠ¤ ë¬´ì‹œ
+            barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;  // ëŒ€ìƒ í íŒ¨ë°€ë¦¬ ì¸ë±ìŠ¤ ë¬´ì‹œ
+            barrier.image = image; // ì „í™˜í•  ì´ë¯¸ì§€ í•¸ë“¤ ì„¤ì •
             barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-            barrier.subresourceRange.baseMipLevel = 0;       // Ã¹ ¹øÂ° ¹ÌÇÁ¸Ê ·¹º§ºÎÅÍ ½ÃÀÛ
-            barrier.subresourceRange.levelCount = levelCount;// Àû¿ëÇÒ ¹ÌÇÁ¸ÊÀÇ ¼ö
-            barrier.subresourceRange.baseArrayLayer = 0;     // Ã¹ ¹øÂ° ¹è¿­ ·¹ÀÌ¾îºÎÅÍ ½ÃÀÛ
-            barrier.subresourceRange.layerCount = layerCount;         // ¹è¿­ ³» ·¹ÀÌ¾î °³¼ö
+            barrier.subresourceRange.baseMipLevel = 0;       // ì²« ë²ˆì§¸ ë¯¸í”„ë§µ ë ˆë²¨ë¶€í„° ì‹œì‘
+            barrier.subresourceRange.levelCount = levelCount;// ì ìš©í•  ë¯¸í”„ë§µì˜ ìˆ˜
+            barrier.subresourceRange.baseArrayLayer = 0;     // ì²« ë²ˆì§¸ ë°°ì—´ ë ˆì´ì–´ë¶€í„° ì‹œì‘
+            barrier.subresourceRange.layerCount = layerCount;         // ë°°ì—´ ë‚´ ë ˆì´ì–´ ê°œìˆ˜
 
-            VkPipelineStageFlags sourceStage = 0;      // ÀüÈ¯ Àü ÆÄÀÌÇÁ¶óÀÎ ½ºÅ×ÀÌÁö
-            VkPipelineStageFlags destinationStage = 0; // ÀüÈ¯ ÈÄ ÆÄÀÌÇÁ¶óÀÎ ½ºÅ×ÀÌÁö
+            VkPipelineStageFlags sourceStage = 0;      // ì „í™˜ ì „ íŒŒì´í”„ë¼ì¸ ìŠ¤í…Œì´ì§€
+            VkPipelineStageFlags destinationStage = 0; // ì „í™˜ í›„ íŒŒì´í”„ë¼ì¸ ìŠ¤í…Œì´ì§€
 
-            // ÀÌ¹ÌÁö ·¹ÀÌ¾Æ¿ô ÀüÈ¯ ½Ã, ÀûÀıÇÑ ¾×¼¼½º ¸¶½ºÅ© ¹× ÆÄÀÌÇÁ¶óÀÎ ½ºÅ×ÀÌÁö¸¦ ¼³Á¤ÇÕ´Ï´Ù.
+            // ì´ë¯¸ì§€ ë ˆì´ì•„ì›ƒ ì „í™˜ ì‹œ, ì ì ˆí•œ ì•¡ì„¸ìŠ¤ ë§ˆìŠ¤í¬ ë° íŒŒì´í”„ë¼ì¸ ìŠ¤í…Œì´ì§€ë¥¼ ì„¤ì •í•©ë‹ˆë‹¤.
             barrier.srcAccessMask = getFromOldLayoutToVkAccessFlags(oldLayout);
             barrier.dstAccessMask = getFromNewLayoutToVkAccessFlags(newLayout);
 
-            // »õ·Î¿î ·¹ÀÌ¾Æ¿ôÀÌ ±íÀÌ/½ºÅÙ½Ç¿ëÀÏ °æ¿ì aspectMask¸¦ ¼öÁ¤ÇÕ´Ï´Ù.
+            // ìƒˆë¡œìš´ ë ˆì´ì•„ì›ƒì´ ê¹Šì´/ìŠ¤í…ì‹¤ìš©ì¼ ê²½ìš° aspectMaskë¥¼ ìˆ˜ì •í•©ë‹ˆë‹¤.
             if (newLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL) {
                 barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
 
-                // Æ÷¸Ë¿¡ ½ºÅÙ½Ç ÄÄÆ÷³ÍÆ®°¡ ÀÖ´Ù¸é Ãß°¡ÇÕ´Ï´Ù.
+                // í¬ë§·ì— ìŠ¤í…ì‹¤ ì»´í¬ë„ŒíŠ¸ê°€ ìˆë‹¤ë©´ ì¶”ê°€í•©ë‹ˆë‹¤.
                 if (hasStencilComponent(format))
                 {
                     barrier.subresourceRange.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
@@ -1694,7 +1694,7 @@ namespace vkengine {
                 barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
             }
 
-            // ÀüÈ¯ Å¸ÀÔ¿¡ µû¸¥ ¾×¼¼½º ¸¶½ºÅ© ¹× ÆÄÀÌÇÁ¶óÀÎ ½ºÅ×ÀÌÁö ¼³Á¤
+            // ì „í™˜ íƒ€ì…ì— ë”°ë¥¸ ì•¡ì„¸ìŠ¤ ë§ˆìŠ¤í¬ ë° íŒŒì´í”„ë¼ì¸ ìŠ¤í…Œì´ì§€ ì„¤ì •
             if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL) {
                 sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
                 destinationStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
@@ -1713,8 +1713,8 @@ namespace vkengine {
                 destinationStage = VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT;
             }
             else {
-                // Áö¿øµÇÁö ¾Ê´Â ·¹ÀÌ¾Æ¿ô ÀüÈ¯ ¿äÃ»½Ã ¿¹¿Ü ¹ß»ı
-                // 1, ¸ğµç ÆÄÀÌÇÁ¶óÀÎ ½ºÅ×ÀÌÁö¸¦ »ç¿ëÇÏ¿© ÀüÈ¯
+                // ì§€ì›ë˜ì§€ ì•ŠëŠ” ë ˆì´ì•„ì›ƒ ì „í™˜ ìš”ì²­ì‹œ ì˜ˆì™¸ ë°œìƒ
+                // 1, ëª¨ë“  íŒŒì´í”„ë¼ì¸ ìŠ¤í…Œì´ì§€ë¥¼ ì‚¬ìš©í•˜ì—¬ ì „í™˜
 
                 sourceStage = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT;
                 destinationStage = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT;
@@ -1722,14 +1722,14 @@ namespace vkengine {
                 PRINT_TO_LOGGER("All pass pipeline stage!\n");
             }
 
-            // ÆÄÀÌÇÁ¶óÀÎ ¹è¸®¾î¸¦ Ãß°¡ÇÏ¿© ·¹ÀÌ¾Æ¿ô ÀüÈ¯ ¸í·ÉÀ» ±â·ÏÇÕ´Ï´Ù.
+            // íŒŒì´í”„ë¼ì¸ ë°°ë¦¬ì–´ë¥¼ ì¶”ê°€í•˜ì—¬ ë ˆì´ì•„ì›ƒ ì „í™˜ ëª…ë ¹ì„ ê¸°ë¡í•©ë‹ˆë‹¤.
             vkCmdPipelineBarrier(
                 cmdbuffer,
-                sourceStage, destinationStage, // ÀüÈ¯ Àü/ÈÄ ½ºÅ×ÀÌÁö
-                0,                // ¹è¸®¾î ÇÃ·¡±× (»ç¿ëÇÏÁö ¾ÊÀ½)
-                0, nullptr,     // ¸Ş¸ğ¸® ¹è¸®¾î ¾øÀÌ
-                0, nullptr,     // ¹öÆÛ ¹è¸®¾î ¾øÀÌ
-                1, &barrier     // ÇÏ³ªÀÇ ÀÌ¹ÌÁö ¹è¸®¾î »ç¿ë
+                sourceStage, destinationStage, // ì „í™˜ ì „/í›„ ìŠ¤í…Œì´ì§€
+                0,                // ë°°ë¦¬ì–´ í”Œë˜ê·¸ (ì‚¬ìš©í•˜ì§€ ì•ŠìŒ)
+                0, nullptr,     // ë©”ëª¨ë¦¬ ë°°ë¦¬ì–´ ì—†ì´
+                0, nullptr,     // ë²„í¼ ë°°ë¦¬ì–´ ì—†ì´
+                1, &barrier     // í•˜ë‚˜ì˜ ì´ë¯¸ì§€ ë°°ë¦¬ì–´ ì‚¬ìš©
             );
         }
 

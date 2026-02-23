@@ -34,7 +34,7 @@ namespace vkengine {
                 imageSize,
                 VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
                 VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
-                VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, // º°µµ·Î cpu,gpu µ¿±âÈ­ ÀÛ¾÷À» ÇÏÁö ¾Ê¾Æµµ µÈ´Ù.
+                VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, // ë³„ë„ë¡œ cpu,gpu ë™ê¸°í™” ì‘ì—…ì„ í•˜ì§€ ì•Šì•„ë„ ëœë‹¤.
                 stagingBuffer,
                 stagingBufferMemory);
 
@@ -141,11 +141,11 @@ namespace vkengine {
     {
         VkDeviceSize offset = 0;
 
-        // 2D Array Texture´Â ¿©·¯ °³ÀÇ ÀÌ¹ÌÁö¸¦ ÇÏ³ªÀÇ ¹è¿­·Î Ã³¸®ÇÕ´Ï´Ù.
-        this->imageData.reserve(1); // 2D Array Texture´Â ´ÜÀÏ ÀÌ¹ÌÁö µ¥ÀÌÅÍ·Î Ã³¸®ÇÕ´Ï´Ù.
+        // 2D Array TextureëŠ” ì—¬ëŸ¬ ê°œì˜ ì´ë¯¸ì§€ë¥¼ í•˜ë‚˜ì˜ ë°°ì—´ë¡œ ì²˜ë¦¬í•©ë‹ˆë‹¤.
+        this->imageData.reserve(1); // 2D Array TextureëŠ” ë‹¨ì¼ ì´ë¯¸ì§€ ë°ì´í„°ë¡œ ì²˜ë¦¬í•©ë‹ˆë‹¤.
         this->imageData.push_back(VKimageData{});
 
-        // 1. ¸ÕÀú °¢ ÀÌ¹ÌÁöÀÇ Å©±â¸¦ °è»êÇÏ¿© ÃÑ Å©±â¸¦ ±¸ÇÕ´Ï´Ù.
+        // 1. ë¨¼ì € ê° ì´ë¯¸ì§€ì˜ í¬ê¸°ë¥¼ ê³„ì‚°í•˜ì—¬ ì´ í¬ê¸°ë¥¼ êµ¬í•©ë‹ˆë‹¤.
         VkDeviceSize totalImageSize = 0;
         std::vector<VkDeviceSize> imageSizes{};
         this->imageCount = static_cast<cUint32_t>(this->imageTextureDatas.size());
@@ -159,7 +159,7 @@ namespace vkengine {
             totalImageSize += imageSize;
         }
 
-        // 2. ÀüÃ¼ Å©±â¸¦ ±âÁØÀ¸·Î ´ÜÀÏ ½ºÅ×ÀÌÂ¡ ¹öÆÛ »ı¼º
+        // 2. ì „ì²´ í¬ê¸°ë¥¼ ê¸°ì¤€ìœ¼ë¡œ ë‹¨ì¼ ìŠ¤í…Œì´ì§• ë²„í¼ ìƒì„±
         VkBuffer stagingBuffer;
         VkDeviceMemory stagingBufferMemory;
 
@@ -172,14 +172,14 @@ namespace vkengine {
             stagingBuffer,
             stagingBufferMemory);
 
-        // 3. °¢ ÀÌ¹ÌÁö µ¥ÀÌÅÍ¸¦ ´ÜÀÏ ¹öÆÛ¿¡ ¿¬¼ÓÀûÀ¸·Î º¹»çÇÕ´Ï´Ù.
+        // 3. ê° ì´ë¯¸ì§€ ë°ì´í„°ë¥¼ ë‹¨ì¼ ë²„í¼ì— ì—°ì†ì ìœ¼ë¡œ ë³µì‚¬í•©ë‹ˆë‹¤.
         for (size_t i = 0; i < imageCount; i++)
         {
             TextureResourcePNG* resourcePNG = this->imageTextureDatas[i].resourcePNG;
 
             _CHECK_RESULT_((resourcePNG->data != nullptr));
 
-            // imageSizes[i]´Â ÇöÀç ÀÌ¹ÌÁöÀÇ Å©±âÀÔ´Ï´Ù.
+            // imageSizes[i]ëŠ” í˜„ì¬ ì´ë¯¸ì§€ì˜ í¬ê¸°ì…ë‹ˆë‹¤.
             vkengine::helper::copyToDeviceMemory(
                 this->logicaldevice,
                 resourcePNG->data,
@@ -190,13 +190,13 @@ namespace vkengine {
             offset += imageSizes[i];
         }
 
-        // °¡Á¤ : ¸ğµç ÀÌ¹ÌÁö°¡ µ¿ÀÏÇÑ Æ÷¸Ë°ú Å©±â¸¦ °¡Áö°í ÀÖ´Ù°í °¡Á¤ÇÕ´Ï´Ù.
-        // ÀÌ ¿¹Á¦¿¡¼­´Â VK_FORMAT_R8G8B8A8_SRGB Æ÷¸ËÀ» »ç¿ëÇÕ´Ï´Ù.
+        // ê°€ì • : ëª¨ë“  ì´ë¯¸ì§€ê°€ ë™ì¼í•œ í¬ë§·ê³¼ í¬ê¸°ë¥¼ ê°€ì§€ê³  ìˆë‹¤ê³  ê°€ì •í•©ë‹ˆë‹¤.
+        // ì´ ì˜ˆì œì—ì„œëŠ” VK_FORMAT_R8G8B8A8_SRGB í¬ë§·ì„ ì‚¬ìš©í•©ë‹ˆë‹¤.
         uint32_t width = this->imageTextureDatas[0].resourcePNG->texWidth;
         uint32_t height = this->imageTextureDatas[0].resourcePNG->texHeight;
         uint32_t channels = this->imageTextureDatas[0].resourcePNG->texChannels;
 
-        // 4. ÀÌ¹ÌÁö ¸Ş¸ğ¸® »ı¼º  
+        // 4. ì´ë¯¸ì§€ ë©”ëª¨ë¦¬ ìƒì„±  
         vkengine::helper::createImage(
             this->logicaldevice,
             this->physicalDevice,
@@ -252,7 +252,7 @@ namespace vkengine {
 
     void Vk2DArrayTexture::createTextureImageView(VkFormat format)
     {
-        VKimageData& data = this->imageData[0]; // 2D Array Texture´Â ´ÜÀÏ ÀÌ¹ÌÁö µ¥ÀÌÅÍ·Î Ã³¸®ÇÕ´Ï´Ù.
+        VKimageData& data = this->imageData[0]; // 2D Array TextureëŠ” ë‹¨ì¼ ì´ë¯¸ì§€ ë°ì´í„°ë¡œ ì²˜ë¦¬í•©ë‹ˆë‹¤.
 
         data.imageView = vkengine::helper::createArrayImageView(
             this->logicaldevice,
@@ -265,7 +265,7 @@ namespace vkengine {
 
     void Vk2DArrayTexture::createTextureSampler()
     {
-        VKimageData& data = this->imageData[0]; // 2D Array Texture´Â ´ÜÀÏ ÀÌ¹ÌÁö µ¥ÀÌÅÍ·Î Ã³¸®ÇÕ´Ï´Ù.
+        VKimageData& data = this->imageData[0]; // 2D Array TextureëŠ” ë‹¨ì¼ ì´ë¯¸ì§€ ë°ì´í„°ë¡œ ì²˜ë¦¬í•©ë‹ˆë‹¤.
 
         VkPhysicalDeviceProperties properties{};
         vkGetPhysicalDeviceProperties(this->physicalDevice, &properties);
@@ -293,9 +293,9 @@ namespace vkengine {
 
     void VKcubeMap::createTextureImagePNG()
     {
-        // cube map texture = 6°³ÀÇ ÀÌ¹ÌÁö¸¦ °¡Áö°í ÀÖ¾î¾ß ÇÑ´Ù.
+        // cube map texture = 6ê°œì˜ ì´ë¯¸ì§€ë¥¼ ê°€ì§€ê³  ìˆì–´ì•¼ í•œë‹¤.
         cUint32_t imageCount = static_cast<cUint32_t>(this->imageTextureDatas.size());
-        this->imageData.reserve(1); // 2D Array Texture´Â ´ÜÀÏ ÀÌ¹ÌÁö µ¥ÀÌÅÍ·Î Ã³¸®ÇÕ´Ï´Ù.
+        this->imageData.reserve(1); // 2D Array TextureëŠ” ë‹¨ì¼ ì´ë¯¸ì§€ ë°ì´í„°ë¡œ ì²˜ë¦¬í•©ë‹ˆë‹¤.
         this->imageData.push_back(VKimageData{});
 
         if (imageCount != 6)
@@ -312,19 +312,19 @@ namespace vkengine {
 
         VkDeviceSize offset = 0;
 
-        // 1. ¸ÕÀú °¢ ÀÌ¹ÌÁöÀÇ Å©±â¸¦ °è»êÇÏ¿© ÃÑ Å©±â¸¦ ±¸ÇÕ´Ï´Ù.
+        // 1. ë¨¼ì € ê° ì´ë¯¸ì§€ì˜ í¬ê¸°ë¥¼ ê³„ì‚°í•˜ì—¬ ì´ í¬ê¸°ë¥¼ êµ¬í•©ë‹ˆë‹¤.
         VkDeviceSize totalImageSize = 0;
         std::vector<VkDeviceSize> imageSizes(imageCount);
 
         for (size_t i = 0; i < imageCount; i++) {
-            // ÀÓ½Ã·Î ÀÌ¹ÌÁö¸¦ ·ÎµåÇÏ¿© Å©±â¸¦ ¾ò½À´Ï´Ù.
+            // ì„ì‹œë¡œ ì´ë¯¸ì§€ë¥¼ ë¡œë“œí•˜ì—¬ í¬ê¸°ë¥¼ ì–»ìŠµë‹ˆë‹¤.
             TextureResourcePNG* resourcePNG = this->imageTextureDatas[i].resourcePNG;
             VkDeviceSize imageSize = resourcePNG->texWidth * resourcePNG->texHeight * resourcePNG->texChannels;
             imageSizes[i] = imageSize;
             totalImageSize += imageSize;
         }
 
-        // 2. ÀüÃ¼ Å©±â¸¦ ±âÁØÀ¸·Î ´ÜÀÏ ½ºÅ×ÀÌÂ¡ ¹öÆÛ »ı¼º
+        // 2. ì „ì²´ í¬ê¸°ë¥¼ ê¸°ì¤€ìœ¼ë¡œ ë‹¨ì¼ ìŠ¤í…Œì´ì§• ë²„í¼ ìƒì„±
         VkBuffer stagingBuffer;
         VkDeviceMemory stagingBufferMemory;
 
@@ -337,14 +337,14 @@ namespace vkengine {
             stagingBuffer,
             stagingBufferMemory);
 
-        // 3. °¢ ÀÌ¹ÌÁö µ¥ÀÌÅÍ¸¦ ´ÜÀÏ ¹öÆÛ¿¡ ¿¬¼ÓÀûÀ¸·Î º¹»çÇÕ´Ï´Ù.
+        // 3. ê° ì´ë¯¸ì§€ ë°ì´í„°ë¥¼ ë‹¨ì¼ ë²„í¼ì— ì—°ì†ì ìœ¼ë¡œ ë³µì‚¬í•©ë‹ˆë‹¤.
         for (size_t i = 0; i < imageCount; i++)
         {
             TextureResourcePNG* resourcePNG = this->imageTextureDatas[i].resourcePNG;
 
             _CHECK_RESULT_((resourcePNG->data != nullptr));
 
-            // imageSizes[i]´Â ÇöÀç ÀÌ¹ÌÁöÀÇ Å©±âÀÔ´Ï´Ù.
+            // imageSizes[i]ëŠ” í˜„ì¬ ì´ë¯¸ì§€ì˜ í¬ê¸°ì…ë‹ˆë‹¤.
             vkengine::helper::copyToDeviceMemory(
                 this->logicaldevice,
                 resourcePNG->data,
@@ -355,13 +355,13 @@ namespace vkengine {
             offset += imageSizes[i];
         }
 
-        // °¡Á¤ : ¸ğµç ÀÌ¹ÌÁö°¡ µ¿ÀÏÇÑ Æ÷¸Ë°ú Å©±â¸¦ °¡Áö°í ÀÖ´Ù°í °¡Á¤ÇÕ´Ï´Ù.
-        // ÀÌ ¿¹Á¦¿¡¼­´Â VK_FORMAT_R8G8B8A8_SRGB Æ÷¸ËÀ» »ç¿ëÇÕ´Ï´Ù.
+        // ê°€ì • : ëª¨ë“  ì´ë¯¸ì§€ê°€ ë™ì¼í•œ í¬ë§·ê³¼ í¬ê¸°ë¥¼ ê°€ì§€ê³  ìˆë‹¤ê³  ê°€ì •í•©ë‹ˆë‹¤.
+        // ì´ ì˜ˆì œì—ì„œëŠ” VK_FORMAT_R8G8B8A8_SRGB í¬ë§·ì„ ì‚¬ìš©í•©ë‹ˆë‹¤.
         uint32_t width = this->imageTextureDatas[0].resourcePNG->texWidth;
         uint32_t height = this->imageTextureDatas[0].resourcePNG->texHeight;
         uint32_t channels = this->imageTextureDatas[0].resourcePNG->texChannels;
 
-        // 4. ÀÌ¹ÌÁö ¸Ş¸ğ¸® »ı¼º  
+        // 4. ì´ë¯¸ì§€ ë©”ëª¨ë¦¬ ìƒì„±  
         vkengine::helper::createImage2(
             this->logicaldevice,
             this->physicalDevice,
@@ -419,23 +419,23 @@ namespace vkengine {
 
     void VKcubeMap::createTextureImgaeKTX(VkFormat format)
     {
-        // 1. KTX ÅØ½ºÃ³ÀÇ µ¥ÀÌÅÍ¿Í Å©±â¸¦ °¡Á®¿À±â
+        // 1. KTX í…ìŠ¤ì²˜ì˜ ë°ì´í„°ì™€ í¬ê¸°ë¥¼ ê°€ì ¸ì˜¤ê¸°
         TextureResourceKTX* resource = this->imageTextureDatas[0].resourceKTX;
-        this->imageData.reserve(1); // Cube mapÀº ´ÜÀÏ ÀÌ¹ÌÁö µ¥ÀÌÅÍ·Î Ã³¸®ÇÕ´Ï´Ù.
+        this->imageData.reserve(1); // Cube mapì€ ë‹¨ì¼ ì´ë¯¸ì§€ ë°ì´í„°ë¡œ ì²˜ë¦¬í•©ë‹ˆë‹¤.
         this->imageData.push_back(VKimageData{});
 
         _CHECK_RESULT_((resource != nullptr));
 
         ktx_uint8_t* ktxTextureData{};
-        ktxTextureData = ktxTexture_GetData(resource->texture); // KTX ÅØ½ºÃ³ µ¥ÀÌÅÍ °¡Á®¿À±â
+        ktxTextureData = ktxTexture_GetData(resource->texture); // KTX í…ìŠ¤ì²˜ ë°ì´í„° ê°€ì ¸ì˜¤ê¸°
 
         ktx_uint32_t ktxTextureSize{};
-        ktxTextureSize = static_cast<ktx_uint32_t>(ktxTexture_GetDataSize(resource->texture)); // KTX ÅØ½ºÃ³ µ¥ÀÌÅÍ Å©±â °¡Á®¿À±â
+        ktxTextureSize = static_cast<ktx_uint32_t>(ktxTexture_GetDataSize(resource->texture)); // KTX í…ìŠ¤ì²˜ ë°ì´í„° í¬ê¸° ê°€ì ¸ì˜¤ê¸°
 
         VkBuffer stagingBuffer;
         VkDeviceMemory stagingMemory;
 
-        // 2. KTX ÅØ½ºÃ³ Å©±â¸¸Å­ ½ºÅ×ÀÌÂ¡ ¹öÆÛ »ı¼º
+        // 2. KTX í…ìŠ¤ì²˜ í¬ê¸°ë§Œí¼ ìŠ¤í…Œì´ì§• ë²„í¼ ìƒì„±
         vkengine::helper::createBuffer(
             this->logicaldevice,
             this->physicalDevice,
@@ -445,14 +445,14 @@ namespace vkengine {
             stagingBuffer,
             stagingMemory);
 
-        // 3. ½ºÅ×ÀÌÂ¡ ¹öÆÛ¿¡ KTX ÅØ½ºÃ³ µ¥ÀÌÅÍ º¹»ç
+        // 3. ìŠ¤í…Œì´ì§• ë²„í¼ì— KTX í…ìŠ¤ì²˜ ë°ì´í„° ë³µì‚¬
         vkengine::helper::copyToDeviceMemory(
             this->logicaldevice,
             ktxTextureData,
             stagingMemory,
             ktxTextureSize);
 
-        // 4. KTX ÅØ½ºÃ³ÀÇ ³Êºñ, ³ôÀÌ, Ã¤³Î ¼ö °¡Á®¿À±â
+        // 4. KTX í…ìŠ¤ì²˜ì˜ ë„ˆë¹„, ë†’ì´, ì±„ë„ ìˆ˜ ê°€ì ¸ì˜¤ê¸°
         cUint32_t mipLevels = resource->texture->numLevels;
         cUint32_t width = resource->texWidth;
         cUint32_t height = resource->texHeight;
@@ -460,7 +460,7 @@ namespace vkengine {
 
         this->VKmipLevels = mipLevels;
 
-        // 5. ÀÌ¹ÌÁö ¸Ş¸ğ¸® »ı¼º
+        // 5. ì´ë¯¸ì§€ ë©”ëª¨ë¦¬ ìƒì„±
         vkengine::helper::createImage2(
             this->logicaldevice,
             this->physicalDevice,
@@ -474,7 +474,7 @@ namespace vkengine {
             VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
             this->imageData[0].image,
             this->imageData[0].imageMemory,
-            6, // Cube mapÀº 6°³ÀÇ ¸éÀ» °¡Áı´Ï´Ù.
+            6, // Cube mapì€ 6ê°œì˜ ë©´ì„ ê°€ì§‘ë‹ˆë‹¤.
             VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT
         );
 
@@ -487,7 +487,7 @@ namespace vkengine {
             VK_IMAGE_LAYOUT_UNDEFINED,
             VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
             this->VKmipLevels,
-            6); // Cube mapÀº 6°³ÀÇ ¸éÀ» °¡Áı´Ï´Ù.
+            6); // Cube mapì€ 6ê°œì˜ ë©´ì„ ê°€ì§‘ë‹ˆë‹¤.
 
         vkengine::helper::copyBufferToImageKTX(
             this->logicaldevice,

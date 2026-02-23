@@ -11,7 +11,7 @@ namespace vkengine {
                 EXIT_TO_LOGGER("Shader file does not have .spv extension: %s", spvFilename);
             }
 
-            // °æ·Î¿Í ¸¶Áö¸· .spv Á¦°Å ex: path/triangle.vert.spv -> triangle.vert
+            // ê²½ë¡œì™€ ë§ˆì§€ë§‰ .spv ì œê±° ex: path/triangle.vert.spv -> triangle.vert
             size_t lastSlash = spvFilename.find_last_of("/\\");
             size_t start = (lastSlash == cString::npos) ? 0 : lastSlash + 1;
             size_t end = spvFilename.length();
@@ -24,49 +24,49 @@ namespace vkengine {
 
         std::vector<cChar> readFile(const cString& filename)
         {
-            // ÆÄÀÏ ³¡À¸·Î ÀÌµ¿ÇÏ¿© ÆÄÀÏ Å©±â¸¦ °¡Á®¿É´Ï´Ù.
+            // íŒŒì¼ ëìœ¼ë¡œ ì´ë™í•˜ì—¬ íŒŒì¼ í¬ê¸°ë¥¼ ê°€ì ¸ì˜µë‹ˆë‹¤.
             std::ifstream file(filename, std::ios::ate | std::ios::binary);
 
-            // ÆÄÀÏÀ» ¿­ ¼ö ¾ø´Â °æ¿ì ¿¹¿Ü¸¦ ¹ß»ı½ÃÅµ´Ï´Ù.
+            // íŒŒì¼ì„ ì—´ ìˆ˜ ì—†ëŠ” ê²½ìš° ì˜ˆì™¸ë¥¼ ë°œìƒì‹œí‚µë‹ˆë‹¤.
             if (!file.is_open()) {
                 EXIT_TO_LOGGER("failed to open file!");
             }
 
-            size_t fileSize = (size_t)file.tellg(); // ÆÄÀÏ Å©±â¸¦ ÀÌ¿ëÇÏ¿© ¹öÆÛ¸¦ ÇÒ´çÇÕ´Ï´Ù.
-            std::vector<cChar> buffer(fileSize);     // ÆÄÀÏ Æ÷ÀÎÅÍ¸¦ ÆÄÀÏÀÇ ½ÃÀÛÀ¸·Î ÀÌµ¿ÇÕ´Ï´Ù.
-            file.seekg(0);                          // ÆÄÀÏ Æ÷ÀÎÅÍ¸¦ ÆÄÀÏÀÇ ½ÃÀÛÀ¸·Î ÀÌµ¿ÇÕ´Ï´Ù.
-            file.read(buffer.data(), fileSize);     // ÆÄÀÏ ³»¿ëÀ» ¹öÆÛ¿¡ ÀĞ¾î¿É´Ï´Ù. -> ÆÄÀÏÀ» fileSize Å©±â¸¸Å­ ÇÑ¹ø¿¡ ÀĞ¾î¿Â´Ù.
-            file.close();                           // ÆÄÀÏÀ» ´İ½À´Ï´Ù.
+            size_t fileSize = (size_t)file.tellg(); // íŒŒì¼ í¬ê¸°ë¥¼ ì´ìš©í•˜ì—¬ ë²„í¼ë¥¼ í• ë‹¹í•©ë‹ˆë‹¤.
+            std::vector<cChar> buffer(fileSize);     // íŒŒì¼ í¬ì¸í„°ë¥¼ íŒŒì¼ì˜ ì‹œì‘ìœ¼ë¡œ ì´ë™í•©ë‹ˆë‹¤.
+            file.seekg(0);                          // íŒŒì¼ í¬ì¸í„°ë¥¼ íŒŒì¼ì˜ ì‹œì‘ìœ¼ë¡œ ì´ë™í•©ë‹ˆë‹¤.
+            file.read(buffer.data(), fileSize);     // íŒŒì¼ ë‚´ìš©ì„ ë²„í¼ì— ì½ì–´ì˜µë‹ˆë‹¤. -> íŒŒì¼ì„ fileSize í¬ê¸°ë§Œí¼ í•œë²ˆì— ì½ì–´ì˜¨ë‹¤.
+            file.close();                           // íŒŒì¼ì„ ë‹«ìŠµë‹ˆë‹¤.
 
             return buffer;
         }
 
         std::vector<cChar> readSPVFile(const cString& filename)
         {
-            // ÆÄÀÏ È®ÀåÀÚ°¡ .spvÀÎÁö È®ÀÎÇÕ´Ï´Ù.
+            // íŒŒì¼ í™•ì¥ìê°€ .spvì¸ì§€ í™•ì¸í•©ë‹ˆë‹¤.
             if (filename.length() < 4 || filename.substr(filename.length() - 4) != ".spv") {
                 EXIT_TO_LOGGER("Shader file does not have .spv extension: %s", filename.c_str());
 
             }
 
-            // ÆÄÀÏ ³¡À¸·Î ÀÌµ¿ÇÏ¿© ÆÄÀÏ Å©±â¸¦ °¡Á®¿É´Ï´Ù.
+            // íŒŒì¼ ëìœ¼ë¡œ ì´ë™í•˜ì—¬ íŒŒì¼ í¬ê¸°ë¥¼ ê°€ì ¸ì˜µë‹ˆë‹¤.
             std::ifstream file(filename, std::ios::ate | std::ios::binary);
 
-            // ÆÄÀÏÀ» ¿­ ¼ö ¾ø´Â °æ¿ì ¿¹¿Ü¸¦ ¹ß»ı½ÃÅµ´Ï´Ù.
+            // íŒŒì¼ì„ ì—´ ìˆ˜ ì—†ëŠ” ê²½ìš° ì˜ˆì™¸ë¥¼ ë°œìƒì‹œí‚µë‹ˆë‹¤.
             if (!file.is_open()) {
                 EXIT_TO_LOGGER("failed to open file!");
             }
 
             // Get file size and validate it's a valid SPIR-V file
-            size_t fileSize = (size_t)file.tellg(); // ÆÄÀÏ Å©±â¸¦ ÀÌ¿ëÇÏ¿© ¹öÆÛ¸¦ ÇÒ´çÇÕ´Ï´Ù.
+            size_t fileSize = (size_t)file.tellg(); // íŒŒì¼ í¬ê¸°ë¥¼ ì´ìš©í•˜ì—¬ ë²„í¼ë¥¼ í• ë‹¹í•©ë‹ˆë‹¤.
             if (fileSize == 0 || fileSize % 4 != 0) {
                 EXIT_TO_LOGGER("Invalid SPIR-V file size: %zu bytes", fileSize);
             }
 
-            std::vector<cChar> buffer(fileSize);     // ÆÄÀÏ Æ÷ÀÎÅÍ¸¦ ÆÄÀÏÀÇ ½ÃÀÛÀ¸·Î ÀÌµ¿ÇÕ´Ï´Ù.
-            file.seekg(0);                          // ÆÄÀÏ Æ÷ÀÎÅÍ¸¦ ÆÄÀÏÀÇ ½ÃÀÛÀ¸·Î ÀÌµ¿ÇÕ´Ï´Ù.
-            file.read(buffer.data(), fileSize);     // ÆÄÀÏ ³»¿ëÀ» ¹öÆÛ¿¡ ÀĞ¾î¿É´Ï´Ù. -> ÆÄÀÏÀ» fileSize Å©±â¸¸Å­ ÇÑ¹ø¿¡ ÀĞ¾î¿Â´Ù.
-            file.close();                           // ÆÄÀÏÀ» ´İ½À´Ï´Ù.
+            std::vector<cChar> buffer(fileSize);     // íŒŒì¼ í¬ì¸í„°ë¥¼ íŒŒì¼ì˜ ì‹œì‘ìœ¼ë¡œ ì´ë™í•©ë‹ˆë‹¤.
+            file.seekg(0);                          // íŒŒì¼ í¬ì¸í„°ë¥¼ íŒŒì¼ì˜ ì‹œì‘ìœ¼ë¡œ ì´ë™í•©ë‹ˆë‹¤.
+            file.read(buffer.data(), fileSize);     // íŒŒì¼ ë‚´ìš©ì„ ë²„í¼ì— ì½ì–´ì˜µë‹ˆë‹¤. -> íŒŒì¼ì„ fileSize í¬ê¸°ë§Œí¼ í•œë²ˆì— ì½ì–´ì˜¨ë‹¤.
+            file.close();                           // íŒŒì¼ì„ ë‹«ìŠµë‹ˆë‹¤.
 
             return buffer;
         }

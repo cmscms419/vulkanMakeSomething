@@ -13,21 +13,21 @@ namespace vkengine {
         this->physicalDevice = physicalDevice;
         this->queueFamilyIndices = indice;
 
-        vkGetPhysicalDeviceProperties(this->physicalDevice, &properties);       // ¹°¸® µğ¹ÙÀÌ½º ¼Ó¼º °¡Á®¿À±â
-        vkGetPhysicalDeviceFeatures(this->physicalDevice, &features);           // ¹°¸® µğ¹ÙÀÌ½º ±â´É °¡Á®¿À±â
-        vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memoryProperties); // ¸Ş¸ğ¸® ¼Ó¼º °¡Á®¿À±â
+        vkGetPhysicalDeviceProperties(this->physicalDevice, &properties);       // ë¬¼ë¦¬ ë””ë°”ì´ìŠ¤ ì†ì„± ê°€ì ¸ì˜¤ê¸°
+        vkGetPhysicalDeviceFeatures(this->physicalDevice, &features);           // ë¬¼ë¦¬ ë””ë°”ì´ìŠ¤ ê¸°ëŠ¥ ê°€ì ¸ì˜¤ê¸°
+        vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memoryProperties); // ë©”ëª¨ë¦¬ ì†ì„± ê°€ì ¸ì˜¤ê¸°
 
         uint32_t supportedApiVersion = properties.apiVersion;
 
         if (supportedApiVersion >= VK_API_VERSION_1_2) {
-            // Vulkan 1.2 ÀÌ»óÀ» Áö¿øÇÏ´Â µğ¹ÙÀÌ½º Ã³¸®
-            // ¿¹: »õ·Î¿î ±â´É È°¼ºÈ­
+            // Vulkan 1.2 ì´ìƒì„ ì§€ì›í•˜ëŠ” ë””ë°”ì´ìŠ¤ ì²˜ë¦¬
+            // ì˜ˆ: ìƒˆë¡œìš´ ê¸°ëŠ¥ í™œì„±í™”
         }
         else if (supportedApiVersion >= VK_API_VERSION_1_1) {
-            // Vulkan 1.1À» Áö¿øÇÏ´Â µğ¹ÙÀÌ½º Ã³¸®
+            // Vulkan 1.1ì„ ì§€ì›í•˜ëŠ” ë””ë°”ì´ìŠ¤ ì²˜ë¦¬
         }
         else {
-            // Vulkan 1.0À» Áö¿øÇÏ´Â µğ¹ÙÀÌ½º Ã³¸®
+            // Vulkan 1.0ì„ ì§€ì›í•˜ëŠ” ë””ë°”ì´ìŠ¤ ì²˜ë¦¬
         }
 
         _PRINT_TO_CONSOLE_("Select Device\n");
@@ -39,11 +39,11 @@ namespace vkengine {
 
     VkResult VKdeviceHandler::createLogicalDevice()
     {
-        // 1. ¹°¸® ÀåÄ¡¿¡¼­ Å¥ ÆĞ¹Ğ¸® ÀÎµ¦½º¸¦ Ã£½À´Ï´Ù. -> Àü ´Ü°è¿¡¼­ ÀÌ¹Ì Ã£¾Ò½À´Ï´Ù.
-        // 2. Å¥ »ı¼º Á¤º¸ ±¸Á¶Ã¼¸¦ ÃÊ±âÈ­ÇÕ´Ï´Ù. -> ÀÌ¹Ì Ã£¾Ò½À´Ï´Ù.
-        // 3. ¹°¸® ÀåÄ¡ ±â´É ±¸Á¶Ã¼¸¦ ÃÊ±âÈ­ÇÕ´Ï´Ù.
-        // 4. ³í¸® ÀåÄ¡ »ı¼º Á¤º¸ ±¸Á¶Ã¼¸¦ ÃÊ±âÈ­ÇÕ´Ï´Ù.
-        // 5. ³í¸® ÀåÄ¡¸¦ »ı¼ºÇÕ´Ï´Ù.
+        // 1. ë¬¼ë¦¬ ì¥ì¹˜ì—ì„œ í íŒ¨ë°€ë¦¬ ì¸ë±ìŠ¤ë¥¼ ì°¾ìŠµë‹ˆë‹¤. -> ì „ ë‹¨ê³„ì—ì„œ ì´ë¯¸ ì°¾ì•˜ìŠµë‹ˆë‹¤.
+        // 2. í ìƒì„± ì •ë³´ êµ¬ì¡°ì²´ë¥¼ ì´ˆê¸°í™”í•©ë‹ˆë‹¤. -> ì´ë¯¸ ì°¾ì•˜ìŠµë‹ˆë‹¤.
+        // 3. ë¬¼ë¦¬ ì¥ì¹˜ ê¸°ëŠ¥ êµ¬ì¡°ì²´ë¥¼ ì´ˆê¸°í™”í•©ë‹ˆë‹¤.
+        // 4. ë…¼ë¦¬ ì¥ì¹˜ ìƒì„± ì •ë³´ êµ¬ì¡°ì²´ë¥¼ ì´ˆê¸°í™”í•©ë‹ˆë‹¤.
+        // 5. ë…¼ë¦¬ ì¥ì¹˜ë¥¼ ìƒì„±í•©ë‹ˆë‹¤.
         VkResult result = VK_SUCCESS;
 
         std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
@@ -53,26 +53,26 @@ namespace vkengine {
             this->queueFamilyIndices.presentFamily
         };
 
-        cFloat queuePriority = 1.0f;                                                                    // Å¥ÀÇ ¿ì¼±¼øÀ§¸¦ ¼³Á¤ÇÕ´Ï´Ù.
+        cFloat queuePriority = 1.0f;                                                                    // íì˜ ìš°ì„ ìˆœìœ„ë¥¼ ì„¤ì •í•©ë‹ˆë‹¤.
 
         for (uint32_t queueFamily : uniqueQueueFamilies) {
             VkDeviceQueueCreateInfo queueCreateInfo{};
-            queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;                        // ±¸Á¶Ã¼ Å¸ÀÔÀ» ÁöÁ¤ÇÕ´Ï´Ù.
-            queueCreateInfo.queueFamilyIndex = queueFamily;                                            // ±×·¡ÇÈ½º Å¥ ÆĞ¹Ğ¸® ÀÎµ¦½º¸¦ ¼³Á¤ÇÕ´Ï´Ù.
-            queueCreateInfo.queueCount = 1;                                                            // Å¥ÀÇ °³¼ö¸¦ ¼³Á¤ÇÕ´Ï´Ù.
+            queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;                        // êµ¬ì¡°ì²´ íƒ€ì…ì„ ì§€ì •í•©ë‹ˆë‹¤.
+            queueCreateInfo.queueFamilyIndex = queueFamily;                                            // ê·¸ë˜í”½ìŠ¤ í íŒ¨ë°€ë¦¬ ì¸ë±ìŠ¤ë¥¼ ì„¤ì •í•©ë‹ˆë‹¤.
+            queueCreateInfo.queueCount = 1;                                                            // íì˜ ê°œìˆ˜ë¥¼ ì„¤ì •í•©ë‹ˆë‹¤.
             queueCreateInfo.pQueuePriorities = &queuePriority;
             queueCreateInfos.push_back(queueCreateInfo);
         }
 
-        // ³í¸® ÀåÄ¡ »ı¼º Á¤º¸ ±¸Á¶Ã¼¸¦ ÃÊ±âÈ­ÇÕ´Ï´Ù.
+        // ë…¼ë¦¬ ì¥ì¹˜ ìƒì„± ì •ë³´ êµ¬ì¡°ì²´ë¥¼ ì´ˆê¸°í™”í•©ë‹ˆë‹¤.
         VkDeviceCreateInfo createInfo{};
 
-        createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;                            // ±¸Á¶Ã¼ Å¸ÀÔÀ» ÁöÁ¤ÇÕ´Ï´Ù.
-        createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());   // Å¥ »ı¼º Á¤º¸ÀÇ °³¼ö¸¦ ¼³Á¤ÇÕ´Ï´Ù.
-        createInfo.pQueueCreateInfos = queueCreateInfos.data();                             // Å¥ »ı¼º Á¤º¸ Æ÷ÀÎÅÍ¸¦ ¼³Á¤ÇÕ´Ï´Ù.
-        createInfo.enabledExtensionCount = static_cast<uint32_t>(coreDeviceExtensions.size());  // È°¼ºÈ­ÇÒ È®Àå °³¼ö¸¦ ¼³Á¤ÇÕ´Ï´Ù.
-        createInfo.ppEnabledExtensionNames = coreDeviceExtensions.data();                       // È°¼ºÈ­ÇÒ È®Àå ¸ñ·ÏÀ» ¼³Á¤ÇÕ´Ï´Ù.
-        createInfo.pEnabledFeatures = &this->features;                                      // ¹°¸® ÀåÄ¡ ±â´É Æ÷ÀÎÅÍ¸¦ ¼³Á¤ÇÕ´Ï´Ù.
+        createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;                            // êµ¬ì¡°ì²´ íƒ€ì…ì„ ì§€ì •í•©ë‹ˆë‹¤.
+        createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());   // í ìƒì„± ì •ë³´ì˜ ê°œìˆ˜ë¥¼ ì„¤ì •í•©ë‹ˆë‹¤.
+        createInfo.pQueueCreateInfos = queueCreateInfos.data();                             // í ìƒì„± ì •ë³´ í¬ì¸í„°ë¥¼ ì„¤ì •í•©ë‹ˆë‹¤.
+        createInfo.enabledExtensionCount = static_cast<uint32_t>(coreDeviceExtensions.size());  // í™œì„±í™”í•  í™•ì¥ ê°œìˆ˜ë¥¼ ì„¤ì •í•©ë‹ˆë‹¤.
+        createInfo.ppEnabledExtensionNames = coreDeviceExtensions.data();                       // í™œì„±í™”í•  í™•ì¥ ëª©ë¡ì„ ì„¤ì •í•©ë‹ˆë‹¤.
+        createInfo.pEnabledFeatures = &this->features;                                      // ë¬¼ë¦¬ ì¥ì¹˜ ê¸°ëŠ¥ í¬ì¸í„°ë¥¼ ì„¤ì •í•©ë‹ˆë‹¤.
 
         if (enableValidationLayers) {
             createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
@@ -82,13 +82,13 @@ namespace vkengine {
             createInfo.enabledLayerCount = 0;
         }
 
-        // ³í¸® ÀåÄ¡¸¦ »ı¼ºÇÕ´Ï´Ù.
+        // ë…¼ë¦¬ ì¥ì¹˜ë¥¼ ìƒì„±í•©ë‹ˆë‹¤.
         _VK_CHECK_RESULT_(result = vkCreateDevice(this->physicalDevice, &createInfo, nullptr, &this->logicaldevice));
 
-        // ³í¸® µğ¹ÙÀÌ½º¿¡¼­ ±×·¡ÇÈ/ÄÄÇ»ÅÍ Å¥ ÇÚµéÀ» °¡Á®¿É´Ï´Ù.
+        // ë…¼ë¦¬ ë””ë°”ì´ìŠ¤ì—ì„œ ê·¸ë˜í”½/ì»´í“¨í„° í í•¸ë“¤ì„ ê°€ì ¸ì˜µë‹ˆë‹¤.
         vkGetDeviceQueue(this->logicaldevice, this->queueFamilyIndices.graphicsAndComputeFamily, 0, &this->graphicsVKQueue);
 
-        // ³í¸® µğ¹ÙÀÌ½º¿¡¼­ ÇÁ·¹Á¨Å×ÀÌ¼Ç Å¥ ÇÚµéÀ» °¡Á®¿É´Ï´Ù.
+        // ë…¼ë¦¬ ë””ë°”ì´ìŠ¤ì—ì„œ í”„ë ˆì  í…Œì´ì…˜ í í•¸ë“¤ì„ ê°€ì ¸ì˜µë‹ˆë‹¤.
         vkGetDeviceQueue(this->logicaldevice, this->queueFamilyIndices.presentFamily, 0, &this->presentVKQueue);
 
         return result;
@@ -154,28 +154,28 @@ namespace vkengine {
         this->physicalDevice = physicalDevice;
         this->queueFamilyIndices = indice;
 
-        vkGetPhysicalDeviceProperties(this->physicalDevice, &properties);       // ¹°¸® µğ¹ÙÀÌ½º ¼Ó¼º °¡Á®¿À±â
-        vkGetPhysicalDeviceFeatures(this->physicalDevice, &features);           // ¹°¸® µğ¹ÙÀÌ½º ±â´É °¡Á®¿À±â
-        vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memoryProperties); // ¸Ş¸ğ¸® ¼Ó¼º °¡Á®¿À±â
+        vkGetPhysicalDeviceProperties(this->physicalDevice, &properties);       // ë¬¼ë¦¬ ë””ë°”ì´ìŠ¤ ì†ì„± ê°€ì ¸ì˜¤ê¸°
+        vkGetPhysicalDeviceFeatures(this->physicalDevice, &features);           // ë¬¼ë¦¬ ë””ë°”ì´ìŠ¤ ê¸°ëŠ¥ ê°€ì ¸ì˜¤ê¸°
+        vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memoryProperties); // ë©”ëª¨ë¦¬ ì†ì„± ê°€ì ¸ì˜¤ê¸°
 
         uint32_t supportedApiVersion = properties.apiVersion;
 
 
         if (supportedApiVersion >= VK_API_VERSION_1_3) {
-            // Vulkan 1.3 ÀÌ»óÀ» Áö¿øÇÏ´Â µğ¹ÙÀÌ½º Ã³¸®
-            // ¿¹: »õ·Î¿î ±â´É È°¼ºÈ­
+            // Vulkan 1.3 ì´ìƒì„ ì§€ì›í•˜ëŠ” ë””ë°”ì´ìŠ¤ ì²˜ë¦¬
+            // ì˜ˆ: ìƒˆë¡œìš´ ê¸°ëŠ¥ í™œì„±í™”
 
         }
         else if (supportedApiVersion >= VK_API_VERSION_1_2) {
-            // Vulkan 1.2 ÀÌ»óÀ» Áö¿øÇÏ´Â µğ¹ÙÀÌ½º Ã³¸®
-            // ¿¹: »õ·Î¿î ±â´É È°¼ºÈ­
+            // Vulkan 1.2 ì´ìƒì„ ì§€ì›í•˜ëŠ” ë””ë°”ì´ìŠ¤ ì²˜ë¦¬
+            // ì˜ˆ: ìƒˆë¡œìš´ ê¸°ëŠ¥ í™œì„±í™”
 
         }
         else if (supportedApiVersion >= VK_API_VERSION_1_1) {
-            // Vulkan 1.1À» Áö¿øÇÏ´Â µğ¹ÙÀÌ½º Ã³¸®
+            // Vulkan 1.1ì„ ì§€ì›í•˜ëŠ” ë””ë°”ì´ìŠ¤ ì²˜ë¦¬
         }
         else {
-            // Vulkan 1.0À» Áö¿øÇÏ´Â µğ¹ÙÀÌ½º Ã³¸®
+            // Vulkan 1.0ì„ ì§€ì›í•˜ëŠ” ë””ë°”ì´ìŠ¤ ì²˜ë¦¬
         }
 
         _PRINT_TO_CONSOLE_("Select Device\n");
@@ -248,11 +248,11 @@ namespace vkengine {
 
     cBool VKdeviceHandler2::createLogicalDevice(cBool useSwapChain)
     {
-        // 1. ¹°¸® ÀåÄ¡¿¡¼­ Å¥ ÆĞ¹Ğ¸® ÀÎµ¦½º¸¦ Ã£½À´Ï´Ù. -> Àü ´Ü°è¿¡¼­ ÀÌ¹Ì Ã£¾Ò½À´Ï´Ù.
-        // 2. Å¥ »ı¼º Á¤º¸ ±¸Á¶Ã¼¸¦ ÃÊ±âÈ­ÇÕ´Ï´Ù. -> ÀÌ¹Ì Ã£¾Ò½À´Ï´Ù.
-        // 3. ¹°¸® ÀåÄ¡ ±â´É ±¸Á¶Ã¼¸¦ ÃÊ±âÈ­ÇÕ´Ï´Ù.
-        // 4. ³í¸® ÀåÄ¡ »ı¼º Á¤º¸ ±¸Á¶Ã¼¸¦ ÃÊ±âÈ­ÇÕ´Ï´Ù.
-        // 5. ³í¸® ÀåÄ¡¸¦ »ı¼ºÇÕ´Ï´Ù.
+        // 1. ë¬¼ë¦¬ ì¥ì¹˜ì—ì„œ í íŒ¨ë°€ë¦¬ ì¸ë±ìŠ¤ë¥¼ ì°¾ìŠµë‹ˆë‹¤. -> ì „ ë‹¨ê³„ì—ì„œ ì´ë¯¸ ì°¾ì•˜ìŠµë‹ˆë‹¤.
+        // 2. í ìƒì„± ì •ë³´ êµ¬ì¡°ì²´ë¥¼ ì´ˆê¸°í™”í•©ë‹ˆë‹¤. -> ì´ë¯¸ ì°¾ì•˜ìŠµë‹ˆë‹¤.
+        // 3. ë¬¼ë¦¬ ì¥ì¹˜ ê¸°ëŠ¥ êµ¬ì¡°ì²´ë¥¼ ì´ˆê¸°í™”í•©ë‹ˆë‹¤.
+        // 4. ë…¼ë¦¬ ì¥ì¹˜ ìƒì„± ì •ë³´ êµ¬ì¡°ì²´ë¥¼ ì´ˆê¸°í™”í•©ë‹ˆë‹¤.
+        // 5. ë…¼ë¦¬ ì¥ì¹˜ë¥¼ ìƒì„±í•©ë‹ˆë‹¤.
         cBool result = true;
 
         const VkQueueFlags requestedQueueTypes = VK_QUEUE_COMPUTE_BIT | VK_QUEUE_GRAPHICS_BIT;
@@ -318,14 +318,14 @@ namespace vkengine {
         enabledFeatures.depthClamp = features.depthClamp;
         enabledFeatures.depthBiasClamp = features.depthBiasClamp;
 
-        // ³í¸® ÀåÄ¡ »ı¼º Á¤º¸ ±¸Á¶Ã¼¸¦ ÃÊ±âÈ­ÇÕ´Ï´Ù.
+        // ë…¼ë¦¬ ì¥ì¹˜ ìƒì„± ì •ë³´ êµ¬ì¡°ì²´ë¥¼ ì´ˆê¸°í™”í•©ë‹ˆë‹¤.
         VkDeviceCreateInfo createInfo{};
 
-        createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;                            // ±¸Á¶Ã¼ Å¸ÀÔÀ» ÁöÁ¤ÇÕ´Ï´Ù.
-        createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());   // Å¥ »ı¼º Á¤º¸ÀÇ °³¼ö¸¦ ¼³Á¤ÇÕ´Ï´Ù.
+        createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;                            // êµ¬ì¡°ì²´ íƒ€ì…ì„ ì§€ì •í•©ë‹ˆë‹¤.
+        createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());   // í ìƒì„± ì •ë³´ì˜ ê°œìˆ˜ë¥¼ ì„¤ì •í•©ë‹ˆë‹¤.
         createInfo.pQueueCreateInfos = queueCreateInfos.data();
-        createInfo.enabledExtensionCount = static_cast<uint32_t>(coreDeviceExtensions.size());  // È°¼ºÈ­ÇÒ È®Àå °³¼ö¸¦ ¼³Á¤ÇÕ´Ï´Ù.
-        createInfo.ppEnabledExtensionNames = coreDeviceExtensions.data();                       // È°¼ºÈ­ÇÒ È®Àå ¸ñ·ÏÀ» ¼³Á¤ÇÕ´Ï´Ù.
+        createInfo.enabledExtensionCount = static_cast<uint32_t>(coreDeviceExtensions.size());  // í™œì„±í™”í•  í™•ì¥ ê°œìˆ˜ë¥¼ ì„¤ì •í•©ë‹ˆë‹¤.
+        createInfo.ppEnabledExtensionNames = coreDeviceExtensions.data();                       // í™œì„±í™”í•  í™•ì¥ ëª©ë¡ì„ ì„¤ì •í•©ë‹ˆë‹¤.
 
         VkPhysicalDeviceFeatures2 physicalDeviceFeatures2{};
         physicalDeviceFeatures2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
@@ -350,7 +350,7 @@ namespace vkengine {
             _VK_CHECK_RESULT_(vkCreateCommandPool(this->logicaldevice, &poolInfo, nullptr, &this->graphicsCommandPool));
         }
 
-        // ±×·¡ÇÈ½º¿Í ÄÄÇ»Æ®°¡ °°Àº ÆĞ¹Ğ¸®¸é Ä¿¸Çµå Ç®µµ ÇÏ³ª¸¸ »ı¼º
+        // ê·¸ë˜í”½ìŠ¤ì™€ ì»´í“¨íŠ¸ê°€ ê°™ì€ íŒ¨ë°€ë¦¬ë©´ ì»¤ë§¨ë“œ í’€ë„ í•˜ë‚˜ë§Œ ìƒì„±
         if (queueFamilyIndices.grapicFamily != queueFamilyIndices.computerFamily)
         {
             VkCommandPoolCreateInfo poolInfo = helper::commandPoolCreateInfo(queueFamilyIndices.computerFamily, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
@@ -389,10 +389,10 @@ namespace vkengine {
             _PRINT_TO_CONSOLE_("Error:: createQueues:: invalid queue family index");
             return false;
         }
-        // ±×·¡ÇÈ Å¥ ÇÚµéÀ» °¡Á®¿É´Ï´Ù.
+        // ê·¸ë˜í”½ í í•¸ë“¤ì„ ê°€ì ¸ì˜µë‹ˆë‹¤.
         vkGetDeviceQueue(this->logicaldevice, this->queueFamilyIndices.grapicFamily, 0, &this->graphicsVKQueue);
 
-        // ÄÄÇ»ÅÍ Å¥ ÇÚµéÀ» °¡Á®¿É´Ï´Ù.
+        // ì»´í“¨í„° í í•¸ë“¤ì„ ê°€ì ¸ì˜µë‹ˆë‹¤.
         if (queueFamilyIndices.computerFamily != queueFamilyIndices.grapicFamily &&
             queueFamilyIndices.computerFamily != uint32_t(-1)) {
             vkGetDeviceQueue(this->logicaldevice, queueFamilyIndices.computerFamily, 0, &this->computerVKQueue);
@@ -401,7 +401,7 @@ namespace vkengine {
             this->computerVKQueue = this->graphicsVKQueue;
         }
 
-        // Æ®·£½ºÆÛ Å¥ ÇÚµéÀ» °¡Á®¿É´Ï´Ù.
+        // íŠ¸ëœìŠ¤í¼ í í•¸ë“¤ì„ ê°€ì ¸ì˜µë‹ˆë‹¤.
         if (queueFamilyIndices.transferFamily != queueFamilyIndices.grapicFamily &&
             queueFamilyIndices.transferFamily != queueFamilyIndices.computerFamily &&
             queueFamilyIndices.transferFamily != uint32_t(-1)) {

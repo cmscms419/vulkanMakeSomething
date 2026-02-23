@@ -31,7 +31,7 @@ cUChar* load_png_rgba(const cChar* filename, cUint32_t* width, cUint32_t* height
     *width = png_get_image_width(png_ptr, info_ptr);
     *height = png_get_image_height(png_ptr, info_ptr);
 
-    // RGBA «¸Ωƒ¿∏∑Œ ∫Ø»Ø º≥¡§
+    // RGBA ÌòïÏãùÏúºÎ°ú Î≥ÄÌôò ÏÑ§Ï†ï
     png_set_expand(png_ptr);
     if (png_get_color_type(png_ptr, info_ptr) == PNG_COLOR_TYPE_GRAY ||
         png_get_color_type(png_ptr, info_ptr) == PNG_COLOR_TYPE_GRAY_ALPHA)
@@ -41,7 +41,7 @@ cUChar* load_png_rgba(const cChar* filename, cUint32_t* width, cUint32_t* height
 
     png_read_update_info(png_ptr, info_ptr);
 
-    // µ•¿Ã≈Õ ¿–±‚
+    // Îç∞Ïù¥ÌÑ∞ ÏùΩÍ∏∞
     png_bytep* row_pointers = (png_bytep*)malloc(sizeof(png_bytep) * (*height));
     cUChar* image_data = (cUChar*)malloc((*width) * (*height) * 4);
 

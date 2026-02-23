@@ -26,36 +26,36 @@ namespace vkengine
             imageCount = swapChainSupport.capabilities.maxImageCount;
         }
 
-        // ½º¿Ò Ã¼ÀÎ »ı¼º Á¤º¸ ±¸Á¶Ã¼¸¦ ÃÊ±âÈ­ÇÕ´Ï´Ù.
+        // ìŠ¤ì™‘ ì²´ì¸ ìƒì„± ì •ë³´ êµ¬ì¡°ì²´ë¥¼ ì´ˆê¸°í™”í•©ë‹ˆë‹¤.
         VkSwapchainCreateInfoKHR createInfo{};
         createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
         createInfo.surface = this->surface;
 
-        createInfo.minImageCount = imageCount;                          // ÀÌ¹ÌÁö °³¼ö¸¦ ¼³Á¤ÇÕ´Ï´Ù.
-        createInfo.imageFormat = surfaceFormat.format;                  // ÀÌ¹ÌÁö Çü½ÄÀ» ¼³Á¤ÇÕ´Ï´Ù.
-        createInfo.imageColorSpace = surfaceFormat.colorSpace;          // ÀÌ¹ÌÁö »ö»ó °ø°£À» ¼³Á¤ÇÕ´Ï´Ù.
-        createInfo.imageExtent = extent;                                // ÀÌ¹ÌÁö ÇØ»óµµ¸¦ ¼³Á¤ÇÕ´Ï´Ù.
-        createInfo.imageArrayLayers = 1;                                // ÀÌ¹ÌÁö ¹è¿­ ·¹ÀÌ¾î¸¦ ¼³Á¤ÇÕ´Ï´Ù.
-        createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;    // ÀÌ¹ÌÁö »ç¿ë ¹æ¹ıÀ» ¼³Á¤ÇÕ´Ï´Ù.
+        createInfo.minImageCount = imageCount;                          // ì´ë¯¸ì§€ ê°œìˆ˜ë¥¼ ì„¤ì •í•©ë‹ˆë‹¤.
+        createInfo.imageFormat = surfaceFormat.format;                  // ì´ë¯¸ì§€ í˜•ì‹ì„ ì„¤ì •í•©ë‹ˆë‹¤.
+        createInfo.imageColorSpace = surfaceFormat.colorSpace;          // ì´ë¯¸ì§€ ìƒ‰ìƒ ê³µê°„ì„ ì„¤ì •í•©ë‹ˆë‹¤.
+        createInfo.imageExtent = extent;                                // ì´ë¯¸ì§€ í•´ìƒë„ë¥¼ ì„¤ì •í•©ë‹ˆë‹¤.
+        createInfo.imageArrayLayers = 1;                                // ì´ë¯¸ì§€ ë°°ì—´ ë ˆì´ì–´ë¥¼ ì„¤ì •í•©ë‹ˆë‹¤.
+        createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;    // ì´ë¯¸ì§€ ì‚¬ìš© ë°©ë²•ì„ ì„¤ì •í•©ë‹ˆë‹¤.
 
-        // Å¥ ÆĞ¹Ğ¸® ÀÎµ¦½º¸¦ °¡Á®¿É´Ï´Ù.
+        // í íŒ¨ë°€ë¦¬ ì¸ë±ìŠ¤ë¥¼ ê°€ì ¸ì˜µë‹ˆë‹¤.
         uint32_t queueFamilyIndices[] = { VKqueueFamilyIndices->graphicsAndComputeFamily, VKqueueFamilyIndices->presentFamily };
 
-        // ¿©·¯ Å¥ ÆĞ¹Ğ¸®¿¡ °ÉÃÄ »ç¿ëµÉ ½º¿Ò Ã¼ÀÎ ÀÌ¹ÌÁö¸¦ Ã³¸®ÇÏ´Â ¹æ¹ıÀ» ÁöÁ¤
+        // ì—¬ëŸ¬ í íŒ¨ë°€ë¦¬ì— ê±¸ì³ ì‚¬ìš©ë  ìŠ¤ì™‘ ì²´ì¸ ì´ë¯¸ì§€ë¥¼ ì²˜ë¦¬í•˜ëŠ” ë°©ë²•ì„ ì§€ì •
         if (VKqueueFamilyIndices->graphicsAndComputeFamily != VKqueueFamilyIndices->presentFamily) {
-            createInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT; // µ¿½Ã °øÀ¯ ¸ğµå¸¦ ¼³Á¤ÇÕ´Ï´Ù.
+            createInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT; // ë™ì‹œ ê³µìœ  ëª¨ë“œë¥¼ ì„¤ì •í•©ë‹ˆë‹¤.
             createInfo.queueFamilyIndexCount = 2;
             createInfo.pQueueFamilyIndices = queueFamilyIndices;
         }
         else {
-            createInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;  // ¹èÅ¸Àû °øÀ¯ ¸ğµå¸¦ ¼³Á¤ÇÕ´Ï´Ù.
+            createInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;  // ë°°íƒ€ì  ê³µìœ  ëª¨ë“œë¥¼ ì„¤ì •í•©ë‹ˆë‹¤.
         }
 
-        createInfo.preTransform = swapChainSupport.capabilities.currentTransform; // ÀÌ¹ÌÁö º¯È¯À» ¼³Á¤ÇÕ´Ï´Ù.
-        createInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;            // ¾ËÆÄ ºí·»µùÀ» ¼³Á¤ÇÕ´Ï´Ù.
-        createInfo.presentMode = presentMode;                                     // ÇÁ·¹Á¨Å×ÀÌ¼Ç ¸ğµå¸¦ ¼³Á¤ÇÕ´Ï´Ù.
-        createInfo.clipped = VK_TRUE;                                             // Å¬¸®ÇÎÀ» ¼³Á¤ÇÕ´Ï´Ù. -> ´Ù¸¥ Ã¢ÀÌ ¾Õ¿¡ ÀÖ±â ¶§¹®¿¡ °¡·ÁÁø ÇÈ¼¿ÀÇ »ö»óÀ» ½Å°æ ¾²Áö ¾Ê´Â´Ù´Â ÀÇ¹Ì
-        createInfo.oldSwapchain = VK_NULL_HANDLE;                                 // ÀÌÀü ½º¿Ò Ã¼ÀÎÀ» ¼³Á¤ÇÕ´Ï´Ù. -> ³ªÁß¿¡ ¼³Á¤
+        createInfo.preTransform = swapChainSupport.capabilities.currentTransform; // ì´ë¯¸ì§€ ë³€í™˜ì„ ì„¤ì •í•©ë‹ˆë‹¤.
+        createInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;            // ì•ŒíŒŒ ë¸”ë Œë”©ì„ ì„¤ì •í•©ë‹ˆë‹¤.
+        createInfo.presentMode = presentMode;                                     // í”„ë ˆì  í…Œì´ì…˜ ëª¨ë“œë¥¼ ì„¤ì •í•©ë‹ˆë‹¤.
+        createInfo.clipped = VK_TRUE;                                             // í´ë¦¬í•‘ì„ ì„¤ì •í•©ë‹ˆë‹¤. -> ë‹¤ë¥¸ ì°½ì´ ì•ì— ìˆê¸° ë•Œë¬¸ì— ê°€ë ¤ì§„ í”½ì…€ì˜ ìƒ‰ìƒì„ ì‹ ê²½ ì“°ì§€ ì•ŠëŠ”ë‹¤ëŠ” ì˜ë¯¸
+        createInfo.oldSwapchain = VK_NULL_HANDLE;                                 // ì´ì „ ìŠ¤ì™‘ ì²´ì¸ì„ ì„¤ì •í•©ë‹ˆë‹¤. -> ë‚˜ì¤‘ì— ì„¤ì •
 
         _VK_CHECK_RESULT_(vkCreateSwapchainKHR(this->logicaldevice, &createInfo, nullptr, &this->swapChain));
 
@@ -107,19 +107,19 @@ namespace vkengine
         }
     }
 
-    // ¼­ÇÇ½º Æ÷¸ËÀ» ¼±ÅÃÇÏ´Â ÇÔ¼ö
-    // SRGB »ö»ó °ø°£À» Áö¿øÇÏ´Â 32ºñÆ® BGR »ö»ó ±¸Á¶¸¦ ¼±ÅÃ
-    // ÀÌ·¯ÇÑ Çü½ÄÀÌ Áö¿øµÇÁö ¾ÊÀ¸¸é Ã¹ ¹øÂ° Çü½ÄÀ» ¹İÈ¯
-    // ÀÌ·¯ÇÑ Çü½ÄÀÌ ¾øÀ¸¸é ¿¹¿Ü¸¦ ¹ß»ı½ÃÅµ´Ï´Ù.
+    // ì„œí”¼ìŠ¤ í¬ë§·ì„ ì„ íƒí•˜ëŠ” í•¨ìˆ˜
+    // SRGB ìƒ‰ìƒ ê³µê°„ì„ ì§€ì›í•˜ëŠ” 32ë¹„íŠ¸ BGR ìƒ‰ìƒ êµ¬ì¡°ë¥¼ ì„ íƒ
+    // ì´ëŸ¬í•œ í˜•ì‹ì´ ì§€ì›ë˜ì§€ ì•Šìœ¼ë©´ ì²« ë²ˆì§¸ í˜•ì‹ì„ ë°˜í™˜
+    // ì´ëŸ¬í•œ í˜•ì‹ì´ ì—†ìœ¼ë©´ ì˜ˆì™¸ë¥¼ ë°œìƒì‹œí‚µë‹ˆë‹¤.
     VkSurfaceFormatKHR VKSwapChain::chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats)
     {
         VkSurfaceFormatKHR targetformat = {};
 
         for (const auto& availableFormat : availableFormats)
         {
-            if (availableFormat.format == VK_FORMAT_B8G8R8A8_SRGB &&            // 32ºñÆ® BGR »ö»ó ±¸Á¶¸¦ Áö¿øÇÏ´ÂÁö È®ÀÎ
-            //if (availableFormat.format == VK_FORMAT_B8G8R8A8_UNORM &&            // 32ºñÆ® BGR »ö»ó ±¸Á¶¸¦ Áö¿øÇÏ´ÂÁö È®ÀÎ
-                availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR // SRGB »ö»ó °ø°£À» Áö¿øÇÏ´ÂÁö È®ÀÎ
+            if (availableFormat.format == VK_FORMAT_B8G8R8A8_SRGB &&            // 32ë¹„íŠ¸ BGR ìƒ‰ìƒ êµ¬ì¡°ë¥¼ ì§€ì›í•˜ëŠ”ì§€ í™•ì¸
+            //if (availableFormat.format == VK_FORMAT_B8G8R8A8_UNORM &&            // 32ë¹„íŠ¸ BGR ìƒ‰ìƒ êµ¬ì¡°ë¥¼ ì§€ì›í•˜ëŠ”ì§€ í™•ì¸
+                availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR // SRGB ìƒ‰ìƒ ê³µê°„ì„ ì§€ì›í•˜ëŠ”ì§€ í™•ì¸
                 )
             {
                 targetformat = availableFormat;
@@ -130,9 +130,9 @@ namespace vkengine
         return targetformat;
     }
 
-    // ÇÁ·¹Á¨Å×ÀÌ¼Ç ¸ğµå¸¦ ¼±ÅÃÇÏ´Â ÇÔ¼ö
-    // VK_PRESENT_MODE_MAILBOX_KHR ÇÁ·¹Á¨Å×ÀÌ¼Ç ¸ğµå¸¦ Áö¿øÇÏ´ÂÁö È®ÀÎ
-    // Áö¿øµÇ´Â °æ¿ì VK_PRESENT_MODE_MAILBOX_KHR¸¦ ¹İÈ¯
+    // í”„ë ˆì  í…Œì´ì…˜ ëª¨ë“œë¥¼ ì„ íƒí•˜ëŠ” í•¨ìˆ˜
+    // VK_PRESENT_MODE_MAILBOX_KHR í”„ë ˆì  í…Œì´ì…˜ ëª¨ë“œë¥¼ ì§€ì›í•˜ëŠ”ì§€ í™•ì¸
+    // ì§€ì›ë˜ëŠ” ê²½ìš° VK_PRESENT_MODE_MAILBOX_KHRë¥¼ ë°˜í™˜
     VkPresentModeKHR VKSwapChain::chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes)
     {
         for (const auto& availablePresentMode : availablePresentModes) {
@@ -143,9 +143,9 @@ namespace vkengine
         return VK_PRESENT_MODE_FIFO_KHR;
     }
 
-    // ½º¿Ò Ã¼ÀÎ ÀÌ¹ÌÁöÀÇ ÇØ»óµµ¸¦ ¼±ÅÃÇÕ´Ï´Ù.
-    // common_.h ¿¡ Á¤ÀÇµÈ Å©±â¸¦ ±âÁØÀ¸·Î ÇØ»óµµ¸¦ ¼³Á¤ÇÕ´Ï´Ù.
-    // ÇØ»óµµ´Â ÃÖ¼Ò ¹× ÃÖ´ë ÀÌ¹ÌÁö ÇØ»óµµ »çÀÌ¿¡¼­ Å¬·¥ÇÁµË´Ï´Ù.
+    // ìŠ¤ì™‘ ì²´ì¸ ì´ë¯¸ì§€ì˜ í•´ìƒë„ë¥¼ ì„ íƒí•©ë‹ˆë‹¤.
+    // common_.h ì— ì •ì˜ëœ í¬ê¸°ë¥¼ ê¸°ì¤€ìœ¼ë¡œ í•´ìƒë„ë¥¼ ì„¤ì •í•©ë‹ˆë‹¤.
+    // í•´ìƒë„ëŠ” ìµœì†Œ ë° ìµœëŒ€ ì´ë¯¸ì§€ í•´ìƒë„ ì‚¬ì´ì—ì„œ í´ë¨í”„ë©ë‹ˆë‹¤.
     VkExtent2D VKSwapChain::chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities)
     {
         if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max()) {

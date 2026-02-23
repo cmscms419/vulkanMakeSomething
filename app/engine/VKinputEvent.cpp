@@ -16,9 +16,9 @@ namespace vkengine
                 glfwSetWindowShouldClose(window, GLFW_TRUE);
             }
             
-            // À¯È¿ÇÑ Å°ÀÎÁö È®ÀÎ
+            // ìœ íš¨í•œ í‚¤ì¸ì§€ í™•ì¸
             if (key < GLFW_KEY_A || key > GLFW_KEY_Z) {
-                return; // À¯È¿ÇÏÁö ¾ÊÀº Å°´Â ¹«½Ã
+                return; // ìœ íš¨í•˜ì§€ ì•Šì€ í‚¤ëŠ” ë¬´ì‹œ
             }
 
             if (action == GLFW_PRESS || action == GLFW_REPEAT) 
@@ -53,8 +53,8 @@ namespace vkengine
             }
             else
             {
-                // ´Ù¸¥ ¸¶¿ì½º ¹öÆ°¿¡ ´ëÇÑ Ã³¸®
-                // ¾ÆÁ÷ ±¸ÇöÇÏÁö ¾ÊÀ½
+                // ë‹¤ë¥¸ ë§ˆìš°ìŠ¤ ë²„íŠ¼ì— ëŒ€í•œ ì²˜ë¦¬
+                // ì•„ì§ êµ¬í˜„í•˜ì§€ ì•ŠìŒ
                 _PRINT_TO_CONSOLE_("Mouse button %d action %d not handled yet.\n", button, action);
             }
         }

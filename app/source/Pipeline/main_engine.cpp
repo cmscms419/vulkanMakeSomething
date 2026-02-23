@@ -25,7 +25,7 @@ int main(int argc, char* argv[]) {
         root_path = path;
     }
     else {
-        std::cerr << "°æ·Î¸¦ °¡Á®¿À´Â µ¥ ½ÇÆĞÇß½À´Ï´Ù." << std::endl;
+        std::cerr << "ê²½ë¡œë¥¼ ê°€ì ¸ì˜¤ëŠ” ë° ì‹¤íŒ¨í–ˆìŠµë‹ˆë‹¤." << std::endl;
     }
 
     std::vector<const char*> requiredInstanceExtensions = {};
@@ -126,11 +126,11 @@ int main(int argc, char* argv[]) {
 
     if (stbi_write_jpg(outputImageFilename.c_str(), width, height, 4, data, 90))
     {
-        _PRINT_TO_CONSOLE_("ÀÌ¹ÌÁö°¡ ¼º°øÀûÀ¸·Î ÀúÀåµÇ¾ú½À´Ï´Ù.\n");
+        _PRINT_TO_CONSOLE_("ì´ë¯¸ì§€ê°€ ì„±ê³µì ìœ¼ë¡œ ì €ì¥ë˜ì—ˆìŠµë‹ˆë‹¤.\n");
     }
     else
     {
-        _PRINT_TO_CONSOLE_("ÀÌ¹ÌÁö ÀúÀå¿¡ ½ÇÆĞÇß½À´Ï´Ù.\n");
+        _PRINT_TO_CONSOLE_("ì´ë¯¸ì§€ ì €ì¥ì— ì‹¤íŒ¨í–ˆìŠµë‹ˆë‹¤.\n");
     }
 
 

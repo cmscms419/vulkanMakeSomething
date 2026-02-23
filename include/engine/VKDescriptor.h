@@ -19,7 +19,7 @@ namespace vkengine {
 
         void destroyDescriptor();
 
-        virtual void createDescriptorSetLayout(cBool useTexture) = 0; // ¼¼ÀÌ´õ°¡ ÁöÁ¤µÈ À§Ä¡ÀÇ ¸®¼Ò½º¸¦ ÀĞÀ» ¼ö ÀÖ°Ô ÇØÁÖ´Â ÀÎÅÍÆäÀÌ½º Á¦°ø
+        virtual void createDescriptorSetLayout(cBool useTexture) = 0; // ì„¸ì´ë”ê°€ ì§€ì •ëœ ìœ„ì¹˜ì˜ ë¦¬ì†ŒìŠ¤ë¥¼ ì½ì„ ìˆ˜ ìˆê²Œ í•´ì£¼ëŠ” ì¸í„°í˜ì´ìŠ¤ ì œê³µ
         virtual void createDescriptorPool(cBool useTexture) = 0;
         virtual void createDescriptorSets(cBool useTexture) = 0;
         virtual void updateDescriptorSets() = 0;
@@ -40,7 +40,7 @@ namespace vkengine {
 
     protected:
 
-        VkPipelineLayout VKpipelineLayout{ VK_NULL_HANDLE }; // ÆÄÀÌÇÁ¶óÀÎ ·¹ÀÌ¾Æ¿ô -> ÆÄÀÌÇÁ¶óÀÎ ·¹ÀÌ¾Æ¿ôÀ» »ı¼º
+        VkPipelineLayout VKpipelineLayout{ VK_NULL_HANDLE }; // íŒŒì´í”„ë¼ì¸ ë ˆì´ì•„ì›ƒ -> íŒŒì´í”„ë¼ì¸ ë ˆì´ì•„ì›ƒì„ ìƒì„±
 
         VkDescriptorSetLayout VKdescriptorSetLayout{ VK_NULL_HANDLE };
         VkDescriptorSetLayoutCreateInfo layoutInfo{};
@@ -52,10 +52,10 @@ namespace vkengine {
         VkDescriptorSetAllocateInfo allocInfo{};
 
         VkDevice logicaldevice{ VK_NULL_HANDLE };
-        uint16_t frames = 0; // ÇÁ·¹ÀÓ ¼ö
+        uint16_t frames = 0; // í”„ë ˆì„ ìˆ˜
     };
 
-    // VKDescriptor2´Â VKDescriptor¿Í ´Ş¸® https://github.com/SaschaWillems/Vulkan¸¦ º¸°í »õ·Î ¸¸µå´Â Descriptor ±¸Á¶Ã¼ÀÔ´Ï´Ù.
+    // VKDescriptor2ëŠ” VKDescriptorì™€ ë‹¬ë¦¬ https://github.com/SaschaWillems/Vulkanë¥¼ ë³´ê³  ìƒˆë¡œ ë§Œë“œëŠ” Descriptor êµ¬ì¡°ì²´ì…ë‹ˆë‹¤.
     struct VKDescriptor2
     {
         VKDescriptor2(VkDevice device = VK_NULL_HANDLE, cUint16_t frames = 0) : logicaldevice(device), frames(frames) {};
@@ -88,7 +88,7 @@ namespace vkengine {
         void destroyDescriptorPool();
         void destroyPipelineLayouts();
 
-        VkPipelineLayout VKpipelineLayout{ VK_NULL_HANDLE }; // ÆÄÀÌÇÁ¶óÀÎ ·¹ÀÌ¾Æ¿ô -> ÆÄÀÌÇÁ¶óÀÎ ·¹ÀÌ¾Æ¿ôÀ» »ı¼º
+        VkPipelineLayout VKpipelineLayout{ VK_NULL_HANDLE }; // íŒŒì´í”„ë¼ì¸ ë ˆì´ì•„ì›ƒ -> íŒŒì´í”„ë¼ì¸ ë ˆì´ì•„ì›ƒì„ ìƒì„±
 
         VkDescriptorSetLayout VKdescriptorSetLayout{ VK_NULL_HANDLE };
         VkDescriptorSetLayoutCreateInfo layoutInfo{};
@@ -100,7 +100,7 @@ namespace vkengine {
         VkDescriptorSetAllocateInfo allocInfo{};
 
         VkDevice logicaldevice{ VK_NULL_HANDLE };
-        uint16_t frames = 0; // ÇÁ·¹ÀÓ ¼ö
+        uint16_t frames = 0; // í”„ë ˆì„ ìˆ˜
     };
 
 }

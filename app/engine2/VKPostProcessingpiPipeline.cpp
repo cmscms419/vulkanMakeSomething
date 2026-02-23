@@ -9,7 +9,7 @@ namespace vkengine {
         VkSampleCountFlagBits msaaSamples
     )
     {
-        // pipeline_ ª˝º∫ postprocessing ª˝º∫ «ÿæﬂ«‘
+        // pipeline_ ÏÉùÏÑ± postprocessing ÏÉùÏÑ± Ìï¥ÏïºÌï®
 
         std::vector<VkVertexInputAttributeDescription> vertexInputAttributes{};
 
@@ -28,7 +28,7 @@ namespace vkengine {
         vertexInputStateCI.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
         vertexInputStateCI.pNext = nullptr;
         vertexInputStateCI.flags = 0;
-        vertexInputStateCI.vertexBindingDescriptionCount = 0;      // 0¿∏∑Œ º≥¡§!
+        vertexInputStateCI.vertexBindingDescriptionCount = 0;      // 0ÏúºÎ°ú ÏÑ§Ï†ï!
         vertexInputStateCI.pVertexBindingDescriptions = nullptr;
         vertexInputStateCI.vertexAttributeDescriptionCount = 0;
         vertexInputStateCI.pVertexAttributeDescriptions = nullptr;
@@ -128,7 +128,7 @@ namespace vkengine {
         multisampleStateCI.alphaToCoverageEnable = VK_FALSE;
         multisampleStateCI.alphaToOneEnable = VK_FALSE;
 
-        /** VkPipelineRenderingCreateInfo colorAttachment ¬¸∞Ì
+        /** VkPipelineRenderingCreateInfo colorAttachment Ï∞∏Í≥†
         // In your fragment shader:
          layout(location = 0) out vec4 outColor;    // Maps to colorFormats[0]
          layout(location = 1) out vec4 outNormal;   // Maps to colorFormats[1]
@@ -136,9 +136,9 @@ namespace vkengine {
 
         // In VkPipelineRenderingCreateInfo:
          vector<VkFormat> colorFormats = {
-             VK_FORMAT_R8G8B8A8_UNORM,      // Index 0 °Ê layout(location = 0)
-             VK_FORMAT_R16G16B16A16_SFLOAT, // Index 1 °Ê layout(location = 1)
-             VK_FORMAT_R32_SFLOAT           // Index 2 °Ê layout(location = 2)
+             VK_FORMAT_R8G8B8A8_UNORM,      // Index 0 ‚Üí layout(location = 0)
+             VK_FORMAT_R16G16B16A16_SFLOAT, // Index 1 ‚Üí layout(location = 1)
+             VK_FORMAT_R32_SFLOAT           // Index 2 ‚Üí layout(location = 2)
          };
         */
 

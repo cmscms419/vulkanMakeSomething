@@ -25,7 +25,7 @@ namespace vkengine
 
     protected:
         virtual bool init_sync_structures() override;
-        virtual void recordCommandBuffer(FrameData* framedata, uint32_t imageIndex) override; // Ä¿¸Çµå ¹öÆÛ ·¹ÄÚµå
+        virtual void recordCommandBuffer(FrameData* framedata, uint32_t imageIndex) override; // ì»¤ë§¨ë“œ ë²„í¼ ë ˆì½”ë“œ
 
     private:
 
@@ -42,22 +42,22 @@ namespace vkengine
         } shaderData;
 
         VkPipelineLayout pipelineLayout{ VK_NULL_HANDLE };
-        DescriptorManager manager; // µğ½ºÅ©¸³ÅÍ Ç®°ú ·¹ÀÌ¾Æ¿ôÀ» °ü¸®ÇÏ´Â °´Ã¼
+        DescriptorManager manager; // ë””ìŠ¤í¬ë¦½í„° í’€ê³¼ ë ˆì´ì•„ì›ƒì„ ê´€ë¦¬í•˜ëŠ” ê°ì²´
 
         struct DescriptorSetlayoutAndSet {
-            cString name = ""; // µğ½ºÅ©¸³ÅÍ ¼¼Æ® ÀÌ¸§
-            VkDescriptorSetLayout layout{ VK_NULL_HANDLE }; // ±âº» ·¹ÀÌ¾Æ¿ô
-            VkDescriptorSet descriptorSet{ VK_NULL_HANDLE }; // ±âº» µğ½ºÅ©¸³ÅÍ ¼¼Æ®
+            cString name = ""; // ë””ìŠ¤í¬ë¦½í„° ì„¸íŠ¸ ì´ë¦„
+            VkDescriptorSetLayout layout{ VK_NULL_HANDLE }; // ê¸°ë³¸ ë ˆì´ì•„ì›ƒ
+            VkDescriptorSet descriptorSet{ VK_NULL_HANDLE }; // ê¸°ë³¸ ë””ìŠ¤í¬ë¦½í„° ì„¸íŠ¸
         } matrixDescritor;
 
-        // imgui °ü·Ã
+        // imgui ê´€ë ¨
         vkGUI* vkGUI = nullptr;
         vkengine::object::GLTFmodelObject* modelObject = nullptr;
 
-        VkPipeline VKgraphicsPipeline = VK_NULL_HANDLE;     // ¸ğµ¨ ¿ÀºêÁ§Æ® ÆÄÀÌÇÁ¶óÀÎ
+        VkPipeline VKgraphicsPipeline = VK_NULL_HANDLE;     // ëª¨ë¸ ì˜¤ë¸Œì íŠ¸ íŒŒì´í”„ë¼ì¸
         VkDescriptorPool VKModelDescriptorPool{ VK_NULL_HANDLE };
 
-        // °¢ 3d ¸ğµ¨À» »ı¼ºÇÏ±â À§ÇÑ ÇÔ¼ö
+        // ê° 3d ëª¨ë¸ì„ ìƒì„±í•˜ê¸° ìœ„í•œ í•¨ìˆ˜
         void createVertexbuffer();
         void createIndexBuffer();
         void createUniformBuffers();
@@ -69,7 +69,7 @@ namespace vkengine
 
         void cleanupSwapcChain();
 
-        // ÀÓ½ÃÀûÀÎ ÇÔ¼ö -> ³ªÁß¿¡ Á¤¸®ÇØ¼­ ¾î¶»°Ô ÇÒÁö Á¤ÀÇÇØ¾ß ÇÔ
+        // ì„ì‹œì ì¸ í•¨ìˆ˜ -> ë‚˜ì¤‘ì— ì •ë¦¬í•´ì„œ ì–´ë–»ê²Œ í• ì§€ ì •ì˜í•´ì•¼ í•¨
         void drawGLTF(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout);
         void drawNode(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout, Node* node, cMat4 modelObjectMatrix);
 

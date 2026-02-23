@@ -39,16 +39,16 @@ namespace vkengine {
         };
 
 
-        // Window ÀÌº¥Æ® Äİ¹é Å¸ÀÔµé
+        // Window ì´ë²¤íŠ¸ ì½œë°± íƒ€ì…ë“¤
         using WindowResizeCallback = std::function<void(cInt width, cInt height)>;
-        using WindowCloseCallback = std::function<cBool()>; // true¸é Ã¢ ´İ±â Çã¿ë
+        using WindowCloseCallback = std::function<cBool()>; // trueë©´ ì°½ ë‹«ê¸° í—ˆìš©
         using KeyCallback = std::function<void(cInt key, cInt scancode, cInt action, cInt mods)>;
         using MouseButtonCallback = std::function<void(cInt button, cInt action, cInt mods)>;
         using MouseMoveCallback = std::function<void(cDouble xpos, cDouble ypos)>;
         using ScrollCallback = std::function<void(cDouble xoffset, cDouble yoffset)>;
         using WindowFocusCallback = std::function<void(cBool focused)>;
 
-        // Window »ı¼º ¿É¼Ç
+        // Window ìƒì„± ì˜µì…˜
         struct WindowCreateInfo {
             cInt width = WIDTH;
             cInt height = HEIGHT;
@@ -65,21 +65,21 @@ namespace vkengine {
         public:
             virtual ~VirtualWindows() = default;
             
-            // À©µµ¿ì »ı¼º
+            // ìœˆë„ìš° ìƒì„±
             virtual cBool createWindow(const WindowCreateInfo& info) = 0;
             
-            // À©µµ¿ì ÀÌº¥Æ® Ã³¸®
+            // ìœˆë„ìš° ì´ë²¤íŠ¸ ì²˜ë¦¬
             virtual void pollEvents() = 0;
             virtual void waitEvents() = 0;
             
-            // À©µµ¿ì »óÅÂ È®ÀÎ
+            // ìœˆë„ìš° ìƒíƒœ í™•ì¸
             virtual cBool shouldClose() = 0;
             virtual void setShouldClose(cBool value) = 0;
             
-            // À©µµ¿ì Å©±â °¡Á®¿À±â
+            // ìœˆë„ìš° í¬ê¸° ê°€ì ¸ì˜¤ê¸°
             virtual void getFramebufferSize(int* width, int* height) = 0;
             
-            // Äİ¹é ¼³Á¤
+            // ì½œë°± ì„¤ì •
             virtual void setWindowResizeCallback(WindowResizeCallback callback) = 0;
             virtual void setWindowCloseCallback(WindowCloseCallback callback) = 0;
             virtual void setKeyCallback(KeyCallback callback) = 0;
@@ -123,7 +123,7 @@ namespace vkengine {
             WindowCreateInfo m_createInfo;
             cBool m_isCreated = false;
 
-            // Äİ¹é ÇÔ¼öµé
+            // ì½œë°± í•¨ìˆ˜ë“¤
             WindowResizeCallback m_resizeCallback;
             WindowCloseCallback m_closeCallback;
             KeyCallback m_keyCallback;
@@ -139,7 +139,7 @@ namespace vkengine {
         public:
             enum class Backend {
                 GLFW,
-                // ÇâÈÄ SDL, Win32 µî Ãß°¡ °¡´É
+                // í–¥í›„ SDL, Win32 ë“± ì¶”ê°€ ê°€ëŠ¥
             };
 
             static std::unique_ptr<VirtualWindows> create(
@@ -169,21 +169,21 @@ namespace vkengine {
                 glfwWindow(const WindowCreateInfo& createInfo);
                 ~glfwWindow() override;
 
-                // glfw À©µµ¿ì »ı¼º
+                // glfw ìœˆë„ìš° ìƒì„±
                 bool createWindow(const WindowCreateInfo& createInfo) override;
 
-                // glfw À©µµ¿ì »óÅÂ È®ÀÎ
+                // glfw ìœˆë„ìš° ìƒíƒœ í™•ì¸
                 void pollEvents() override;
                 void waitEvents() override;
 
-                // À©µµ¿ì »óÅÂ È®ÀÎ ¸Ş¼Òµåµé ±¸Çö
+                // ìœˆë„ìš° ìƒíƒœ í™•ì¸ ë©”ì†Œë“œë“¤ êµ¬í˜„
                 cBool shouldClose() override;
                 void setShouldClose(cBool value) override;
 
-                // À©µµ¿ì Å©±â °¡Á®¿À±â
+                // ìœˆë„ìš° í¬ê¸° ê°€ì ¸ì˜¤ê¸°
                 void getFramebufferSize(int* width, int* height) override;
 
-                // VKsurfaceKHR »ı¼º
+                // VKsurfaceKHR ìƒì„±
                 VkSurfaceKHR createVulkanSurface(VkInstance instance) override;
 
                 virtual std::vector<const char*> getRequiredExtensions() override;

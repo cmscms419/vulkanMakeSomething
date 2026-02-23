@@ -14,7 +14,7 @@ namespace vkengine
         class normalRander
         {
         public:
-            // Normal Rander¸¦ À§ÇÑ ÇïÆÛ ÇÔ¼öµé
+            // Normal Randerë¥¼ ìœ„í•œ í—¬í¼ í•¨ìˆ˜ë“¤
             normalRander(VulkanEngine* engine) : engine(engine) {};
 
             void cleanup();
@@ -26,14 +26,14 @@ namespace vkengine
             void setNormalRanderObjectScale(cFloat scale) { this->normalRanderObjectScale = scale; }
         private:
 
-            // Normal Rander ÆÄÀÌÇÁ¶óÀÎ °ü·Ã º¯¼öµé
+            // Normal Rander íŒŒì´í”„ë¼ì¸ ê´€ë ¨ ë³€ìˆ˜ë“¤
             VulkanEngine* engine{ nullptr };
             VkPipeline normalRanderPipeline{};
             VKDescriptor2* normalRanderDescriptor{};
 
-            UniformBuffer normalRanderUniformBuffer[2] = {}; // Normal Rander¸¦ À§ÇÑ Uniform Buffer
-            vkengine::object::ModelObject* normalRanderObject{}; // Normal Rander¸¦ À§ÇÑ ¿ÀºêÁ§Æ®
-            cFloat normalRanderObjectScale = 1.0f; // Normal Rander ¿ÀºêÁ§Æ® ½ºÄÉÀÏ
+            UniformBuffer normalRanderUniformBuffer[2] = {}; // Normal Randerë¥¼ ìœ„í•œ Uniform Buffer
+            vkengine::object::ModelObject* normalRanderObject{}; // Normal Randerë¥¼ ìœ„í•œ ì˜¤ë¸Œì íŠ¸
+            cFloat normalRanderObjectScale = 1.0f; // Normal Rander ì˜¤ë¸Œì íŠ¸ ìŠ¤ì¼€ì¼
         };
     }
 }

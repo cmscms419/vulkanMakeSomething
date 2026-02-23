@@ -76,9 +76,9 @@ namespace vkengine {
             cVec3 dir{ cVec3(0.0f, 0.0f, -1.0f) };
             cVec3 right{ cVec3(-1.0f, 0.0f, 0.0f) };
 
-            cVec3 Yaxis = cVec3(0.0f, 1.0f, 0.0f); // Y√‡ πÊ«‚ ∫§≈Õ
-            cVec3 Xaxis = cVec3(1.0f, 0.0f, 0.0f); // X√‡ πÊ«‚ ∫§≈Õ
-            cVec3 Zaxis = cVec3(0.0f, 0.0f, 1.0f); // Z√‡ πÊ«‚ ∫§≈Õ
+            cVec3 Yaxis = cVec3(0.0f, 1.0f, 0.0f); // YÏ∂ï Î∞©Ìñ• Î≤°ÌÑ∞
+            cVec3 Xaxis = cVec3(1.0f, 0.0f, 0.0f); // XÏ∂ï Î∞©Ìñ• Î≤°ÌÑ∞
+            cVec3 Zaxis = cVec3(0.0f, 0.0f, 1.0f); // ZÏ∂ï Î∞©Ìñ• Î≤°ÌÑ∞
 
             cFloat yaw{ 0.0f };
             cFloat pitch{ 0.0f };

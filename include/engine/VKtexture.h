@@ -12,12 +12,12 @@
 namespace vkengine {
 
     struct VKimageData {
-        VkImage image = VK_NULL_HANDLE;                 // ÅØ½ºÃ³ ÀÌ¹ÌÁö -> ÅØ½ºÃ³ ÀÌ¹ÌÁö¸¦ ÀúÀåÇÏ´Â µ¥ »ç¿ë
-        VkDeviceMemory imageMemory = VK_NULL_HANDLE;    // ÅØ½ºÃ³ ÀÌ¹ÌÁö ¸Ş¸ğ¸® -> ÅØ½ºÃ³ ÀÌ¹ÌÁö¸¦ ÀúÀåÇÏ´Â µ¥ »ç¿ë
-        VkImageView imageView = VK_NULL_HANDLE;         // ÅØ½ºÃ³ ÀÌ¹ÌÁö ºä -> ÅØ½ºÃ³ ÀÌ¹ÌÁö¸¦ ºä·Î º¯È¯ (ÀÌ¹ÌÁö ºä´Â ÀÌ¹ÌÁö¸¦ ÀĞ°í ¾²´Â µ¥ »ç¿ë)
-        VkSampler sampler = VK_NULL_HANDLE;             // ÅØ½ºÃ³ »ùÇÃ·¯ -> ÅØ½ºÃ³ ÀÌ¹ÌÁö¸¦ »ùÇÃ¸µÇÏ´Â µ¥ »ç¿ë
-        VkDescriptorImageInfo imageInfo{};              // ÅØ½ºÃ³ ÀÌ¹ÌÁö Á¤º¸ -> ÅØ½ºÃ³ ÀÌ¹ÌÁö¸¦ ¼³¸íÇÏ´Â µ¥ »ç¿ë
-        VkDescriptorSet descriptorSet = VK_NULL_HANDLE; // µğ½ºÅ©¸³ÅÍ ¼¼Æ® -> ÅØ½ºÃ³ ÀÌ¹ÌÁö¸¦ »ç¿ëÇÏ´Â ¼ÎÀÌ´õ¿¡ Àü´ŞµÇ´Â Á¤º¸
+        VkImage image = VK_NULL_HANDLE;                 // í…ìŠ¤ì²˜ ì´ë¯¸ì§€ -> í…ìŠ¤ì²˜ ì´ë¯¸ì§€ë¥¼ ì €ì¥í•˜ëŠ” ë° ì‚¬ìš©
+        VkDeviceMemory imageMemory = VK_NULL_HANDLE;    // í…ìŠ¤ì²˜ ì´ë¯¸ì§€ ë©”ëª¨ë¦¬ -> í…ìŠ¤ì²˜ ì´ë¯¸ì§€ë¥¼ ì €ì¥í•˜ëŠ” ë° ì‚¬ìš©
+        VkImageView imageView = VK_NULL_HANDLE;         // í…ìŠ¤ì²˜ ì´ë¯¸ì§€ ë·° -> í…ìŠ¤ì²˜ ì´ë¯¸ì§€ë¥¼ ë·°ë¡œ ë³€í™˜ (ì´ë¯¸ì§€ ë·°ëŠ” ì´ë¯¸ì§€ë¥¼ ì½ê³  ì“°ëŠ” ë° ì‚¬ìš©)
+        VkSampler sampler = VK_NULL_HANDLE;             // í…ìŠ¤ì²˜ ìƒ˜í”ŒëŸ¬ -> í…ìŠ¤ì²˜ ì´ë¯¸ì§€ë¥¼ ìƒ˜í”Œë§í•˜ëŠ” ë° ì‚¬ìš©
+        VkDescriptorImageInfo imageInfo{};              // í…ìŠ¤ì²˜ ì´ë¯¸ì§€ ì •ë³´ -> í…ìŠ¤ì²˜ ì´ë¯¸ì§€ë¥¼ ì„¤ëª…í•˜ëŠ” ë° ì‚¬ìš©
+        VkDescriptorSet descriptorSet = VK_NULL_HANDLE; // ë””ìŠ¤í¬ë¦½í„° ì„¸íŠ¸ -> í…ìŠ¤ì²˜ ì´ë¯¸ì§€ë¥¼ ì‚¬ìš©í•˜ëŠ” ì…°ì´ë”ì— ì „ë‹¬ë˜ëŠ” ì •ë³´
 
         void createDescriptorImageInfo()
         {
@@ -28,19 +28,19 @@ namespace vkengine {
     };
 
     struct imageResource {
-        TextureResourcePNG* resourcePNG{};     // ¸®¼Ò½º Á¤º¸ -> PNG ÅØ½ºÃ³ ¸®¼Ò½º¸¦ ¼³¸íÇÏ´Â µ¥ »ç¿ë
-        TextureResourceKTX* resourceKTX{};     // KTX ¸®¼Ò½º Á¤º¸ -> KTX ÅØ½ºÃ³ ¸®¼Ò½º¸¦ ¼³¸íÇÏ´Â µ¥ »ç¿ë
+        TextureResourcePNG* resourcePNG{};     // ë¦¬ì†ŒìŠ¤ ì •ë³´ -> PNG í…ìŠ¤ì²˜ ë¦¬ì†ŒìŠ¤ë¥¼ ì„¤ëª…í•˜ëŠ” ë° ì‚¬ìš©
+        TextureResourceKTX* resourceKTX{};     // KTX ë¦¬ì†ŒìŠ¤ ì •ë³´ -> KTX í…ìŠ¤ì²˜ ë¦¬ì†ŒìŠ¤ë¥¼ ì„¤ëª…í•˜ëŠ” ë° ì‚¬ìš©
     };
 
     struct VkTextureBase {
     public:
-        VkPhysicalDevice physicalDevice{ VK_NULL_HANDLE };  // ¹°¸® µğ¹ÙÀÌ½º -> GPU Physical Handle
-        VkDevice logicaldevice{ VK_NULL_HANDLE };           // ³í¸® µğ¹ÙÀÌ½º -> GPU Logical Handle
-        VkCommandPool commandPool{ VK_NULL_HANDLE };        // Ä¿¸Çµå Ç® -> Ä¿¸Çµå ¹öÆÛ¸¦ »ı¼ºÇÏ´Â µ¥ »ç¿ë
-        VkQueue graphicsVKQueue{ VK_NULL_HANDLE };          // ±×·¡ÇÈ½º Å¥ -> ±×·¡ÇÈ½º ¸í·ÉÀ» Ã³¸®ÇÏ´Â Å¥
-        std::vector<VKimageData> imageData{};               // ÅØ½ºÃ³ ÀÌ¹ÌÁö µ¥ÀÌÅÍ -> GPU¿¡ º¸³¾ µ¥ÀÌÅÍ
-        std::vector<imageResource> imageTextureDatas{};     // ÅØ½ºÃ³ ÀÌ¹ÌÁö µ¥ÀÌÅÍ -> ¸®¼Ò½º µ¥ÀÌÅÍ
-        cUint32_t VKmipLevels = 1;                          // ÅØ½ºÃ³ÀÇ Mip ·¹º§ ¼ö¸¦ ÀúÀå
+        VkPhysicalDevice physicalDevice{ VK_NULL_HANDLE };  // ë¬¼ë¦¬ ë””ë°”ì´ìŠ¤ -> GPU Physical Handle
+        VkDevice logicaldevice{ VK_NULL_HANDLE };           // ë…¼ë¦¬ ë””ë°”ì´ìŠ¤ -> GPU Logical Handle
+        VkCommandPool commandPool{ VK_NULL_HANDLE };        // ì»¤ë§¨ë“œ í’€ -> ì»¤ë§¨ë“œ ë²„í¼ë¥¼ ìƒì„±í•˜ëŠ” ë° ì‚¬ìš©
+        VkQueue graphicsVKQueue{ VK_NULL_HANDLE };          // ê·¸ë˜í”½ìŠ¤ í -> ê·¸ë˜í”½ìŠ¤ ëª…ë ¹ì„ ì²˜ë¦¬í•˜ëŠ” í
+        std::vector<VKimageData> imageData{};               // í…ìŠ¤ì²˜ ì´ë¯¸ì§€ ë°ì´í„° -> GPUì— ë³´ë‚¼ ë°ì´í„°
+        std::vector<imageResource> imageTextureDatas{};     // í…ìŠ¤ì²˜ ì´ë¯¸ì§€ ë°ì´í„° -> ë¦¬ì†ŒìŠ¤ ë°ì´í„°
+        cUint32_t VKmipLevels = 1;                          // í…ìŠ¤ì²˜ì˜ Mip ë ˆë²¨ ìˆ˜ë¥¼ ì €ì¥
 
         virtual void setTexturePNG(TextureResourcePNG* resourcePNG)
         {
@@ -65,27 +65,27 @@ namespace vkengine {
             this->imageTextureDatas.push_back(imageData);
         }
 
-        virtual void createTextureImagePNG() = 0; ///< ÅØ½ºÃ³ ÀÌ¹ÌÁö »ı¼º ÇÔ¼ö
+        virtual void createTextureImagePNG() = 0; ///< í…ìŠ¤ì²˜ ì´ë¯¸ì§€ ìƒì„± í•¨ìˆ˜
         virtual void createTextureImgaeKTX(VkFormat format) { _PRINT_TO_CONSOLE_("CLEATE FUNTION"); };
-        virtual void createTextureImageView(VkFormat format) = 0; ///< ÅØ½ºÃ³ ÀÌ¹ÌÁö ºä »ı¼º ÇÔ¼ö
-        virtual void createTextureSampler() = 0; ///< ÅØ½ºÃ³ »ùÇÃ·¯ »ı¼º ÇÔ¼ö
+        virtual void createTextureImageView(VkFormat format) = 0; ///< í…ìŠ¤ì²˜ ì´ë¯¸ì§€ ë·° ìƒì„± í•¨ìˆ˜
+        virtual void createTextureSampler() = 0; ///< í…ìŠ¤ì²˜ ìƒ˜í”ŒëŸ¬ ìƒì„± í•¨ìˆ˜
         virtual void cleanResource()
         {
             for (auto& imageTextureData : this->imageTextureDatas)
             {
                 if (imageTextureData.resourcePNG)
                 {
-                    delete imageTextureData.resourcePNG; // ¸®¼Ò½º ÇØÁ¦
+                    delete imageTextureData.resourcePNG; // ë¦¬ì†ŒìŠ¤ í•´ì œ
                 }
                 if (imageTextureData.resourceKTX)
                 {
-                    delete imageTextureData.resourceKTX; // ¸®¼Ò½º ÇØÁ¦
+                    delete imageTextureData.resourceKTX; // ë¦¬ì†ŒìŠ¤ í•´ì œ
                 }
             }
             this->imageTextureDatas.clear();
         }
 
-        virtual void cleanup() //< ÅØ½ºÃ³ Á¤¸® ÇÔ¼ö
+        virtual void cleanup() //< í…ìŠ¤ì²˜ ì •ë¦¬ í•¨ìˆ˜
         {
             for (VKimageData& data : this->imageData)
             {
@@ -96,14 +96,14 @@ namespace vkengine {
             }
         }
 
-        virtual void createDescriptorImageInfo() ///< ÅØ½ºÃ³ ÀÌ¹ÌÁö Á¤º¸ »ı¼º ÇÔ¼ö
+        virtual void createDescriptorImageInfo() ///< í…ìŠ¤ì²˜ ì´ë¯¸ì§€ ì •ë³´ ìƒì„± í•¨ìˆ˜
         {
             for (VKimageData& data : this->imageData) {
                 data.createDescriptorImageInfo();
             }
         }
         
-        void initializeDeviceHandles(VkPhysicalDevice physicalDevice, VkDevice logicaldevice, VkCommandPool commandPool, VkQueue graphicsVKQueue) ///< µğ¹ÙÀÌ½º ¼³Á¤ ÇÔ¼ö
+        void initializeDeviceHandles(VkPhysicalDevice physicalDevice, VkDevice logicaldevice, VkCommandPool commandPool, VkQueue graphicsVKQueue) ///< ë””ë°”ì´ìŠ¤ ì„¤ì • í•¨ìˆ˜
         {
             this->physicalDevice = physicalDevice;
             this->logicaldevice = logicaldevice;
@@ -111,39 +111,39 @@ namespace vkengine {
             this->graphicsVKQueue = graphicsVKQueue;
         }
 
-        VkTextureBase() = default; ///< ±âº» »ı¼ºÀÚ
+        VkTextureBase() = default; ///< ê¸°ë³¸ ìƒì„±ì
 
     };
 
     struct Vk2DTexture : public VkTextureBase {
-        virtual void createTextureImagePNG(); ///< ÅØ½ºÃ³ ÀÌ¹ÌÁö »ı¼º ÇÔ¼ö
+        virtual void createTextureImagePNG(); ///< í…ìŠ¤ì²˜ ì´ë¯¸ì§€ ìƒì„± í•¨ìˆ˜
         virtual void createTextureImgaeKTX(VkFormat format) {};
-        virtual void createTextureImageView(VkFormat format); ///< ÅØ½ºÃ³ ÀÌ¹ÌÁö ºä »ı¼º ÇÔ¼ö
-        virtual void createTextureSampler(); ///< ÅØ½ºÃ³ »ùÇÃ·¯ »ı¼º ÇÔ¼ö
+        virtual void createTextureImageView(VkFormat format); ///< í…ìŠ¤ì²˜ ì´ë¯¸ì§€ ë·° ìƒì„± í•¨ìˆ˜
+        virtual void createTextureSampler(); ///< í…ìŠ¤ì²˜ ìƒ˜í”ŒëŸ¬ ìƒì„± í•¨ìˆ˜
 
         Vk2DTexture() = default;
     };
 
     struct Vk2DArrayTexture : public VkTextureBase {
 
-        // https://github.com/SaschaWillems/Vulkan ÀÌ »çÀÌÆ®¿¡¼­ texturearray Âü°í
-        // ÇØ´ç ¿¹Á¦´Â ¸®¼Ò½º°¡ ¹è¿­ ÇüÅÂ·Î µÇ¾î ÀÖ¾î¼­, ¹è¿­ ÇüÅÂ·Î ÅØ½ºÃ³¸¦ ·ÎµåÇÏ´Â ¿¹Á¦ÀÌ´Ù.
-        // ÀÌ ¿¹Á¦´Â ´ÜÀÏ ¸®¼Ò½º ¿©·¯°³¸¦ °¡Á®¿À´Â ÇüÅÂ·Î ¿©·¯¹ø ¸®¼Ò½º¸¦ °¡Á®¿Â´Ù.
-        virtual void createTextureImagePNG(); ///< ÅØ½ºÃ³ ÀÌ¹ÌÁö »ı¼º ÇÔ¼ö
+        // https://github.com/SaschaWillems/Vulkan ì´ ì‚¬ì´íŠ¸ì—ì„œ texturearray ì°¸ê³ 
+        // í•´ë‹¹ ì˜ˆì œëŠ” ë¦¬ì†ŒìŠ¤ê°€ ë°°ì—´ í˜•íƒœë¡œ ë˜ì–´ ìˆì–´ì„œ, ë°°ì—´ í˜•íƒœë¡œ í…ìŠ¤ì²˜ë¥¼ ë¡œë“œí•˜ëŠ” ì˜ˆì œì´ë‹¤.
+        // ì´ ì˜ˆì œëŠ” ë‹¨ì¼ ë¦¬ì†ŒìŠ¤ ì—¬ëŸ¬ê°œë¥¼ ê°€ì ¸ì˜¤ëŠ” í˜•íƒœë¡œ ì—¬ëŸ¬ë²ˆ ë¦¬ì†ŒìŠ¤ë¥¼ ê°€ì ¸ì˜¨ë‹¤.
+        virtual void createTextureImagePNG(); ///< í…ìŠ¤ì²˜ ì´ë¯¸ì§€ ìƒì„± í•¨ìˆ˜
         virtual void createTextureImgaeKTX(VkFormat format) {};
-        virtual void createTextureImageView(VkFormat format); ///< ÅØ½ºÃ³ ÀÌ¹ÌÁö ºä »ı¼º ÇÔ¼ö
-        virtual void createTextureSampler(); ///< ÅØ½ºÃ³ »ùÇÃ·¯ »ı¼º ÇÔ¼ö
+        virtual void createTextureImageView(VkFormat format); ///< í…ìŠ¤ì²˜ ì´ë¯¸ì§€ ë·° ìƒì„± í•¨ìˆ˜
+        virtual void createTextureSampler(); ///< í…ìŠ¤ì²˜ ìƒ˜í”ŒëŸ¬ ìƒì„± í•¨ìˆ˜
 
         Vk2DArrayTexture() = default;
     private:
-        cUint32_t imageCount = 0;   // ÀÌ¹ÌÁö °³¼ö -> ÅØ½ºÃ³ ÀÌ¹ÌÁöÀÇ °³¼ö¸¦ ÀúÀå
+        cUint32_t imageCount = 0;   // ì´ë¯¸ì§€ ê°œìˆ˜ -> í…ìŠ¤ì²˜ ì´ë¯¸ì§€ì˜ ê°œìˆ˜ë¥¼ ì €ì¥
     };
 
     struct VKcubeMap : public VkTextureBase {
-        virtual void createTextureImagePNG(); ///< ÅØ½ºÃ³ ÀÌ¹ÌÁö »ı¼º ÇÔ¼ö
+        virtual void createTextureImagePNG(); ///< í…ìŠ¤ì²˜ ì´ë¯¸ì§€ ìƒì„± í•¨ìˆ˜
         virtual void createTextureImgaeKTX(VkFormat format);
-        virtual void createTextureImageView(VkFormat format); ///< ÅØ½ºÃ³ ÀÌ¹ÌÁö ºä »ı¼º ÇÔ¼ö
-        virtual void createTextureSampler(); ///< ÅØ½ºÃ³ »ùÇÃ·¯ »ı¼º ÇÔ¼ö
+        virtual void createTextureImageView(VkFormat format); ///< í…ìŠ¤ì²˜ ì´ë¯¸ì§€ ë·° ìƒì„± í•¨ìˆ˜
+        virtual void createTextureSampler(); ///< í…ìŠ¤ì²˜ ìƒ˜í”ŒëŸ¬ ìƒì„± í•¨ìˆ˜
     
         VKcubeMap() = default;
     };

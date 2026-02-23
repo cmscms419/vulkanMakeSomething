@@ -15,7 +15,7 @@
 #include "helperFile.h"
 
 
-// https://github.com/SaschaWillems/Vulkan¿¡¼­ Âü°íÇØ¼­ ÇÔ¼ö »ý¼º
+// https://github.com/SaschaWillems/Vulkanì—ì„œ ì°¸ê³ í•´ì„œ í•¨ìˆ˜ ìƒì„±
 
 namespace vkengine {
 
@@ -43,20 +43,20 @@ namespace vkengine {
 
         VkAccessFlags getFromNewLayoutToVkAccessFlags(VkImageLayout format);
 
-        // ¹°¸® µð¹ÙÀÌ½º°¡ ¿ä±¸ »çÇ×À» ÃæÁ·ÇÏ´ÂÁö È®ÀÎÇÏ´Â ÇÔ¼ö (surface Æ÷ÇÔ) -> swapchain Áö¿ø ¿©ºÎ Æ÷ÇÔ
+        // ë¬¼ë¦¬ ë””ë°”ì´ìŠ¤ê°€ ìš”êµ¬ ì‚¬í•­ì„ ì¶©ì¡±í•˜ëŠ”ì§€ í™•ì¸í•˜ëŠ” í•¨ìˆ˜ (surface í¬í•¨) -> swapchain ì§€ì› ì—¬ë¶€ í¬í•¨
         cBool isDeviceSuitableWithSurface(VkPhysicalDevice device, VkSurfaceKHR VKsurface, QueueFamilyIndices& indices);
 
-        // ¹°¸® µð¹ÙÀÌ½º°¡ ¿ä±¸ »çÇ×À» ÃæÁ·ÇÏ´ÂÁö È®ÀÎÇÏ´Â ÇÔ¼ö 
+        // ë¬¼ë¦¬ ë””ë°”ì´ìŠ¤ê°€ ìš”êµ¬ ì‚¬í•­ì„ ì¶©ì¡±í•˜ëŠ”ì§€ í™•ì¸í•˜ëŠ” í•¨ìˆ˜ 
         cBool isDeviceSuitableWithoutSurface(VkPhysicalDevice device, QueueFamilyIndices2& indices);
 
-        // ÁÖ¾îÁø ¹°¸® ÀåÄ¡¿¡¼­ Å¥ ÆÐ¹Ð¸® ¼Ó¼ºÀ» Ã£´Â ÇÔ¼ö
-        // PROB : Å¥ ÆÐ¹Ð¸®°¡ ¿©·¯°³ÀÎ °æ¿ì¿¡ ÇÊ¿äÇÑ Ã³¸®°¡ ÀÖ´Â ÆÐ¹Ð¸®¸¦ ¸ÕÀú Ã£À» °æ¿ì, ±× ÆÐ¹Ð¸®ÀÇ ÀÎµ¦½º¸¸ ¹ÝÈ¯ÇÔ
-        // TODO ; Å¥ ÆÐ¹Ð¸®°¡ ¿©·¯°³ÀÎ °æ¿ì¿¡ ´ëÇÑ Ã³¸®°¡ ÇÊ¿äÇÔ
+        // ì£¼ì–´ì§„ ë¬¼ë¦¬ ìž¥ì¹˜ì—ì„œ í íŒ¨ë°€ë¦¬ ì†ì„±ì„ ì°¾ëŠ” í•¨ìˆ˜
+        // PROB : í íŒ¨ë°€ë¦¬ê°€ ì—¬ëŸ¬ê°œì¸ ê²½ìš°ì— í•„ìš”í•œ ì²˜ë¦¬ê°€ ìžˆëŠ” íŒ¨ë°€ë¦¬ë¥¼ ë¨¼ì € ì°¾ì„ ê²½ìš°, ê·¸ íŒ¨ë°€ë¦¬ì˜ ì¸ë±ìŠ¤ë§Œ ë°˜í™˜í•¨
+        // TODO ; í íŒ¨ë°€ë¦¬ê°€ ì—¬ëŸ¬ê°œì¸ ê²½ìš°ì— ëŒ€í•œ ì²˜ë¦¬ê°€ í•„ìš”í•¨
         const QueueFamilyIndices findQueueFamiliesWitchSurface(VkPhysicalDevice& device, VkSurfaceKHR& VKsurface);
 
         const QueueFamilyIndices2 findQueueFamiliesWithoutSurface(VkPhysicalDevice& device);
 
-        // ¹öÆÛ¸¦ º¹»çÇÏ´Â ÇÔ¼ö
+        // ë²„í¼ë¥¼ ë³µì‚¬í•˜ëŠ” í•¨ìˆ˜
         void copyBuffer(
             VkDevice VKdevice,
             VkCommandPool VKcommandPool,
@@ -65,7 +65,7 @@ namespace vkengine {
             VkBuffer dstBuffer,
             VkDeviceSize size);
 
-        // buffer¸¦ »ý¼ºÇÏ´Â ÇÔ¼ö
+        // bufferë¥¼ ìƒì„±í•˜ëŠ” í•¨ìˆ˜
         void createBuffer(
             VkDevice device,
             VkPhysicalDevice physicalDevice,
@@ -122,26 +122,26 @@ namespace vkengine {
             ktxTexture* textureKTX,
             cBool useCubmap = false);
 
-        // ¹°¸® µð¹ÙÀÌ½ºÀÇ È®Àå ±â´ÉÀ» Áö¿øÇÏ´ÂÁö È®ÀÎÇÏ´Â ÇÔ¼ö
-        // °ËÁõ ·¹ÀÌ¾î Áö¿ø ¿©ºÎ¸¦ È®ÀÎÇÏ´Â ÇÔ¼ö
-        // È®Àå ±â´ÉÀ» ¿­°ÅÇÏ°í ÇÊ¿äÇÑ ¸ðµç È®Àå ±â´ÉÀÌ Æ÷ÇÔµÇ¾î ÀÖ´ÂÁö È®ÀÎ
+        // ë¬¼ë¦¬ ë””ë°”ì´ìŠ¤ì˜ í™•ìž¥ ê¸°ëŠ¥ì„ ì§€ì›í•˜ëŠ”ì§€ í™•ì¸í•˜ëŠ” í•¨ìˆ˜
+        // ê²€ì¦ ë ˆì´ì–´ ì§€ì› ì—¬ë¶€ë¥¼ í™•ì¸í•˜ëŠ” í•¨ìˆ˜
+        // í™•ìž¥ ê¸°ëŠ¥ì„ ì—´ê±°í•˜ê³  í•„ìš”í•œ ëª¨ë“  í™•ìž¥ ê¸°ëŠ¥ì´ í¬í•¨ë˜ì–´ ìžˆëŠ”ì§€ í™•ì¸
         cBool checkDeviceExtensionSupport(VkPhysicalDevice device);
 
-        // ¹°¸® µð¹ÙÀÌ½ºÀÇ ¸ðµç È®Àå±â´ÉÀ» °¡Á®¿À´Â ÇÔ¼ö
+        // ë¬¼ë¦¬ ë””ë°”ì´ìŠ¤ì˜ ëª¨ë“  í™•ìž¥ê¸°ëŠ¥ì„ ê°€ì ¸ì˜¤ëŠ” í•¨ìˆ˜
         void getDeviceExtensionSupport(VkPhysicalDevice device, std::set<std::string>* temp);
 
-        // ¹°¸® µð¹ÙÀÌ½ºÀÇ ÀûÇÕ¼ºÀ» Æò°¡ÇÏ´Â ÇÔ¼ö
+        // ë¬¼ë¦¬ ë””ë°”ì´ìŠ¤ì˜ ì í•©ì„±ì„ í‰ê°€í•˜ëŠ” í•¨ìˆ˜
         int rateDeviceSuitability(VkPhysicalDevice device);
 
-        // ½º¿Ò Ã¼ÀÎ Áö¿ø Á¤º¸¸¦ °¡Á®¿À´Â ÇÔ¼ö
-        // ½º¿Ò Ã¼ÀÎ Áö¿ø Á¤º¸¸¦ ÀúÀåÇÒ ±¸Á¶Ã¼¸¦ ÃÊ±âÈ­
-        // ¹°¸® ÀåÄ¡¿¡¼­ ¼­ÇÇ½ºÀÇ ±â´ÉÀ» °¡Á®¿È
+        // ìŠ¤ì™‘ ì²´ì¸ ì§€ì› ì •ë³´ë¥¼ ê°€ì ¸ì˜¤ëŠ” í•¨ìˆ˜
+        // ìŠ¤ì™‘ ì²´ì¸ ì§€ì› ì •ë³´ë¥¼ ì €ìž¥í•  êµ¬ì¡°ì²´ë¥¼ ì´ˆê¸°í™”
+        // ë¬¼ë¦¬ ìž¥ì¹˜ì—ì„œ ì„œí”¼ìŠ¤ì˜ ê¸°ëŠ¥ì„ ê°€ì ¸ì˜´
         const SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice device, VkSurfaceKHR VKsurface);
 
-        // ±íÀÌ Çü½ÄÀ» Ã£´Â ÇÔ¼ö
+        // ê¹Šì´ í˜•ì‹ì„ ì°¾ëŠ” í•¨ìˆ˜
         VkFormat findDepthFormat(VkPhysicalDevice physicalDevice);
 
-        // FormatÀ» Áö¿øÇÏ´ÂÁö È®ÀÎÇÏ´Â ÇÔ¼ö
+        // Formatì„ ì§€ì›í•˜ëŠ”ì§€ í™•ì¸í•˜ëŠ” í•¨ìˆ˜
         VkFormat findSupportedFormat(
             VkPhysicalDevice physicalDevice,
             const std::vector<VkFormat>& candidates,
@@ -153,14 +153,14 @@ namespace vkengine {
             cUint32_t typeFilter,
             VkMemoryPropertyFlags properties);
 
-        // ½ºÅÙ½Ç ÄÄÆ÷³ÍÆ®¸¦ °¡Áö°í ÀÖ´ÂÁö È®ÀÎÇÏ´Â ÇÔ¼ö
+        // ìŠ¤í…ì‹¤ ì»´í¬ë„ŒíŠ¸ë¥¼ ê°€ì§€ê³  ìžˆëŠ”ì§€ í™•ì¸í•˜ëŠ” í•¨ìˆ˜
         inline cBool hasStencilComponent(VkFormat format)
         {
             return format == VK_FORMAT_D32_SFLOAT_S8_UINT || format == VK_FORMAT_D24_UNORM_S8_UINT;
         }
 
-        // MipmapsÀ» »ý¼ºÇÏ´Â ÇÔ¼ö
-        // ÀÌ¹ÌÁö¸¦ »ý¼ºÇÏ°í ÀÌ¹ÌÁö ·¹ÀÌ¾Æ¿ôÀ» º¯°æÇÑ ´ÙÀ½ ÀÌ¹ÌÁö¸¦ º¹»ç -> ´ÜÀÏ ÀÌ¹ÌÁö¿¡ ´ëÇÑ mipmap »ý¼º
+        // Mipmapsì„ ìƒì„±í•˜ëŠ” í•¨ìˆ˜
+        // ì´ë¯¸ì§€ë¥¼ ìƒì„±í•˜ê³  ì´ë¯¸ì§€ ë ˆì´ì•„ì›ƒì„ ë³€ê²½í•œ ë‹¤ìŒ ì´ë¯¸ì§€ë¥¼ ë³µì‚¬ -> ë‹¨ì¼ ì´ë¯¸ì§€ì— ëŒ€í•œ mipmap ìƒì„±
         void generateMipmaps(
             VkPhysicalDevice physicalDevice,
             VkDevice device,
@@ -180,7 +180,7 @@ namespace vkengine {
             cUint32_t mipLevels
         );
 
-        // CubeMap¿¡ ´ëÇÑ mipmapÀ» »ý¼ºÇÏ´Â ÇÔ¼ö
+        // CubeMapì— ëŒ€í•œ mipmapì„ ìƒì„±í•˜ëŠ” í•¨ìˆ˜
         void generateMipmapsCubeMap(
             VkPhysicalDevice physicalDevice,
             VkDevice device,
@@ -202,14 +202,14 @@ namespace vkengine {
 
 
 
-        // ÃÖ´ë »ç¿ë °¡´ÉÇÑ »ùÇÃ¸µ ¼ö¸¦ ¹ÝÈ¯ÇÏ´Â ÇÔ¼ö
+        // ìµœëŒ€ ì‚¬ìš© ê°€ëŠ¥í•œ ìƒ˜í”Œë§ ìˆ˜ë¥¼ ë°˜í™˜í•˜ëŠ” í•¨ìˆ˜
 
         VkSampleCountFlagBits getMaxUsableSampleCount(VkPhysicalDevice physicalDevice);
 
-        // setupCommandBuffer ³ªÁß¿¡ Ãß°¡
-        // flushSetupCommands ³ªÁß¿¡ Ãß°¡
+        // setupCommandBuffer ë‚˜ì¤‘ì— ì¶”ê°€
+        // flushSetupCommands ë‚˜ì¤‘ì— ì¶”ê°€
 
-        // pyhsicalDeviceProperties¸¦ °¡Á®¿À´Â ÇÔ¼ö
+        // pyhsicalDevicePropertiesë¥¼ ê°€ì ¸ì˜¤ëŠ” í•¨ìˆ˜
         inline void getPyhsicalDeviceProperties(VkPhysicalDevice device)
         {
             VkPhysicalDeviceProperties deviceProperties;
@@ -218,24 +218,24 @@ namespace vkengine {
             _PRINT_TO_CONSOLE_("DeviceProperties.deviceType: %d\n", deviceProperties.deviceType);
         }
 
-        // https://steel-gourd-618.notion.site/Images-19618a41dc6f80b89bc1d1575bcf3d04 Âü°í
-        // ½ÃÀÛÇÏ·Á´Â ¸í·É¹öÆÛ¸¦ »ý¼ºÇÏ´Â ÇÔ¼ö
+        // https://steel-gourd-618.notion.site/Images-19618a41dc6f80b89bc1d1575bcf3d04 ì°¸ê³ 
+        // ì‹œìž‘í•˜ë ¤ëŠ” ëª…ë ¹ë²„í¼ë¥¼ ìƒì„±í•˜ëŠ” í•¨ìˆ˜
         VkCommandBuffer beginSingleTimeCommands(VkDevice device, VkCommandPool commandPool);
 
-        // ¸í·É¹öÆÛ¸¦ Á¾·áÇÏ´Â ÇÔ¼ö
+        // ëª…ë ¹ë²„í¼ë¥¼ ì¢…ë£Œí•˜ëŠ” í•¨ìˆ˜
         void endSingleTimeCommands(VkDevice device, VkCommandPool commandPool, VkQueue Queue, VkCommandBuffer commandBuffer);
         
         /**
-            * @brief ÀÌ¹ÌÁöÀÇ ·¹ÀÌ¾Æ¿ôÀ» ÀüÈ¯ÇÏ´Â ÇÔ¼ö
+            * @brief ì´ë¯¸ì§€ì˜ ë ˆì´ì•„ì›ƒì„ ì „í™˜í•˜ëŠ” í•¨ìˆ˜
             *
-            * ÀÌ ÇÔ¼ö´Â ÁöÁ¤µÈ ÀÌ¹ÌÁö¿¡ ´ëÇØ ÇÊ¿ä¿¡ µû¸¥ ÀÌ¹ÌÁö ¸Þ¸ð¸® ¹è¸®¾î¸¦ ¼³Á¤ÇÏ°í,
-            * ±âÁ¸ ·¹ÀÌ¾Æ¿ô(oldLayout)¿¡¼­ »õ·Î¿î ·¹ÀÌ¾Æ¿ô(newLayout)À¸·Î ÀÌ¹ÌÁö¸¦ º¯°æÇÕ´Ï´Ù.
-            * ÀÌ¹ÌÁö ÀüÈ¯Àº ´ÜÀÏ ½Ã°£ ¸í·É ¹öÆÛ¸¦ »ç¿ëÇÏ¿© ¼öÇàµÇ¸ç, ÀüÈ¯ ÀÛ¾÷ ÈÄ °ü·Ã ¸í·É ¹öÆÛ´Â
-            * Á¦ÃâµÇ¾î ¿Ï·áµÉ ¶§±îÁö ´ë±âµË´Ï´Ù.
+            * ì´ í•¨ìˆ˜ëŠ” ì§€ì •ëœ ì´ë¯¸ì§€ì— ëŒ€í•´ í•„ìš”ì— ë”°ë¥¸ ì´ë¯¸ì§€ ë©”ëª¨ë¦¬ ë°°ë¦¬ì–´ë¥¼ ì„¤ì •í•˜ê³ ,
+            * ê¸°ì¡´ ë ˆì´ì•„ì›ƒ(oldLayout)ì—ì„œ ìƒˆë¡œìš´ ë ˆì´ì•„ì›ƒ(newLayout)ìœ¼ë¡œ ì´ë¯¸ì§€ë¥¼ ë³€ê²½í•©ë‹ˆë‹¤.
+            * ì´ë¯¸ì§€ ì „í™˜ì€ ë‹¨ì¼ ì‹œê°„ ëª…ë ¹ ë²„í¼ë¥¼ ì‚¬ìš©í•˜ì—¬ ìˆ˜í–‰ë˜ë©°, ì „í™˜ ìž‘ì—… í›„ ê´€ë ¨ ëª…ë ¹ ë²„í¼ëŠ”
+            * ì œì¶œë˜ì–´ ì™„ë£Œë  ë•Œê¹Œì§€ ëŒ€ê¸°ë©ë‹ˆë‹¤.
             *
-            * ->ÀÌÀü oldLayoutÀ» °¡Áø imageLayoutÀ» newLayoutÀ¸·Î ÀÌ¹ÌÁö¸¦ »ç¿ë ÇÒ ¶§ ÀÌ¿ëÇÏ´Â ÇÔ¼ö
+            * ->ì´ì „ oldLayoutì„ ê°€ì§„ imageLayoutì„ newLayoutìœ¼ë¡œ ì´ë¯¸ì§€ë¥¼ ì‚¬ìš© í•  ë•Œ ì´ìš©í•˜ëŠ” í•¨ìˆ˜
             *
-            * @remark Áö¿øµÇ´Â ÀüÈ¯Àº ¾Æ·¡ÀÇ 3°¡Áö °æ¿ìÀÔ´Ï´Ù:
+            * @remark ì§€ì›ë˜ëŠ” ì „í™˜ì€ ì•„ëž˜ì˜ 3ê°€ì§€ ê²½ìš°ìž…ë‹ˆë‹¤:
             *  1) VK_IMAGE_LAYOUT_UNDEFINED -> VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL
             *  2) VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL -> VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
             *  3) VK_IMAGE_LAYOUT_UNDEFINED -> VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL
@@ -255,11 +255,11 @@ namespace vkengine {
         );
 
         /**
-            * @brief ÀÌ¹ÌÁö ·¹ÀÌ¾Æ¿ô ÀüÈ¯ ¸í·ÉÀ» Ä¿¸Çµå ¹öÆÛ¿¡ ±â·ÏÇÏ´Â ÇÔ¼ö
+            * @brief ì´ë¯¸ì§€ ë ˆì´ì•„ì›ƒ ì „í™˜ ëª…ë ¹ì„ ì»¤ë§¨ë“œ ë²„í¼ì— ê¸°ë¡í•˜ëŠ” í•¨ìˆ˜
             *
-            * ÀÌ ÇÔ¼ö´Â ÁÖ¾îÁø VkCommandBuffer¿¡ ÀÌ¹ÌÁö ·¹ÀÌ¾Æ¿ô ÀüÈ¯À» À§ÇÑ VkImageMemoryBarrier¸¦ ±â·ÏÇÕ´Ï´Ù.
-            * oldLayout¿¡¼­ newLayoutÀ¸·ÎÀÇ ÀüÈ¯À» À§ÇØ ÀûÀýÇÑ Á¢±Ù ¸¶½ºÅ©¿Í ÆÄÀÌÇÁ¶óÀÎ ½ºÅ×ÀÌÁö¸¦ ¼³Á¤ÇÕ´Ï´Ù.
-            * mipmap level°ú array layer ¹üÀ§µµ ÁöÁ¤ÇÒ ¼ö ÀÖ½À´Ï´Ù.
+            * ì´ í•¨ìˆ˜ëŠ” ì£¼ì–´ì§„ VkCommandBufferì— ì´ë¯¸ì§€ ë ˆì´ì•„ì›ƒ ì „í™˜ì„ ìœ„í•œ VkImageMemoryBarrierë¥¼ ê¸°ë¡í•©ë‹ˆë‹¤.
+            * oldLayoutì—ì„œ newLayoutìœ¼ë¡œì˜ ì „í™˜ì„ ìœ„í•´ ì ì ˆí•œ ì ‘ê·¼ ë§ˆìŠ¤í¬ì™€ íŒŒì´í”„ë¼ì¸ ìŠ¤í…Œì´ì§€ë¥¼ ì„¤ì •í•©ë‹ˆë‹¤.
+            * mipmap levelê³¼ array layer ë²”ìœ„ë„ ì§€ì •í•  ìˆ˜ ìžˆìŠµë‹ˆë‹¤.
             *
         */
         void updateimageLayoutcmd(
@@ -272,10 +272,10 @@ namespace vkengine {
             cUint32_t layerCount = 1
         );
 
-        // stencilComponent¸¦ °¡Áö°í ÀÖ´ÂÁö È®ÀÎÇÏ´Â ÇÔ¼ö
+        // stencilComponentë¥¼ ê°€ì§€ê³  ìžˆëŠ”ì§€ í™•ì¸í•˜ëŠ” í•¨ìˆ˜
         cBool hasStencilComponent(VkFormat format);
 
-        // Æ¯Á¤ µ¥ÀÌÅÍ¸¦ VkDeviceMemory °´Ã¼·Î º¹»çÇÏ´Â ÇÔ¼ö
+        // íŠ¹ì • ë°ì´í„°ë¥¼ VkDeviceMemory ê°ì²´ë¡œ ë³µì‚¬í•˜ëŠ” í•¨ìˆ˜
         template <typename T>
         inline void copyToDeviceMemory(VkDevice device, const T* src, VkDeviceMemory dst, VkDeviceSize size, VkDeviceSize offset = 0, VkMemoryMapFlags flags = 0)
         {
@@ -291,9 +291,9 @@ namespace vkengine {
         
         VkDeviceSize alignedVkSize(VkDeviceSize value, VkDeviceSize alignment);
 
-        // ±×·¡ÇÈ ÆÄÀÌÇÁ¶óÀÎ »ý¼º
+        // ê·¸ëž˜í”½ íŒŒì´í”„ë¼ì¸ ìƒì„±
 
-        // µ¿±âÈ­ °´Ã¼ ÃÊ±âÈ­
+        // ë™ê¸°í™” ê°ì²´ ì´ˆê¸°í™”
         void initializeSynchronization(VkDevice device, cUint32_t maxFramesInFlight, cUint32_t imageCount,
             std::vector<VkSemaphore>& presentSemaphores,
             std::vector<VkSemaphore>& renderSemaphores,

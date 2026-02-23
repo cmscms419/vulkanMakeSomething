@@ -77,14 +77,14 @@ namespace vkengine {
         std::unordered_map<cString, std::vector<VKshader>> pipelineShaders;
         std::vector<LayoutInfo> layoutInfos;
 
-        // ½¦ÀÌ´õ »ı¼º ¹× ÆÄÀÌÇÁ¶óÀÎº° ½¦ÀÌ´õ °ü¸®
+        // ì‰ì´ë” ìƒì„± ë° íŒŒì´í”„ë¼ì¸ë³„ ì‰ì´ë” ê´€ë¦¬
         void createFromShaders(cString path,
             std::initializer_list<std::pair<cString, std::vector<cString>>> pipelineShaders);
 
-        // ÆÄÀÌÇÁ¶óÀÎº° ·¹ÀÌ¾Æ¿ô Á¤º¸ ¼öÁı
+        // íŒŒì´í”„ë¼ì¸ë³„ ë ˆì´ì•„ì›ƒ ì •ë³´ ìˆ˜ì§‘
         void collectLayoutInfos();
 
-        // ¸®ÇÃ·º¼ÇµÈ µ¥ÀÌÅÍ¸¦ È°¿ëÇÏ¿© Vulkan µğ½ºÅ©¸³ÅÍ ·¹ÀÌ¾Æ¿ô Á¤º¸¸¦ ¸¸µå´Â ÇÔ¼ö
+        // ë¦¬í”Œë ‰ì…˜ëœ ë°ì´í„°ë¥¼ í™œìš©í•˜ì—¬ Vulkan ë””ìŠ¤í¬ë¦½í„° ë ˆì´ì•„ì›ƒ ì •ë³´ë¥¼ ë§Œë“œëŠ” í•¨ìˆ˜
         void collectPerPipelineBindings(
             const cString& pipelineName,
             std::map<cUint32_t, std::map<cUint32_t, VkDescriptorSetLayoutBinding>>& bindingCollector) const;

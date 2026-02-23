@@ -326,7 +326,7 @@ namespace vkengine {
     
     void VKforwardRenderer::makeShadowMap(VkCommandBuffer cmd, uint32_t currentFrame, std::vector<VKModel>& models)
     {
-        // ±íÀÌ ¸Ê »ý¼ºÀ» À§ÇÑ ½¦µµ¿ì ÆÐ½º(±íÀÌ ¸ÊÀ» »ý¼ºÇÏ´Â ·»´õ¸µ ÆÐ½º)
+        // ê¹Šì´ ë§µ ìƒì„±ì„ ìœ„í•œ ì‰ë„ìš° íŒ¨ìŠ¤(ê¹Šì´ ë§µì„ ìƒì„±í•˜ëŠ” ë Œë”ë§ íŒ¨ìŠ¤)
         VkImageMemoryBarrier2 shadowMapBarrier{ VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2 };
         shadowMapBarrier.srcStageMask = VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT;
         shadowMapBarrier.dstStageMask = VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT;
@@ -344,7 +344,7 @@ namespace vkengine {
         depInfo.pImageMemoryBarriers = &shadowMapBarrier;
         vkCmdPipelineBarrier2(cmd, &depInfo);
 
-        // ±×¸²ÀÚ ¸Ê ·»´õ¸µ ½ÃÀÛ
+        // ê·¸ë¦¼ìž ë§µ ë Œë”ë§ ì‹œìž‘
         VkRenderingAttachmentInfo shadowDepthAttachment{ VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO };
         shadowDepthAttachment.imageView = this->shadowMap.getImageView();
         shadowDepthAttachment.imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;

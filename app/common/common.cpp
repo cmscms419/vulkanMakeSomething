@@ -7,8 +7,8 @@ namespace vkengine
     };
 
     const std::vector<const cChar*> coreDeviceExtensions = {
-        VK_KHR_SWAPCHAIN_EXTENSION_NAME,                // ½º¿ÒÃ¼ÀÎ È®Àå
-        VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME         // µ¿Àû ·£´õ¸µ È®ÀåÀÚ
+        VK_KHR_SWAPCHAIN_EXTENSION_NAME,                // ìŠ¤ì™‘ì²´ì¸ í™•ì¥
+        VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME         // ë™ì  ëœë”ë§ í™•ì¥ì
     };
 
     const std::vector<const cChar*> enabledDeviceExtensions = {};

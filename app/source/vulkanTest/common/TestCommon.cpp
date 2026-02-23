@@ -6,19 +6,19 @@ namespace vkutil
     {
         std::vector<char> readFile(const std::string& filename) {
 
-            // ÆÄÀÏ ³¡À¸·Î ÀÌµ¿ÇÏ¿© ÆÄÀÏ Å©±â¸¦ °¡Á®¿É´Ï´Ù.
+            // íŒŒì¼ ëìœ¼ë¡œ ì´ë™í•˜ì—¬ íŒŒì¼ í¬ê¸°ë¥¼ ê°€ì ¸ì˜µë‹ˆë‹¤.
             std::ifstream file(filename, std::ios::ate | std::ios::binary);
 
-            // ÆÄÀÏÀ» ¿­ ¼ö ¾ø´Â °æ¿ì ¿¹¿Ü¸¦ ¹ß»ı½ÃÅµ´Ï´Ù.
+            // íŒŒì¼ì„ ì—´ ìˆ˜ ì—†ëŠ” ê²½ìš° ì˜ˆì™¸ë¥¼ ë°œìƒì‹œí‚µë‹ˆë‹¤.
             if (!file.is_open()) {
                 throw std::runtime_error("failed to open file!");
             }
 
-            size_t fileSize = (size_t)file.tellg(); // ÆÄÀÏ Å©±â¸¦ ÀÌ¿ëÇÏ¿© ¹öÆÛ¸¦ ÇÒ´çÇÕ´Ï´Ù.
-            std::vector<char> buffer(fileSize);     // ÆÄÀÏ Æ÷ÀÎÅÍ¸¦ ÆÄÀÏÀÇ ½ÃÀÛÀ¸·Î ÀÌµ¿ÇÕ´Ï´Ù.
-            file.seekg(0);                          // ÆÄÀÏ Æ÷ÀÎÅÍ¸¦ ÆÄÀÏÀÇ ½ÃÀÛÀ¸·Î ÀÌµ¿ÇÕ´Ï´Ù.
-            file.read(buffer.data(), fileSize);     // ÆÄÀÏ ³»¿ëÀ» ¹öÆÛ¿¡ ÀĞ¾î¿É´Ï´Ù. -> ÆÄÀÏÀ» fileSize Å©±â¸¸Å­ ÇÑ¹ø¿¡ ÀĞ¾î¿Â´Ù.
-            file.close();                           // ÆÄÀÏÀ» ´İ½À´Ï´Ù.
+            size_t fileSize = (size_t)file.tellg(); // íŒŒì¼ í¬ê¸°ë¥¼ ì´ìš©í•˜ì—¬ ë²„í¼ë¥¼ í• ë‹¹í•©ë‹ˆë‹¤.
+            std::vector<char> buffer(fileSize);     // íŒŒì¼ í¬ì¸í„°ë¥¼ íŒŒì¼ì˜ ì‹œì‘ìœ¼ë¡œ ì´ë™í•©ë‹ˆë‹¤.
+            file.seekg(0);                          // íŒŒì¼ í¬ì¸í„°ë¥¼ íŒŒì¼ì˜ ì‹œì‘ìœ¼ë¡œ ì´ë™í•©ë‹ˆë‹¤.
+            file.read(buffer.data(), fileSize);     // íŒŒì¼ ë‚´ìš©ì„ ë²„í¼ì— ì½ì–´ì˜µë‹ˆë‹¤. -> íŒŒì¼ì„ fileSize í¬ê¸°ë§Œí¼ í•œë²ˆì— ì½ì–´ì˜¨ë‹¤.
+            file.close();                           // íŒŒì¼ì„ ë‹«ìŠµë‹ˆë‹¤.
 
             return buffer;
         }
@@ -286,9 +286,9 @@ namespace vkutil
         {
             return findSupportedFormat(
                 physicalDevice,
-                { VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT },    // ÈÄº¸ Çü½Ä
-                VK_IMAGE_TILING_OPTIMAL,                                                                // Å¸ÀÏ¸µ
-                VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT                                          // Æ¯Â¡
+                { VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT },    // í›„ë³´ í˜•ì‹
+                VK_IMAGE_TILING_OPTIMAL,                                                                // íƒ€ì¼ë§
+                VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT                                          // íŠ¹ì§•
             );
         }
 
@@ -310,7 +310,7 @@ namespace vkutil
 
             VkCommandBuffer commandBuffer = beginSingleTimeCommands(device, commandPool);
 
-            // ·¹ÀÌ¾Æ¿ô ÀüÈ¯
+            // ë ˆì´ì•„ì›ƒ ì „í™˜
             VkImageMemoryBarrier barrier{};
 
             barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
@@ -325,8 +325,8 @@ namespace vkutil
             int32_t mipWidth = texWidth;
             int32_t mipHeight = texHeight;
 
-            // ¹Ì¸® °è»êµÈ ¹Ì¸Ê ·¹º§À» »ı¼ºÇÕ´Ï´Ù.
-            // ¹Ì¸Ê ·¹º§ÀÌ 1º¸´Ù Å« °æ¿ì¿¡¸¸ ¹Ì¸ÊÀ» »ı¼ºÇÕ´Ï´Ù.
+            // ë¯¸ë¦¬ ê³„ì‚°ëœ ë¯¸ë§µ ë ˆë²¨ì„ ìƒì„±í•©ë‹ˆë‹¤.
+            // ë¯¸ë§µ ë ˆë²¨ì´ 1ë³´ë‹¤ í° ê²½ìš°ì—ë§Œ ë¯¸ë§µì„ ìƒì„±í•©ë‹ˆë‹¤.
             for (uint32_t i = 1; i < mipLevels; i++) {
 
                 barrier.subresourceRange.baseMipLevel = i - 1;

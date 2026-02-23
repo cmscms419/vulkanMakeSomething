@@ -16,9 +16,9 @@ namespace vkengine
     struct subData
     {
         cVec4 camPos = cVec4(0.0f);
-        cVec4 lightPos[4] = { cVec4(0.0f) ,cVec4(0.0f) ,cVec4(0.0f) ,cVec4(0.0f) }; // Á¶¸í À§Ä¡
+        cVec4 lightPos[4] = { cVec4(0.0f) ,cVec4(0.0f) ,cVec4(0.0f) ,cVec4(0.0f) }; // ì¡°ëª… ìœ„ì¹˜
         cVec4 objectPos = cVec4(0.0f);
-        cBool useTexture = false; // Á¶¸í È°¼ºÈ­ ¿©ºÎ
+        cBool useTexture = false; // ì¡°ëª… í™œì„±í™” ì—¬ë¶€
     };
 
     struct subUinform  : public VkBaseBuffer
@@ -39,10 +39,10 @@ namespace vkengine
 
     protected:
         virtual bool init_sync_structures() override;
-        virtual void recordCommandBuffer(FrameData* framedata, uint32_t imageIndex) override; // Ä¿¸Çµå ¹öÆÛ ·¹ÄÚµå
+        virtual void recordCommandBuffer(FrameData* framedata, uint32_t imageIndex) override; // ì»¤ë§¨ë“œ ë²„í¼ ë ˆì½”ë“œ
 
     private:
-        // °¢ 3d ¸ğµ¨À» »ı¼ºÇÏ±â À§ÇÑ ÇÔ¼ö
+        // ê° 3d ëª¨ë¸ì„ ìƒì„±í•˜ê¸° ìœ„í•œ í•¨ìˆ˜
         void createVertexbuffer();
         void createIndexBuffer();
         void createUniformBuffers();
@@ -54,27 +54,27 @@ namespace vkengine
 
         void cleanupSwapcChain();
 
-        // imgui °ü·Ã
+        // imgui ê´€ë ¨
         vkGUI* vkGUI = nullptr;
 
-        object::SkyBox* skyBox = nullptr; // ½ºÄ«ÀÌ¹Ú½º
-        object::ModelObject* modelObject = nullptr; // ¸ğµ¨ ¿ÀºêÁ§Æ®
-        object::ModelObject* vikingRoomObject = nullptr; // ¸ğµ¨ ¿ÀºêÁ§Æ®2
+        object::SkyBox* skyBox = nullptr; // ìŠ¤ì¹´ì´ë°•ìŠ¤
+        object::ModelObject* modelObject = nullptr; // ëª¨ë¸ ì˜¤ë¸Œì íŠ¸
+        object::ModelObject* vikingRoomObject = nullptr; // ëª¨ë¸ ì˜¤ë¸Œì íŠ¸2
 
-        VkPipeline VKSkyMapPipeline = VK_NULL_HANDLE;       // Å¥ºê¸Ê ÆÄÀÌÇÁ¶óÀÎ -> Å¥ºê¸Ê ÆÄÀÌÇÁ¶óÀÎÀ» »ı¼º
-        VkPipeline VKgraphicsPipeline = VK_NULL_HANDLE;     // ¸ğµ¨ ¿ÀºêÁ§Æ® ÆÄÀÌÇÁ¶óÀÎ
+        VkPipeline VKSkyMapPipeline = VK_NULL_HANDLE;       // íë¸Œë§µ íŒŒì´í”„ë¼ì¸ -> íë¸Œë§µ íŒŒì´í”„ë¼ì¸ì„ ìƒì„±
+        VkPipeline VKgraphicsPipeline = VK_NULL_HANDLE;     // ëª¨ë¸ ì˜¤ë¸Œì íŠ¸ íŒŒì´í”„ë¼ì¸
 
-        VKDescriptor2* modeltDescriptor2 = nullptr;         // ¸ğµ¨ ¿ÀºêÁ§Æ® µğ½ºÅ©¸³ÅÍ
-        VKDescriptor2* skyboxDescriptor2 = nullptr;         // ¸ğµ¨ ¿ÀºêÁ§Æ® µğ½ºÅ©¸³ÅÍ
+        VKDescriptor2* modeltDescriptor2 = nullptr;         // ëª¨ë¸ ì˜¤ë¸Œì íŠ¸ ë””ìŠ¤í¬ë¦½í„°
+        VKDescriptor2* skyboxDescriptor2 = nullptr;         // ëª¨ë¸ ì˜¤ë¸Œì íŠ¸ ë””ìŠ¤í¬ë¦½í„°
 
-        cUint selectModel = 0; // ¼±ÅÃµÈ ¸ğµ¨ ÀÎµ¦½º
-        std::vector<cString> modelNames = { "Sphere", "Viking Room" }; // ¸ğµ¨ ÀÌ¸§µé
-        cString selectModelName = "Sphere"; // ¼±ÅÃµÈ ¸ğµ¨ ÀÌ¸§
+        cUint selectModel = 0; // ì„ íƒëœ ëª¨ë¸ ì¸ë±ìŠ¤
+        std::vector<cString> modelNames = { "Sphere", "Viking Room" }; // ëª¨ë¸ ì´ë¦„ë“¤
+        cString selectModelName = "Sphere"; // ì„ íƒëœ ëª¨ë¸ ì´ë¦„
 
-        cMaterial defaultMaterial; // ±âº» ¸ÓÆ¼¸®¾ó
-        MaterialBuffer material; // ¸ÓÆ¼¸®¾ó ¹öÆÛ
+        cMaterial defaultMaterial; // ê¸°ë³¸ ë¨¸í‹°ë¦¬ì–¼
+        MaterialBuffer material; // ë¨¸í‹°ë¦¬ì–¼ ë²„í¼
 
-        subUinform subUniform; // ¼­ºê À¯´ÏÆû ¹öÆÛ
+        subUinform subUniform; // ì„œë¸Œ ìœ ë‹ˆí¼ ë²„í¼
     };
 }
 

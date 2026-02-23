@@ -98,14 +98,14 @@ namespace vkutil
 {
     namespace helper_
     {
-        // ÆÄÀÏÀ» ÀĞ¾î¿À´Â ÇÔ¼ö
+        // íŒŒì¼ì„ ì½ì–´ì˜¤ëŠ” í•¨ìˆ˜
         std::vector<char> readFile(const std::string& filename);
 
-        // ¹°¸® µğ¹ÙÀÌ½ºÀÇ È®Àå ±â´ÉÀ» Áö¿øÇÏ´ÂÁö È®ÀÎÇÏ´Â ÇÔ¼ö
+        // ë¬¼ë¦¬ ë””ë°”ì´ìŠ¤ì˜ í™•ì¥ ê¸°ëŠ¥ì„ ì§€ì›í•˜ëŠ”ì§€ í™•ì¸í•˜ëŠ” í•¨ìˆ˜
         uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties, VkPhysicalDevice VKphysicalDevice);
 
-        // ¹öÆÛ¸¦ »ı¼ºÇÏ´Â ÇÔ¼ö
-        // ¹öÆÛ¸¦ »ı¼ºÇÏ°í ¸Ş¸ğ¸®¸¦ ÇÒ´çÇÕ´Ï´Ù.
+        // ë²„í¼ë¥¼ ìƒì„±í•˜ëŠ” í•¨ìˆ˜
+        // ë²„í¼ë¥¼ ìƒì„±í•˜ê³  ë©”ëª¨ë¦¬ë¥¼ í• ë‹¹í•©ë‹ˆë‹¤.
         void createBuffer(VkDevice device,
             VkPhysicalDevice physicalDevice,
             VkDeviceSize size,
@@ -114,7 +114,7 @@ namespace vkutil
             VkBuffer& buffer,
             VkDeviceMemory& bufferMemory);
 
-        // ¹öÆÛ¸¦ º¹»çÇÏ´Â ÇÔ¼ö
+        // ë²„í¼ë¥¼ ë³µì‚¬í•˜ëŠ” í•¨ìˆ˜
         void copyBuffer(
             VkDevice& VKdevice,
             VkCommandPool& VKcommandPool,
@@ -123,7 +123,7 @@ namespace vkutil
             VkBuffer dstBuffer,
             VkDeviceSize size);
 
-        // ÀÌ¹ÌÁö¸¦ »ı¼ºÇÏ´Â ÇÔ¼ö
+        // ì´ë¯¸ì§€ë¥¼ ìƒì„±í•˜ëŠ” í•¨ìˆ˜
         void createImage(
             VkDevice& VKdevice,
             VkPhysicalDevice& VKphysicalDevice,
@@ -138,13 +138,13 @@ namespace vkutil
             VkImage& image,
             VkDeviceMemory& imageMemory);
 
-        //  ½ÃÀÛÇÏ·Á´Â ¸í·É¹öÆÛ¸¦ »ı¼ºÇÏ´Â ÇÔ¼ö
+        //  ì‹œì‘í•˜ë ¤ëŠ” ëª…ë ¹ë²„í¼ë¥¼ ìƒì„±í•˜ëŠ” í•¨ìˆ˜
         VkCommandBuffer beginSingleTimeCommands(VkDevice& device, VkCommandPool& commandPool);
 
-        // ¸í·É¹öÆÛ¸¦ Á¾·áÇÏ´Â ÇÔ¼ö
+        // ëª…ë ¹ë²„í¼ë¥¼ ì¢…ë£Œí•˜ëŠ” í•¨ìˆ˜
         void endSingleTimeCommands(VkDevice& device, VkCommandPool& commandPool, VkQueue& graphicsQueue, VkCommandBuffer& commandBuffer);
 
-        // ÀÌ¹ÌÁö ·¹ÀÌ¾Æ¿ôÀ» ÀüÈ¯ÇÏ´Â ÇÔ¼ö
+        // ì´ë¯¸ì§€ ë ˆì´ì•„ì›ƒì„ ì „í™˜í•˜ëŠ” í•¨ìˆ˜
         void transitionImageLayout(
             VkDevice& device,
             VkCommandPool& commandPool,
@@ -156,7 +156,7 @@ namespace vkutil
             uint32_t mipLevels
         );
 
-        // ÀÌ¹ÌÁö¸¦ º¹»çÇÏ´Â ÇÔ¼ö
+        // ì´ë¯¸ì§€ë¥¼ ë³µì‚¬í•˜ëŠ” í•¨ìˆ˜
         void copyBufferToImage(
             VkDevice& device,
             VkCommandPool& commandPool,
@@ -166,7 +166,7 @@ namespace vkutil
             uint32_t width,
             uint32_t height);
 
-        // ÀÌ¹ÌÁö ºä¸¦ »ı¼ºÇÏ´Â ÇÔ¼ö
+        // ì´ë¯¸ì§€ ë·°ë¥¼ ìƒì„±í•˜ëŠ” í•¨ìˆ˜
         VkImageView createImageView(
             VkDevice& device,
             VkImage image,
@@ -175,20 +175,20 @@ namespace vkutil
             uint32_t mipLevels
         );
 
-        // FormatÀ» Áö¿øÇÏ´ÂÁö È®ÀÎÇÏ´Â ÇÔ¼ö
+        // Formatì„ ì§€ì›í•˜ëŠ”ì§€ í™•ì¸í•˜ëŠ” í•¨ìˆ˜
         VkFormat findSupportedFormat(
             VkPhysicalDevice physicalDevice,
             const std::vector<VkFormat>& candidates,
             VkImageTiling tiling,
             VkFormatFeatureFlags features);
 
-        // ±íÀÌ Çü½ÄÀ» Ã£´Â ÇÔ¼ö
+        // ê¹Šì´ í˜•ì‹ì„ ì°¾ëŠ” í•¨ìˆ˜
         VkFormat findDepthFormat(VkPhysicalDevice physicalDevice);
 
-        // ½ºÅÙ½Ç ÄÄÆ÷³ÍÆ®¸¦ °¡Áö°í ÀÖ´ÂÁö È®ÀÎÇÏ´Â ÇÔ¼ö
+        // ìŠ¤í…ì‹¤ ì»´í¬ë„ŒíŠ¸ë¥¼ ê°€ì§€ê³  ìˆëŠ”ì§€ í™•ì¸í•˜ëŠ” í•¨ìˆ˜
         bool hasStencilComponent(VkFormat format);
 
-        // MipmapsÀ» »ı¼ºÇÏ´Â ÇÔ¼ö
+        // Mipmapsì„ ìƒì„±í•˜ëŠ” í•¨ìˆ˜
         void generateMipmaps(
             VkPhysicalDevice physicalDevice,
             VkDevice device,
@@ -200,11 +200,11 @@ namespace vkutil
             int32_t texHeight,
             uint32_t mipLevels);
 
-        // ÃÖ´ë »ç¿ë °¡´ÉÇÑ »ùÇÃ¸µ ¼ö¸¦ ¹İÈ¯ÇÏ´Â ÇÔ¼ö
+        // ìµœëŒ€ ì‚¬ìš© ê°€ëŠ¥í•œ ìƒ˜í”Œë§ ìˆ˜ë¥¼ ë°˜í™˜í•˜ëŠ” í•¨ìˆ˜
         VkSampleCountFlagBits getMaxUsableSampleCount(VkPhysicalDevice physicalDevice);
 
-        // setupCommandBuffer ³ªÁß¿¡ Ãß°¡
-        // flushSetupCommands ³ªÁß¿¡ Ãß°¡
+        // setupCommandBuffer ë‚˜ì¤‘ì— ì¶”ê°€
+        // flushSetupCommands ë‚˜ì¤‘ì— ì¶”ê°€
 
     }
 }

@@ -1,7 +1,7 @@
 #include "VKSkymapModelDescriptor.h"
 
 namespace vkengine {
-// 0¹ø, 1¹øÀº °øÅë»çÇ×,  2¹ø ÀÌÈÄ ºÎÅÍ´Â °³º°Àû
+// 0ë²ˆ, 1ë²ˆì€ ê³µí†µì‚¬í•­,  2ë²ˆ ì´í›„ ë¶€í„°ëŠ” ê°œë³„ì 
 void VKSkyMapModelDescriptor::createDescriptorSetLayout(bool useTexture) {
     if (this->VKdescriptorSetLayout != VK_NULL_HANDLE) return;
 
@@ -34,7 +34,7 @@ void VKSkyMapModelDescriptor::createDescriptorSetLayout(bool useTexture) {
 
     this->layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
     this->layoutInfo.pBindings = &uboLayoutBinding[0];
-    this->layoutInfo.bindingCount = useTexture ? 3 : 2; // 2°³ ¹ÙÀÎµùÀÌ ÇÊ¿ä
+    this->layoutInfo.bindingCount = useTexture ? 3 : 2; // 2ê°œ ë°”ì¸ë”©ì´ í•„ìš”
     this->layoutInfo.pNext = nullptr;
 
     this->buildDescriptorSetLayout();
@@ -47,7 +47,7 @@ void VKSkyMapModelDescriptor::createDescriptorPool(bool useTexture) {
 
     uint32_t objectCount = static_cast<uint32_t>(this->objects.size());
 
-    //// µğ½ºÅ©¸³ÅÍ Ç® Å©±â¸¦ ¼³Á¤ÇÕ´Ï´Ù.
+    //// ë””ìŠ¤í¬ë¦½í„° í’€ í¬ê¸°ë¥¼ ì„¤ì •í•©ë‹ˆë‹¤.
     this->poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
     this->poolSizes[0].descriptorCount = objectCount * MAX_FRAMES_IN_FLIGHT;
 
@@ -60,13 +60,13 @@ void VKSkyMapModelDescriptor::createDescriptorPool(bool useTexture) {
         this->poolSizes[2].descriptorCount = objectCount * MAX_FRAMES_IN_FLIGHT;
     }
 
-    // µğ½ºÅ©¸³ÅÍ Ç® »ı¼º Á¤º¸ ±¸Á¶Ã¼¸¦ ÃÊ±âÈ­ÇÕ´Ï´Ù.
+    // ë””ìŠ¤í¬ë¦½í„° í’€ ìƒì„± ì •ë³´ êµ¬ì¡°ì²´ë¥¼ ì´ˆê¸°í™”í•©ë‹ˆë‹¤.
     this->poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-    //this->poolInfo.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT; // µğ½ºÅ©¸³ÅÍ ¼¼Æ®¸¦ ÀÚÀ¯·Ó°Ô ÇØÁ¦ÇÒ ¼ö ÀÖµµ·Ï ¼³Á¤
+    //this->poolInfo.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT; // ë””ìŠ¤í¬ë¦½í„° ì„¸íŠ¸ë¥¼ ììœ ë¡­ê²Œ í•´ì œí•  ìˆ˜ ìˆë„ë¡ ì„¤ì •
     this->poolInfo.pNext = nullptr;
-    this->poolInfo.poolSizeCount = useTexture ? 3 : 2; // Ç® »çÀÌÁî °³¼ö
+    this->poolInfo.poolSizeCount = useTexture ? 3 : 2; // í’€ ì‚¬ì´ì¦ˆ ê°œìˆ˜
     this->poolInfo.pPoolSizes = this->poolSizes;
-    this->poolInfo.maxSets = objectCount * MAX_FRAMES_IN_FLIGHT; // µğ½ºÅ©¸³ÅÍ ¼¼Æ® °³¼ö
+    this->poolInfo.maxSets = objectCount * MAX_FRAMES_IN_FLIGHT; // ë””ìŠ¤í¬ë¦½í„° ì„¸íŠ¸ ê°œìˆ˜
 
     this->buildDescriptorPool();
 }
@@ -85,7 +85,7 @@ void VKSkyMapModelDescriptor::createDescriptorSets(bool useTexture) {
     this->allocInfo.descriptorSetCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT * objectCount);
     this->allocInfo.pSetLayouts = layouts.data();
 
-    // µğ½ºÅ©¸³ÅÍ ¼¼Æ®¸¦ »ı¼ºÇÕ´Ï´Ù.
+    // ë””ìŠ¤í¬ë¦½í„° ì„¸íŠ¸ë¥¼ ìƒì„±í•©ë‹ˆë‹¤.
     this->VKdescriptorSets.resize(MAX_FRAMES_IN_FLIGHT * objectCount);
 
     this->buildDescriptorSets();
@@ -98,12 +98,12 @@ void VKSkyMapModelDescriptor::updateDescriptorSets() {
 
     for (cUint16_t i = 0; i < this->objects.size(); i++)
     {
-        // µğ½ºÅ©¸³ÅÍ ¹öÆÛ Á¤º¸¸¦ ¼³Á¤ÇÕ´Ï´Ù.
+        // ë””ìŠ¤í¬ë¦½í„° ë²„í¼ ì •ë³´ë¥¼ ì„¤ì •í•©ë‹ˆë‹¤.
         object::SkyBox* object = static_cast<object::SkyBox*>(this->objects[i]);
 
         VKcubeMap* cubeMap = reinterpret_cast<VKcubeMap*>(object->getTexture());
 
-        cUint16_t offset = i * MAX_FRAMES_IN_FLIGHT; // ¿©·¯ ¿ÀºêÁ§Æ®°¡ ÀÖÀ» °æ¿ì °¢ ¿ÀºêÁ§Æ®ÀÇ ¿ÀÇÁ¼ÂÀ» °è»ê
+        cUint16_t offset = i * MAX_FRAMES_IN_FLIGHT; // ì—¬ëŸ¬ ì˜¤ë¸Œì íŠ¸ê°€ ìˆì„ ê²½ìš° ê° ì˜¤ë¸Œì íŠ¸ì˜ ì˜¤í”„ì…‹ì„ ê³„ì‚°
 
         for (cUint16_t j = 0; j < MAX_FRAMES_IN_FLIGHT; j++)
         {
@@ -155,12 +155,12 @@ void VKSkyMapModelDescriptor::BindDescriptorSets(
 void VKSkyMapModelDescriptor::createPipelineLayout() {
     VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
 
-    pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO; // ±¸Á¶Ã¼ Å¸ÀÔÀ» ¼³Á¤
-    pipelineLayoutInfo.pNext = nullptr;                                       // ´ÙÀ½ ±¸Á¶Ã¼ Æ÷ÀÎÅÍ¸¦ ¼³Á¤
-    pipelineLayoutInfo.setLayoutCount = 1;                                    // ·¹ÀÌ¾Æ¿ô °³¼ö¸¦ ¼³Á¤
-    pipelineLayoutInfo.pSetLayouts = &this->VKdescriptorSetLayout;            // ·¹ÀÌ¾Æ¿ô Æ÷ÀÎÅÍ¸¦ ¼³Á¤
-    pipelineLayoutInfo.pushConstantRangeCount = 0;                            // Çª½Ã »ó¼ö ¹üÀ§ °³¼ö¸¦ ¼³Á¤
-    pipelineLayoutInfo.pPushConstantRanges = nullptr;                         // Çª½Ã »ó¼ö ¹üÀ§ Æ÷ÀÎÅÍ¸¦ ¼³Á¤
+    pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO; // êµ¬ì¡°ì²´ íƒ€ì…ì„ ì„¤ì •
+    pipelineLayoutInfo.pNext = nullptr;                                       // ë‹¤ìŒ êµ¬ì¡°ì²´ í¬ì¸í„°ë¥¼ ì„¤ì •
+    pipelineLayoutInfo.setLayoutCount = 1;                                    // ë ˆì´ì•„ì›ƒ ê°œìˆ˜ë¥¼ ì„¤ì •
+    pipelineLayoutInfo.pSetLayouts = &this->VKdescriptorSetLayout;            // ë ˆì´ì•„ì›ƒ í¬ì¸í„°ë¥¼ ì„¤ì •
+    pipelineLayoutInfo.pushConstantRangeCount = 0;                            // í‘¸ì‹œ ìƒìˆ˜ ë²”ìœ„ ê°œìˆ˜ë¥¼ ì„¤ì •
+    pipelineLayoutInfo.pPushConstantRanges = nullptr;                         // í‘¸ì‹œ ìƒìˆ˜ ë²”ìœ„ í¬ì¸í„°ë¥¼ ì„¤ì •
 
     _VK_CHECK_RESULT_(vkCreatePipelineLayout(this->logicaldevice, &pipelineLayoutInfo, nullptr, &this->VKpipelineLayout));
 }

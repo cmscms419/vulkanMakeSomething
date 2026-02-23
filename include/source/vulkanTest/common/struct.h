@@ -11,8 +11,8 @@
 #include <glm/gtx/hash.hpp>
 
 struct QueueFamilyIndices {
-    uint32_t graphicsAndComputeFamily = 0;  // ±×·¡ÇÈ½º/ÄÄÇ»ÆÃ Å¥ ÆĞ¹Ğ¸® ÀÎµ¦½º (±×·¡ÇÈ½º/ÄÄÇ»ÆÃ ¸í·ÉÀ» Ã³¸®ÇÏ´Â Å¥)
-    uint32_t presentFamily = 0;             // ÇÁ·¹Á¨Æ® Å¥ ÆĞ¹Ğ¸® ÀÎµ¦½º (À©µµ¿ì ½Ã½ºÅÛ°ú VulkanÀ» ¿¬°áÇÏ´Â ÀÎÅÍÆäÀÌ½º)
+    uint32_t graphicsAndComputeFamily = 0;  // ê·¸ë˜í”½ìŠ¤/ì»´í“¨íŒ… í íŒ¨ë°€ë¦¬ ì¸ë±ìŠ¤ (ê·¸ë˜í”½ìŠ¤/ì»´í“¨íŒ… ëª…ë ¹ì„ ì²˜ë¦¬í•˜ëŠ” í)
+    uint32_t presentFamily = 0;             // í”„ë ˆì  íŠ¸ í íŒ¨ë°€ë¦¬ ì¸ë±ìŠ¤ (ìœˆë„ìš° ì‹œìŠ¤í…œê³¼ Vulkanì„ ì—°ê²°í•˜ëŠ” ì¸í„°í˜ì´ìŠ¤)
     VkQueueFamilyProperties queueFamilyProperties = {};
 
     bool graphicsAndComputeFamilyHasValue = false;
@@ -75,8 +75,8 @@ struct Vertex {
     glm::vec3 color;
     glm::vec2 texCoord;
 
-    // ¹ÙÀÎµù ¼³¸íÀ» ¹İÈ¯ÇÏ´Â ÇÔ¼ö
-    // ÀÌ ±¸Á¶Ã¼ÀÇ ¸â¹ö º¯¼ö°¡ ¾î¶»°Ô ¹ÙÀÎµùµÇ´ÂÁö ¼³¸íÇÕ´Ï´Ù.
+    // ë°”ì¸ë”© ì„¤ëª…ì„ ë°˜í™˜í•˜ëŠ” í•¨ìˆ˜
+    // ì´ êµ¬ì¡°ì²´ì˜ ë©¤ë²„ ë³€ìˆ˜ê°€ ì–´ë–»ê²Œ ë°”ì¸ë”©ë˜ëŠ”ì§€ ì„¤ëª…í•©ë‹ˆë‹¤.
     static VkVertexInputBindingDescription getBindingDescription() {
         VkVertexInputBindingDescription bindingDescription{};
 
@@ -87,8 +87,8 @@ struct Vertex {
         return bindingDescription;
     }
 
-    // ¾îÆ®¸®ºäÆ® ¼³¸íÀ» ¹İÈ¯ÇÏ´Â ÇÔ¼ö
-    // À§Ä¡¿Í »ö»óÀ» ³ªÅ¸³»´Â µÎ °³ÀÇ ¾îÆ®¸®ºäÆ®°¡ ÀÖ½À´Ï´Ù.
+    // ì–´íŠ¸ë¦¬ë·°íŠ¸ ì„¤ëª…ì„ ë°˜í™˜í•˜ëŠ” í•¨ìˆ˜
+    // ìœ„ì¹˜ì™€ ìƒ‰ìƒì„ ë‚˜íƒ€ë‚´ëŠ” ë‘ ê°œì˜ ì–´íŠ¸ë¦¬ë·°íŠ¸ê°€ ìˆìŠµë‹ˆë‹¤.
     static std::array<VkVertexInputAttributeDescription, 3> getAttributeDescriptions() {
         std::array<VkVertexInputAttributeDescription, 3> attributeDescriptions{};
 
@@ -120,8 +120,8 @@ struct VertexPosColor {
     glm::vec3 pos;
     glm::vec3 color;
 
-    // ¹ÙÀÎµù ¼³¸íÀ» ¹İÈ¯ÇÏ´Â ÇÔ¼ö
-    // ÀÌ ±¸Á¶Ã¼ÀÇ ¸â¹ö º¯¼ö°¡ ¾î¶»°Ô ¹ÙÀÎµùµÇ´ÂÁö ¼³¸íÇÕ´Ï´Ù.
+    // ë°”ì¸ë”© ì„¤ëª…ì„ ë°˜í™˜í•˜ëŠ” í•¨ìˆ˜
+    // ì´ êµ¬ì¡°ì²´ì˜ ë©¤ë²„ ë³€ìˆ˜ê°€ ì–´ë–»ê²Œ ë°”ì¸ë”©ë˜ëŠ”ì§€ ì„¤ëª…í•©ë‹ˆë‹¤.
     static VkVertexInputBindingDescription getBindingDescription() {
         VkVertexInputBindingDescription bindingDescription{};
 
@@ -132,8 +132,8 @@ struct VertexPosColor {
         return bindingDescription;
     }
 
-    // ¾îÆ®¸®ºäÆ® ¼³¸íÀ» ¹İÈ¯ÇÏ´Â ÇÔ¼ö
-    // À§Ä¡¿Í »ö»óÀ» ³ªÅ¸³»´Â µÎ °³ÀÇ ¾îÆ®¸®ºäÆ®°¡ ÀÖ½À´Ï´Ù.
+    // ì–´íŠ¸ë¦¬ë·°íŠ¸ ì„¤ëª…ì„ ë°˜í™˜í•˜ëŠ” í•¨ìˆ˜
+    // ìœ„ì¹˜ì™€ ìƒ‰ìƒì„ ë‚˜íƒ€ë‚´ëŠ” ë‘ ê°œì˜ ì–´íŠ¸ë¦¬ë·°íŠ¸ê°€ ìˆìŠµë‹ˆë‹¤.
     static std::array<VkVertexInputAttributeDescription, 2> getAttributeDescriptions() {
         std::array<VkVertexInputAttributeDescription, 2> attributeDescriptions{};
 

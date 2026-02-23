@@ -14,10 +14,10 @@ namespace vkengine {
 
         cString extractFilename(const cString& spvFilename);
 
-        // ÆÄÀÏÀ» ÀĞ¾î¿À´Â ÇÔ¼ö
+        // íŒŒì¼ì„ ì½ì–´ì˜¤ëŠ” í•¨ìˆ˜
         std::vector<cChar> readFile(const std::string& filename);
 
-        // spv ÆÄÀÏÀ» ÀĞ¾î¿À´Â ÇÔ¼ö
+        // spv íŒŒì¼ì„ ì½ì–´ì˜¤ëŠ” í•¨ìˆ˜
         std::vector<cChar> readSPVFile(const std::string& filename);
 
         bool fileExists(const std::string& filename);

@@ -51,7 +51,7 @@ namespace vkengine {
             vkDestroyPipeline(this->VKdevice->logicaldevice, this->computershaderPipeline, nullptr);
             vkDestroyPipeline(this->VKdevice->logicaldevice, this->graphicsPipeline, nullptr);
 
-            // object Á¦°Å
+            // object ì œê±°
             this->particleObject->cleanup();
 
             for (size_t i = 0; i < 2; i++)
@@ -89,37 +89,37 @@ namespace vkengine {
 
     void computerShaderEngine::drawFrame()
     {
-        // sumitInfo ±¸Á¶Ã¼¸¦ ÃÊ±âÈ­ÇÕ´Ï´Ù.
+        // sumitInfo êµ¬ì¡°ì²´ë¥¼ ì´ˆê¸°í™”í•©ë‹ˆë‹¤.
 
         this->VKsubmitInfo = {};
 
-        // ·»´õ¸µÀ» ½ÃÀÛÇÏ±â Àü¿¡ ÇÁ·¹ÀÓÀ» ·»´õ¸µÇÒ ÁØºñ°¡ µÇ¾ú´ÂÁö È®ÀÎÇÕ´Ï´Ù.
+        // ë Œë”ë§ì„ ì‹œì‘í•˜ê¸° ì „ì— í”„ë ˆì„ì„ ë Œë”ë§í•  ì¤€ë¹„ê°€ ë˜ì—ˆëŠ”ì§€ í™•ì¸í•©ë‹ˆë‹¤.
         _VK_CHECK_RESULT_(vkWaitForFences(this->VKdevice->logicaldevice, 1, &this->computeFrameData[this->currentFrame].VkinFlightFences, VK_TRUE, UINT64_MAX));
         {
             vkResetFences(this->VKdevice->logicaldevice, 1, &this->computeFrameData[this->currentFrame].VkinFlightFences);
 #if 0
-            this->uboTime.deltaTime = this->getCalulateDeltaTime()* 3000; // deltaTime ¾÷µ¥ÀÌÆ®
+            this->uboTime.deltaTime = this->getCalulateDeltaTime()* 3000; // deltaTime ì—…ë°ì´íŠ¸
 #else
-            this->uboTime.deltaTime = getProgramRunTime(); // ÇÁ·Î±×·¥ ½ÇÇà ½Ã°£ ¾÷µ¥ÀÌÆ®
+            this->uboTime.deltaTime = getProgramRunTime(); // í”„ë¡œê·¸ë¨ ì‹¤í–‰ ì‹œê°„ ì—…ë°ì´íŠ¸
 #endif
             printf("\rTime: %f", this->uboTime.deltaTime);
-            memcpy(this->uboTimemapped[this->currentFrame], &this->uboTime, sizeof(UniformBufferTime)); // uniform buffer¿¡ º¹»ç
+            memcpy(this->uboTimemapped[this->currentFrame], &this->uboTime, sizeof(UniformBufferTime)); // uniform bufferì— ë³µì‚¬
 
             vkResetCommandBuffer(this->computeFrameData[this->currentFrame].mainCommandBuffer, 0);
 
-            // ·»´õ¸µÀ» ½ÃÀÛÇÏ±â Àü¿¡ Ä¿¸Çµå ¹öÆÛ¸¦ Àç¼³Á¤ÇÕ´Ï´Ù.
-            // computer shader ½ÇÇà
+            // ë Œë”ë§ì„ ì‹œì‘í•˜ê¸° ì „ì— ì»¤ë§¨ë“œ ë²„í¼ë¥¼ ì¬ì„¤ì •í•©ë‹ˆë‹¤.
+            // computer shader ì‹¤í–‰
             this->recordComputerCommandBuffer(&this->computeFrameData[this->currentFrame]);
 
-            // VkSubmitInfo ±¸Á¶Ã¼´Â Å¥¿¡ Á¦ÃâÇÒ ¸í·É ¹öÆÛ¸¦ ÁöÁ¤ÇÕ´Ï´Ù.
-            // ·»´õ¸µÀ» ½ÃÀÛÇÏ±â Àü¿¡ ¼¼¸¶Æ÷¾î¸¦ ¼³Á¤ÇÕ´Ï´Ù.
+            // VkSubmitInfo êµ¬ì¡°ì²´ëŠ” íì— ì œì¶œí•  ëª…ë ¹ ë²„í¼ë¥¼ ì§€ì •í•©ë‹ˆë‹¤.
+            // ë Œë”ë§ì„ ì‹œì‘í•˜ê¸° ì „ì— ì„¸ë§ˆí¬ì–´ë¥¼ ì„¤ì •í•©ë‹ˆë‹¤.
             VKsubmitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
             VKsubmitInfo.commandBufferCount = 1;
             VKsubmitInfo.pCommandBuffers = &this->computeFrameData[this->currentFrame].mainCommandBuffer;
             VKsubmitInfo.signalSemaphoreCount = 1;
             VKsubmitInfo.pSignalSemaphores = &this->computeFrameData[this->currentFrame].computeFinishedSemaphores;
         
-            // Å¥¿¡ ¸í·ÉÀ» Á¦ÃâÇÕ´Ï´Ù. -> ÀÌ ÇÔ¼ö´Â ±×·¡ÇÈ ·£´õ¸µÀ» ½ÃÀÛÇÏ´Â ÀÌ Å¥´Â computer Å¥¿Í °°Àº ¿ªÇÒÀ» ÇÑ´Ù.
+            // íì— ëª…ë ¹ì„ ì œì¶œí•©ë‹ˆë‹¤. -> ì´ í•¨ìˆ˜ëŠ” ê·¸ë˜í”½ ëœë”ë§ì„ ì‹œì‘í•˜ëŠ” ì´ íëŠ” computer íì™€ ê°™ì€ ì—­í• ì„ í•œë‹¤.
             _VK_CHECK_RESULT_(vkQueueSubmit(this->VKdevice->graphicsVKQueue, 1, &VKsubmitInfo, this->computeFrameData[this->currentFrame].VkinFlightFences));
         }
 
@@ -128,42 +128,42 @@ namespace vkengine {
         uint32_t imageIndex = 0;
         VulkanEngine::prepareFame(&imageIndex);
         {
-            // ÇÃ·¡±×¸¦ Àç¼³Á¤ÇÕ´Ï´Ù. -> ·»´õ¸µÀÌ ³¡³ª¸é ÇÃ·¡±×¸¦ Àç¼³Á¤ÇÕ´Ï´Ù.
+            // í”Œë˜ê·¸ë¥¼ ì¬ì„¤ì •í•©ë‹ˆë‹¤. -> ë Œë”ë§ì´ ëë‚˜ë©´ í”Œë˜ê·¸ë¥¼ ì¬ì„¤ì •í•©ë‹ˆë‹¤.
             vkResetFences(this->VKdevice->logicaldevice, 1, &this->VKframeData[this->currentFrame].VkinFlightFences);
 
-            // ·»´õ¸µÀ» ½ÃÀÛÇÏ±â Àü¿¡ ÀÌ¹ÌÁö¸¦ ·»´õ¸µÇÒ ÁØºñ°¡ µÇ¾ú´ÂÁö È®ÀÎÇÕ´Ï´Ù.
-            // ÁöÁ¤µÈ ¸í·É ¹öÆÛ¸¦ ÃÊ±âÈ­ÇÏ°í, ¼±ÅÃÀûÀ¸·Î ÇÃ·¡±×¸¦ »ç¿ëÇÏ¿© ÃÊ±âÈ­ µ¿ÀÛÀ» Á¦¾î
+            // ë Œë”ë§ì„ ì‹œì‘í•˜ê¸° ì „ì— ì´ë¯¸ì§€ë¥¼ ë Œë”ë§í•  ì¤€ë¹„ê°€ ë˜ì—ˆëŠ”ì§€ í™•ì¸í•©ë‹ˆë‹¤.
+            // ì§€ì •ëœ ëª…ë ¹ ë²„í¼ë¥¼ ì´ˆê¸°í™”í•˜ê³ , ì„ íƒì ìœ¼ë¡œ í”Œë˜ê·¸ë¥¼ ì‚¬ìš©í•˜ì—¬ ì´ˆê¸°í™” ë™ì‘ì„ ì œì–´
             vkResetCommandBuffer(this->VKframeData[this->currentFrame].mainCommandBuffer, 0);
 
-            // ·£´õÇÒ ¸íÇü¾î Ãß°¡
+            // ëœë”í•  ëª…í˜•ì–´ ì¶”ê°€
             this->recordCommandBuffer(&this->VKframeData[this->currentFrame], imageIndex);
 
-            // Semaphore¸¦ »ç¿ëÇÏ¿© ÄÄÇ»Æ® ¼ÎÀÌ´õ°¡ ¿Ï·áµÈ ÈÄ¿¡ ·»´õ¸µÀ» ½ÃÀÛÇÕ´Ï´Ù.
+            // Semaphoreë¥¼ ì‚¬ìš©í•˜ì—¬ ì»´í“¨íŠ¸ ì…°ì´ë”ê°€ ì™„ë£Œëœ í›„ì— ë Œë”ë§ì„ ì‹œì‘í•©ë‹ˆë‹¤.
             VkSemaphore waitSemaphores[2] = {
-                this->VKframeData[this->currentFrame].VkimageavailableSemaphore, // ÀÌ¹ÌÁö°¡ »ç¿ë °¡´ÉÇÒ ¶§±îÁö ´ë±âÇÕ´Ï´Ù.
-                this->computeFrameData[this->currentFrame].computeFinishedSemaphores // ÄÄÇ»Æ® ¼ÎÀÌ´õ°¡ ¿Ï·áµÉ ¶§±îÁö ´ë±âÇÕ´Ï´Ù.
+                this->VKframeData[this->currentFrame].VkimageavailableSemaphore, // ì´ë¯¸ì§€ê°€ ì‚¬ìš© ê°€ëŠ¥í•  ë•Œê¹Œì§€ ëŒ€ê¸°í•©ë‹ˆë‹¤.
+                this->computeFrameData[this->currentFrame].computeFinishedSemaphores // ì»´í“¨íŠ¸ ì…°ì´ë”ê°€ ì™„ë£Œë  ë•Œê¹Œì§€ ëŒ€ê¸°í•©ë‹ˆë‹¤.
             };
             
-            // ´ë±âÇÒ ÆÄÀÌÇÁ¶óÀÎ ½ºÅ×ÀÌÁö¸¦ ÁöÁ¤ÇÕ´Ï´Ù.
+            // ëŒ€ê¸°í•  íŒŒì´í”„ë¼ì¸ ìŠ¤í…Œì´ì§€ë¥¼ ì§€ì •í•©ë‹ˆë‹¤.
             VkPipelineStageFlags waitStages[2] = {
-                VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, // »ö»ó Ã·ºÎ Ãâ·Â ´Ü°è¿¡¼­ ´ë±âÇÕ´Ï´Ù.
-                VK_PIPELINE_STAGE_VERTEX_INPUT_BIT // ÄÄÇ»Æ® ¼ÎÀÌ´õ°¡ ¿Ï·áµÈ ÈÄ¿¡ ·»´õ¸µÀ» ½ÃÀÛÇÕ´Ï´Ù.
+                VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, // ìƒ‰ìƒ ì²¨ë¶€ ì¶œë ¥ ë‹¨ê³„ì—ì„œ ëŒ€ê¸°í•©ë‹ˆë‹¤.
+                VK_PIPELINE_STAGE_VERTEX_INPUT_BIT // ì»´í“¨íŠ¸ ì…°ì´ë”ê°€ ì™„ë£Œëœ í›„ì— ë Œë”ë§ì„ ì‹œì‘í•©ë‹ˆë‹¤.
             };
             VKsubmitInfo = {};
             VKsubmitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
-            VKsubmitInfo.waitSemaphoreCount = 2; // ÄÄÇ»Æ® ¼ÎÀÌ´õ°¡ ¿Ï·áµÈ ÈÄ¿¡ ·»´õ¸µÀ» ½ÃÀÛÇÕ´Ï´Ù.
-            VKsubmitInfo.pWaitSemaphores = waitSemaphores; // ´ë±âÇÒ ¼¼¸¶Æ÷¾î¸¦ ÁöÁ¤ÇÕ´Ï´Ù.
-            VKsubmitInfo.pWaitDstStageMask = waitStages; // ´ë±âÇÒ ÆÄÀÌÇÁ¶óÀÎ ½ºÅ×ÀÌÁö¸¦ ÁöÁ¤ÇÕ´Ï´Ù.
-            VKsubmitInfo.commandBufferCount = 1; // ·»´õ¸µÇÒ Ä¿¸Çµå ¹öÆÛÀÇ °³¼ö¸¦ ÁöÁ¤ÇÕ´Ï´Ù.
-            VKsubmitInfo.pCommandBuffers = &this->VKframeData[this->currentFrame].mainCommandBuffer; // ·»´õ¸µÇÒ Ä¿¸Çµå ¹öÆÛ¸¦ ÁöÁ¤ÇÕ´Ï´Ù.
-            VKsubmitInfo.signalSemaphoreCount = 1; // ·»´õ¸µÀÌ ¿Ï·áµÈ ÈÄ¿¡ ½ÅÈ£¸¦ º¸³¾ ¼¼¸¶Æ÷¾îÀÇ °³¼ö¸¦ ÁöÁ¤ÇÕ´Ï´Ù.
+            VKsubmitInfo.waitSemaphoreCount = 2; // ì»´í“¨íŠ¸ ì…°ì´ë”ê°€ ì™„ë£Œëœ í›„ì— ë Œë”ë§ì„ ì‹œì‘í•©ë‹ˆë‹¤.
+            VKsubmitInfo.pWaitSemaphores = waitSemaphores; // ëŒ€ê¸°í•  ì„¸ë§ˆí¬ì–´ë¥¼ ì§€ì •í•©ë‹ˆë‹¤.
+            VKsubmitInfo.pWaitDstStageMask = waitStages; // ëŒ€ê¸°í•  íŒŒì´í”„ë¼ì¸ ìŠ¤í…Œì´ì§€ë¥¼ ì§€ì •í•©ë‹ˆë‹¤.
+            VKsubmitInfo.commandBufferCount = 1; // ë Œë”ë§í•  ì»¤ë§¨ë“œ ë²„í¼ì˜ ê°œìˆ˜ë¥¼ ì§€ì •í•©ë‹ˆë‹¤.
+            VKsubmitInfo.pCommandBuffers = &this->VKframeData[this->currentFrame].mainCommandBuffer; // ë Œë”ë§í•  ì»¤ë§¨ë“œ ë²„í¼ë¥¼ ì§€ì •í•©ë‹ˆë‹¤.
+            VKsubmitInfo.signalSemaphoreCount = 1; // ë Œë”ë§ì´ ì™„ë£Œëœ í›„ì— ì‹ í˜¸ë¥¼ ë³´ë‚¼ ì„¸ë§ˆí¬ì–´ì˜ ê°œìˆ˜ë¥¼ ì§€ì •í•©ë‹ˆë‹¤.
             VKsubmitInfo.pSignalSemaphores = &this->VKframeData[this->currentFrame].VkrenderFinishedSemaphore;
         
         } 
         _VK_CHECK_RESULT_(vkQueueSubmit(this->VKdevice->graphicsVKQueue, 1, &VKsubmitInfo, this->VKframeData[this->currentFrame].VkinFlightFences));
         
-        // ·»´õ¸µ Á¾·á ÈÄ, ÇÁ·¹Á¨Æ®¸¦ ½ÃÀÛÇÕ´Ï´Ù.
+        // ë Œë”ë§ ì¢…ë£Œ í›„, í”„ë ˆì  íŠ¸ë¥¼ ì‹œì‘í•©ë‹ˆë‹¤.
         VulkanEngine::presentFrame(&imageIndex);
 
         this->currentFrame = (this->currentFrame + 1) % this->frames;
@@ -278,17 +278,17 @@ namespace vkengine {
 
     void computerShaderEngine::recordCommandBuffer(FrameData* framedata, uint32_t imageIndex)
     {
-        // Ä¿¸Çµå ¹öÆÛ ±â·ÏÀ» ½ÃÀÛÇÕ´Ï´Ù.
+        // ì»¤ë§¨ë“œ ë²„í¼ ê¸°ë¡ì„ ì‹œì‘í•©ë‹ˆë‹¤.
         VkCommandBufferBeginInfo beginInfo = framedata->commandBufferBeginInfo(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
 
         _VK_CHECK_RESULT_(vkBeginCommandBuffer(framedata->mainCommandBuffer, &beginInfo));
 
-        // ·»´õ ÆĞ½º¸¦ ½ÃÀÛÇÏ±â À§ÇÑ Å¬¸®¾î °ª ¼³Á¤
+        // ë Œë” íŒ¨ìŠ¤ë¥¼ ì‹œì‘í•˜ê¸° ìœ„í•œ í´ë¦¬ì–´ ê°’ ì„¤ì •
         std::array<VkClearValue, 2> clearValues{};
         clearValues[0].color = { {0.2f, 0.2f, 0.2f, 1.0f} };
         clearValues[1].depthStencil = { 1.0f, 0 };
 
-        // ·»´õ ÆĞ½º ½ÃÀÛ Á¤º¸ ±¸Á¶Ã¼¸¦ ÃÊ±âÈ­ÇÕ´Ï´Ù.
+        // ë Œë” íŒ¨ìŠ¤ ì‹œì‘ ì •ë³´ êµ¬ì¡°ì²´ë¥¼ ì´ˆê¸°í™”í•©ë‹ˆë‹¤.
         VkRenderPassBeginInfo renderPassInfo{};
         renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
         renderPassInfo.renderPass = *this->VKrenderPass.get();
@@ -323,13 +323,13 @@ namespace vkengine {
         }
         vkCmdEndRenderPass(framedata->mainCommandBuffer);
 
-        // Ä¿¸Çµå ¹öÆÛ ±â·ÏÀ» Á¾·áÇÕ´Ï´Ù.
+        // ì»¤ë§¨ë“œ ë²„í¼ ê¸°ë¡ì„ ì¢…ë£Œí•©ë‹ˆë‹¤.
         _VK_CHECK_RESULT_(vkEndCommandBuffer(framedata->mainCommandBuffer));
     }
 
     void computerShaderEngine::recordComputerCommandBuffer(ComputerFrameData* framedata)
     {
-        // Ä¿¸Çµå ¹öÆÛ ±â·ÏÀ» ½ÃÀÛÇÕ´Ï´Ù.
+        // ì»¤ë§¨ë“œ ë²„í¼ ê¸°ë¡ì„ ì‹œì‘í•©ë‹ˆë‹¤.
         VkCommandBufferBeginInfo beginInfo = framedata->commandBufferBeginInfo(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
         _VK_CHECK_RESULT_(vkBeginCommandBuffer(framedata->mainCommandBuffer, &beginInfo));
         {
@@ -341,9 +341,9 @@ namespace vkengine {
                 0, 1,
                 &this->computershaderDrscriptor->VKdescriptorSets[this->currentFrame],
                 0, 0);
-            vkCmdDispatch(framedata->mainCommandBuffer, MAX_PARTICALES / 256, 1, 1); // ÄÄÇ»Æ® ¼ÎÀÌ´õ¸¦ ½ÇÇàÇÕ´Ï´Ù. (1x1x1 ¿öÅ© ±×·ì Å©±â)
+            vkCmdDispatch(framedata->mainCommandBuffer, MAX_PARTICALES / 256, 1, 1); // ì»´í“¨íŠ¸ ì…°ì´ë”ë¥¼ ì‹¤í–‰í•©ë‹ˆë‹¤. (1x1x1 ì›Œí¬ ê·¸ë£¹ í¬ê¸°)
         }
-        // Ä¿¸Çµå ¹öÆÛ ±â·ÏÀ» Á¾·áÇÕ´Ï´Ù.
+        // ì»¤ë§¨ë“œ ë²„í¼ ê¸°ë¡ì„ ì¢…ë£Œí•©ë‹ˆë‹¤.
         _VK_CHECK_RESULT_(vkEndCommandBuffer(framedata->mainCommandBuffer));
     }
 
@@ -351,8 +351,8 @@ namespace vkengine {
     {
         VkCommandBufferAllocateInfo allocInfo = helper::commandBufferAllocateInfo(
             this->VKdevice->commandPool,
-            1, // Ä¿¸Çµå ¹öÆÛ °³¼ö
-            VK_COMMAND_BUFFER_LEVEL_PRIMARY); // Ä¿¸Çµå ¹öÆÛ ·¹º§
+            1, // ì»¤ë§¨ë“œ ë²„í¼ ê°œìˆ˜
+            VK_COMMAND_BUFFER_LEVEL_PRIMARY); // ì»¤ë§¨ë“œ ë²„í¼ ë ˆë²¨
 
         for (auto& frameData : this->computeFrameData)
         {
@@ -367,7 +367,7 @@ namespace vkengine {
         std::default_random_engine rndEngine((unsigned)time(nullptr));
         std::uniform_real_distribution<float> rndDist(0.0f, 1.0f);
 
-        // ÆÄÆ¼Å¬ÀÇ uniform buffer¸¦ »ı¼ºÇÕ´Ï´Ù.
+        // íŒŒí‹°í´ì˜ uniform bufferë¥¼ ìƒì„±í•©ë‹ˆë‹¤.
         for (size_t i = 0; i < MAX_PARTICALES; i++)
         {
             Particle particle;
@@ -379,11 +379,11 @@ namespace vkengine {
             cFloat z = 0.0f;
 
             particle.position = cVec3(x, y, z);
-            particle.velocity = glm::normalize(cVec3(x, y, z)) * 0.00025f; // ¼Óµµ´Â Á¤±ÔÈ­µÈ º¤ÅÍ·Î ¼³Á¤ÇÕ´Ï´Ù.
+            particle.velocity = glm::normalize(cVec3(x, y, z)) * 0.00025f; // ì†ë„ëŠ” ì •ê·œí™”ëœ ë²¡í„°ë¡œ ì„¤ì •í•©ë‹ˆë‹¤.
             particle.color = glm::vec3(rndDist(rndEngine), rndDist(rndEngine), rndDist(rndEngine));
-            particle.empty = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f); // empty´Â »ç¿ëÇÏÁö ¾ÊÁö¸¸, ÆÄÆ¼Å¬ ±¸Á¶Ã¼ÀÇ Å©±â¸¦ ¸ÂÃß±â À§ÇØ »ç¿ëÇÕ´Ï´Ù.
+            particle.empty = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f); // emptyëŠ” ì‚¬ìš©í•˜ì§€ ì•Šì§€ë§Œ, íŒŒí‹°í´ êµ¬ì¡°ì²´ì˜ í¬ê¸°ë¥¼ ë§ì¶”ê¸° ìœ„í•´ ì‚¬ìš©í•©ë‹ˆë‹¤.
 
-            this->particleObject->addParticle(particle); // ÆÄÆ¼Å¬ ¿ÀºêÁ§Æ®¿¡ ÆÄÆ¼Å¬À» Ãß°¡ÇÕ´Ï´Ù.
+            this->particleObject->addParticle(particle); // íŒŒí‹°í´ ì˜¤ë¸Œì íŠ¸ì— íŒŒí‹°í´ì„ ì¶”ê°€í•©ë‹ˆë‹¤.
         }
 
         this->particleObject->createParticleBuffers();
@@ -400,7 +400,7 @@ namespace vkengine {
                 this->uboTimeBuffers[i],
                 this->uboTimeBuffersMemory[i]);
 
-            // uniform buffer¸¦ ¸ÅÇÎÇÕ´Ï´Ù.
+            // uniform bufferë¥¼ ë§¤í•‘í•©ë‹ˆë‹¤.
             _VK_CHECK_RESULT_(vkMapMemory(this->VKdevice->logicaldevice, this->uboTimeBuffersMemory[i], 0, bufferSize, 0, &this->uboTimemapped[i]));
         }
         
@@ -413,8 +413,8 @@ namespace vkengine {
         // pool create
         std::vector<VkDescriptorPoolSize> poolSizes = {
             helper::descriptorPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, this->frames), // deltaTime
-            helper::descriptorPoolSize(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, this->frames), // in Particle -> ÀĞ±â Àü¿ë
-            helper::descriptorPoolSize(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, this->frames), // out Particle -> ¾²±â Àü¿ë
+            helper::descriptorPoolSize(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, this->frames), // in Particle -> ì½ê¸° ì „ìš©
+            helper::descriptorPoolSize(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, this->frames), // out Particle -> ì“°ê¸° ì „ìš©
         };
 
         this->computershaderDrscriptor->poolInfo = helper::descriptorPoolCreateInfo(poolSizes, this->frames);
@@ -429,12 +429,12 @@ namespace vkengine {
         this->computershaderDrscriptor->layoutInfo = helper::descriptorSetLayoutCreateInfo(bindings);
         this->computershaderDrscriptor->createDescriptorSetLayout();
 
-        // descriptor set »ı¼º
+        // descriptor set ìƒì„±
         std::vector<VkDescriptorSetLayout> layouts(this->frames, this->computershaderDrscriptor->VKdescriptorSetLayout);
         this->computershaderDrscriptor->allocInfo = helper::descriptorSetAllocateInfo(
             this->computershaderDrscriptor->VKdescriptorPool,
             *layouts.data(),
-            this->frames); // object°¡ ÇÑ°³´Ù
+            this->frames); // objectê°€ í•œê°œë‹¤
         this->computershaderDrscriptor->VKdescriptorSets.resize(this->frames);
         this->computershaderDrscriptor->createAllocateDescriptorSets();
 
@@ -445,11 +445,11 @@ namespace vkengine {
 
         particleInput.buffer = this->particleObject->InputPartucleBuffer.buffer;
         particleInput.offset = 0;
-        particleInput.range = sizeof(Particle) * MAX_PARTICALES; // MAX_PARTICALES°³ÀÇ ÆÄÆ¼Å¬
+        particleInput.range = sizeof(Particle) * MAX_PARTICALES; // MAX_PARTICALESê°œì˜ íŒŒí‹°í´
 
         particleOuput.buffer = this->particleObject->OutputPartucleBuffer.buffer;
         particleOuput.offset = 0;
-        particleOuput.range = sizeof(Particle) * MAX_PARTICALES; // MAX_PARTICALES°³ÀÇ ÆÄÆ¼Å¬
+        particleOuput.range = sizeof(Particle) * MAX_PARTICALES; // MAX_PARTICALESê°œì˜ íŒŒí‹°í´
 
         uniformTimeinfo1.buffer = this->uboTimeBuffers[0];
         uniformTimeinfo1.offset = 0;
@@ -459,9 +459,9 @@ namespace vkengine {
         uniformTimeinfo2.offset = 0;
         uniformTimeinfo2.range = sizeof(UniformBufferTime); // deltaTime
 
-        // descriptor set ¾÷µ¥ÀÌÆ®
+        // descriptor set ì—…ë°ì´íŠ¸
 
-        // 01 : particleInput -> particleOuput ¼ø¼­·Î ¾÷µ¥ÀÌÆ® ÇÑ´Ù.
+        // 01 : particleInput -> particleOuput ìˆœì„œë¡œ ì—…ë°ì´íŠ¸ í•œë‹¤.
         std::vector<VkWriteDescriptorSet> writeDescriptorSets01 = {
             helper::writeDescriptorSet(
                 this->computershaderDrscriptor->VKdescriptorSets[0],
@@ -480,7 +480,7 @@ namespace vkengine {
                 &particleOuput), // out Particle
         };
 
-        // 02 : particleOuput -> particleInput ¼ø¼­·Î ¾÷µ¥ÀÌÆ® ÇÑ´Ù.
+        // 02 : particleOuput -> particleInput ìˆœì„œë¡œ ì—…ë°ì´íŠ¸ í•œë‹¤.
         std::vector<VkWriteDescriptorSet> writeDescriptorSets02 = {
             helper::writeDescriptorSet(
                 this->computershaderDrscriptor->VKdescriptorSets[1],
@@ -499,7 +499,7 @@ namespace vkengine {
                 &particleInput), // out Particle
         };
 
-        // descriptor set ¾÷µ¥ÀÌÆ®
+        // descriptor set ì—…ë°ì´íŠ¸
         vkUpdateDescriptorSets(
             this->VKdevice->logicaldevice, 
             static_cast<uint32_t>(writeDescriptorSets01.size()),
@@ -527,12 +527,12 @@ namespace vkengine {
         computeShaderStageInfo = helper::pipelineShaderStageCreateInfo(VK_SHADER_STAGE_COMPUTE_BIT, computerShaderModule, "main");
 
         VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
-        pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO; // ±¸Á¶Ã¼ Å¸ÀÔÀ» ¼³Á¤
-        pipelineLayoutInfo.pNext = nullptr;                                       // ´ÙÀ½ ±¸Á¶Ã¼ Æ÷ÀÎÅÍ¸¦ ¼³Á¤
-        pipelineLayoutInfo.setLayoutCount = 1;                                    // ·¹ÀÌ¾Æ¿ô °³¼ö¸¦ ¼³Á¤
-        pipelineLayoutInfo.pSetLayouts = &this->computershaderDrscriptor->VKdescriptorSetLayout;            // ·¹ÀÌ¾Æ¿ô Æ÷ÀÎÅÍ¸¦ ¼³Á¤
-        pipelineLayoutInfo.pushConstantRangeCount = 0;                            // Çª½Ã »ó¼ö ¹üÀ§ °³¼ö¸¦ ¼³Á¤
-        pipelineLayoutInfo.pPushConstantRanges = nullptr;                         // Çª½Ã »ó¼ö ¹üÀ§ Æ÷ÀÎÅÍ¸¦ ¼³Á¤
+        pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO; // êµ¬ì¡°ì²´ íƒ€ì…ì„ ì„¤ì •
+        pipelineLayoutInfo.pNext = nullptr;                                       // ë‹¤ìŒ êµ¬ì¡°ì²´ í¬ì¸í„°ë¥¼ ì„¤ì •
+        pipelineLayoutInfo.setLayoutCount = 1;                                    // ë ˆì´ì•„ì›ƒ ê°œìˆ˜ë¥¼ ì„¤ì •
+        pipelineLayoutInfo.pSetLayouts = &this->computershaderDrscriptor->VKdescriptorSetLayout;            // ë ˆì´ì•„ì›ƒ í¬ì¸í„°ë¥¼ ì„¤ì •
+        pipelineLayoutInfo.pushConstantRangeCount = 0;                            // í‘¸ì‹œ ìƒìˆ˜ ë²”ìœ„ ê°œìˆ˜ë¥¼ ì„¤ì •
+        pipelineLayoutInfo.pPushConstantRanges = nullptr;                         // í‘¸ì‹œ ìƒìˆ˜ ë²”ìœ„ í¬ì¸í„°ë¥¼ ì„¤ì •
 
         _VK_CHECK_RESULT_(vkCreatePipelineLayout(
             this->VKdevice->logicaldevice,

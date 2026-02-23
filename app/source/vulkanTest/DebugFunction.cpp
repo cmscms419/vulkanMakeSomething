@@ -13,7 +13,7 @@ namespace vkutil {
         return VK_FALSE;
     }
 
-    // vkutil namespace¿¡ key_callback ÇÔ¼ö Á¤ÀÇ
+    // vkutil namespaceì— key_callback í•¨ìˆ˜ ì •ì˜
     void key_callback(GLFWwindow * window, int key, int scancode, int action, int mods) {
         Application *app = reinterpret_cast<Application *>(glfwGetWindowUserPointer(window));
         if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {

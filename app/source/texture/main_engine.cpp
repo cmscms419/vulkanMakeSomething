@@ -17,7 +17,7 @@ int main(int argc, char* argv[]) {
         root_path = path;
     }
     else {
-        std::cerr << "°æ·Î¸¦ °¡Á®¿À´Â µ¥ ½ÇÆÐÇß½À´Ï´Ù." << std::endl;
+        std::cerr << "ê²½ë¡œë¥¼ ê°€ì ¸ì˜¤ëŠ” ë° ì‹¤íŒ¨í–ˆìŠµë‹ˆë‹¤." << std::endl;
     }
 
     std::unique_ptr<vkengine::VulkanEngine> engine;

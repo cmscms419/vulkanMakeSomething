@@ -63,7 +63,7 @@ namespace vkengine {
         }
         file.close();
 
-        // ¸¸¾à, ÀÌ¹Ì µ¥ÀÌÅÍ¸¦ °¡Áö°í ÀÖÀ¸¸é, ±âÁ¸ µ¥ÀÌÅÍ¸¦ »ç¿ëÇÑ´Ù.
+        // ë§Œì•½, ì´ë¯¸ ë°ì´í„°ë¥¼ ê°€ì§€ê³  ìˆìœ¼ë©´, ê¸°ì¡´ ë°ì´í„°ë¥¼ ì‚¬ìš©í•œë‹¤.
         if (numSets > 0 && !poolSizes.empty())
         {
             this->createNewPool(poolSizes, numSets);
@@ -94,7 +94,7 @@ namespace vkengine {
     void DescriptorManager2::createNewPool(const std::vector<VkDescriptorPoolSize>& typeCounts, cUint32_t maxSets)
     {
         // Create descriptor pool
-        // VKdescriptorPoolSize vector¸¦ ¹Ş¾Æ¼­ descriptor poolÀ» »ı¼ºÇÑ´Ù.
+        // VKdescriptorPoolSize vectorë¥¼ ë°›ì•„ì„œ descriptor poolì„ ìƒì„±í•œë‹¤.
         VkDescriptorPoolCreateInfo poolInfo = helper::descriptorPoolCreateInfo(typeCounts, maxSets);
 
         VkDescriptorPool descriptorPool = VK_NULL_HANDLE;
@@ -120,18 +120,18 @@ namespace vkengine {
 
     VkDescriptorSet DescriptorManager2::allocateDescriptorSet(const VkDescriptorSetLayout layout)
     {
-        // 1. layout¿¡ ÇØ´çÇÏ´Â binding Á¤º¸¸¦ Ã£´Â´Ù.
+        // 1. layoutì— í•´ë‹¹í•˜ëŠ” binding ì •ë³´ë¥¼ ì°¾ëŠ”ë‹¤.
         const std::vector<VkDescriptorSetLayoutBinding>& bindings = this->layoutToBindings(layout);
 
-        // 2. binding Á¤º¸¸¦ ¹ÙÅÁÀ¸·Î ÇÊ¿äÇÑ descriptor type°ú °³¼ö¸¦ °è»êÇÑ´Ù.
+        // 2. binding ì •ë³´ë¥¼ ë°”íƒ•ìœ¼ë¡œ í•„ìš”í•œ descriptor typeê³¼ ê°œìˆ˜ë¥¼ ê³„ì‚°í•œë‹¤.
         std::unordered_map<VkDescriptorType, cUint32_t> requiredTypeCounts;
         for (const auto& binding : bindings) {
             requiredTypeCounts[binding.descriptorType] += binding.descriptorCount;
         }
 
-        // 3. ³²¾ÆÀÖ´Â capacity·ÎºÎÅÍ ÇÒ´çÀÌ °¡´ÉÇÑÁö È®ÀÎÇÑ´Ù.
+        // 3. ë‚¨ì•„ìˆëŠ” capacityë¡œë¶€í„° í• ë‹¹ì´ ê°€ëŠ¥í•œì§€ í™•ì¸í•œë‹¤.
         if (!this->canAllocateFromRemaining(requiredTypeCounts, 1)) {
-            // 3.1.1 pool »ı¼ºÀ» À§ÇØ VKdescriptorPoolSize vector¸¦ ¸¸µç´Ù.
+            // 3.1.1 pool ìƒì„±ì„ ìœ„í•´ VKdescriptorPoolSize vectorë¥¼ ë§Œë“ ë‹¤.
             std::vector<VkDescriptorPoolSize> poolSizes;
             poolSizes.reserve(requiredTypeCounts.size());
 
@@ -140,16 +140,16 @@ namespace vkengine {
                 poolSizes.push_back(poolSize);
             }
 
-            // 3.1.2 »õ·Î¿î poolÀ» »ı¼ºÇÑ´Ù.
+            // 3.1.2 ìƒˆë¡œìš´ poolì„ ìƒì„±í•œë‹¤.
             this->createNewPool(poolSizes, std::max(1u, this->remainingSets_ * 2));
 
-            // 3.1.3. ³²¾ÆÀÖ´Â capacity·ÎºÎÅÍ ÇÒ´çÀÌ °¡´ÉÇÑÁö ´Ù½Ã È®ÀÎÇÑ´Ù.
+            // 3.1.3. ë‚¨ì•„ìˆëŠ” capacityë¡œë¶€í„° í• ë‹¹ì´ ê°€ëŠ¥í•œì§€ ë‹¤ì‹œ í™•ì¸í•œë‹¤.
             if (!this->canAllocateFromRemaining(requiredTypeCounts, 1)) {
                 EXIT_TO_LOGGER("Error: Unable to allocate descriptor set even after creating a new pool.\n");
             }
         }
 
-        // 4. ¸¶Áö¸· pool¸¦ »ç¿ëÇØ¼­ descriptor setÀ» ÇÒ´çÇÑ´Ù.
+        // 4. ë§ˆì§€ë§‰ poolë¥¼ ì‚¬ìš©í•´ì„œ descriptor setì„ í• ë‹¹í•œë‹¤.
         VkDescriptorSetAllocateInfo allocInfo = helper::descriptorSetAllocateInfo(
             this->descriptorPools.back(), layout, 1);
 
@@ -161,7 +161,7 @@ namespace vkengine {
             EXIT_TO_LOGGER("Error: Out of pool memory when allocating descriptor set.\n");
         }
 
-        // 5. allocated capacity¸¦ ¾÷µ¥ÀÌÆ® ÇÑ´Ù.
+        // 5. allocated capacityë¥¼ ì—…ë°ì´íŠ¸ í•œë‹¤.
         this->updateRemainingCapacity(bindings, 1);
         this->allocatedSets_ += 1;
 
@@ -251,17 +251,17 @@ namespace vkengine {
 
     const VkDescriptorSetLayout& DescriptorManager2::getDescriptorSetLayout(const std::vector<VkDescriptorSetLayoutBinding>& bindings)
     {
-        // bindings¿Í ÀÏÄ¡ÇÏ´Â layoutÀ» Ã£´Â´Ù.
+        // bindingsì™€ ì¼ì¹˜í•˜ëŠ” layoutì„ ì°¾ëŠ”ë‹¤.
         for (const auto& [storedLayout, layoutInfo] : this->layoutsAndInfos)
         {
             if (BindingEqual{}(layoutInfo.bindings, bindings))
             {
-                return storedLayout;  // °ª ¹İÈ¯
+                return storedLayout;  // ê°’ ë°˜í™˜
             }
         }
 
         EXIT_TO_LOGGER("Error: Descriptor set layout with the specified bindings not found.\n");
-        return VK_NULL_HANDLE;  // ¿¹¿Ü Ã³¸® (½ÇÁ¦·Î´Â ½ÇÇàµÇÁö ¾ÊÀ½)
+        return VK_NULL_HANDLE;  // ì˜ˆì™¸ ì²˜ë¦¬ (ì‹¤ì œë¡œëŠ” ì‹¤í–‰ë˜ì§€ ì•ŠìŒ)
     }
 
     void DescriptorManager2::cleanup()
@@ -275,7 +275,7 @@ namespace vkengine {
             {
                 file << "NumSets " << this->remainingSets_ << "\n";
 
-                // ³²¾ÆÀÖ´Â descriptor type°ú °³¼ö¸¦ ½ºÅ©¸³Æ® ÆÄÀÏ¿¡ ±â·ÏÇÑ´Ù.
+                // ë‚¨ì•„ìˆëŠ” descriptor typeê³¼ ê°œìˆ˜ë¥¼ ìŠ¤í¬ë¦½íŠ¸ íŒŒì¼ì— ê¸°ë¡í•œë‹¤.
                 for (const auto& [type, count] : this->remainingTypeCounts_)
                 {
                     file << helper::descriptorTypeToString(type) << " " << count << "\n";

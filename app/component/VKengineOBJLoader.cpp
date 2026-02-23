@@ -47,7 +47,7 @@ namespace vkengine {
                             }
                             else
                             {
-                                vertex.normal = { 0.0f, 0.0f, 0.0f }; // ±‚∫ª∞™ º≥¡§
+                                vertex.normal = { 0.0f, 0.0f, 0.0f }; // Í∏∞Î≥∏Í∞í ÏÑ§Ï†ï
                             }
 
                             if (!attrib.texcoords.empty())
@@ -55,7 +55,7 @@ namespace vkengine {
                                 vertex.texCoord = {
                                     attrib.texcoords[2 * index.texcoord_index + 0],
                                     attrib.texcoords[2 * index.texcoord_index + 1],
-                                    0.0f // z∞™¿ª 0.0f∑Œ
+                                    0.0f // zÍ∞íÏùÑ 0.0fÎ°ú
                                 };
                             }
                             else
@@ -63,7 +63,7 @@ namespace vkengine {
                                 vertex.texCoord = { 0.0f, 0.0f, 0.0f };
                             }
 
-                            // Tangent ¡§∫∏ æ¯¿Ω: 0¿∏∑Œ √ ±‚»≠
+                            // Tangent Ï†ïÎ≥¥ ÏóÜÏùå: 0ÏúºÎ°ú Ï¥àÍ∏∞Ìôî
                             vertex.inTangent = { 0.0f, 0.0f, 0.0f, 0.0f };
 
 #if UNIQUE_VERTEXTYPE

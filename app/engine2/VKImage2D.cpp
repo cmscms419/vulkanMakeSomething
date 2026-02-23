@@ -60,7 +60,7 @@ namespace vkengine
         this->usageFlags = usage;
         this->aspectFlags = aspectMask;
 
-        // VKimage2D ÀÌ¹ÌÁö »ı¼º
+        // VKimage2D ì´ë¯¸ì§€ ìƒì„±
         vkengine::helper::createImage2(
             ctx.getDevice()->logicaldevice,
             this->ctx.getDevice()->physicalDevice,
@@ -103,7 +103,7 @@ namespace vkengine
         this->usageFlags = usage;
         this->aspectFlags = aspectMask;
 
-        // VKimage2D ÀÌ¹ÌÁö »ı¼º
+        // VKimage2D ì´ë¯¸ì§€ ìƒì„±
         vkengine::helper::createImage2(
             ctx.getDevice()->logicaldevice,
             this->ctx.getDevice()->physicalDevice,
@@ -144,7 +144,7 @@ namespace vkengine
         std::transform(extension.begin(), extension.end(), extension.begin(), ::tolower);
 
         if (extensionPos == cString::npos || (extension != ".ktx2")) {
-            EXIT_TO_LOGGER("Áö¿øÇÏÁö ¾Ê´Â ÀÌ¹ÌÁö Çü½ÄÀÔ´Ï´Ù: " + extension);
+            EXIT_TO_LOGGER("ì§€ì›í•˜ì§€ ì•ŠëŠ” ì´ë¯¸ì§€ í˜•ì‹ì…ë‹ˆë‹¤: " + extension);
         }
 
         TextureResourceKTX* resource = nullptr;
@@ -162,19 +162,19 @@ namespace vkengine
         }
         else
         {
-            EXIT_TO_LOGGER("Áö¿øÇÏÁö ¾Ê´Â ÀÌ¹ÌÁö Çü½ÄÀÔ´Ï´Ù: \n" + extension);
+            EXIT_TO_LOGGER("ì§€ì›í•˜ì§€ ì•ŠëŠ” ì´ë¯¸ì§€ í˜•ì‹ì…ë‹ˆë‹¤: \n" + extension);
         }
 
         if (!resource)
         {
-            EXIT_TO_LOGGER("¸®¼Ò½º°¡ »ı¼ºµÇÁö ¾Ê¾Ò½À´Ï´Ù \n");
+            EXIT_TO_LOGGER("ë¦¬ì†ŒìŠ¤ê°€ ìƒì„±ë˜ì§€ ì•Šì•˜ìŠµë‹ˆë‹¤ \n");
         }
         else
         {
             if (!resource->texture2)
             {
                 delete resource;
-                EXIT_TO_LOGGER("KTX2 ÅØ½ºÃ³ ¸®¼Ò½º°¡ À¯È¿ÇÏÁö ¾Ê½À´Ï´Ù.\n");
+                EXIT_TO_LOGGER("KTX2 í…ìŠ¤ì²˜ ë¦¬ì†ŒìŠ¤ê°€ ìœ íš¨í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.\n");
             }
 
             mipLevels = resource->texture2 ? resource->texture2->numLevels : 1;
@@ -186,7 +186,7 @@ namespace vkengine
 
             if (mipLevels == 0) {
                 delete resource;
-                EXIT_TO_LOGGER("KTX2 ÅØ½ºÃ³ÀÇ mipLevels°¡ À¯È¿ÇÏÁö ¾Ê½À´Ï´Ù.\n");
+                EXIT_TO_LOGGER("KTX2 í…ìŠ¤ì²˜ì˜ mipLevelsê°€ ìœ íš¨í•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.\n");
             }
 
             if (vkFormat == VK_FORMAT_UNDEFINED) {
@@ -251,7 +251,7 @@ namespace vkengine
                 usCubemap
             );
 
-            // ÀÌ¹ÌÁö ·¹ÀÌ¾Æ¿ô ÀüÈ¯ (TRANSFER_DST_OPTIMAL -> SHADER_READ_ONLY_OPTIMAL)
+            // ì´ë¯¸ì§€ ë ˆì´ì•„ì›ƒ ì „í™˜ (TRANSFER_DST_OPTIMAL -> SHADER_READ_ONLY_OPTIMAL)
             resourceBinding.getBarrierHelper().transitionImageLayout2(
                 cmb,
                 this->image,
@@ -277,12 +277,12 @@ namespace vkengine
 
         if (extensionPos == cString::npos ||
             (extension != ".png" && extension != ".jpg" && extension != ".jpeg")) {
-            EXIT_TO_LOGGER("Áö¿øÇÏÁö ¾Ê´Â ÀÌ¹ÌÁö Çü½ÄÀÔ´Ï´Ù: " + extension);
+            EXIT_TO_LOGGER("ì§€ì›í•˜ì§€ ì•ŠëŠ” ì´ë¯¸ì§€ í˜•ì‹ì…ë‹ˆë‹¤: " + extension);
         }
 
         if (usCubemap)
         {
-            EXIT_TO_LOGGER("PNG, JPG´Â Å¥ºê¸ÊÀ» Á¦°øÇÏÁö ¾Ê½À´Ï´Ù.");
+            EXIT_TO_LOGGER("PNG, JPGëŠ” íë¸Œë§µì„ ì œê³µí•˜ì§€ ì•ŠìŠµë‹ˆë‹¤.");
         }
 
         TextureResourceBase* resource = nullptr;
@@ -292,7 +292,7 @@ namespace vkengine
             resource->createResource(file);
         }
         else {
-            EXIT_TO_LOGGER("Áö¿øÇÏÁö ¾Ê´Â ÀÌ¹ÌÁö Çü½ÄÀÔ´Ï´Ù: " + extension);
+            EXIT_TO_LOGGER("ì§€ì›í•˜ì§€ ì•ŠëŠ” ì´ë¯¸ì§€ í˜•ì‹ì…ë‹ˆë‹¤: " + extension);
         }
 
         if (resource != nullptr) {
@@ -320,13 +320,13 @@ namespace vkengine
             break;
 
         default:
-            EXIT_TO_LOGGER("Áö¿øÇÏÁö ¾Ê´Â ÀÌ¹ÌÁö Ã¤³Î ¼öÀÔ´Ï´Ù: " + std::to_string(channels));
+            EXIT_TO_LOGGER("ì§€ì›í•˜ì§€ ì•ŠëŠ” ì´ë¯¸ì§€ ì±„ë„ ìˆ˜ì…ë‹ˆë‹¤: " + std::to_string(channels));
             break;
         }
 
         VkDeviceSize imageSize = width * height * channels * sizeof(cUChar);
 
-        // ½ºÅ×ÀÌÂ¡ ¹öÆÛ¿¡ ÀÌ¹ÌÁö µ¥ÀÌÅÍ º¹»ç
+        // ìŠ¤í…Œì´ì§• ë²„í¼ì— ì´ë¯¸ì§€ ë°ì´í„° ë³µì‚¬
         VKBaseBuffer2 stagingBuffer(this->ctx);
         stagingBuffer.createStagingBuffer(imageSize, pixelData);
 
@@ -342,14 +342,14 @@ namespace vkengine
             (VkImageCreateFlagBits)0
         );
 
-        // ÇØ´ç ³»ºÎ¿¡´Â VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT -> ÇÑ¹ø¸¸ »ç¿ëÇÑ´Ù´Â ÀÇ¹Ì°¡ ´ã±ä ÇÃ·Î±×°¡ ÀÖ´Ù.
-        // 2¹øÁ¤µµ »ç¿ëÇÏ±â ¶§¹®¿¡ º°µµ »ı°¢ÇØ¾ßÇÔ
+        // í•´ë‹¹ ë‚´ë¶€ì—ëŠ” VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT -> í•œë²ˆë§Œ ì‚¬ìš©í•œë‹¤ëŠ” ì˜ë¯¸ê°€ ë‹´ê¸´ í”Œë¡œê·¸ê°€ ìˆë‹¤.
+        // 2ë²ˆì •ë„ ì‚¬ìš©í•˜ê¸° ë•Œë¬¸ì— ë³„ë„ ìƒê°í•´ì•¼í•¨
         VkCommandBuffer cmb = this->resourceBinding.getBarrierHelper().beginSingleTimeCommands2(
             ctx.getDevice()->logicaldevice,
             ctx.getDevice()->transferCommandPool,
             VK_COMMAND_BUFFER_LEVEL_PRIMARY);
 
-        // ÀÌ¹ÌÁö ·¹ÀÌ¾Æ¿ô ÀüÈ¯ (UNDEFINED -> TRANSFER_DST_OPTIMAL)
+        // ì´ë¯¸ì§€ ë ˆì´ì•„ì›ƒ ì „í™˜ (UNDEFINED -> TRANSFER_DST_OPTIMAL)
         resourceBinding.getBarrierHelper().transitionImageLayout2(
             cmb,
             this->image,
@@ -364,7 +364,7 @@ namespace vkengine
             width,
             height);
 
-        // ÀÌ¹ÌÁö ·¹ÀÌ¾Æ¿ô ÀüÈ¯ (TRANSFER_DST_OPTIMAL -> SHADER_READ_ONLY_OPTIMAL)
+        // ì´ë¯¸ì§€ ë ˆì´ì•„ì›ƒ ì „í™˜ (TRANSFER_DST_OPTIMAL -> SHADER_READ_ONLY_OPTIMAL)
         resourceBinding.getBarrierHelper().transitionImageLayout2(
             cmb,
             this->image,

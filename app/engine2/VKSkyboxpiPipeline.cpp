@@ -9,7 +9,7 @@ namespace vkengine {
         VkSampleCountFlagBits msaaSamples
     )
     {
-        // pipeline_ »ı¼º
+        // pipeline_ ìƒì„±
 
         std::vector<VkVertexInputAttributeDescription> vertexInputAttributes{};
 

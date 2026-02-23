@@ -137,7 +137,7 @@ namespace vkengine {
             ubo.model = cMat4(1.0f);
             ubo.view = camera->getViewMatrix();
             ubo.proj = camera->getProjectionMatrix();
-            ubo.inverseTranspose = cMat4(1.0f); // skymapÀº ¿ªÇà·ÄÀÌ ÇÊ¿ä¾øÀ½
+            ubo.inverseTranspose = cMat4(1.0f); // skymapì€ ì—­í–‰ë ¬ì´ í•„ìš”ì—†ìŒ
 
             memcpy(this->modelviewprojUniformBuffer[currentImage].mapped, &ubo, sizeof(ubo));
         }
@@ -149,7 +149,7 @@ namespace vkengine {
             ubo.model = world * this->matrix;
             ubo.view = camera->getViewMatrix();
             ubo.proj = camera->getProjectionMatrix();
-            ubo.inverseTranspose = glm::transpose(glm::inverse(this->matrix)); // ¿ªÇà·ÄÀÇ ÀüÄ¡ Çà·Ä
+            ubo.inverseTranspose = glm::transpose(glm::inverse(this->matrix)); // ì—­í–‰ë ¬ì˜ ì „ì¹˜ í–‰ë ¬
 
             memcpy(this->modelviewprojUniformBuffer[currentImage].mapped, &ubo, sizeof(ubo));
         }
@@ -208,9 +208,9 @@ namespace vkengine {
             ubo.model = cMat4(1.0f);
             ubo.view = camera->getViewMatrix();
             ubo.proj = camera->getProjectionMatrix();
-            ubo.inverseTranspose = cMat4(1.0f); // skymapÀº ¿ªÇà·ÄÀÌ ÇÊ¿ä¾øÀ½
+            ubo.inverseTranspose = cMat4(1.0f); // skymapì€ ì—­í–‰ë ¬ì´ í•„ìš”ì—†ìŒ
 
-            // ÀÓ½Ã·Î ÇÏ³ª·Î ¼³Á¤
+            // ìž„ì‹œë¡œ í•˜ë‚˜ë¡œ ì„¤ì •
             memcpy(this->modelviewprojUniformBuffer[0].mapped, &ubo, sizeof(ubo));
         }
 

@@ -13,8 +13,8 @@ namespace vkengine {
         VKUniformBuffer2(VKcontext& ctx, Type& data) : buffer(ctx), data(data) {
             static_assert(std::is_trivially_copyable_v<Type>,
                 "UniformBuffer data type must be trivially copyable\n");
-            // ¾È³»: vector °°ÀÌ µ¿Àû ¸Þ¸ð¸®¸¦ »ç¿ëÇÏ´Â ÄÁÅ×ÀÌ³Ê°¡ °¡ Æ÷ÇÔµÇ¾î ÀÖÀ¸¸é
-            //      memcpy()·Î °£´ÜÈ÷ º¹»çÇÒ ¼ö ¾ø½À´Ï´Ù.
+            // ì•ˆë‚´: vector ê°™ì´ ë™ì  ë©”ëª¨ë¦¬ë¥¼ ì‚¬ìš©í•˜ëŠ” ì»¨í…Œì´ë„ˆê°€ ê°€ í¬í•¨ë˜ì–´ ìžˆìœ¼ë©´
+            //      memcpy()ë¡œ ê°„ë‹¨ížˆ ë³µì‚¬í•  ìˆ˜ ì—†ìŠµë‹ˆë‹¤.
 
             buffer.createUniformBuffer(sizeof(Type), &this->data);
         }

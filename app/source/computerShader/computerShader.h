@@ -31,13 +31,13 @@ namespace vkengine
 
     protected:
         virtual bool init_sync_structures() override;
-        virtual void recordCommandBuffer(FrameData* framedata, uint32_t imageIndex) override; // Ä¿¸Çµå ¹öÆÛ ·¹ÄÚµå
-        void recordComputerCommandBuffer(ComputerFrameData* framedata); // ÄÄÇ»Æ® ¼ÎÀÌ´õ Ä¿¸Çµå ¹öÆÛ ·¹ÄÚµå
+        virtual void recordCommandBuffer(FrameData* framedata, uint32_t imageIndex) override; // ì»¤ë§¨ë“œ ë²„í¼ ë ˆì½”ë“œ
+        void recordComputerCommandBuffer(ComputerFrameData* framedata); // ì»´í“¨íŠ¸ ì…°ì´ë” ì»¤ë§¨ë“œ ë²„í¼ ë ˆì½”ë“œ
     private:
-        // computerCommandBuffer »ı¼º
+        // computerCommandBuffer ìƒì„±
         void createComputerCommandBuffer();
 
-        // °¢ 3d ¸ğµ¨À» »ı¼ºÇÏ±â À§ÇÑ ÇÔ¼ö
+        // ê° 3d ëª¨ë¸ì„ ìƒì„±í•˜ê¸° ìœ„í•œ í•¨ìˆ˜
         void createShaderStorageBuffers();
         
         void createDescriptor();
@@ -48,27 +48,27 @@ namespace vkengine
 
         void cleanupSwapcChain();
 
-        // imgui °ü·Ã
+        // imgui ê´€ë ¨
         vkGUI* vkGUI = nullptr;
 
         // Particle Object
-        object::ParticleObject* particleObject; // ÆÄÆ¼Å¬ ¿ÀºêÁ§Æ®
+        object::ParticleObject* particleObject; // íŒŒí‹°í´ ì˜¤ë¸Œì íŠ¸
         
-        UniformBufferTime uboTime; // ½Ã°£ °ü·Ã uniform buffer
+        UniformBufferTime uboTime; // ì‹œê°„ ê´€ë ¨ uniform buffer
 
         VkBuffer uboTimeBuffers[2];
         VkDeviceMemory uboTimeBuffersMemory[2];
         
-        void* uboTimemapped[2] = { nullptr, nullptr }; ///< ¸ÅÇÎµÈ ¸Ş¸ğ¸® Æ÷ÀÎÅÍ
+        void* uboTimemapped[2] = { nullptr, nullptr }; ///< ë§¤í•‘ëœ ë©”ëª¨ë¦¬ í¬ì¸í„°
 
-        VkPipeline computershaderPipeline; // ÄÄÇ»Æ® ¼ÎÀÌ´õ ÆÄÀÌÇÁ¶óÀÎ
-        VkPipeline graphicsPipeline; // ±×·¡ÇÈ½º ÆÄÀÌÇÁ¶óÀÎ
+        VkPipeline computershaderPipeline; // ì»´í“¨íŠ¸ ì…°ì´ë” íŒŒì´í”„ë¼ì¸
+        VkPipeline graphicsPipeline; // ê·¸ë˜í”½ìŠ¤ íŒŒì´í”„ë¼ì¸
 
-        VkPipelineLayout pipelineLayout; // ÆÄÀÌÇÁ¶óÀÎ ·¹ÀÌ¾Æ¿ô
+        VkPipelineLayout pipelineLayout; // íŒŒì´í”„ë¼ì¸ ë ˆì´ì•„ì›ƒ
 
-        ComputerFrameData computeFrameData[MAX_FRAMES_IN_FLIGHT]; // ÄÄÇ»Æ® ¼ÎÀÌ´õ ÇÁ·¹ÀÓ µ¥ÀÌÅÍ
+        ComputerFrameData computeFrameData[MAX_FRAMES_IN_FLIGHT]; // ì»´í“¨íŠ¸ ì…°ì´ë” í”„ë ˆì„ ë°ì´í„°
 
-        VKDescriptor2* computershaderDrscriptor = nullptr;         // ¸ğµ¨ ¿ÀºêÁ§Æ® µğ½ºÅ©¸³ÅÍ
+        VKDescriptor2* computershaderDrscriptor = nullptr;         // ëª¨ë¸ ì˜¤ë¸Œì íŠ¸ ë””ìŠ¤í¬ë¦½í„°
 
     };
 }

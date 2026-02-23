@@ -69,8 +69,8 @@ namespace vkengine {
         }
         void cleanup();
 
-        // ÀÌ¹ÌÁö ·¹ÀÌ¾Æ¿ô ÀüÈ¯
-        // Á¤ÇØÁø ÅÛÇÃ¸´ ¾øÀ½
+        // ì´ë¯¸ì§€ ë ˆì´ì•„ì›ƒ ì „í™˜
+        // ì •í•´ì§„ í…œí”Œë¦¿ ì—†ìŒ
         void transitionTo(VkCommandBuffer commandBuffer, VkImageLayout newLayout, VkAccessFlags2 newAccess, VkPipelineStageFlags2 newStage)
         {
             resourceBinding.getBarrierHelper().transitionImageLayout2(
@@ -83,7 +83,7 @@ namespace vkengine {
             updateResourceBindingAfterTransition();
         }
 
-        // ÀÌ¹ÌÁö ColorAttachment º¯È¯
+        // ì´ë¯¸ì§€ ColorAttachment ë³€í™˜
         void transitionToColorAttachment(VkCommandBuffer commandBuffer)
         {
             transitionTo(

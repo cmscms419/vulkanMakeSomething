@@ -42,13 +42,13 @@ namespace vkengine {
             &this->allocatedSize,
             &this->alignment
         );
-        // ¹öÆÛ ¸Ş¸ğ¸®¸¦ ¸ÅÇÎÇÏ¿© CPU¿¡¼­ Á¢±ÙÇÒ ¼ö ÀÖµµ·Ï ÇÕ´Ï´Ù. 
-        // vkMapMemory ÇÔ¼ö¸¦ È£ÃâÇÏ¿© ¸Ş¸ğ¸®¸¦ ¸ÅÇÎÇÏ°í, 
-        // ¸ÅÇÎµÈ ¸Ş¸ğ¸®ÀÇ Æ÷ÀÎÅÍ¸¦ mapped ¸â¹ö º¯¼ö¿¡ ÀúÀåÇÕ´Ï´Ù.
-        // ¹öÆÛ ¸Ş¸ğ¸®¸¦ ¸ÅÇÎÇÕ´Ï´Ù.
+        // ë²„í¼ ë©”ëª¨ë¦¬ë¥¼ ë§¤í•‘í•˜ì—¬ CPUì—ì„œ ì ‘ê·¼í•  ìˆ˜ ìˆë„ë¡ í•©ë‹ˆë‹¤. 
+        // vkMapMemory í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•˜ì—¬ ë©”ëª¨ë¦¬ë¥¼ ë§¤í•‘í•˜ê³ , 
+        // ë§¤í•‘ëœ ë©”ëª¨ë¦¬ì˜ í¬ì¸í„°ë¥¼ mapped ë©¤ë²„ ë³€ìˆ˜ì— ì €ì¥í•©ë‹ˆë‹¤.
+        // ë²„í¼ ë©”ëª¨ë¦¬ë¥¼ ë§¤í•‘í•©ë‹ˆë‹¤.
         _VK_CHECK_RESULT_(vkMapMemory(ctx.getDevice()->logicaldevice, memory, this->offset, this->allocatedSize, 0, &mapped));
 
-        // ¸ÅÇÎµÈ ¸Ş¸ğ¸®¿¡ µ¥ÀÌÅÍ¸¦ º¹»çÇÕ´Ï´Ù.
+        // ë§¤í•‘ëœ ë©”ëª¨ë¦¬ì— ë°ì´í„°ë¥¼ ë³µì‚¬í•©ë‹ˆë‹¤.
         if (data != nullptr) {
             memcpy(this->mapped, data, this->allocatedSize);
             if ((this->memoryPropertyFlags & VK_MEMORY_PROPERTY_HOST_COHERENT_BIT) == 0)
@@ -57,7 +57,7 @@ namespace vkengine {
             }
         }
 
-        // ÇÒ´çµÈ ¸Ş¸ğ¸®¸¦ ¹öÆÛ¿Í ¹ÙÀÎµùÇÏ¿© GPU¿¡¼­ »ç¿ëÇÒ ¼ö ÀÖ°Ô ÇÑ´Ù.
+        // í• ë‹¹ëœ ë©”ëª¨ë¦¬ë¥¼ ë²„í¼ì™€ ë°”ì¸ë”©í•˜ì—¬ GPUì—ì„œ ì‚¬ìš©í•  ìˆ˜ ìˆê²Œ í•œë‹¤.
         _VK_CHECK_RESULT_(vkBindBufferMemory(ctx.getDevice()->logicaldevice, this->buffer, this->memory, 0));
 
     }
@@ -176,14 +176,14 @@ namespace vkengine {
         cUInt8_t* dst = static_cast<cUInt8_t*>(this->mapped) + offset;
         memcpy(dst, data, size);
 
-        // ¸¸¾à, ¸Ş¸ğ¸®°¡ ÀÏÁ¤ÇÏÁö ¾ÊÀ¸¸é, flush
+        // ë§Œì•½, ë©”ëª¨ë¦¬ê°€ ì¼ì •í•˜ì§€ ì•Šìœ¼ë©´, flush
         if ((this->memoryPropertyFlags& VK_MEMORY_PROPERTY_HOST_COHERENT_BIT) == 0)
         {
             this->flush();
         }
     }
 
-    // CPU¿¡¼­ ÀÛ¼ºÇÑ ¸Ş¸ğ¸® º¯°æ»çÇ×À» GPU¿¡ È®½ÇÈ÷ Àü´ŞÇÏ´Â ¿ªÇÒ
+    // CPUì—ì„œ ì‘ì„±í•œ ë©”ëª¨ë¦¬ ë³€ê²½ì‚¬í•­ì„ GPUì— í™•ì‹¤íˆ ì „ë‹¬í•˜ëŠ” ì—­í• 
     void VKBaseBuffer2::flush() const
     {
         VkMappedMemoryRange mappedRange = { VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE };

@@ -31,7 +31,7 @@ namespace vkengine {
     class VKforwardRenderer {
 
     public:
-        // ·»´õ·¯ »ı¼ºÀÚ - Vulkan ÄÁÅØ½ºÆ®, ¼ÎÀÌ´õ ¸Å´ÏÀú, ÇÁ·¹ÀÓ ¼ö, ¸®¼Ò½º °æ·Î ÃÊ±âÈ­
+        // ë Œë”ëŸ¬ ìƒì„±ì - Vulkan ì»¨í…ìŠ¤íŠ¸, ì…°ì´ë” ë§¤ë‹ˆì €, í”„ë ˆì„ ìˆ˜, ë¦¬ì†ŒìŠ¤ ê²½ë¡œ ì´ˆê¸°í™”
         VKforwardRenderer(VKcontext& ctx, VKShaderManager& shadermanager,
             const cUint32_t& MaxFramesFlight,
             const cString& assetsPath,
@@ -39,18 +39,18 @@ namespace vkengine {
 
         ~VKforwardRenderer();
 
-        // ¸ğµ¨ ·»´õ¸µÀ» À§ÇÑ ÀüÃ¼ ÁØºñ °úÁ¤ ¼öÇà (ÆÄÀÌÇÁ¶óÀÎ, ÅØ½ºÃ³, À¯´ÏÆû ¹öÆÛ »ı¼º ¹× ¸ğµ¨ µğ½ºÅ©¸³ÅÍ ¼³Á¤)
+        // ëª¨ë¸ ë Œë”ë§ì„ ìœ„í•œ ì „ì²´ ì¤€ë¹„ ê³¼ì • ìˆ˜í–‰ (íŒŒì´í”„ë¼ì¸, í…ìŠ¤ì²˜, ìœ ë‹ˆí¼ ë²„í¼ ìƒì„± ë° ëª¨ë¸ ë””ìŠ¤í¬ë¦½í„° ì„¤ì •)
         void prepareForModels(std::vector<VKModel>& models, VkFormat outColorFormat, VkFormat depthFormat,
             VkSampleCountFlagBits msaaSamples, uint32_t swapChainWidth,
             uint32_t swapChainHeight);
 
-        // PBR, ½ºÄ«ÀÌ¹Ú½º, Æ÷½ºÆ® ÇÁ·Î¼¼½Ì, ½¦µµ¿ì ¸Ê ÆÄÀÌÇÁ¶óÀÎ »ı¼º
+        // PBR, ìŠ¤ì¹´ì´ë°•ìŠ¤, í¬ìŠ¤íŠ¸ í”„ë¡œì„¸ì‹±, ì‰ë„ìš° ë§µ íŒŒì´í”„ë¼ì¸ ìƒì„±
         void createPipelines(const VkFormat colorFormat, const VkFormat depthFormat,
             VkSampleCountFlagBits msaaSamples);
-        // ·»´õ Å¸°Ù, ÅØ½ºÃ³, »ùÇÃ·¯, ½ºÄ«ÀÌ¹Ú½º IBL ÅØ½ºÃ³ »ı¼º
+        // ë Œë” íƒ€ê²Ÿ, í…ìŠ¤ì²˜, ìƒ˜í”ŒëŸ¬, ìŠ¤ì¹´ì´ë°•ìŠ¤ IBL í…ìŠ¤ì²˜ ìƒì„±
         void createTextures(uint32_t swapchainWidth, uint32_t swapchainHeight,
             VkSampleCountFlagBits msaaSamples);
-        // Scene, Sky, Options, BoneData, PostProcessing À¯´ÏÆû ¹öÆÛ ¹× µğ½ºÅ©¸³ÅÍ ¼Â »ı¼º
+        // Scene, Sky, Options, BoneData, PostProcessing ìœ ë‹ˆí¼ ë²„í¼ ë° ë””ìŠ¤í¬ë¦½í„° ì…‹ ìƒì„±
         void createUniformBuffers();
 
         void cleanup()
@@ -58,33 +58,33 @@ namespace vkengine {
             // Manual cleanup is not necessary
         }
 
-        // ÇöÀç ÇÁ·¹ÀÓÀÇ À¯´ÏÆû ¹öÆÛ µ¥ÀÌÅÍ ¾÷µ¥ÀÌÆ® (Scene, Options, Sky, PostProcessing)
+        // í˜„ì¬ í”„ë ˆì„ì˜ ìœ ë‹ˆí¼ ë²„í¼ ë°ì´í„° ì—…ë°ì´íŠ¸ (Scene, Options, Sky, PostProcessing)
         void update(object::Camera2& camera, uint32_t currentFrame, double time);
-        // ¾Ö´Ï¸ŞÀÌ¼ÇÀÌ ÀÖ´Â ¸ğµ¨ÀÇ º» Çà·Ä µ¥ÀÌÅÍ¸¦ À¯´ÏÆû ¹öÆÛ¿¡ ¾÷µ¥ÀÌÆ®
+        // ì• ë‹ˆë©”ì´ì…˜ì´ ìˆëŠ” ëª¨ë¸ì˜ ë³¸ í–‰ë ¬ ë°ì´í„°ë¥¼ ìœ ë‹ˆí¼ ë²„í¼ì— ì—…ë°ì´íŠ¸
         void updateBoneData(const std::vector<VKModel>& models, uint32_t currentFrame);
 
-        // Forward rendering pass ¼öÇà - MSAA ÄÃ·¯ ¹öÆÛ¿¡ ¸ğµ¨ ·»´õ¸µ ÈÄ ½ºÄ«ÀÌ¹Ú½º ·»´õ¸µ
+        // Forward rendering pass ìˆ˜í–‰ - MSAA ì»¬ëŸ¬ ë²„í¼ì— ëª¨ë¸ ë Œë”ë§ í›„ ìŠ¤ì¹´ì´ë°•ìŠ¤ ë Œë”ë§
         void draw(VkCommandBuffer cmd, uint32_t currentFrame, VkImageView swapchainImageView,
             std::vector<VKModel>& models, VkViewport viewport, VkRect2D scissor);
 
-        // ½¦µµ¿ì ¸Ê »ı¼º - ±¤¿ø ½ÃÁ¡¿¡¼­ ±íÀÌ Á¤º¸ ·»´õ¸µ
+        // ì‰ë„ìš° ë§µ ìƒì„± - ê´‘ì› ì‹œì ì—ì„œ ê¹Šì´ ì •ë³´ ë Œë”ë§
         void makeShadowMap(VkCommandBuffer cmd, uint32_t currentFrame, std::vector<VKModel>& models);
 
         // View frustum culling
-        // ÄÃ¸µ Åë°è Á¤º¸ ¹İÈ¯ (ÀüÃ¼, ÄÃ¸µµÈ, ·»´õ¸µµÈ ¸Ş½Ã ¼ö)
+        // ì»¬ë§ í†µê³„ ì •ë³´ ë°˜í™˜ (ì „ì²´, ì»¬ë§ëœ, ë Œë”ë§ëœ ë©”ì‹œ ìˆ˜)
         auto getCullingStats() const -> const CullingStats&;
-        // ÇÁ·¯½ºÅÒ ÄÃ¸µ È°¼ºÈ­ »óÅÂ ¹İÈ¯
+        // í”„ëŸ¬ìŠ¤í…€ ì»¬ë§ í™œì„±í™” ìƒíƒœ ë°˜í™˜
         bool isFrustumCullingEnabled() const;
-        // ºä ÇÁ·¯½ºÅÒ ±â¹İ ¸Ş½Ã ÄÃ¸µ ¼öÇà - º¸ÀÌÁö ¾Ê´Â ¸Ş½Ã´Â isCulled ÇÃ·¡±× ¼³Á¤
+        // ë·° í”„ëŸ¬ìŠ¤í…€ ê¸°ë°˜ ë©”ì‹œ ì»¬ë§ ìˆ˜í–‰ - ë³´ì´ì§€ ì•ŠëŠ” ë©”ì‹œëŠ” isCulled í”Œë˜ê·¸ ì„¤ì •
         void performFrustumCulling(std::vector<VKModel>& models);
-        // ÇÁ·¯½ºÅÒ ÄÃ¸µ È°¼ºÈ­/ºñÈ°¼ºÈ­ ¼³Á¤
+        // í”„ëŸ¬ìŠ¤í…€ ì»¬ë§ í™œì„±í™”/ë¹„í™œì„±í™” ì„¤ì •
         void setFrustumCullingEnabled(bool enabled);
-        // ºä ÇÁ·ÎÁ§¼Ç Çà·Ä·ÎºÎÅÍ ÇÁ·¯½ºÅÒ Æò¸é ÃßÃâ ¹× ¾÷µ¥ÀÌÆ®
+        // ë·° í”„ë¡œì ì…˜ í–‰ë ¬ë¡œë¶€í„° í”„ëŸ¬ìŠ¤í…€ í‰ë©´ ì¶”ì¶œ ë° ì—…ë°ì´íŠ¸
         void updateViewFrustum(const cMat4& viewProjection);
 
 
 
-        // UBO getter ÇÔ¼öµé - °¢ À¯´ÏÆû ¹öÆÛ ¿ÀºêÁ§Æ®ÀÇ ÇöÀç µ¥ÀÌÅÍ ¹İÈ¯
+        // UBO getter í•¨ìˆ˜ë“¤ - ê° ìœ ë‹ˆí¼ ë²„í¼ ì˜¤ë¸Œì íŠ¸ì˜ í˜„ì¬ ë°ì´í„° ë°˜í™˜
         SceneDataUBO& getSceneDataUBO() {
             return this->sceneDataUBO;
         }
@@ -172,7 +172,7 @@ namespace vkengine {
         cFloat ssaoPower = 2.0f;
 
         // Helper functions for creating rendering structures
-        // ÄÃ·¯ ¾îÅÂÄ¡¸ÕÆ® Á¤º¸ »ı¼º - MSAA resolve Áö¿ø
+        // ì»¬ëŸ¬ ì–´íƒœì¹˜ë¨¼íŠ¸ ì •ë³´ ìƒì„± - MSAA resolve ì§€ì›
         VkRenderingAttachmentInfo
             createColorAttachment(VkImageView imageView,
                 VkAttachmentLoadOp loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
@@ -180,14 +180,14 @@ namespace vkengine {
                 VkImageView resolveImageView = VK_NULL_HANDLE,
                 VkResolveModeFlagBits resolveMode = VK_RESOLVE_MODE_NONE) const;
 
-        // ±íÀÌ ¾îÅÂÄ¡¸ÕÆ® Á¤º¸ »ı¼º - MSAA resolve Áö¿ø
+        // ê¹Šì´ ì–´íƒœì¹˜ë¨¼íŠ¸ ì •ë³´ ìƒì„± - MSAA resolve ì§€ì›
         VkRenderingAttachmentInfo
             createDepthAttachment(VkImageView imageView,
                 VkAttachmentLoadOp loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
                 float clearDepth = 1.0f, VkImageView resolveImageView = VK_NULL_HANDLE,
                 VkResolveModeFlagBits resolveMode = VK_RESOLVE_MODE_NONE) const;
 
-        // ·»´õ¸µ Á¤º¸ ±¸Á¶Ã¼ »ı¼º - µ¿Àû ·»´õ¸µ¿¡ »ç¿ë
+        // ë Œë”ë§ ì •ë³´ êµ¬ì¡°ì²´ ìƒì„± - ë™ì  ë Œë”ë§ì— ì‚¬ìš©
         VkRenderingInfo
             createRenderingInfo(const VkRect2D& renderArea,
                 const VkRenderingAttachmentInfo* colorAttachment,

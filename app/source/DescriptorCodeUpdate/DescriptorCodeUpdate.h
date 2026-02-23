@@ -29,41 +29,41 @@ namespace vkengine
 
     protected:
         virtual bool init_sync_structures() override;
-        virtual void recordCommandBuffer(FrameData* framedata, uint32_t imageIndex) override; // Ä¿¸Çµå ¹öÆÛ ·¹ÄÚµå
+        virtual void recordCommandBuffer(FrameData* framedata, uint32_t imageIndex) override; // ì»¤ë§¨ë“œ ë²„í¼ ë ˆì½”ë“œ
 
     private:
 
-        // °¢ 3d ¸ğµ¨À» »ı¼ºÇÏ±â À§ÇÑ ÇÔ¼ö
+        // ê° 3d ëª¨ë¸ì„ ìƒì„±í•˜ê¸° ìœ„í•œ í•¨ìˆ˜
         void createVertexbuffer();
         void createIndexBuffer();
         void createUniformBuffers();
 
         void createDescriptor();
 
-        // grapics pipelineÀ» »ı¼ºÇÏ±â À§ÇÑ ÇÔ¼ö
+        // grapics pipelineì„ ìƒì„±í•˜ê¸° ìœ„í•œ í•¨ìˆ˜
         void createGraphicsPipeline();
         void createGraphicsPipeline_skymap();
 
         void cleanupSwapcChain();
 
-        // imgui °ü·Ã
+        // imgui ê´€ë ¨
         void initUI();
         vkGUI* vkGUI = nullptr;
 
         VK3DModelDescriptor* modelObjectDescriptor = nullptr;
         VKSkyMapModelDescriptor* skyMapModelDescriptor = nullptr;
 
-        // 3d ¸ğµ¨À» À§ÇÑ vertex, index buffer
+        // 3d ëª¨ë¸ì„ ìœ„í•œ vertex, index buffer
         object::ModelObject* modelObject;  // viking_room
         object::ModelObject* modelObject2; // viking_room
 
-        glm::mat4 worldMatrix = glm::mat4(1.0f); // ¿ùµå ¸ÅÆ®¸¯½º
+        glm::mat4 worldMatrix = glm::mat4(1.0f); // ì›”ë“œ ë§¤íŠ¸ë¦­ìŠ¤
 
         // skybox
         object::SkyBox* cubeSkybox;
 
-        VkPipeline VKgraphicsPipeline = VK_NULL_HANDLE;                      // ±×·¡ÇÈ½º ÆÄÀÌÇÁ¶óÀÎ -> ±×·¡ÇÈ½º ÆÄÀÌÇÁ¶óÀÎÀ» »ı¼º
-        VkPipeline VKSkyMapPipeline = VK_NULL_HANDLE;                       // Å¥ºê¸Ê ÆÄÀÌÇÁ¶óÀÎ -> Å¥ºê¸Ê ÆÄÀÌÇÁ¶óÀÎÀ» »ı¼º
+        VkPipeline VKgraphicsPipeline = VK_NULL_HANDLE;                      // ê·¸ë˜í”½ìŠ¤ íŒŒì´í”„ë¼ì¸ -> ê·¸ë˜í”½ìŠ¤ íŒŒì´í”„ë¼ì¸ì„ ìƒì„±
+        VkPipeline VKSkyMapPipeline = VK_NULL_HANDLE;                       // íë¸Œë§µ íŒŒì´í”„ë¼ì¸ -> íë¸Œë§µ íŒŒì´í”„ë¼ì¸ì„ ìƒì„±
 
         std::vector<VkDescriptorSet> VKdescriptorLoadModelSets = {};
 

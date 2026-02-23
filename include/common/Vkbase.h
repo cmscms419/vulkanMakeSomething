@@ -12,10 +12,10 @@ namespace vkengine {
         return static_cast<cUint64_t>(hash);
     }
 
-    // Å¸ÀÔº° ID °ü¸®ÀÚ Å¬·¡½º
+    // íƒ€ì…ë³„ ID ê´€ë¦¬ì í´ë˜ìŠ¤
     class TypeIDManager {
     public:
-        // ÅÛÇÃ¸´ ±â¹İ Å¸ÀÔ ID »ı¼º
+        // í…œí”Œë¦¿ ê¸°ë°˜ íƒ€ì… ID ìƒì„±
         template<typename T>
         static cUint64_t GetTypeID() {
             static const cChar* typeName = typeid(T).name();
@@ -23,12 +23,12 @@ namespace vkengine {
             return typeId;
         }
 
-        // Type ID µî·Ï ¹× ÀÌ¸§ ¸ÅÇÎ
+        // Type ID ë“±ë¡ ë° ì´ë¦„ ë§¤í•‘
         static void RegisterType(cUint64_t id, const cString& name) {
             typeMap()[id] = name;
         }
 
-        // unique ID »ı¼º ¹× ÀÌ¸§ ¸ÅÇÎ
+        // unique ID ìƒì„± ë° ì´ë¦„ ë§¤í•‘
         static void RegisterUniqueID(cUint64_t id, const cString& name) {
             uniqueMap()[id] = name;
         }
@@ -40,13 +40,13 @@ namespace vkengine {
             return {};
         }
 
-        // ÅÛÇÃ¸´ ±â¹İ Å¸ÀÔ ÀÌ¸§ ¹İÈ¯
+        // í…œí”Œë¦¿ ê¸°ë°˜ íƒ€ì… ì´ë¦„ ë°˜í™˜
         template<typename T>
         static constexpr cString GetTypeName() {
             return cString(typeid(T).name());
         }
 
-        // Ä¿½ºÅÒ ÀÌ¸§À¸·Î ID »ı¼º
+        // ì»¤ìŠ¤í…€ ì´ë¦„ìœ¼ë¡œ ID ìƒì„±
         static constexpr cUint64_t GenerateID(const cChar* name) {
             return static_cast<cUint64_t>(hash(name));
         }

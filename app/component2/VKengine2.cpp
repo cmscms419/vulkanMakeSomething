@@ -26,7 +26,7 @@ namespace vkengine
 
         helper::initializeSynchronization(
             this->cxt->getDevice()->logicaldevice,
-            MAX_FRAMES_IN_FLIGHT, // ÃÖ´ë °³¼ö¸¦ 2°³·Î ÁöÁ¤
+            MAX_FRAMES_IN_FLIGHT, // ìµœëŒ€ ê°œìˆ˜ë¥¼ 2ê°œë¡œ ì§€ì •
             this->swapChain->getSwapChainImageCount(),
             this->presentSemaphores,
             this->renderSemaphores,
@@ -100,13 +100,13 @@ namespace vkengine
         this->swapChain->initSurface(this->swapChain->Surface(), true);
         this->swapChain->createSwapChain();
 
-        // 8. Depth/Stencil ¸®¼Ò½º Àç»ý¼º (ÇÊ¿äÇÑ °æ¿ì)
+        // 8. Depth/Stencil ë¦¬ì†ŒìŠ¤ ìž¬ìƒì„± (í•„ìš”í•œ ê²½ìš°)
         if (this->cxt->getUSEdepthStencil()) {
 
             this->cxt->getDepthStencil()->cleanup(this->cxt->getDevice()->logicaldevice);
             VkFormat depthFormat = this->cxt->getDepthStencil()->depthFormat;
 
-            // Depth image Àç»ý¼º
+            // Depth image ìž¬ìƒì„±
             vkengine::helper::createImage2(
                 this->cxt->getDevice()->logicaldevice,
                 this->cxt->getDevice()->physicalDevice,
@@ -124,7 +124,7 @@ namespace vkengine
                 (VkImageCreateFlagBits)0
             );
 
-            // Depth image view Àç»ý¼º
+            // Depth image view ìž¬ìƒì„±
             this->cxt->getDepthStencil()->depthImageView = vkengine::helper::createImageView(
                 this->cxt->getDevice()->logicaldevice,
                 this->cxt->getDepthStencil()->depthImage,

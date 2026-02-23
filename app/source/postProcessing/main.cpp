@@ -17,7 +17,7 @@ int main(int argc, char* argv[]) {
         root_path = path;
     }
     else {
-        EXIT_TO_LOGGER("°æ·Î¸¦ °¡Á®¿À´Â µ¥ ½ÇÆĞÇß½À´Ï´Ù.");
+        EXIT_TO_LOGGER("ê²½ë¡œë¥¼ ê°€ì ¸ì˜¤ëŠ” ë° ì‹¤íŒ¨í–ˆìŠµë‹ˆë‹¤.");
     }
 
 

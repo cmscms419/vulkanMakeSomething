@@ -14,13 +14,13 @@ namespace vkengine {
         this->physicalDevice = physicalDevice;
         this->queueFamilyIndices = indice;
 
-        vkGetPhysicalDeviceProperties(this->physicalDevice, &properties);       // ¹°¸® µğ¹ÙÀÌ½º ¼Ó¼º °¡Á®¿À±â
-        vkGetPhysicalDeviceFeatures(this->physicalDevice, &features);           // ¹°¸® µğ¹ÙÀÌ½º ±â´É °¡Á®¿À±â
-        vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memoryProperties); // ¸Ş¸ğ¸® ¼Ó¼º °¡Á®¿À±â
+        vkGetPhysicalDeviceProperties(this->physicalDevice, &properties);       // ë¬¼ë¦¬ ë””ë°”ì´ìŠ¤ ì†ì„± ê°€ì ¸ì˜¤ê¸°
+        vkGetPhysicalDeviceFeatures(this->physicalDevice, &features);           // ë¬¼ë¦¬ ë””ë°”ì´ìŠ¤ ê¸°ëŠ¥ ê°€ì ¸ì˜¤ê¸°
+        vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memoryProperties); // ë©”ëª¨ë¦¬ ì†ì„± ê°€ì ¸ì˜¤ê¸°
 
         cUint32_t supportedApiVersion = properties.apiVersion;
 
-        // queue family properties °¡Á®¿À±â
+        // queue family properties ê°€ì ¸ì˜¤ê¸°
         cUint32_t queueFamilyCount = 0;
         vkGetPhysicalDeviceQueueFamilyProperties(this->physicalDevice, &queueFamilyCount, nullptr);
         _CHECK_RESULT_(queueFamilyCount > 0, "Failed to get queue family properties");
@@ -30,20 +30,20 @@ namespace vkengine {
 
 
         if (supportedApiVersion >= VK_API_VERSION_1_3) {
-            // Vulkan 1.3 ÀÌ»óÀ» Áö¿øÇÏ´Â µğ¹ÙÀÌ½º Ã³¸®
-            // ¿¹: »õ·Î¿î ±â´É È°¼ºÈ­
+            // Vulkan 1.3 ì´ìƒì„ ì§€ì›í•˜ëŠ” ë””ë°”ì´ìŠ¤ ì²˜ë¦¬
+            // ì˜ˆ: ìƒˆë¡œìš´ ê¸°ëŠ¥ í™œì„±í™”
 
         }
         else if (supportedApiVersion >= VK_API_VERSION_1_2) {
-            // Vulkan 1.2 ÀÌ»óÀ» Áö¿øÇÏ´Â µğ¹ÙÀÌ½º Ã³¸®
-            // ¿¹: »õ·Î¿î ±â´É È°¼ºÈ­
+            // Vulkan 1.2 ì´ìƒì„ ì§€ì›í•˜ëŠ” ë””ë°”ì´ìŠ¤ ì²˜ë¦¬
+            // ì˜ˆ: ìƒˆë¡œìš´ ê¸°ëŠ¥ í™œì„±í™”
 
         }
         else if (supportedApiVersion >= VK_API_VERSION_1_1) {
-            // Vulkan 1.1À» Áö¿øÇÏ´Â µğ¹ÙÀÌ½º Ã³¸®
+            // Vulkan 1.1ì„ ì§€ì›í•˜ëŠ” ë””ë°”ì´ìŠ¤ ì²˜ë¦¬
         }
         else {
-            // Vulkan 1.0À» Áö¿øÇÏ´Â µğ¹ÙÀÌ½º Ã³¸®
+            // Vulkan 1.0ì„ ì§€ì›í•˜ëŠ” ë””ë°”ì´ìŠ¤ ì²˜ë¦¬
         }
 
         PRINT_TO_LOGGER("Select Device\n");
@@ -116,11 +116,11 @@ namespace vkengine {
 
     cBool VKdeviceHandler2::createLogicalDevice(cBool useSwapChain)
     {
-        // 1. ¹°¸® ÀåÄ¡¿¡¼­ Å¥ ÆĞ¹Ğ¸® ÀÎµ¦½º¸¦ Ã£½À´Ï´Ù. -> Àü ´Ü°è¿¡¼­ ÀÌ¹Ì Ã£¾Ò½À´Ï´Ù.
-        // 2. Å¥ »ı¼º Á¤º¸ ±¸Á¶Ã¼¸¦ ÃÊ±âÈ­ÇÕ´Ï´Ù. -> ÀÌ¹Ì Ã£¾Ò½À´Ï´Ù.
-        // 3. ¹°¸® ÀåÄ¡ ±â´É ±¸Á¶Ã¼¸¦ ÃÊ±âÈ­ÇÕ´Ï´Ù.
-        // 4. ³í¸® ÀåÄ¡ »ı¼º Á¤º¸ ±¸Á¶Ã¼¸¦ ÃÊ±âÈ­ÇÕ´Ï´Ù.
-        // 5. ³í¸® ÀåÄ¡¸¦ »ı¼ºÇÕ´Ï´Ù.
+        // 1. ë¬¼ë¦¬ ì¥ì¹˜ì—ì„œ í íŒ¨ë°€ë¦¬ ì¸ë±ìŠ¤ë¥¼ ì°¾ìŠµë‹ˆë‹¤. -> ì „ ë‹¨ê³„ì—ì„œ ì´ë¯¸ ì°¾ì•˜ìŠµë‹ˆë‹¤.
+        // 2. í ìƒì„± ì •ë³´ êµ¬ì¡°ì²´ë¥¼ ì´ˆê¸°í™”í•©ë‹ˆë‹¤. -> ì´ë¯¸ ì°¾ì•˜ìŠµë‹ˆë‹¤.
+        // 3. ë¬¼ë¦¬ ì¥ì¹˜ ê¸°ëŠ¥ êµ¬ì¡°ì²´ë¥¼ ì´ˆê¸°í™”í•©ë‹ˆë‹¤.
+        // 4. ë…¼ë¦¬ ì¥ì¹˜ ìƒì„± ì •ë³´ êµ¬ì¡°ì²´ë¥¼ ì´ˆê¸°í™”í•©ë‹ˆë‹¤.
+        // 5. ë…¼ë¦¬ ì¥ì¹˜ë¥¼ ìƒì„±í•©ë‹ˆë‹¤.
         cBool result = true;
 
         const VkQueueFlags requestedQueueTypes = VK_QUEUE_COMPUTE_BIT | VK_QUEUE_GRAPHICS_BIT;
@@ -186,14 +186,14 @@ namespace vkengine {
         enabledFeatures.depthClamp = features.depthClamp;
         enabledFeatures.depthBiasClamp = features.depthBiasClamp;
 
-        // ³í¸® ÀåÄ¡ »ı¼º Á¤º¸ ±¸Á¶Ã¼¸¦ ÃÊ±âÈ­ÇÕ´Ï´Ù.
+        // ë…¼ë¦¬ ì¥ì¹˜ ìƒì„± ì •ë³´ êµ¬ì¡°ì²´ë¥¼ ì´ˆê¸°í™”í•©ë‹ˆë‹¤.
         VkDeviceCreateInfo createInfo{};
 
-        createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;                            // ±¸Á¶Ã¼ Å¸ÀÔÀ» ÁöÁ¤ÇÕ´Ï´Ù.
-        createInfo.queueCreateInfoCount = static_cast<cUint32_t>(queueCreateInfos.size());   // Å¥ »ı¼º Á¤º¸ÀÇ °³¼ö¸¦ ¼³Á¤ÇÕ´Ï´Ù.
+        createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;                            // êµ¬ì¡°ì²´ íƒ€ì…ì„ ì§€ì •í•©ë‹ˆë‹¤.
+        createInfo.queueCreateInfoCount = static_cast<cUint32_t>(queueCreateInfos.size());   // í ìƒì„± ì •ë³´ì˜ ê°œìˆ˜ë¥¼ ì„¤ì •í•©ë‹ˆë‹¤.
         createInfo.pQueueCreateInfos = queueCreateInfos.data();
-        createInfo.enabledExtensionCount = static_cast<cUint32_t>(deviceExtensions.size());  // È°¼ºÈ­ÇÒ È®Àå °³¼ö¸¦ ¼³Á¤ÇÕ´Ï´Ù.
-        createInfo.ppEnabledExtensionNames = deviceExtensions.data();                       // È°¼ºÈ­ÇÒ È®Àå ¸ñ·ÏÀ» ¼³Á¤ÇÕ´Ï´Ù.
+        createInfo.enabledExtensionCount = static_cast<cUint32_t>(deviceExtensions.size());  // í™œì„±í™”í•  í™•ì¥ ê°œìˆ˜ë¥¼ ì„¤ì •í•©ë‹ˆë‹¤.
+        createInfo.ppEnabledExtensionNames = deviceExtensions.data();                       // í™œì„±í™”í•  í™•ì¥ ëª©ë¡ì„ ì„¤ì •í•©ë‹ˆë‹¤.
 
         VkPhysicalDeviceFeatures2 physicalDeviceFeatures2{};
         physicalDeviceFeatures2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
@@ -218,7 +218,7 @@ namespace vkengine {
             _VK_CHECK_RESULT_(vkCreateCommandPool(this->logicaldevice, &poolInfo, nullptr, &this->graphicsCommandPool));
         }
 
-        // ±×·¡ÇÈ½º¿Í ÄÄÇ»Æ®°¡ °°Àº ÆĞ¹Ğ¸®¸é Ä¿¸Çµå Ç®µµ ÇÏ³ª¸¸ »ı¼º
+        // ê·¸ë˜í”½ìŠ¤ì™€ ì»´í“¨íŠ¸ê°€ ê°™ì€ íŒ¨ë°€ë¦¬ë©´ ì»¤ë§¨ë“œ í’€ë„ í•˜ë‚˜ë§Œ ìƒì„±
         if (queueFamilyIndices.grapicFamily != queueFamilyIndices.computerFamily)
         {
             VkCommandPoolCreateInfo poolInfo = helper::commandPoolCreateInfo(queueFamilyIndices.computerFamily, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
@@ -257,10 +257,10 @@ namespace vkengine {
             PRINT_TO_LOGGER("Error:: createQueues:: invalid queue family index");
             return false;
         }
-        // ±×·¡ÇÈ Å¥ ÇÚµéÀ» °¡Á®¿É´Ï´Ù.
+        // ê·¸ë˜í”½ í í•¸ë“¤ì„ ê°€ì ¸ì˜µë‹ˆë‹¤.
         vkGetDeviceQueue(this->logicaldevice, this->queueFamilyIndices.grapicFamily, 0, &this->graphicsVKQueue);
 
-        // ÄÄÇ»ÅÍ Å¥ ÇÚµéÀ» °¡Á®¿É´Ï´Ù.
+        // ì»´í“¨í„° í í•¸ë“¤ì„ ê°€ì ¸ì˜µë‹ˆë‹¤.
         if (queueFamilyIndices.computerFamily != queueFamilyIndices.grapicFamily &&
             queueFamilyIndices.computerFamily != cUint32_t(-1)) {
             vkGetDeviceQueue(this->logicaldevice, queueFamilyIndices.computerFamily, 0, &this->computerVKQueue);
@@ -269,7 +269,7 @@ namespace vkengine {
             this->computerVKQueue = this->graphicsVKQueue;
         }
 
-        // Æ®·£½ºÆÛ Å¥ ÇÚµéÀ» °¡Á®¿É´Ï´Ù.
+        // íŠ¸ëœìŠ¤í¼ í í•¸ë“¤ì„ ê°€ì ¸ì˜µë‹ˆë‹¤.
         if (queueFamilyIndices.transferFamily != queueFamilyIndices.grapicFamily &&
             queueFamilyIndices.transferFamily != queueFamilyIndices.computerFamily &&
             queueFamilyIndices.transferFamily != cUint32_t(-1)) {

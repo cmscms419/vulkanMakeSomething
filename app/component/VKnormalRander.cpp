@@ -27,10 +27,10 @@ namespace vkengine
             {
                 Vertex vertex = (*vertices)[i];
 
-                vertex.texCoord.x = 0.0f; // ½ÃÀÛ
+                vertex.texCoord.x = 0.0f; // ì‹œì‘
                 normalVertices.push_back(vertex);
 
-                vertex.texCoord.x = 1.0f; // ³¡
+                vertex.texCoord.x = 1.0f; // ë
                 normalVertices.push_back(vertex);
 
                 normalIndices.push_back(cUint32_t(2 * i));
@@ -72,7 +72,7 @@ namespace vkengine
 
             // layout create
             std::vector<VkDescriptorSetLayoutBinding> setLayoutBindings = {
-                helper::descriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT, 0), // Ä«¸Ş¶ó
+                helper::descriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT, 0), // ì¹´ë©”ë¼
             };
             this->normalRanderDescriptor->layoutInfo = helper::descriptorSetLayoutCreateInfo(setLayoutBindings);
             this->normalRanderDescriptor->createDescriptorSetLayout();
@@ -118,7 +118,7 @@ namespace vkengine
                 writeDescriptorSets02.data(),
                 0, nullptr);
 
-            // Normal Rander ÆÄÀÌÇÁ¶óÀÎ »ı¼º ·ÎÁ÷ ±¸Çö
+            // Normal Rander íŒŒì´í”„ë¼ì¸ ìƒì„± ë¡œì§ êµ¬í˜„
             VkShaderModule vertShader = engine->getDevice()->createShaderModule(
                 engine->getRootPath() + "../../../../../../shader/vertNormalShader.spv");
             VkShaderModule fragShader = engine->getDevice()->createShaderModule(
@@ -129,7 +129,7 @@ namespace vkengine
             helper::pipelineShaderStageCreateInfo(VK_SHADER_STAGE_FRAGMENT_BIT, fragShader, "main")
             };
 
-            // 2. Vertex input, binding, attribute µî ±âÁ¸ ¸ğµ¨°ú µ¿ÀÏÇÏ°Ô ¼³Á¤
+            // 2. Vertex input, binding, attribute ë“± ê¸°ì¡´ ëª¨ë¸ê³¼ ë™ì¼í•˜ê²Œ ì„¤ì •
             auto bindingDescription = Vertex::getBindingDescription();
             auto attributeDescriptions = Vertex::getAttributeDescriptions();
 
@@ -149,7 +149,7 @@ namespace vkengine
             scissor.offset = { 0, 0 };
             scissor.extent = engine->getSwapChain()->getSwapChainExtent();
 
-            // 4. ÆÄÀÌÇÁ¶óÀÎ ·¹ÀÌ¾Æ¿ô »ı¼º
+            // 4. íŒŒì´í”„ë¼ì¸ ë ˆì´ì•„ì›ƒ ìƒì„±
             VkPipelineViewportStateCreateInfo viewportState = helper::pipelineViewportStateCreateInfo(viewpport, scissor, 1, 1);
             VkPipelineRasterizationStateCreateInfo rasterizer = helper::pipelineRasterizationStateCreateInfo(VK_POLYGON_MODE_FILL, VK_CULL_MODE_NONE, VK_FRONT_FACE_COUNTER_CLOCKWISE);
             VkPipelineMultisampleStateCreateInfo multisampling = helper::pipelineMultisampleStateCreateInfo(VK_SAMPLE_COUNT_1_BIT);
@@ -159,7 +159,7 @@ namespace vkengine
             VkPipelineDynamicStateCreateInfo dynamicState = helper::pipelineDynamicStateCreateInfo(dynamicStates);
 
             std::vector<VkPushConstantRange> pushConstantRanges = {
-                helper::pushConstantRange(VK_SHADER_STAGE_VERTEX_BIT, sizeof(float), 0), // Çª½Ã »ó¼ö ¹üÀ§ ¼³Á¤
+                helper::pushConstantRange(VK_SHADER_STAGE_VERTEX_BIT, sizeof(float), 0), // í‘¸ì‹œ ìƒìˆ˜ ë²”ìœ„ ì„¤ì •
             };
 
             VkPipelineLayoutCreateInfo pipelineLayoutInfo = helper::pipelineLayoutCreateInfo(
@@ -187,14 +187,14 @@ namespace vkengine
             pipelineInfo.pColorBlendState = &colorBlending;
             pipelineInfo.pDynamicState = &dynamicState; // Optional
             pipelineInfo.layout = this->normalRanderDescriptor->VKpipelineLayout;
-            pipelineInfo.renderPass = engine->getRenderPass(); // ·»´õ ÆĞ½º ¼³Á¤
+            pipelineInfo.renderPass = engine->getRenderPass(); // ë Œë” íŒ¨ìŠ¤ ì„¤ì •
             pipelineInfo.subpass = 0;
             pipelineInfo.basePipelineHandle = VK_NULL_HANDLE; // Optional
             pipelineInfo.basePipelineIndex = -1; // Optional
 
             _VK_CHECK_RESULT_(vkCreateGraphicsPipelines(engine->getDevice()->logicaldevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &this->normalRanderPipeline));
 
-            // ¼ÎÀÌ´õ ¸ğµâ Á¤¸®
+            // ì…°ì´ë” ëª¨ë“ˆ ì •ë¦¬
             vkDestroyShaderModule(engine->getDevice()->logicaldevice, vertShader, nullptr);
             vkDestroyShaderModule(engine->getDevice()->logicaldevice, fragShader, nullptr);
 
@@ -203,7 +203,7 @@ namespace vkengine
         void normalRander::recordNormalRanderCommandBuffer(FrameData* frameData, uint32_t imageIndex)
         {
             VkDeviceSize offsets[] = { 0 };
-            // Normal Rander Ä¿¸Çµå ¹öÆÛ ·¹ÄÚµå ·ÎÁ÷ ±¸Çö
+            // Normal Rander ì»¤ë§¨ë“œ ë²„í¼ ë ˆì½”ë“œ ë¡œì§ êµ¬í˜„
 
             this->normalRanderDescriptor->BindDescriptorSets(frameData->mainCommandBuffer,this->engine->getCurrentFrame(),0);
             vkCmdBindPipeline(frameData->mainCommandBuffer,VK_PIPELINE_BIND_POINT_GRAPHICS,this->normalRanderPipeline);
@@ -216,7 +216,7 @@ namespace vkengine
 
         void normalRander::cleanupNormalRanderPipeline()
         {
-            // Normal Rander ÆÄÀÌÇÁ¶óÀÎ Á¤¸® ·ÎÁ÷ ±¸Çö
+            // Normal Rander íŒŒì´í”„ë¼ì¸ ì •ë¦¬ ë¡œì§ êµ¬í˜„
             if (this->normalRanderPipeline != VK_NULL_HANDLE)
             {
                 vkDestroyPipeline(this->engine->getDevice()->logicaldevice, this->normalRanderPipeline, nullptr);
@@ -238,7 +238,7 @@ namespace vkengine
             UniformBufferObject ubo{};
 
             ubo.model = world * this->normalRanderObject->getMatrix();
-            ubo.inverseTranspose = glm::transpose(glm::inverse(this->normalRanderObject->getMatrix())); // ¿ªÇà·ÄÀÇ ÀüÄ¡ Çà·Ä
+            ubo.inverseTranspose = glm::transpose(glm::inverse(this->normalRanderObject->getMatrix())); // ì—­í–‰ë ¬ì˜ ì „ì¹˜ í–‰ë ¬
             ubo.view = camera->getViewMatrix();
             ubo.proj = camera->getProjectionMatrix();
 

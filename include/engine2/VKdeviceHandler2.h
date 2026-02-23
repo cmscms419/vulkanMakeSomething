@@ -15,27 +15,27 @@ namespace vkengine {
         VKdeviceHandler2(VkPhysicalDevice physicalDevice, QueueFamilyIndices2 indice);
         ~VKdeviceHandler2();
 
-        VkPhysicalDevice physicalDevice{ VK_NULL_HANDLE };                  // ¹°¸® µğ¹ÙÀÌ½º -> GPU Physical Handle
-        VkDevice logicaldevice{ VK_NULL_HANDLE };                                  // ³í¸® µğ¹ÙÀÌ½º -> GPU Logical Handle
+        VkPhysicalDevice physicalDevice{ VK_NULL_HANDLE };                  // ë¬¼ë¦¬ ë””ë°”ì´ìŠ¤ -> GPU Physical Handle
+        VkDevice logicaldevice{ VK_NULL_HANDLE };                                  // ë…¼ë¦¬ ë””ë°”ì´ìŠ¤ -> GPU Logical Handle
         
-        VkPhysicalDeviceProperties properties{};                              // ¹°¸® µğ¹ÙÀÌ½º ¼Ó¼º
-        VkPhysicalDeviceFeatures features{};                                  // ¹°¸® µğ¹ÙÀÌ½º ±â´É
-        VkPhysicalDeviceFeatures enabledFeatures{};                           // È°¼ºÈ­µÈ ¹°¸® µğ¹ÙÀÌ½º ±â´É
-        VkPhysicalDeviceMemoryProperties memoryProperties{};                  // ¸Ş¸ğ¸® ¼Ó¼º
+        VkPhysicalDeviceProperties properties{};                              // ë¬¼ë¦¬ ë””ë°”ì´ìŠ¤ ì†ì„±
+        VkPhysicalDeviceFeatures features{};                                  // ë¬¼ë¦¬ ë””ë°”ì´ìŠ¤ ê¸°ëŠ¥
+        VkPhysicalDeviceFeatures enabledFeatures{};                           // í™œì„±í™”ëœ ë¬¼ë¦¬ ë””ë°”ì´ìŠ¤ ê¸°ëŠ¥
+        VkPhysicalDeviceMemoryProperties memoryProperties{};                  // ë©”ëª¨ë¦¬ ì†ì„±
         
-        QueueFamilyIndices2 queueFamilyIndices{};                              // Å¥ ÆĞ¹Ğ¸® ÀÎµ¦½º
-        std::vector<VkQueueFamilyProperties> queueFamilyProperties;            // Å¥ ÆĞ¹Ğ¸® ÇÁ·ÎÆÛÆ¼ -> Å¥ ÆĞ¹Ğ¸®ÀÇ ¼Ó¼º
+        QueueFamilyIndices2 queueFamilyIndices{};                              // í íŒ¨ë°€ë¦¬ ì¸ë±ìŠ¤
+        std::vector<VkQueueFamilyProperties> queueFamilyProperties;            // í íŒ¨ë°€ë¦¬ í”„ë¡œí¼í‹° -> í íŒ¨ë°€ë¦¬ì˜ ì†ì„±
 
-        std::set<std::string> supportedExtensions;                            // Áö¿øµÇ´Â Extensions ±â´É
-        std::vector<const char*> enabledDeviceExtensions{};                     // È°¼ºÈ­µÈ µğ¹ÙÀÌ½º È®Àå ±â´É
+        std::set<std::string> supportedExtensions;                            // ì§€ì›ë˜ëŠ” Extensions ê¸°ëŠ¥
+        std::vector<const char*> enabledDeviceExtensions{};                     // í™œì„±í™”ëœ ë””ë°”ì´ìŠ¤ í™•ì¥ ê¸°ëŠ¥
 
-        VkCommandPool graphicsCommandPool{ VK_NULL_HANDLE };                        // Ä¿¸Çµå Ç® -> Ä¿¸Çµå ¹öÆÛ¸¦ »ı¼ºÇÏ´Â µ¥ »ç¿ë
-        VkCommandPool computeCommandPool{ VK_NULL_HANDLE };                        // Ä¿¸Çµå Ç® -> Ä¿¸Çµå ¹öÆÛ¸¦ »ı¼ºÇÏ´Â µ¥ »ç¿ë
-        VkCommandPool transferCommandPool{ VK_NULL_HANDLE };                        // Ä¿¸Çµå Ç® -> Ä¿¸Çµå ¹öÆÛ¸¦ »ı¼ºÇÏ´Â µ¥ »ç¿ë
+        VkCommandPool graphicsCommandPool{ VK_NULL_HANDLE };                        // ì»¤ë§¨ë“œ í’€ -> ì»¤ë§¨ë“œ ë²„í¼ë¥¼ ìƒì„±í•˜ëŠ” ë° ì‚¬ìš©
+        VkCommandPool computeCommandPool{ VK_NULL_HANDLE };                        // ì»¤ë§¨ë“œ í’€ -> ì»¤ë§¨ë“œ ë²„í¼ë¥¼ ìƒì„±í•˜ëŠ” ë° ì‚¬ìš©
+        VkCommandPool transferCommandPool{ VK_NULL_HANDLE };                        // ì»¤ë§¨ë“œ í’€ -> ì»¤ë§¨ë“œ ë²„í¼ë¥¼ ìƒì„±í•˜ëŠ” ë° ì‚¬ìš©
 
-        VkQueue graphicsVKQueue{ VK_NULL_HANDLE };                            // ±×·¡ÇÈ½º Å¥ -> ±×·¡ÇÈ½º ¸í·ÉÀ» Ã³¸®ÇÏ´Â Å¥
-        VkQueue computerVKQueue{ VK_NULL_HANDLE };                            // ÄÄÇ»Æ® Å¥ -> ÄÄÇ»Æ® ¸í·ÉÀ» Ã³¸®ÇÏ´Â Å¥
-        VkQueue transferVKQueue{ VK_NULL_HANDLE };                             // ÇÁ·¹Á¨Æ® Å¥ -> À©µµ¿ì ½Ã½ºÅÛ°ú VulkanÀ» ¿¬°áÇÏ´Â ÀÎÅÍÆäÀÌ½º
+        VkQueue graphicsVKQueue{ VK_NULL_HANDLE };                            // ê·¸ë˜í”½ìŠ¤ í -> ê·¸ë˜í”½ìŠ¤ ëª…ë ¹ì„ ì²˜ë¦¬í•˜ëŠ” í
+        VkQueue computerVKQueue{ VK_NULL_HANDLE };                            // ì»´í“¨íŠ¸ í -> ì»´í“¨íŠ¸ ëª…ë ¹ì„ ì²˜ë¦¬í•˜ëŠ” í
+        VkQueue transferVKQueue{ VK_NULL_HANDLE };                             // í”„ë ˆì  íŠ¸ í -> ìœˆë„ìš° ì‹œìŠ¤í…œê³¼ Vulkanì„ ì—°ê²°í•˜ëŠ” ì¸í„°í˜ì´ìŠ¤
 
         //VkResult createPysicalDevice
         void printPysicaldeviceProperties() const;

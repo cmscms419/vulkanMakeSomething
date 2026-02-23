@@ -54,54 +54,54 @@ namespace vkengine {
             this->arrayLayers = arrayLayers;
         }
 
-        // ½ÃÀÛÇÏ·Á´Â ¸í·É¹öÆÛ¸¦ »ý¼ºÇÏ´Â ÇÔ¼ö (·¹º§ ÁöÁ¤ °¡´É. ÀÓÀÌ·Î ÁöÁ¤ÇÑ VkCommandBuffer¿¡ ÁöÁ¤ °¡´É)
+        // ì‹œìž‘í•˜ë ¤ëŠ” ëª…ë ¹ë²„í¼ë¥¼ ìƒì„±í•˜ëŠ” í•¨ìˆ˜ (ë ˆë²¨ ì§€ì • ê°€ëŠ¥. ìž„ì´ë¡œ ì§€ì •í•œ VkCommandBufferì— ì§€ì • ê°€ëŠ¥)
         VkCommandBuffer beginSingleTimeCommands2(VkDevice device, VkCommandPool commandPool, VkCommandBufferLevel level, cBool oneTime = false);
 
-        // ¸í·É¹öÆÛ¸¦ Á¾·áÇÏ´Â ÇÔ¼ö (VkSubmitInfo2 »ç¿ë)
+        // ëª…ë ¹ë²„í¼ë¥¼ ì¢…ë£Œí•˜ëŠ” í•¨ìˆ˜ (VkSubmitInfo2 ì‚¬ìš©)
         void endSingleTimeCommands2(VkDevice device, VkCommandPool commandPool, VkQueue Queue, VkCommandBuffer commandBuffer);
 
         /**
 
-         * @brief ÀÌ¹ÌÁö ·¹ÀÌ¾Æ¿ô ÀüÈ¯À» À§ÇÑ °í±Þ ÇÔ¼ö (Vulkan 1.3+ VkImageMemoryBarrier2 »ç¿ë)
+         * @brief ì´ë¯¸ì§€ ë ˆì´ì•„ì›ƒ ì „í™˜ì„ ìœ„í•œ ê³ ê¸‰ í•¨ìˆ˜ (Vulkan 1.3+ VkImageMemoryBarrier2 ì‚¬ìš©)
          *
-         * ÀÌ ÇÔ¼ö´Â Vulkan ÀÌ¹ÌÁöÀÇ ·¹ÀÌ¾Æ¿ôÀ» ¾ÈÀüÇÏ°Ô ÀüÈ¯ÇÏ±â À§ÇØ ÆÄÀÌÇÁ¶óÀÎ ¹è¸®¾î¸¦ ¼³Á¤ÇÕ´Ï´Ù.
-         * VkImageMemoryBarrier2¸¦ »ç¿ëÇÏ¿© ´õ Á¤¹ÐÇÑ µ¿±âÈ­ Á¦¾î¿Í È®ÀåµÈ ÆÄÀÌÇÁ¶óÀÎ ½ºÅ×ÀÌÁö Áö¿øÀ» Á¦°øÇÕ´Ï´Ù.
+         * ì´ í•¨ìˆ˜ëŠ” Vulkan ì´ë¯¸ì§€ì˜ ë ˆì´ì•„ì›ƒì„ ì•ˆì „í•˜ê²Œ ì „í™˜í•˜ê¸° ìœ„í•´ íŒŒì´í”„ë¼ì¸ ë°°ë¦¬ì–´ë¥¼ ì„¤ì •í•©ë‹ˆë‹¤.
+         * VkImageMemoryBarrier2ë¥¼ ì‚¬ìš©í•˜ì—¬ ë” ì •ë°€í•œ ë™ê¸°í™” ì œì–´ì™€ í™•ìž¥ëœ íŒŒì´í”„ë¼ì¸ ìŠ¤í…Œì´ì§€ ì§€ì›ì„ ì œê³µí•©ë‹ˆë‹¤.
          *
-         * @param commandBuffer ÀÌ¹ÌÁö ·¹ÀÌ¾Æ¿ô ÀüÈ¯ ¸í·ÉÀ» ±â·ÏÇÒ Ä¿¸Çµå ¹öÆÛ
-         * @param image ·¹ÀÌ¾Æ¿ôÀ» ÀüÈ¯ÇÒ VkImage ÇÚµé (VK_NULL_HANDLEÀÎ °æ¿ì ÇÔ¼ö´Â Áï½Ã ¹ÝÈ¯)
-         * @param Queue »ç¿ëµÇÁö ¾Ê´Â ¸Å°³º¯¼ö (ÇâÈÄ È£È¯¼ºÀ» À§ÇØ À¯Áö)
-         * @param format ÀÌ¹ÌÁö Æ÷¸Ë (aspect mask °áÁ¤¿¡ »ç¿ë)
-         * @param arrayLayers ÀÌ¹ÌÁöÀÇ ÃÑ ¹è¿­ ·¹ÀÌ¾î ¼ö
-         * @param newLayout ÀüÈ¯ÇÒ ¸ñÇ¥ ÀÌ¹ÌÁö ·¹ÀÌ¾Æ¿ô
-         * @param newAccess ÀüÈ¯ ÈÄ Á¢±Ù ±ÇÇÑ ¸¶½ºÅ© (VkAccessFlags2)
-         * @param newStage ÀüÈ¯ ÈÄ ÆÄÀÌÇÁ¶óÀÎ ½ºÅ×ÀÌÁö (VkPipelineStageFlags2)
-         * @param baseMipLevel ÀüÈ¯À» ½ÃÀÛÇÒ ¹Ó¸Ê ·¹º§ (0ºÎÅÍ ½ÃÀÛ)
-         * @param levelCount ÀüÈ¯ÇÒ ¹Ó¸Ê ·¹º§ °³¼ö (VK_REMAINING_MIP_LEVELS »ç¿ë °¡´É)
-         * @param baseArrayLayer ÀüÈ¯À» ½ÃÀÛÇÒ ¹è¿­ ·¹ÀÌ¾î (0ºÎÅÍ ½ÃÀÛ)
-         * @param layerCount ÀüÈ¯ÇÒ ¹è¿­ ·¹ÀÌ¾î °³¼ö (VK_REMAINING_ARRAY_LAYERS »ç¿ë °¡´É)
+         * @param commandBuffer ì´ë¯¸ì§€ ë ˆì´ì•„ì›ƒ ì „í™˜ ëª…ë ¹ì„ ê¸°ë¡í•  ì»¤ë§¨ë“œ ë²„í¼
+         * @param image ë ˆì´ì•„ì›ƒì„ ì „í™˜í•  VkImage í•¸ë“¤ (VK_NULL_HANDLEì¸ ê²½ìš° í•¨ìˆ˜ëŠ” ì¦‰ì‹œ ë°˜í™˜)
+         * @param Queue ì‚¬ìš©ë˜ì§€ ì•ŠëŠ” ë§¤ê°œë³€ìˆ˜ (í–¥í›„ í˜¸í™˜ì„±ì„ ìœ„í•´ ìœ ì§€)
+         * @param format ì´ë¯¸ì§€ í¬ë§· (aspect mask ê²°ì •ì— ì‚¬ìš©)
+         * @param arrayLayers ì´ë¯¸ì§€ì˜ ì´ ë°°ì—´ ë ˆì´ì–´ ìˆ˜
+         * @param newLayout ì „í™˜í•  ëª©í‘œ ì´ë¯¸ì§€ ë ˆì´ì•„ì›ƒ
+         * @param newAccess ì „í™˜ í›„ ì ‘ê·¼ ê¶Œí•œ ë§ˆìŠ¤í¬ (VkAccessFlags2)
+         * @param newStage ì „í™˜ í›„ íŒŒì´í”„ë¼ì¸ ìŠ¤í…Œì´ì§€ (VkPipelineStageFlags2)
+         * @param baseMipLevel ì „í™˜ì„ ì‹œìž‘í•  ë°‰ë§µ ë ˆë²¨ (0ë¶€í„° ì‹œìž‘)
+         * @param levelCount ì „í™˜í•  ë°‰ë§µ ë ˆë²¨ ê°œìˆ˜ (VK_REMAINING_MIP_LEVELS ì‚¬ìš© ê°€ëŠ¥)
+         * @param baseArrayLayer ì „í™˜ì„ ì‹œìž‘í•  ë°°ì—´ ë ˆì´ì–´ (0ë¶€í„° ì‹œìž‘)
+         * @param layerCount ì „í™˜í•  ë°°ì—´ ë ˆì´ì–´ ê°œìˆ˜ (VK_REMAINING_ARRAY_LAYERS ì‚¬ìš© ê°€ëŠ¥)
          *
-         * @details ÇÔ¼ö µ¿ÀÛ °úÁ¤:
-         * 1. ÀÔ·Â À¯È¿¼º °Ë»ç (image°¡ VK_NULL_HANDLEÀÎÁö È®ÀÎ)
-         * 2. VK_REMAINING_* »ó¼ö Ã³¸®·Î ½ÇÁ¦ ·¹º§/·¹ÀÌ¾î °³¼ö °è»ê
-         * 3. ºÒÇÊ¿äÇÑ ÀüÈ¯ ÃÖÀûÈ­ (µ¿ÀÏÇÑ ·¹ÀÌ¾Æ¿ô°ú Á¢±Ù ±ÇÇÑ, ÀüÃ¼ ¸®¼Ò½º ¹üÀ§ÀÎ °æ¿ì ½ºÅµ)
-         * 4. VkImageMemoryBarrier2 ±¸Á¶Ã¼ ¼³Á¤:
-         *    - ¼Ò½º/¸ñÀûÁö ÆÄÀÌÇÁ¶óÀÎ ½ºÅ×ÀÌÁö ¼³Á¤
-         *    - ¼Ò½º/¸ñÀûÁö Á¢±Ù ¸¶½ºÅ© ¼³Á¤
-         *    - ÀÌÀü/»õ·Î¿î ÀÌ¹ÌÁö ·¹ÀÌ¾Æ¿ô ¼³Á¤
-         *    - ¼­ºê¸®¼Ò½º ¹üÀ§ ¼³Á¤ (¹Ó¸Ê, ¹è¿­ ·¹ÀÌ¾î, aspect)
-         * 5. VkDependencyInfo¸¦ ÅëÇÑ vkCmdPipelineBarrier2 È£Ãâ
+         * @details í•¨ìˆ˜ ë™ìž‘ ê³¼ì •:
+         * 1. ìž…ë ¥ ìœ íš¨ì„± ê²€ì‚¬ (imageê°€ VK_NULL_HANDLEì¸ì§€ í™•ì¸)
+         * 2. VK_REMAINING_* ìƒìˆ˜ ì²˜ë¦¬ë¡œ ì‹¤ì œ ë ˆë²¨/ë ˆì´ì–´ ê°œìˆ˜ ê³„ì‚°
+         * 3. ë¶ˆí•„ìš”í•œ ì „í™˜ ìµœì í™” (ë™ì¼í•œ ë ˆì´ì•„ì›ƒê³¼ ì ‘ê·¼ ê¶Œí•œ, ì „ì²´ ë¦¬ì†ŒìŠ¤ ë²”ìœ„ì¸ ê²½ìš° ìŠ¤í‚µ)
+         * 4. VkImageMemoryBarrier2 êµ¬ì¡°ì²´ ì„¤ì •:
+         *    - ì†ŒìŠ¤/ëª©ì ì§€ íŒŒì´í”„ë¼ì¸ ìŠ¤í…Œì´ì§€ ì„¤ì •
+         *    - ì†ŒìŠ¤/ëª©ì ì§€ ì ‘ê·¼ ë§ˆìŠ¤í¬ ì„¤ì •
+         *    - ì´ì „/ìƒˆë¡œìš´ ì´ë¯¸ì§€ ë ˆì´ì•„ì›ƒ ì„¤ì •
+         *    - ì„œë¸Œë¦¬ì†ŒìŠ¤ ë²”ìœ„ ì„¤ì • (ë°‰ë§µ, ë°°ì—´ ë ˆì´ì–´, aspect)
+         * 5. VkDependencyInfoë¥¼ í†µí•œ vkCmdPipelineBarrier2 í˜¸ì¶œ
          *
-         * @note ÃÖÀûÈ­ Æ¯Â¡:
-         * - µ¿ÀÏÇÑ ·¹ÀÌ¾Æ¿ô°ú Á¢±Ù ±ÇÇÑÀÌ¸ç ÀüÃ¼ ¸®¼Ò½º¸¦ ´ë»óÀ¸·Î ÇÏ´Â °æ¿ì ÀüÈ¯À» »ý·«
-         * - VK_REMAINING_MIP_LEVELS¿Í VK_REMAINING_ARRAY_LAYERS ÀÚµ¿ °è»ê Áö¿ø
-         * - ±íÀÌ/½ºÅÙ½Ç Æ÷¸Ë¿¡ ´ëÇÑ ÀÚµ¿ aspect mask °áÁ¤
+         * @note ìµœì í™” íŠ¹ì§•:
+         * - ë™ì¼í•œ ë ˆì´ì•„ì›ƒê³¼ ì ‘ê·¼ ê¶Œí•œì´ë©° ì „ì²´ ë¦¬ì†ŒìŠ¤ë¥¼ ëŒ€ìƒìœ¼ë¡œ í•˜ëŠ” ê²½ìš° ì „í™˜ì„ ìƒëžµ
+         * - VK_REMAINING_MIP_LEVELSì™€ VK_REMAINING_ARRAY_LAYERS ìžë™ ê³„ì‚° ì§€ì›
+         * - ê¹Šì´/ìŠ¤í…ì‹¤ í¬ë§·ì— ëŒ€í•œ ìžë™ aspect mask ê²°ì •
          *
-         * @warning ÁÖÀÇ»çÇ×:
-         * - commandBuffer´Â ¹Ýµå½Ã ±â·Ï »óÅÂ(recording state)¿©¾ß ÇÕ´Ï´Ù
-         * - oldStage°¡ VK_PIPELINE_STAGE_2_NONEÀÎ °æ¿ì VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT·Î ´ëÃ¼
-         * - Å¥ ÆÐ¹Ð¸® Àü¼ÛÀº Áö¿øÇÏÁö ¾ÊÀ½ (VK_QUEUE_FAMILY_IGNORED »ç¿ë)
+         * @warning ì£¼ì˜ì‚¬í•­:
+         * - commandBufferëŠ” ë°˜ë“œì‹œ ê¸°ë¡ ìƒíƒœ(recording state)ì—¬ì•¼ í•©ë‹ˆë‹¤
+         * - oldStageê°€ VK_PIPELINE_STAGE_2_NONEì¸ ê²½ìš° VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BITë¡œ ëŒ€ì²´
+         * - í íŒ¨ë°€ë¦¬ ì „ì†¡ì€ ì§€ì›í•˜ì§€ ì•ŠìŒ (VK_QUEUE_FAMILY_IGNORED ì‚¬ìš©)
          *
-         * @example »ç¿ë ¿¹½Ã:
+         * @example ì‚¬ìš© ì˜ˆì‹œ:
          *
          */
         void transitionImageLayout2(

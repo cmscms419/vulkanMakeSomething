@@ -37,7 +37,7 @@ namespace vkengine
 
     FrameData& VulkanEngine::getCurrnetFrameData()
     {
-        // TODO: ¿©±â¿¡ return ¹®À» »ğÀÔÇÕ´Ï´Ù.
+        // TODO: ì—¬ê¸°ì— return ë¬¸ì„ ì‚½ì…í•©ë‹ˆë‹¤.
         int index = (currentFrame) % MAX_FRAMES_IN_FLIGHT;
         return this->VKframeData[index];
     }
@@ -121,10 +121,10 @@ namespace vkengine
 
         glfwSetWindowUserPointer(this->VKwindow, this);
         glfwSetFramebufferSizeCallback(this->VKwindow, framebufferResizeCallback);
-        glfwSetKeyCallback(this->VKwindow, vkengine::input::key_callback);  // Å° ÀÔ·Â Äİ¹é ¼³Á¤
-        glfwSetCursorPosCallback(this->VKwindow, vkengine::input::cursorPositionCallback); // ¸¶¿ì½º ÀÔ·Â Äİ¹é ¼³Á¤
-        glfwSetMouseButtonCallback(this->VKwindow, vkengine::input::mouseButtonCallback); // ¸¶¿ì½º ¹öÆ° Äİ¹é ¼³Á¤
-        glfwSetScrollCallback(this->VKwindow, vkengine::input::scroll_callback); // ½ºÅ©·Ñ Äİ¹é ¼³Á¤
+        glfwSetKeyCallback(this->VKwindow, vkengine::input::key_callback);  // í‚¤ ì…ë ¥ ì½œë°± ì„¤ì •
+        glfwSetCursorPosCallback(this->VKwindow, vkengine::input::cursorPositionCallback); // ë§ˆìš°ìŠ¤ ì…ë ¥ ì½œë°± ì„¤ì •
+        glfwSetMouseButtonCallback(this->VKwindow, vkengine::input::mouseButtonCallback); // ë§ˆìš°ìŠ¤ ë²„íŠ¼ ì½œë°± ì„¤ì •
+        glfwSetScrollCallback(this->VKwindow, vkengine::input::scroll_callback); // ìŠ¤í¬ë¡¤ ì½œë°± ì„¤ì •
     }
 
     cBool VulkanEngine::prepare()
@@ -153,7 +153,7 @@ namespace vkengine
         VkResult result = this->VKswapChain->acquireNextImage(this->getCurrnetFrameData().VkimageavailableSemaphore, *imageIndex);
 
         if (result == VK_ERROR_OUT_OF_DATE_KHR) {
-            this->recreateSwapChain(); // ½º¿Ò Ã¼ÀÎÀ» ´Ù½Ã »ı¼ºÇÕ´Ï´Ù.
+            this->recreateSwapChain(); // ìŠ¤ì™‘ ì²´ì¸ì„ ë‹¤ì‹œ ìƒì„±í•©ë‹ˆë‹¤.
             return;
         }
         else {
@@ -166,8 +166,8 @@ namespace vkengine
 
         VkPresentInfoKHR presentInfo{};
 
-        // VkPresentInfoKHR ±¸Á¶Ã¼´Â ½º¿Ò Ã¼ÀÎ ÀÌ¹ÌÁöÀÇ ÇÁ·¹Á¨Å×ÀÌ¼ÇÀ» À§ÇÑ Á¤º¸¸¦ Á¦°øÇÕ´Ï´Ù.
-        presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR; // ±¸Á¶Ã¼ Å¸ÀÔÀ» ÁöÁ¤ÇÕ´Ï´Ù.
+        // VkPresentInfoKHR êµ¬ì¡°ì²´ëŠ” ìŠ¤ì™‘ ì²´ì¸ ì´ë¯¸ì§€ì˜ í”„ë ˆì  í…Œì´ì…˜ì„ ìœ„í•œ ì •ë³´ë¥¼ ì œê³µí•©ë‹ˆë‹¤.
+        presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR; // êµ¬ì¡°ì²´ íƒ€ì…ì„ ì§€ì •í•©ë‹ˆë‹¤.
         presentInfo.pNext = nullptr;
 
         presentInfo.waitSemaphoreCount = 1;
@@ -181,7 +181,7 @@ namespace vkengine
 
         presentInfo.pImageIndices = imageIndex;
 
-        // ÇÁ·¹Á¨Å×ÀÌ¼Ç Å¥¿¡ ÀÌ¹ÌÁö¸¦ Á¦ÃâÇÕ´Ï´Ù.
+        // í”„ë ˆì  í…Œì´ì…˜ íì— ì´ë¯¸ì§€ë¥¼ ì œì¶œí•©ë‹ˆë‹¤.
         VkResult result = vkQueuePresentKHR(this->VKdevice->presentVKQueue, &presentInfo);
 
         if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || framebufferResized) {
@@ -254,7 +254,7 @@ namespace vkengine
         // command pool create and command buffer create
         QueueFamilyIndices queueFamilyIndices = this->VKdevice->queueFamilyIndices;
 
-        // Ä¿¸Çµå Ç® »ı¼º Á¤º¸ ±¸Á¶Ã¼¸¦ ÃÊ±âÈ­ÇÕ´Ï´Ù.
+        // ì»¤ë§¨ë“œ í’€ ìƒì„± ì •ë³´ êµ¬ì¡°ì²´ë¥¼ ì´ˆê¸°í™”í•©ë‹ˆë‹¤.
         VkCommandPoolCreateInfo poolInfo = helper::commandPoolCreateInfo(queueFamilyIndices.graphicsAndComputeFamily, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
 
         _VK_CHECK_RESULT_(vkCreateCommandPool(this->VKdevice->logicaldevice, &poolInfo, nullptr, &this->VKdevice->commandPool));
@@ -280,25 +280,25 @@ namespace vkengine
             throw std::runtime_error("validation layers requested, but not available!");
         }
 
-        // VkApplicationInfo ±¸Á¶Ã¼´Â ¾ÖÇÃ¸®ÄÉÀÌ¼Ç¿¡ ´ëÇÑ Á¤º¸¸¦ Vulkan¿¡°Ô Á¦°øÇÏ±â À§ÇØ »ç¿ëµË´Ï´Ù.
+        // VkApplicationInfo êµ¬ì¡°ì²´ëŠ” ì• í”Œë¦¬ì¼€ì´ì…˜ì— ëŒ€í•œ ì •ë³´ë¥¼ Vulkanì—ê²Œ ì œê³µí•˜ê¸° ìœ„í•´ ì‚¬ìš©ë©ë‹ˆë‹¤.
         VkApplicationInfo appInfo = {};
-        appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;     // ±¸Á¶Ã¼ Å¸ÀÔÀ» ÁöÁ¤ÇÕ´Ï´Ù.
-        appInfo.pApplicationName = "Vulkan egine";              // ¾ÖÇÃ¸®ÄÉÀÌ¼Ç ÀÌ¸§À» ÁöÁ¤ÇÕ´Ï´Ù.
-        appInfo.applicationVersion = VK_MAKE_VERSION(0, 0, 0);  // ¾ÖÇÃ¸®ÄÉÀÌ¼Ç ¹öÀüÀ» ÁöÁ¤ÇÕ´Ï´Ù.
-        appInfo.pEngineName = "vulkanEngine";                   // ¿£Áø ÀÌ¸§À» ÁöÁ¤ÇÕ´Ï´Ù.
-        appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);       // ¿£Áø ¹öÀüÀ» ÁöÁ¤ÇÕ´Ï´Ù.
-        appInfo.apiVersion = VK_API_VERSION_1_3;                // »ç¿ëÇÒ Vulkan API ¹öÀüÀ» ÁöÁ¤ÇÕ´Ï´Ù.
+        appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;     // êµ¬ì¡°ì²´ íƒ€ì…ì„ ì§€ì •í•©ë‹ˆë‹¤.
+        appInfo.pApplicationName = "Vulkan egine";              // ì• í”Œë¦¬ì¼€ì´ì…˜ ì´ë¦„ì„ ì§€ì •í•©ë‹ˆë‹¤.
+        appInfo.applicationVersion = VK_MAKE_VERSION(0, 0, 0);  // ì• í”Œë¦¬ì¼€ì´ì…˜ ë²„ì „ì„ ì§€ì •í•©ë‹ˆë‹¤.
+        appInfo.pEngineName = "vulkanEngine";                   // ì—”ì§„ ì´ë¦„ì„ ì§€ì •í•©ë‹ˆë‹¤.
+        appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);       // ì—”ì§„ ë²„ì „ì„ ì§€ì •í•©ë‹ˆë‹¤.
+        appInfo.apiVersion = VK_API_VERSION_1_3;                // ì‚¬ìš©í•  Vulkan API ë²„ì „ì„ ì§€ì •í•©ë‹ˆë‹¤.
 
-        // VkInstanceCreateInfo ±¸Á¶Ã¼´Â Vulkan ÀÎ½ºÅÏ½º¸¦ »ı¼ºÇÏ±â À§ÇÑ Á¤º¸¸¦ Á¦°øÇÕ´Ï´Ù.
+        // VkInstanceCreateInfo êµ¬ì¡°ì²´ëŠ” Vulkan ì¸ìŠ¤í„´ìŠ¤ë¥¼ ìƒì„±í•˜ê¸° ìœ„í•œ ì •ë³´ë¥¼ ì œê³µí•©ë‹ˆë‹¤.
         VkInstanceCreateInfo createInfo = {};
-        createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO; // ±¸Á¶Ã¼ Å¸ÀÔÀ» ÁöÁ¤ÇÕ´Ï´Ù.
-        createInfo.pApplicationInfo = &appInfo;                    // VkApplicationInfo ±¸Á¶Ã¼¸¦ ÂüÁ¶ÇÕ´Ï´Ù.
+        createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO; // êµ¬ì¡°ì²´ íƒ€ì…ì„ ì§€ì •í•©ë‹ˆë‹¤.
+        createInfo.pApplicationInfo = &appInfo;                    // VkApplicationInfo êµ¬ì¡°ì²´ë¥¼ ì°¸ì¡°í•©ë‹ˆë‹¤.
 
         uint32_t glfwExtensionCount = 0;
-        std::vector<const cChar*> extensions = this->getRequiredExtensions();     // È®Àå ¸ñ·ÏÀ» ÀúÀåÇÒ º¯¼ö¸¦ ¼±¾ğÇÕ´Ï´Ù.
-        glfwExtensionCount = static_cast<uint32_t>(extensions.size());           // È®Àå °³¼ö¸¦ ÀúÀåÇÕ´Ï´Ù.
-        createInfo.enabledExtensionCount = glfwExtensionCount;                   // È°¼ºÈ­ÇÒ È®Àå °³¼ö¸¦ ÁöÁ¤ÇÕ´Ï´Ù.
-        createInfo.ppEnabledExtensionNames = extensions.data();                  // È°¼ºÈ­ÇÒ È®Àå ¸ñ·ÏÀ» ÁöÁ¤ÇÕ´Ï´Ù.
+        std::vector<const cChar*> extensions = this->getRequiredExtensions();     // í™•ì¥ ëª©ë¡ì„ ì €ì¥í•  ë³€ìˆ˜ë¥¼ ì„ ì–¸í•©ë‹ˆë‹¤.
+        glfwExtensionCount = static_cast<uint32_t>(extensions.size());           // í™•ì¥ ê°œìˆ˜ë¥¼ ì €ì¥í•©ë‹ˆë‹¤.
+        createInfo.enabledExtensionCount = glfwExtensionCount;                   // í™œì„±í™”í•  í™•ì¥ ê°œìˆ˜ë¥¼ ì§€ì •í•©ë‹ˆë‹¤.
+        createInfo.ppEnabledExtensionNames = extensions.data();                  // í™œì„±í™”í•  í™•ì¥ ëª©ë¡ì„ ì§€ì •í•©ë‹ˆë‹¤.
 
         if (enableValidationLayers) {
 
@@ -314,7 +314,7 @@ namespace vkengine
             createInfo.enabledLayerCount = 0;
         }
 
-        // Vulkan ÀÎ½ºÅÏ½º¸¦ »ı¼ºÇÕ´Ï´Ù.
+        // Vulkan ì¸ìŠ¤í„´ìŠ¤ë¥¼ ìƒì„±í•©ë‹ˆë‹¤.
         _VK_CHECK_RESULT_(vkCreateInstance(&createInfo, nullptr, &this->VKinstance));
         _PRINT_TO_CONSOLE_("create instance\n");
 
@@ -357,7 +357,7 @@ namespace vkengine
     
     cBool VulkanEngine::createDevice()
     {
-        // ¹°¸® µğ¹ÙÀÌ½º ¸ñ·ÏÀ» °¡Á®¿É´Ï´Ù.
+        // ë¬¼ë¦¬ ë””ë°”ì´ìŠ¤ ëª©ë¡ì„ ê°€ì ¸ì˜µë‹ˆë‹¤.
         uint32_t deviceCount = 0;
         vkEnumeratePhysicalDevices(this->VKinstance, &deviceCount, nullptr);
 
@@ -366,9 +366,9 @@ namespace vkengine
         std::vector<VkPhysicalDevice> devices(deviceCount);
         vkEnumeratePhysicalDevices(this->VKinstance, &deviceCount, devices.data());
 
-        // ¹°¸® µğ¹ÙÀÌ½º¸¦ ¼±ÅÃÇÑ´Ù.
-        // ¸ÕÀú ¹°¸® µğ¹ÙÀÌ½º¸¦ ¼±ÅÃÇÏ±â À§ÇÑ ÇÔ¼ö¸¦ Á¤ÀÇÇÑ´Ù.
-        // Score¸¦ ±âÁØÀ¸·Î °¡Àå ³ôÀº Á¡¼öÀÇ ¹°¸® µğ¹ÙÀÌ½º¸¦ ¼±ÅÃÇÑ´Ù.
+        // ë¬¼ë¦¬ ë””ë°”ì´ìŠ¤ë¥¼ ì„ íƒí•œë‹¤.
+        // ë¨¼ì € ë¬¼ë¦¬ ë””ë°”ì´ìŠ¤ë¥¼ ì„ íƒí•˜ê¸° ìœ„í•œ í•¨ìˆ˜ë¥¼ ì •ì˜í•œë‹¤.
+        // Scoreë¥¼ ê¸°ì¤€ìœ¼ë¡œ ê°€ì¥ ë†’ì€ ì ìˆ˜ì˜ ë¬¼ë¦¬ ë””ë°”ì´ìŠ¤ë¥¼ ì„ íƒí•œë‹¤.
         std::multimap<int, VkPhysicalDevice> candidates;
         std::vector<QueueFamilyIndices> indices(deviceCount);
 
@@ -406,18 +406,18 @@ namespace vkengine
 
         this->VKdevice = std::make_unique<VKdeviceHandler>(pdevice, indices[selectQueueFamilyIndeices]);
 
-        // ÆÄ»ıµÈ ¿¹Á¦´Â ¹°¸®Àû ÀåÄ¡¿¡¼­ ÀĞÀº Áö¿øµÇ´Â È®Àå ¸ñ·Ï¿¡ µû¶ó È®Àå ±â´ÉÀ» È°¼ºÈ­ÇÒ ¼ö ÀÖ½À´Ï´Ù.
-        // ÇÊ¿äÇÒ ¶§ ÄÚµå »ı¼º
+        // íŒŒìƒëœ ì˜ˆì œëŠ” ë¬¼ë¦¬ì  ì¥ì¹˜ì—ì„œ ì½ì€ ì§€ì›ë˜ëŠ” í™•ì¥ ëª©ë¡ì— ë”°ë¼ í™•ì¥ ê¸°ëŠ¥ì„ í™œì„±í™”í•  ìˆ˜ ìˆìŠµë‹ˆë‹¤.
+        // í•„ìš”í•  ë•Œ ì½”ë“œ ìƒì„±
 
-        // ¹°¸® ÀåÄ¡ ±â´É ±¸Á¶Ã¼¸¦ ÃÊ±âÈ­ÇÕ´Ï´Ù.
-        // TODO: ³ªÁß¿¡ ´Ù½Ã È®ÀÎ
-        this->VKdevice->features.samplerAnisotropy = VK_TRUE; // »ùÇÃ·¯¸¦ »ç¿ëÇÏ¿© ÅØ½ºÃ³¸¦ º¸°£ÇÕ´Ï´Ù.
-        this->VKdevice->features.sampleRateShading = VK_TRUE; // »ùÇÃ ·¹ÀÌÆ® ½¦ÀÌµùÀ» »ç¿ëÇÏ¿© ÇÈ¼¿À» ±×¸³´Ï´Ù.
+        // ë¬¼ë¦¬ ì¥ì¹˜ ê¸°ëŠ¥ êµ¬ì¡°ì²´ë¥¼ ì´ˆê¸°í™”í•©ë‹ˆë‹¤.
+        // TODO: ë‚˜ì¤‘ì— ë‹¤ì‹œ í™•ì¸
+        this->VKdevice->features.samplerAnisotropy = VK_TRUE; // ìƒ˜í”ŒëŸ¬ë¥¼ ì‚¬ìš©í•˜ì—¬ í…ìŠ¤ì²˜ë¥¼ ë³´ê°„í•©ë‹ˆë‹¤.
+        this->VKdevice->features.sampleRateShading = VK_TRUE; // ìƒ˜í”Œ ë ˆì´íŠ¸ ì‰ì´ë”©ì„ ì‚¬ìš©í•˜ì—¬ í”½ì…€ì„ ê·¸ë¦½ë‹ˆë‹¤.
 
-        // ³í¸® µğ¹ÙÀÌ½º¸¦ »ı¼ºÇÕ´Ï´Ù.
+        // ë…¼ë¦¬ ë””ë°”ì´ìŠ¤ë¥¼ ìƒì„±í•©ë‹ˆë‹¤.
         _VK_CHECK_RESULT_(this->VKdevice->createLogicalDevice());
 
-        // depth formatÀ» °¡Á®¿É´Ï´Ù.
+        // depth formatì„ ê°€ì ¸ì˜µë‹ˆë‹¤.
         this->VKdepthStencill.depthFormat = helper::findDepthFormat(this->VKdevice->physicalDevice);
 
         return true;
@@ -425,7 +425,7 @@ namespace vkengine
     
     cBool VulkanEngine::createDepthStencilResources()
     {
-        // ±íÀÌ ÀÌ¹ÌÁö »ı¼º Á¤º¸ ±¸Á¶Ã¼¸¦ ÃÊ±âÈ­ÇÕ´Ï´Ù.
+        // ê¹Šì´ ì´ë¯¸ì§€ ìƒì„± ì •ë³´ êµ¬ì¡°ì²´ë¥¼ ì´ˆê¸°í™”í•©ë‹ˆë‹¤.
         this->VKdevice->createimageview(
             this->VKswapChain->getSwapChainExtent().width,
             this->VKswapChain->getSwapChainExtent().height,
@@ -439,7 +439,7 @@ namespace vkengine
             this->VKdepthStencill.depthImageMemory
         );
 
-        // ±íÀÌ ÀÌ¹ÌÁö ºä¸¦ »ı¼ºÇÕ´Ï´Ù.
+        // ê¹Šì´ ì´ë¯¸ì§€ ë·°ë¥¼ ìƒì„±í•©ë‹ˆë‹¤.
         this->VKdepthStencill.depthImageView = helper::createImageView(
             this->VKdevice->logicaldevice,
             this->VKdepthStencill.depthImage,
@@ -448,8 +448,8 @@ namespace vkengine
             1
         );
 
-        // ±íÀÌ ÀÌ¹ÌÁö ·¹ÀÌ¾Æ¿ôÀ» ¼³Á¤ÇÕ´Ï´Ù.
-        // ¸í½ÃÀûÀ¸·Î ÀÌ¹ÌÁö ·¹ÀÌ¾Æ¿ôÀ» ÀüÈ¯ÇÕ´Ï´Ù. -> ¾ÈÁ¤¼ºÀ» À§ÇØ¼­
+        // ê¹Šì´ ì´ë¯¸ì§€ ë ˆì´ì•„ì›ƒì„ ì„¤ì •í•©ë‹ˆë‹¤.
+        // ëª…ì‹œì ìœ¼ë¡œ ì´ë¯¸ì§€ ë ˆì´ì•„ì›ƒì„ ì „í™˜í•©ë‹ˆë‹¤. -> ì•ˆì •ì„±ì„ ìœ„í•´ì„œ
         helper::transitionImageLayout(
             this->VKdevice->logicaldevice,
             this->VKdevice->commandPool,
@@ -466,18 +466,18 @@ namespace vkengine
     
     cBool VulkanEngine::createRenderPass()
     {
-        // ·»´õ ÆĞ½º »ı¼º Á¤º¸ ±¸Á¶Ã¼¸¦ ÃÊ±âÈ­ÇÕ´Ï´Ù.
+        // ë Œë” íŒ¨ìŠ¤ ìƒì„± ì •ë³´ êµ¬ì¡°ì²´ë¥¼ ì´ˆê¸°í™”í•©ë‹ˆë‹¤.
         VkAttachmentDescription colorAttachment{};
         colorAttachment.format = this->VKswapChain->getSwapChainImageFormat();
         colorAttachment.samples = this->VKmsaaSamples;
-        colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR; // Render Pass ½ÃÀÛ ½Ã Å¬¸®¾î
-        colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE; // Render Pass Á¾·á ½Ã ÀúÀå
-        colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE; // »ç¿ëÇÏÁö ¾ÊÀ½
-        colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE; // »ç¿ëÇÏÁö ¾ÊÀ½
-        colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED; // ½ÃÀÛ ·¹ÀÌ¾Æ¿ôÀº Áß¿äÇÏÁö ¾ÊÀ½.
-        colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR; // ÇÁ·¹Á¨Å×ÀÌ¼Ç¿¡ »ç¿ë
+        colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR; // Render Pass ì‹œì‘ ì‹œ í´ë¦¬ì–´
+        colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE; // Render Pass ì¢…ë£Œ ì‹œ ì €ì¥
+        colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE; // ì‚¬ìš©í•˜ì§€ ì•ŠìŒ
+        colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE; // ì‚¬ìš©í•˜ì§€ ì•ŠìŒ
+        colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED; // ì‹œì‘ ë ˆì´ì•„ì›ƒì€ ì¤‘ìš”í•˜ì§€ ì•ŠìŒ.
+        colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR; // í”„ë ˆì  í…Œì´ì…˜ì— ì‚¬ìš©
 
-        //// »ö»ó Ã·ºÎ ÆÄÀÏÀ» ¼³Á¤ÇÕ´Ï´Ù.
+        //// ìƒ‰ìƒ ì²¨ë¶€ íŒŒì¼ì„ ì„¤ì •í•©ë‹ˆë‹¤.
         //VkAttachmentDescription colorAttachmentResolve{};
         //colorAttachmentResolve.format = this->VKswapChain->getSwapChainImageFormat();;
         //colorAttachmentResolve.samples = VK_SAMPLE_COUNT_1_BIT;
@@ -488,7 +488,7 @@ namespace vkengine
         //colorAttachmentResolve.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
         //colorAttachmentResolve.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
-        // ±íÀÌ Ã·ºÎ ÆÄÀÏÀ» ¼³Á¤ÇÕ´Ï´Ù.
+        // ê¹Šì´ ì²¨ë¶€ íŒŒì¼ì„ ì„¤ì •í•©ë‹ˆë‹¤.
         VkAttachmentDescription depthAttachment{};
         depthAttachment.format = this->VKdepthStencill.depthFormat;
         depthAttachment.samples = this->VKmsaaSamples;
@@ -499,22 +499,22 @@ namespace vkengine
         depthAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
         depthAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
-        // ·»´õ ÆĞ½º ¼­ºêÆĞ½º¸¦ ¼³Á¤ÇÕ´Ï´Ù.
+        // ë Œë” íŒ¨ìŠ¤ ì„œë¸ŒíŒ¨ìŠ¤ë¥¼ ì„¤ì •í•©ë‹ˆë‹¤.
         VkAttachmentReference colorAttachmentRef{};
         colorAttachmentRef.attachment = 0;
         colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
-        // »ö»ó Ã·ºÎ ÆÄÀÏ ÂüÁ¶¸¦ ¼³Á¤ÇÕ´Ï´Ù.
+        // ìƒ‰ìƒ ì²¨ë¶€ íŒŒì¼ ì°¸ì¡°ë¥¼ ì„¤ì •í•©ë‹ˆë‹¤.
         //VkAttachmentReference colorAttachmentResolveRef{};
         //colorAttachmentResolveRef.attachment = 2;
         //colorAttachmentResolveRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
-        // ±íÀÌ Ã·ºÎ ÆÄÀÏ ÂüÁ¶¸¦ ¼³Á¤ÇÕ´Ï´Ù.
+        // ê¹Šì´ ì²¨ë¶€ íŒŒì¼ ì°¸ì¡°ë¥¼ ì„¤ì •í•©ë‹ˆë‹¤.
         VkAttachmentReference depthAttachmentRef{};
         depthAttachmentRef.attachment = 1;
         depthAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
-        // ¼­ºêÆĞ½º¸¦ ¼³Á¤ÇÕ´Ï´Ù.
+        // ì„œë¸ŒíŒ¨ìŠ¤ë¥¼ ì„¤ì •í•©ë‹ˆë‹¤.
         VkSubpassDescription subpass{};
         subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
         subpass.colorAttachmentCount = 1;
@@ -526,25 +526,25 @@ namespace vkengine
         subpass.pPreserveAttachments = nullptr;
         subpass.pResolveAttachments = nullptr;
 
-        // ¼­ºêÆĞ½º Á¾¼Ó¼ºÀ» ¼³Á¤ÇÕ´Ï´Ù.
-        // ¿ÜºÎ ¼­ºêÆĞ½º¿Í ´ë»ó ¼­ºêÆĞ½º¸¦ ¼³Á¤ÇÕ´Ï´Ù.
-        // ¼Ò½º ½ºÅ×ÀÌÁö ¸¶½ºÅ©¿Í ´ë»ó ½ºÅ×ÀÌÁö ¸¶½ºÅ©¸¦ ¼³Á¤ÇÕ´Ï´Ù.
-        //ÀÌ ÄÚµå´Â ¿ÜºÎ(¼­ºêÆĞ½º ¹ÌÆ÷ÇÔ)¿¡¼­ ÄÃ·¯¡¤±íÀÌ/½ºÅÙ½Ç ´Ü°è°¡ ³¡³¯ ¶§±îÁö ±â´Ù¸° ÈÄ 
-        // ¸ŞÀÎ ¼­ºêÆĞ½º°¡ ÇØ´ç ¸®¼Ò½º¸¦ ¾ÈÀüÇÏ°Ô ¾²µµ·Ï µ¿±âÈ­¸¦ ¼³Á¤ÇÕ´Ï´Ù.
+        // ì„œë¸ŒíŒ¨ìŠ¤ ì¢…ì†ì„±ì„ ì„¤ì •í•©ë‹ˆë‹¤.
+        // ì™¸ë¶€ ì„œë¸ŒíŒ¨ìŠ¤ì™€ ëŒ€ìƒ ì„œë¸ŒíŒ¨ìŠ¤ë¥¼ ì„¤ì •í•©ë‹ˆë‹¤.
+        // ì†ŒìŠ¤ ìŠ¤í…Œì´ì§€ ë§ˆìŠ¤í¬ì™€ ëŒ€ìƒ ìŠ¤í…Œì´ì§€ ë§ˆìŠ¤í¬ë¥¼ ì„¤ì •í•©ë‹ˆë‹¤.
+        //ì´ ì½”ë“œëŠ” ì™¸ë¶€(ì„œë¸ŒíŒ¨ìŠ¤ ë¯¸í¬í•¨)ì—ì„œ ì»¬ëŸ¬Â·ê¹Šì´/ìŠ¤í…ì‹¤ ë‹¨ê³„ê°€ ëë‚  ë•Œê¹Œì§€ ê¸°ë‹¤ë¦° í›„ 
+        // ë©”ì¸ ì„œë¸ŒíŒ¨ìŠ¤ê°€ í•´ë‹¹ ë¦¬ì†ŒìŠ¤ë¥¼ ì•ˆì „í•˜ê²Œ ì“°ë„ë¡ ë™ê¸°í™”ë¥¼ ì„¤ì •í•©ë‹ˆë‹¤.
         VkSubpassDependency dependency{};
-        dependency.srcSubpass = VK_SUBPASS_EXTERNAL; // ¿ÜºÎ ¼­ºêÆĞ½º
-        dependency.dstSubpass = 0;                   // ´ë»ó ¼­ºêÆĞ½º
-        dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;   // ¼Ò½º ½ºÅ×ÀÌÁö ¸¶½ºÅ© -> »ö»ó Ã·ºÎ Ãâ·Â ºñÆ®
-        dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;   // ´ë»ó ½ºÅ×ÀÌÁö ¸¶½ºÅ© -> »ö»ó Ã·ºÎ Ãâ·Â ºñÆ®
-        dependency.srcAccessMask = 0;                                                                                           // ¼Ò½º ¾×¼¼½º ¸¶½ºÅ© -> 0
-        dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;         // ´ë»ó ¾×¼¼½º ¸¶½ºÅ© -> »ö»ó Ã·ºÎ ¾²±â ºñÆ®
-        dependency.dependencyFlags = 0;                                                                                         // Á¾¼Ó¼º ÇÃ·¡±× -> 0
+        dependency.srcSubpass = VK_SUBPASS_EXTERNAL; // ì™¸ë¶€ ì„œë¸ŒíŒ¨ìŠ¤
+        dependency.dstSubpass = 0;                   // ëŒ€ìƒ ì„œë¸ŒíŒ¨ìŠ¤
+        dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;   // ì†ŒìŠ¤ ìŠ¤í…Œì´ì§€ ë§ˆìŠ¤í¬ -> ìƒ‰ìƒ ì²¨ë¶€ ì¶œë ¥ ë¹„íŠ¸
+        dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;   // ëŒ€ìƒ ìŠ¤í…Œì´ì§€ ë§ˆìŠ¤í¬ -> ìƒ‰ìƒ ì²¨ë¶€ ì¶œë ¥ ë¹„íŠ¸
+        dependency.srcAccessMask = 0;                                                                                           // ì†ŒìŠ¤ ì•¡ì„¸ìŠ¤ ë§ˆìŠ¤í¬ -> 0
+        dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;         // ëŒ€ìƒ ì•¡ì„¸ìŠ¤ ë§ˆìŠ¤í¬ -> ìƒ‰ìƒ ì²¨ë¶€ ì“°ê¸° ë¹„íŠ¸
+        dependency.dependencyFlags = 0;                                                                                         // ì¢…ì†ì„± í”Œë˜ê·¸ -> 0
 
-        // Ã·ºÎ ÆÄÀÏÀ» ¼³Á¤ÇÕ´Ï´Ù.
+        // ì²¨ë¶€ íŒŒì¼ì„ ì„¤ì •í•©ë‹ˆë‹¤.
         std::array<VkAttachmentDescription, 2> dependencies = { colorAttachment, depthAttachment };
 
-        // ·»´õ ÆĞ½º »ı¼º Á¤º¸ ±¸Á¶Ã¼¸¦ ÃÊ±âÈ­ÇÕ´Ï´Ù.
-        // ·»´õ ÆĞ½º »ı¼º Á¤º¸ ±¸Á¶Ã¼¿¡ Ã·ºÎ ÆÄÀÏ ¹× ¼­ºêÆĞ½º¸¦ ¼³Á¤ÇÕ´Ï´Ù.
+        // ë Œë” íŒ¨ìŠ¤ ìƒì„± ì •ë³´ êµ¬ì¡°ì²´ë¥¼ ì´ˆê¸°í™”í•©ë‹ˆë‹¤.
+        // ë Œë” íŒ¨ìŠ¤ ìƒì„± ì •ë³´ êµ¬ì¡°ì²´ì— ì²¨ë¶€ íŒŒì¼ ë° ì„œë¸ŒíŒ¨ìŠ¤ë¥¼ ì„¤ì •í•©ë‹ˆë‹¤.
         VkRenderPassCreateInfo renderPassInfo{};
         renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
         renderPassInfo.attachmentCount = static_cast<uint32_t>(dependencies.size());
@@ -617,10 +617,10 @@ namespace vkengine
         }
         
         this->VKswapChain->cleanupSwapChain();
-        this->VKswapChain->createSwapChain(&this->VKdevice->queueFamilyIndices);  // ½º¿Ò Ã¼ÀÎÀ» »ı¼ºÇÕ´Ï´Ù.
-        this->VKswapChain->createImageViews(); // ÀÌ¹ÌÁö ºä¸¦ »ı¼ºÇÕ´Ï´Ù.
-        VulkanEngine::createDepthStencilResources(); // ±íÀÌ ½ºÅÙ½Ç ¸®¼Ò½º¸¦ »ı¼ºÇÕ´Ï´Ù.
-        this->createFramebuffers(); // ·»´õ ÆĞ½º¸¦ »ı¼ºÇÕ´Ï´Ù.
+        this->VKswapChain->createSwapChain(&this->VKdevice->queueFamilyIndices);  // ìŠ¤ì™‘ ì²´ì¸ì„ ìƒì„±í•©ë‹ˆë‹¤.
+        this->VKswapChain->createImageViews(); // ì´ë¯¸ì§€ ë·°ë¥¼ ìƒì„±í•©ë‹ˆë‹¤.
+        VulkanEngine::createDepthStencilResources(); // ê¹Šì´ ìŠ¤í…ì‹¤ ë¦¬ì†ŒìŠ¤ë¥¼ ìƒì„±í•©ë‹ˆë‹¤.
+        this->createFramebuffers(); // ë Œë” íŒ¨ìŠ¤ë¥¼ ìƒì„±í•©ë‹ˆë‹¤.
 
         return true;
     }

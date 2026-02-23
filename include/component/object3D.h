@@ -17,16 +17,16 @@ namespace vkengine {
 
         class VKBaseObject{
         public:
-            // ±âº» »ı¼ºÀÚ Ãß°¡
+            // ê¸°ë³¸ ìƒì„±ì ì¶”ê°€
             VKBaseObject(const cString& name = "VKBaseObject");
             VKBaseObject(VKdeviceHandler* device, const cString& name = "VKBaseObject");
 
         protected:
             
-            VkPhysicalDevice physicalDevice{ VK_NULL_HANDLE };  // ¹°¸® µğ¹ÙÀÌ½º -> GPU Physical Handle
-            VkDevice logicaldevice{ VK_NULL_HANDLE };           // ³í¸® µğ¹ÙÀÌ½º -> GPU Logical Handle
-            VkCommandPool commandPool{ VK_NULL_HANDLE };        // Ä¿¸Çµå Ç® -> Ä¿¸Çµå ¹öÆÛ¸¦ »ı¼ºÇÏ´Â µ¥ »ç¿ë
-            VkQueue graphicsVKQueue{ VK_NULL_HANDLE };          // ±×·¡ÇÈ½º Å¥ -> ±×·¡ÇÈ½º ¸í·ÉÀ» Ã³¸®ÇÏ´Â Å¥
+            VkPhysicalDevice physicalDevice{ VK_NULL_HANDLE };  // ë¬¼ë¦¬ ë””ë°”ì´ìŠ¤ -> GPU Physical Handle
+            VkDevice logicaldevice{ VK_NULL_HANDLE };           // ë…¼ë¦¬ ë””ë°”ì´ìŠ¤ -> GPU Logical Handle
+            VkCommandPool commandPool{ VK_NULL_HANDLE };        // ì»¤ë§¨ë“œ í’€ -> ì»¤ë§¨ë“œ ë²„í¼ë¥¼ ìƒì„±í•˜ëŠ” ë° ì‚¬ìš©
+            VkQueue graphicsVKQueue{ VK_NULL_HANDLE };          // ê·¸ë˜í”½ìŠ¤ í -> ê·¸ë˜í”½ìŠ¤ ëª…ë ¹ì„ ì²˜ë¦¬í•˜ëŠ” í
         };
 
         class Object3d : public VKBaseObject 
@@ -66,7 +66,7 @@ namespace vkengine {
             IndexBuffer* getIndexBuffer() { return &this->indexBuffer; }
             UniformBuffer* getModelViewProjUniformBuffer(cUint16_t currentImage) { return &this->modelviewprojUniformBuffer[currentImage]; }
             cString getName() { return this->name; }
-            VkTextureBase* getTexture() { return this->texture; } // ÅØ½ºÃ³ °´Ã¼ ¹İÈ¯
+            VkTextureBase* getTexture() { return this->texture; } // í…ìŠ¤ì²˜ ê°ì²´ ë°˜í™˜
             std::vector<Vertex>* getVertices() { return &this->vertices; }
             std::vector<cUint32_t>* getIndices() { return &this->indices; }
             cVec3 getPosition() { return this->position; }
@@ -91,12 +91,12 @@ namespace vkengine {
 
             VertexBuffer vertexBuffer{};
             IndexBuffer indexBuffer{};
-            UniformBuffer modelviewprojUniformBuffer[MAX_FRAMES_IN_FLIGHT]{}; // swapChain image °³¼ö¸¸Å­ uniform buffer »ı¼º
-            VkTextureBase* texture{}; // ÅØ½ºÃ³ °´Ã¼
+            UniformBuffer modelviewprojUniformBuffer[MAX_FRAMES_IN_FLIGHT]{}; // swapChain image ê°œìˆ˜ë§Œí¼ uniform buffer ìƒì„±
+            VkTextureBase* texture{}; // í…ìŠ¤ì²˜ ê°ì²´
             cString name = "";
 
-            std::vector<Vertex> vertices{}; // ¹öÅØ½º µ¥ÀÌÅÍ
-            std::vector<cUint32_t> indices{}; // ÀÎµ¦½º µ¥ÀÌÅÍ
+            std::vector<Vertex> vertices{}; // ë²„í…ìŠ¤ ë°ì´í„°
+            std::vector<cUint32_t> indices{}; // ì¸ë±ìŠ¤ ë°ì´í„°
 
             cVec3 position = { 0.0f, 0.0f, 0.0f };
             cQuat rotation = cQuat(1.0f, 0.0f, 0.0f, 0.0f);
@@ -180,17 +180,17 @@ namespace vkengine {
                 Object3d::cleanup();
             };
             
-            std::vector<cMaterial> materials; // ¸ğµ¨ÀÇ ÀçÁú Á¤º¸
-            std::vector<cUint32_t> textureIndexes; // ¸ğµ¨ÀÇ ÅØ½ºÃ³ ÀÎµ¦½º
-            std::vector<Node*> nodes; // ¸ğµ¨ÀÇ ³ëµå Á¤º¸
+            std::vector<cMaterial> materials; // ëª¨ë¸ì˜ ì¬ì§ˆ ì •ë³´
+            std::vector<cUint32_t> textureIndexes; // ëª¨ë¸ì˜ í…ìŠ¤ì²˜ ì¸ë±ìŠ¤
+            std::vector<Node*> nodes; // ëª¨ë¸ì˜ ë…¸ë“œ ì •ë³´
 
         private:
 
         };
 
-        // ParticleÀº Object¸¦ »ó¼Ó¹ŞÁö ¾Ê½À´Ï´Ù.
-        // VertexBuffer¿Í IndexBuffer¸¦ »ç¿ëÇÏÁö ¾Ê±â ¶§¹®ÀÔ´Ï´Ù.
-        // ¾î¶»°Ô ÇÒÁö ¸íÈ®ÇÏ°Ô Á¤ÀÇµÇÁö ¾ÊÀ½, ÇÏÁö¸¸ »ç¿ëÇØ¾ß ÇÏ±â¿¡ VKBaseObject¸¦ »ó¼Ó¹Ş½À´Ï´Ù.
+        // Particleì€ Objectë¥¼ ìƒì†ë°›ì§€ ì•ŠìŠµë‹ˆë‹¤.
+        // VertexBufferì™€ IndexBufferë¥¼ ì‚¬ìš©í•˜ì§€ ì•Šê¸° ë•Œë¬¸ì…ë‹ˆë‹¤.
+        // ì–´ë–»ê²Œ í• ì§€ ëª…í™•í•˜ê²Œ ì •ì˜ë˜ì§€ ì•ŠìŒ, í•˜ì§€ë§Œ ì‚¬ìš©í•´ì•¼ í•˜ê¸°ì— VKBaseObjectë¥¼ ìƒì†ë°›ìŠµë‹ˆë‹¤.
         class ParticleObject : VKBaseObject {
 
         public:
@@ -220,8 +220,8 @@ namespace vkengine {
                 VkMemoryPropertyFlags properties = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
             );
             
-            PaterialBuffer InputPartucleBuffer; // ÀÔ·Â ÆÄÆ¼Å¬ ¹öÆÛ 
-            PaterialBuffer OutputPartucleBuffer; // Ãâ·Â ÆÄÆ¼Å¬ ¹öÆÛ
+            PaterialBuffer InputPartucleBuffer; // ì…ë ¥ íŒŒí‹°í´ ë²„í¼ 
+            PaterialBuffer OutputPartucleBuffer; // ì¶œë ¥ íŒŒí‹°í´ ë²„í¼
 
         private:
             std::vector<Particle> objects;

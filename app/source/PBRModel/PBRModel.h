@@ -17,13 +17,13 @@ namespace vkengine
     {
         cVec3 camPos = cVec3(0.0f);
         char _padding0[4];
-        cVec4 lightPos[4] = { cVec4(0.1f) ,cVec4(0.1f) ,cVec4(0.1f) ,cVec4(0.1f) }; // Á¶¸í À§Ä¡
+        cVec4 lightPos[4] = { cVec4(0.1f) ,cVec4(0.1f) ,cVec4(0.1f) ,cVec4(0.1f) }; // ì¡°ëª… ìœ„ì¹˜
         cFloat exposure = 0.0f;
         cFloat gamma = 0.0f;
-        VkBool32 useTexture = VK_FALSE; // Á¶¸í È°¼ºÈ­ ¿©ºÎ
-        VkBool32 brdfLUTTexture = VK_FALSE; // BRDF LUT ÅØ½ºÃ³ »ç¿ë ¿©ºÎ
-        VkBool32 prefilteredCubeTexture = VK_FALSE; // Prefiltered Cube ÅØ½ºÃ³ »ç¿ë ¿©ºÎ
-        VkBool32 irradianceCubeTexture = VK_FALSE; // Irradiance Cube ÅØ½ºÃ³ »ç¿ë ¿©ºÎ
+        VkBool32 useTexture = VK_FALSE; // ì¡°ëª… í™œì„±í™” ì—¬ë¶€
+        VkBool32 brdfLUTTexture = VK_FALSE; // BRDF LUT í…ìŠ¤ì²˜ ì‚¬ìš© ì—¬ë¶€
+        VkBool32 prefilteredCubeTexture = VK_FALSE; // Prefiltered Cube í…ìŠ¤ì²˜ ì‚¬ìš© ì—¬ë¶€
+        VkBool32 irradianceCubeTexture = VK_FALSE; // Irradiance Cube í…ìŠ¤ì²˜ ì‚¬ìš© ì—¬ë¶€
     };
 
     struct MaterialTexture
@@ -54,10 +54,10 @@ namespace vkengine
 
     protected:
         virtual bool init_sync_structures() override;
-        virtual void recordCommandBuffer(FrameData* framedata, uint32_t imageIndex) override; // Ä¿¸Çµå ¹öÆÛ ·¹ÄÚµå
+        virtual void recordCommandBuffer(FrameData* framedata, uint32_t imageIndex) override; // ì»¤ë§¨ë“œ ë²„í¼ ë ˆì½”ë“œ
 
     private:
-        // °¢ 3d ¸ğµ¨À» »ı¼ºÇÏ±â À§ÇÑ ÇÔ¼ö
+        // ê° 3d ëª¨ë¸ì„ ìƒì„±í•˜ê¸° ìœ„í•œ í•¨ìˆ˜
         void createVertexbuffer();
         void createIndexBuffer();
         void createUniformBuffers();
@@ -69,44 +69,44 @@ namespace vkengine
 
         void cleanupSwapcChain();
 
-        // imgui °ü·Ã
+        // imgui ê´€ë ¨
         vkGUI* vkGUI = nullptr;
 
-        // skymap °ü·Ã
-        object::SkyBox* skyBox = nullptr; // ½ºÄ«ÀÌ¹Ú½º ¿ÀºêÁ§Æ®
-        object::ModelObject* modelObject = nullptr; // ¸ğµ¨ ¿ÀºêÁ§Æ®
+        // skymap ê´€ë ¨
+        object::SkyBox* skyBox = nullptr; // ìŠ¤ì¹´ì´ë°•ìŠ¤ ì˜¤ë¸Œì íŠ¸
+        object::ModelObject* modelObject = nullptr; // ëª¨ë¸ ì˜¤ë¸Œì íŠ¸
 
-        cMaterial defaultMaterial; // ±âº» ¸ÓÆ¼¸®¾ó
-        MaterialBuffer material; // ¸ÓÆ¼¸®¾ó ¹öÆÛ
-        MaterialTexture materialTexture; // ¸ÓÆ¼¸®¾ó ÅØ½ºÃ³
+        cMaterial defaultMaterial; // ê¸°ë³¸ ë¨¸í‹°ë¦¬ì–¼
+        MaterialBuffer material; // ë¨¸í‹°ë¦¬ì–¼ ë²„í¼
+        MaterialTexture materialTexture; // ë¨¸í‹°ë¦¬ì–¼ í…ìŠ¤ì²˜
         
-        VkPipeline VKSkyMapPipeline = VK_NULL_HANDLE;       // Å¥ºê¸Ê ÆÄÀÌÇÁ¶óÀÎ -> Å¥ºê¸Ê ÆÄÀÌÇÁ¶óÀÎÀ» »ı¼º
-        VkPipeline VKgraphicsPipeline = VK_NULL_HANDLE;     // ¸ğµ¨ ¿ÀºêÁ§Æ® ÆÄÀÌÇÁ¶óÀÎ
+        VkPipeline VKSkyMapPipeline = VK_NULL_HANDLE;       // íë¸Œë§µ íŒŒì´í”„ë¼ì¸ -> íë¸Œë§µ íŒŒì´í”„ë¼ì¸ì„ ìƒì„±
+        VkPipeline VKgraphicsPipeline = VK_NULL_HANDLE;     // ëª¨ë¸ ì˜¤ë¸Œì íŠ¸ íŒŒì´í”„ë¼ì¸
 
         UniformBufferSkymapParams uboParamsData = {};
-        UniformBufferSkymap uboParams; // ½ºÄ«ÀÌ¹Ú½º À¯´ÏÆû ¹öÆÛ ÆÄ¶ó¹ÌÅÍ
-        subUinform subUniform; // ¼­ºê À¯´ÏÆû ¹öÆÛ
+        UniformBufferSkymap uboParams; // ìŠ¤ì¹´ì´ë°•ìŠ¤ ìœ ë‹ˆí¼ ë²„í¼ íŒŒë¼ë¯¸í„°
+        subUinform subUniform; // ì„œë¸Œ ìœ ë‹ˆí¼ ë²„í¼
         
-        VKDescriptor2* skyboxDescriptor2 = nullptr;         // ¸ğµ¨ ¿ÀºêÁ§Æ® µğ½ºÅ©¸³ÅÍ
-        VKDescriptor2* modeltDescriptor2 = nullptr;         // ¸ğµ¨ ¿ÀºêÁ§Æ® µğ½ºÅ©¸³ÅÍ
+        VKDescriptor2* skyboxDescriptor2 = nullptr;         // ëª¨ë¸ ì˜¤ë¸Œì íŠ¸ ë””ìŠ¤í¬ë¦½í„°
+        VKDescriptor2* modeltDescriptor2 = nullptr;         // ëª¨ë¸ ì˜¤ë¸Œì íŠ¸ ë””ìŠ¤í¬ë¦½í„°
 
-        Vk2DTexture* brdfLUTTexture = nullptr; // BRDF LUT ÅØ½ºÃ³
-        VKcubeMap* prefilteredCubeTexture = nullptr; // Prefiltered Cube ÅØ½ºÃ³
-        VKcubeMap* irradianceCubeTexture = nullptr; // Irradiance Cube ÅØ½ºÃ³
+        Vk2DTexture* brdfLUTTexture = nullptr; // BRDF LUT í…ìŠ¤ì²˜
+        VKcubeMap* prefilteredCubeTexture = nullptr; // Prefiltered Cube í…ìŠ¤ì²˜
+        VKcubeMap* irradianceCubeTexture = nullptr; // Irradiance Cube í…ìŠ¤ì²˜
 
         void generateBRDFLUT();
         void generatePrefilteredCube();
         void generateIrradianceCube();
         
 #if 0
-        object::ModelObject* vikingRoomObject = nullptr; // ¸ğµ¨ ¿ÀºêÁ§Æ®2
+        object::ModelObject* vikingRoomObject = nullptr; // ëª¨ë¸ ì˜¤ë¸Œì íŠ¸2
 
 
-        cUint selectModel = 0; // ¼±ÅÃµÈ ¸ğµ¨ ÀÎµ¦½º
-        std::vector<cString> modelNames = {}; // ¸ğµ¨ ÀÌ¸§µé
-        cString selectModelName = ""; // ¼±ÅÃµÈ ¸ğµ¨ ÀÌ¸§
+        cUint selectModel = 0; // ì„ íƒëœ ëª¨ë¸ ì¸ë±ìŠ¤
+        std::vector<cString> modelNames = {}; // ëª¨ë¸ ì´ë¦„ë“¤
+        cString selectModelName = ""; // ì„ íƒëœ ëª¨ë¸ ì´ë¦„
 
-        cUint materialIndex = 0; // ¸ÓÆ¼¸®¾ó ÀÎµ¦½º
+        cUint materialIndex = 0; // ë¨¸í‹°ë¦¬ì–¼ ì¸ë±ìŠ¤
 #endif
 
     };

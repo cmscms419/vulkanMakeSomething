@@ -15,17 +15,17 @@ private:
     size_t m_capacity;
     Allocator m_allocator;
 
-    // ÀçÇÒ´ç À¯Æ¿¸®Æ¼ ÇÔ¼ö
+    // ì¬í• ë‹¹ ìœ í‹¸ë¦¬í‹° í•¨ìˆ˜
     void reallocate(size_t new_capacity) {
         T* new_data = m_allocator.allocate(new_capacity);
 
-        // ±âÁ¸ ¿ä¼Ò ÀÌµ¿
+        // ê¸°ì¡´ ìš”ì†Œ ì´ë™
         for (size_t i = 0; i < m_size; ++i) {
             new (new_data + i) T(std::move(m_data[i]));
             m_data[i].~T();
         }
 
-        // ±âÁ¸ ¸Ş¸ğ¸® ÇØÁ¦
+        // ê¸°ì¡´ ë©”ëª¨ë¦¬ í•´ì œ
         if (m_data) {
             m_allocator.deallocate(m_data, m_capacity);
         }
@@ -34,10 +34,10 @@ private:
         m_capacity = new_capacity;
     }
 public:
-    // ±âº» »ı¼ºÀÚ
+    // ê¸°ë³¸ ìƒì„±ì
     cmsVector() : m_data(nullptr), m_size(0), m_capacity(0) {}
 
-    // Å©±â ÁöÁ¤ »ı¼ºÀÚ
+    // í¬ê¸° ì§€ì • ìƒì„±ì
     explicit cmsVector(size_t size) : m_size(size), m_capacity(size) {
         if (size > 0) {
             m_data = m_allocator.allocate(size);
@@ -50,7 +50,7 @@ public:
         }
     }
 
-    // Å©±â¿Í ÃÊ±â°ª ÁöÁ¤ »ı¼ºÀÚ
+    // í¬ê¸°ì™€ ì´ˆê¸°ê°’ ì§€ì • ìƒì„±ì
     cmsVector(size_t size, const T& value) : m_size(size), m_capacity(size) {
         if (size > 0) {
             m_data = m_allocator.allocate(size);
@@ -63,7 +63,7 @@ public:
         }
     }
 
-    // ÃÊ±âÈ­ ¸®½ºÆ® »ı¼ºÀÚ
+    // ì´ˆê¸°í™” ë¦¬ìŠ¤íŠ¸ ìƒì„±ì
     cmsVector(std::initializer_list<T> init) :
         m_size(init.size()), m_capacity(init.size()) {
         if (m_size > 0) {
@@ -79,7 +79,7 @@ public:
         }
     }
 
-    // º¹»ç »ı¼ºÀÚ
+    // ë³µì‚¬ ìƒì„±ì
     cmsVector(const cmsVector& other) :
         m_size(other.m_size), m_capacity(other.m_size) {
         if (m_size > 0) {
@@ -93,7 +93,7 @@ public:
         }
     }
 
-    // ÀÌµ¿ »ı¼ºÀÚ
+    // ì´ë™ ìƒì„±ì
     cmsVector(cmsVector&& other) noexcept :
         m_data(other.m_data), m_size(other.m_size), m_capacity(other.m_capacity) {
         other.m_data = nullptr;
@@ -101,7 +101,7 @@ public:
         other.m_capacity = 0;
     }
 
-    // ¼Ò¸êÀÚ
+    // ì†Œë©¸ì
     ~cmsVector() {
         clear();
         if (m_data) {
@@ -109,7 +109,7 @@ public:
         }
     }
 
-    // º¹»ç ´ëÀÔ ¿¬»êÀÚ
+    // ë³µì‚¬ ëŒ€ì… ì—°ì‚°ì
     cmsVector& operator=(const cmsVector& other) {
         if (this != &other) {
             clear();
@@ -129,7 +129,7 @@ public:
         return *this;
     }
 
-    // ÀÌµ¿ ´ëÀÔ ¿¬»êÀÚ
+    // ì´ë™ ëŒ€ì… ì—°ì‚°ì
     cmsVector& operator=(cmsVector&& other) noexcept {
         if (this != &other) {
             clear();
@@ -148,7 +148,7 @@ public:
         return *this;
     }
 
-    // ¿ä¼Ò Á¢±Ù ¿¬»êÀÚ
+    // ìš”ì†Œ ì ‘ê·¼ ì—°ì‚°ì
     T& operator[](size_t index) {
         return m_data[index];
     }
@@ -157,7 +157,7 @@ public:
         return m_data[index];
     }
 
-    // ¾ÈÀüÇÑ ¿ä¼Ò Á¢±Ù
+    // ì•ˆì „í•œ ìš”ì†Œ ì ‘ê·¼
     T& at(size_t index) {
         if (index >= m_size) {
             throw std::out_of_range("Index out of range");
@@ -172,7 +172,7 @@ public:
         return m_data[index];
     }
 
-    // Ã¹ ¹øÂ° ¿ä¼Ò ¹İÈ¯
+    // ì²« ë²ˆì§¸ ìš”ì†Œ ë°˜í™˜
     T& front() {
         return m_data[0];
     }
@@ -181,7 +181,7 @@ public:
         return m_data[0];
     }
 
-    // ¸¶Áö¸· ¿ä¼Ò ¹İÈ¯
+    // ë§ˆì§€ë§‰ ìš”ì†Œ ë°˜í™˜
     T& back() {
         return m_data[m_size - 1];
     }
@@ -190,7 +190,7 @@ public:
         return m_data[m_size - 1];
     }
 
-    // ¿ø½Ã Æ÷ÀÎÅÍ ¹İÈ¯
+    // ì›ì‹œ í¬ì¸í„° ë°˜í™˜
     T* data() {
         return m_data;
     }
@@ -199,7 +199,7 @@ public:
         return m_data;
     }
 
-    // ÀÌÅÍ·¹ÀÌÅÍ Áö¿ø
+    // ì´í„°ë ˆì´í„° ì§€ì›
     T* begin() {
         return m_data;
     }
@@ -216,7 +216,7 @@ public:
         return m_data + m_size;
     }
 
-    // Å©±â °ü·Ã ÇÔ¼öµé
+    // í¬ê¸° ê´€ë ¨ í•¨ìˆ˜ë“¤
     cBool empty() const {
         return m_size == 0;
     }
@@ -229,27 +229,27 @@ public:
         return m_capacity;
     }
 
-    // ¿ë·® ¿¹¾à
+    // ìš©ëŸ‰ ì˜ˆì•½
     void reserve(size_t new_capacity) {
         if (new_capacity > m_capacity) {
             reallocate(new_capacity);
         }
     }
 
-    // Å©±â Á¶Á¤
+    // í¬ê¸° ì¡°ì •
     void resize(size_t new_size) {
         if (new_size > m_capacity) {
             reallocate(new_size);
         }
 
-        // »õ ¿ä¼Ò ÃÊ±âÈ­
+        // ìƒˆ ìš”ì†Œ ì´ˆê¸°í™”
         if (new_size > m_size) {
             for (size_t i = m_size; i < new_size; ++i) {
                 new (m_data + i) T();
             }
         }
         else if (new_size < m_size) {
-            // ÃÊ°ú ¿ä¼Ò Á¦°Å
+            // ì´ˆê³¼ ìš”ì†Œ ì œê±°
             for (size_t i = new_size; i < m_size; ++i) {
                 m_data[i].~T();
             }
@@ -258,20 +258,20 @@ public:
         m_size = new_size;
     }
 
-    // Å©±â Á¶Á¤ (ÃÊ±â°ª ÁöÁ¤)
+    // í¬ê¸° ì¡°ì • (ì´ˆê¸°ê°’ ì§€ì •)
     void resize(size_t new_size, const T& value) {
         if (new_size > m_capacity) {
             reallocate(new_size);
         }
 
-        // »õ ¿ä¼Ò ÃÊ±âÈ­
+        // ìƒˆ ìš”ì†Œ ì´ˆê¸°í™”
         if (new_size > m_size) {
             for (size_t i = m_size; i < new_size; ++i) {
                 new (m_data + i) T(value);
             }
         }
         else if (new_size < m_size) {
-            // ÃÊ°ú ¿ä¼Ò Á¦°Å
+            // ì´ˆê³¼ ìš”ì†Œ ì œê±°
             for (size_t i = new_size; i < m_size; ++i) {
                 m_data[i].~T();
             }
@@ -280,14 +280,14 @@ public:
         m_size = new_size;
     }
 
-    // ¿ë·® ÁÙÀÌ±â
+    // ìš©ëŸ‰ ì¤„ì´ê¸°
     void shrink_to_fit() {
         if (m_size < m_capacity) {
             reallocate(m_size);
         }
     }
 
-    // ¿ä¼Ò Ãß°¡
+    // ìš”ì†Œ ì¶”ê°€
     void push_back(const T& value) {
         if (m_size == m_capacity) {
             size_t new_capacity = m_capacity == 0 ? 1 : m_capacity * 2;
@@ -298,7 +298,7 @@ public:
         ++m_size;
     }
 
-    // ÀÌµ¿ ÀÇ¹Ì·ĞÀ» »ç¿ëÇÑ ¿ä¼Ò Ãß°¡
+    // ì´ë™ ì˜ë¯¸ë¡ ì„ ì‚¬ìš©í•œ ìš”ì†Œ ì¶”ê°€
     void push_back(T&& value) {
         if (m_size == m_capacity) {
             size_t new_capacity = m_capacity == 0 ? 1 : m_capacity * 2;
@@ -309,7 +309,7 @@ public:
         ++m_size;
     }
 
-    // ¿ä¼Ò »ı¼º Ãß°¡
+    // ìš”ì†Œ ìƒì„± ì¶”ê°€
     template<typename... Args>
     T& emplace_back(Args&&... args) {
         if (m_size == m_capacity) {
@@ -321,7 +321,7 @@ public:
         return m_data[m_size++];
     }
 
-    // ¸¶Áö¸· ¿ä¼Ò Á¦°Å
+    // ë§ˆì§€ë§‰ ìš”ì†Œ ì œê±°
     void pop_back() {
         if (m_size > 0) {
             --m_size;
@@ -329,7 +329,7 @@ public:
         }
     }
 
-    // ¸ğµç ¿ä¼Ò Á¦°Å
+    // ëª¨ë“  ìš”ì†Œ ì œê±°
     void clear() {
         for (size_t i = 0; i < m_size; ++i) {
             m_data[i].~T();

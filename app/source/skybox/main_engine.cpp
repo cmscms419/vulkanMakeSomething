@@ -289,7 +289,7 @@ int main(int argc, char* argv[]) {
         root_path = path;
     }
     else {
-        EXIT_TO_LOGGER("°æ·Î¸¦ °¡Á®¿À´Â µ¥ ½ÇÆĞÇß½À´Ï´Ù.");
+        EXIT_TO_LOGGER("ê²½ë¡œë¥¼ ê°€ì ¸ì˜¤ëŠ” ë° ì‹¤íŒ¨í–ˆìŠµë‹ˆë‹¤.");
     }
 
     VKShaderManager shaderManager
@@ -333,7 +333,7 @@ int main(int argc, char* argv[]) {
     );
 
 
-    // GUI ÃÊ±âÈ­
+    // GUI ì´ˆê¸°í™”
     guiRenderer.resize(extent.width, extent.height);
 
     camera->update();
@@ -443,8 +443,8 @@ int main(int argc, char* argv[]) {
         VkResult acquireResult = swapChain.acquireNextImage(presentSemaphores[currentSemaphore], imageIndex);
 
         if (acquireResult == VK_ERROR_OUT_OF_DATE_KHR) {
-            //this->recreateSwapChain(); // ½º¿Ò Ã¼ÀÎÀ» ´Ù½Ã »ı¼ºÇÕ´Ï´Ù.
-            // TODO ´Ù½Ã ¸¸µé¾î¾ß ÇÑ´Ù. 
+            //this->recreateSwapChain(); // ìŠ¤ì™‘ ì²´ì¸ì„ ë‹¤ì‹œ ìƒì„±í•©ë‹ˆë‹¤.
+            // TODO ë‹¤ì‹œ ë§Œë“¤ì–´ì•¼ í•œë‹¤. 
             EXIT_TO_LOGGER("Window resize not implemented\n");
         }
         else if (acquireResult != VK_SUCCESS && acquireResult != VK_SUBOPTIMAL_KHR)

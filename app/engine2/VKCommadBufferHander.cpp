@@ -24,12 +24,12 @@ namespace vkengine {
         }
         _VK_CHECK_RESULT_(vkEndCommandBuffer(this->handle));
 
-        // Ä¿¸Çµå ¹öÆÛ Á¦Ãâ Á¤º¸ ¼³Á¤
+        // ì»¤ë§¨ë“œ ë²„í¼ ì œì¶œ ì •ë³´ ì„¤ì •
         VkCommandBufferSubmitInfo cmdBufferInfo{ VK_STRUCTURE_TYPE_COMMAND_BUFFER_SUBMIT_INFO };
         cmdBufferInfo.commandBuffer = this->handle;
         cmdBufferInfo.deviceMask = 0;
 
-        // »õ·Î¿î VkSubmitInfo2 ±¸Á¶Ã¼ »ç¿ë
+        // ìƒˆë¡œìš´ VkSubmitInfo2 êµ¬ì¡°ì²´ ì‚¬ìš©
         VkSubmitInfo2 submitInfo{ VK_STRUCTURE_TYPE_SUBMIT_INFO_2 };
         submitInfo.commandBufferInfoCount = 1;
         submitInfo.pCommandBufferInfos = &cmdBufferInfo;

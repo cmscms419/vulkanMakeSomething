@@ -32,26 +32,26 @@ namespace vkengine {
             return false;
         }
         this->skyBox->setTextureKTX(cubemapResource);
-        this->skyBox->createTexture2(VK_FORMAT_R16G16B16A16_SFLOAT); // Å¥ºê¸Ê ÅØ½ºÃ³ »ı¼º
+        this->skyBox->createTexture2(VK_FORMAT_R16G16B16A16_SFLOAT); // íë¸Œë§µ í…ìŠ¤ì²˜ ìƒì„±
 
         this->uboParamsData.lightPos[0] = cVec4(5.0f, 5.0f, 0.0f, 1.0f);
         this->uboParamsData.lightPos[1] = cVec4(-5.0f, 5.0f, 0.0f, 1.0f);
         this->uboParamsData.lightPos[2] = cVec4(0.0f, 5.0f, 5.0f, 1.0f);
         this->uboParamsData.lightPos[3] = cVec4(0.0f, 5.0f, -5.0f, 1.0f);
 
-        this->uboParamsData.exposure = 1.0f; // ³ëÃâ °ª ¼³Á¤
-        this->uboParamsData.gamma = 2.2f; // °¨¸¶ °ª ¼³Á¤
+        this->uboParamsData.exposure = 1.0f; // ë…¸ì¶œ ê°’ ì„¤ì •
+        this->uboParamsData.gamma = 2.2f; // ê°ë§ˆ ê°’ ì„¤ì •
 
         this->initUI();
 
-        this->defaultMaterial.metallic = 1.0f; // ±âº» ¸ÓÆ¼¸®¾ó ¸ŞÅ»¸¯ °ª
-        this->defaultMaterial.roughness = 0.1f; // ±âº» ¸ÓÆ¼¸®¾ó ·¯ÇÁ´Ï½º °ª
+        this->defaultMaterial.metallic = 1.0f; // ê¸°ë³¸ ë¨¸í‹°ë¦¬ì–¼ ë©”íƒˆë¦­ ê°’
+        this->defaultMaterial.roughness = 0.1f; // ê¸°ë³¸ ë¨¸í‹°ë¦¬ì–¼ ëŸ¬í”„ë‹ˆìŠ¤ ê°’
         this->defaultMaterial.r = 0.541931f;
         this->defaultMaterial.r = 0.496791f;
         this->defaultMaterial.r = 0.449419f;
         this->defaultMaterial.r = 1.0f;
 
-        // ¸ğµ¨ ¿ÀºêÁ§Æ® »ı¼º
+        // ëª¨ë¸ ì˜¤ë¸Œì íŠ¸ ìƒì„±
         this->modelObject = new object::ModelObject(this->getDevice());
         this->modelObject->setName("sphere");
 
@@ -59,7 +59,7 @@ namespace vkengine {
 
         TextureResourcePNG* resourcePNG = new TextureResourcePNG();
 
-        resourcePNG->createResource(defaltPath); // ÅØ½ºÃÄ ·Îµå
+        resourcePNG->createResource(defaltPath); // í…ìŠ¤ì³ ë¡œë“œ
 
         if (resourcePNG->data == nullptr) {
             _PRINT_TO_CONSOLE_("Failed to load texture from %s\n", defaltPath.c_str());
@@ -78,7 +78,7 @@ namespace vkengine {
         //cMat4 rotation01 = glm::rotate(glm::mat4(1.0f), glm::radians(-180.0f), glm::vec3(1.0f, 0.0f, 0.0f));
         //cMat4 rotation02 = glm::rotate(glm::mat4(1.0f), glm::radians(-180.0f), glm::vec3(0.0f, -1.0f, 0.0f));
         //cMat4 rotation03 = rotation01 * rotation02;
-        //modelObject->setMatrix(rotation03); // ¸ğµ¨ È¸Àü ¼³Á¤
+        //modelObject->setMatrix(rotation03); // ëª¨ë¸ íšŒì „ ì„¤ì •
 
         normalRanderHelpe = new vkengine::helper::normalRander(this);
         normalRanderHelpe->createNormalObject(this->modelObject);
@@ -87,11 +87,11 @@ namespace vkengine {
         this->createIndexBuffer();
         this->createUniformBuffers();
 
-        // specular texture »ı¼º
+        // specular texture ìƒì„±
         this->generateBRDFLUT();
         this->generatePrefilteredCube();
 
-        // diffuse texture »ı¼º
+        // diffuse texture ìƒì„±
         this->generateIrradianceCube();
 
         this->createDescriptor();
@@ -123,7 +123,7 @@ namespace vkengine {
 
             this->normalRanderHelpe->cleanup();
 
-            // object Á¦°Å
+            // object ì œê±°
             this->skyBox->cleanup();
             this->modelObject->cleanup();
 
@@ -160,12 +160,12 @@ namespace vkengine {
 
     void iblpbrEngine::drawFrame()
     {
-        // ·»´õ¸µÀ» ½ÃÀÛÇÏ±â Àü¿¡ ÇÁ·¹ÀÓÀ» ·»´õ¸µÇÒ ÁØºñ°¡ µÇ¾ú´ÂÁö È®ÀÎÇÕ´Ï´Ù.
+        // ë Œë”ë§ì„ ì‹œì‘í•˜ê¸° ì „ì— í”„ë ˆì„ì„ ë Œë”ë§í•  ì¤€ë¹„ê°€ ë˜ì—ˆëŠ”ì§€ í™•ì¸í•©ë‹ˆë‹¤.
         _VK_CHECK_RESULT_(vkWaitForFences(this->VKdevice->logicaldevice, 1, &this->getCurrnetFrameData().VkinFlightFences, VK_TRUE, UINT64_MAX));
 
-        // ÀÌ¹ÌÁö¸¦ °¡Á®¿À±â À§ÇØ ½º¿Ò Ã¼ÀÎ¿¡¼­ ÀÌ¹ÌÁö ÀÎµ¦½º¸¦ °¡Á®¿É´Ï´Ù.
-        // ÁÖ¾îÁø ½º¿ÒÃ¼ÀÎ¿¡¼­ ´ÙÀ½ ÀÌ¹ÌÁö¸¦ È¹µæÇÏ°í, 
-        // ¼±ÅÃÀûÀ¸·Î ¼¼¸¶Æ÷¾î¿Í Ææ½º¸¦ »ç¿ëÇÏ¿© µ¿±âÈ­¸¦ °ü¸®ÇÏ´Â Vulkan APIÀÇ ÇÔ¼öÀÔ´Ï´Ù.
+        // ì´ë¯¸ì§€ë¥¼ ê°€ì ¸ì˜¤ê¸° ìœ„í•´ ìŠ¤ì™‘ ì²´ì¸ì—ì„œ ì´ë¯¸ì§€ ì¸ë±ìŠ¤ë¥¼ ê°€ì ¸ì˜µë‹ˆë‹¤.
+        // ì£¼ì–´ì§„ ìŠ¤ì™‘ì²´ì¸ì—ì„œ ë‹¤ìŒ ì´ë¯¸ì§€ë¥¼ íšë“í•˜ê³ , 
+        // ì„ íƒì ìœ¼ë¡œ ì„¸ë§ˆí¬ì–´ì™€ íœìŠ¤ë¥¼ ì‚¬ìš©í•˜ì—¬ ë™ê¸°í™”ë¥¼ ê´€ë¦¬í•˜ëŠ” Vulkan APIì˜ í•¨ìˆ˜ì…ë‹ˆë‹¤.
         uint32_t imageIndex = 0;
         VulkanEngine::prepareFame(&imageIndex);
 
@@ -189,42 +189,42 @@ namespace vkengine {
             static_cast<uint32_t>(this->currentFrame), cMat4(1.0f), this->camera.get());
         */
 
-        // ÇÃ·¡±×¸¦ Àç¼³Á¤ÇÕ´Ï´Ù. -> ·»´õ¸µÀÌ ³¡³ª¸é ÇÃ·¡±×¸¦ Àç¼³Á¤ÇÕ´Ï´Ù.
+        // í”Œë˜ê·¸ë¥¼ ì¬ì„¤ì •í•©ë‹ˆë‹¤. -> ë Œë”ë§ì´ ëë‚˜ë©´ í”Œë˜ê·¸ë¥¼ ì¬ì„¤ì •í•©ë‹ˆë‹¤.
         vkResetFences(this->VKdevice->logicaldevice, 1, &this->getCurrnetFrameData().VkinFlightFences);
 
-        // ·»´õ¸µÀ» ½ÃÀÛÇÏ±â Àü¿¡ ÀÌ¹ÌÁö¸¦ ·»´õ¸µÇÒ ÁØºñ°¡ µÇ¾ú´ÂÁö È®ÀÎÇÕ´Ï´Ù.
-        // ÁöÁ¤µÈ ¸í·É ¹öÆÛ¸¦ ÃÊ±âÈ­ÇÏ°í, ¼±ÅÃÀûÀ¸·Î ÇÃ·¡±×¸¦ »ç¿ëÇÏ¿© ÃÊ±âÈ­ µ¿ÀÛÀ» Á¦¾î
+        // ë Œë”ë§ì„ ì‹œì‘í•˜ê¸° ì „ì— ì´ë¯¸ì§€ë¥¼ ë Œë”ë§í•  ì¤€ë¹„ê°€ ë˜ì—ˆëŠ”ì§€ í™•ì¸í•©ë‹ˆë‹¤.
+        // ì§€ì •ëœ ëª…ë ¹ ë²„í¼ë¥¼ ì´ˆê¸°í™”í•˜ê³ , ì„ íƒì ìœ¼ë¡œ í”Œë˜ê·¸ë¥¼ ì‚¬ìš©í•˜ì—¬ ì´ˆê¸°í™” ë™ì‘ì„ ì œì–´
         vkResetCommandBuffer(this->VKframeData[this->currentFrame].mainCommandBuffer, 0);
 
-        // ·»´õ¸µÀ» ½ÃÀÛÇÏ±â Àü¿¡ Ä¿¸Çµå ¹öÆÛ¸¦ Àç¼³Á¤ÇÕ´Ï´Ù.
+        // ë Œë”ë§ì„ ì‹œì‘í•˜ê¸° ì „ì— ì»¤ë§¨ë“œ ë²„í¼ë¥¼ ì¬ì„¤ì •í•©ë‹ˆë‹¤.
         this->recordCommandBuffer(&this->VKframeData[this->currentFrame], imageIndex);
 
-        // VkSubmitInfo ±¸Á¶Ã¼´Â Å¥¿¡ Á¦ÃâÇÒ ¸í·É ¹öÆÛ¸¦ ÁöÁ¤ÇÕ´Ï´Ù.
+        // VkSubmitInfo êµ¬ì¡°ì²´ëŠ” íì— ì œì¶œí•  ëª…ë ¹ ë²„í¼ë¥¼ ì§€ì •í•©ë‹ˆë‹¤.
         VKsubmitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
-        // ·»´õ¸µÀ» ½ÃÀÛÇÏ±â Àü¿¡ ¼¼¸¶Æ÷¾î¸¦ ¼³Á¤ÇÕ´Ï´Ù.
+        // ë Œë”ë§ì„ ì‹œì‘í•˜ê¸° ì „ì— ì„¸ë§ˆí¬ì–´ë¥¼ ì„¤ì •í•©ë‹ˆë‹¤.
         VkSemaphore waitSemaphores[] = { this->VKframeData[this->currentFrame].VkimageavailableSemaphore };
         VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
         VKsubmitInfo.waitSemaphoreCount = 1;
         VKsubmitInfo.pWaitSemaphores = waitSemaphores;
         VKsubmitInfo.pWaitDstStageMask = waitStages;
 
-        // ·»´õ¸µÀ» ½ÃÀÛÇÏ±â Àü¿¡ Ä¿¸Çµå ¹öÆÛ¸¦ ¼³Á¤ÇÕ´Ï´Ù.
+        // ë Œë”ë§ì„ ì‹œì‘í•˜ê¸° ì „ì— ì»¤ë§¨ë“œ ë²„í¼ë¥¼ ì„¤ì •í•©ë‹ˆë‹¤.
         VKsubmitInfo.commandBufferCount = 1;
         VKsubmitInfo.pCommandBuffers = &this->VKframeData[this->currentFrame].mainCommandBuffer;
 
-        // ·»´õ¸µÀ» ½ÃÀÛÇÏ±â Àü¿¡ ¼¼¸¶Æ÷¾î¸¦ ¼³Á¤ÇÕ´Ï´Ù.
+        // ë Œë”ë§ì„ ì‹œì‘í•˜ê¸° ì „ì— ì„¸ë§ˆí¬ì–´ë¥¼ ì„¤ì •í•©ë‹ˆë‹¤.
         VkSemaphore signalSemaphores[] = { this->VKframeData[this->currentFrame].VkrenderFinishedSemaphore };
         VKsubmitInfo.signalSemaphoreCount = 1;
         VKsubmitInfo.pSignalSemaphores = signalSemaphores;
 
-        // ÇÃ·¡±×¸¦ Àç¼³Á¤ÇÕ´Ï´Ù. -> ·»´õ¸µÀÌ ³¡³ª¸é ÇÃ·¡±×¸¦ Àç¼³Á¤ÇÕ´Ï´Ù.
+        // í”Œë˜ê·¸ë¥¼ ì¬ì„¤ì •í•©ë‹ˆë‹¤. -> ë Œë”ë§ì´ ëë‚˜ë©´ í”Œë˜ê·¸ë¥¼ ì¬ì„¤ì •í•©ë‹ˆë‹¤.
         vkResetFences(this->VKdevice->logicaldevice, 1, &this->VKframeData[this->currentFrame].VkinFlightFences);
 
-        // ·»´õ¸µÀ» ½ÃÀÛÇÕ´Ï´Ù.
+        // ë Œë”ë§ì„ ì‹œì‘í•©ë‹ˆë‹¤.
         _VK_CHECK_RESULT_(vkQueueSubmit(this->VKdevice->graphicsVKQueue, 1, &VKsubmitInfo, this->VKframeData[this->currentFrame].VkinFlightFences));
 
-        // ·»´õ¸µ Á¾·á ÈÄ, ÇÁ·¹Á¨Æ®¸¦ ½ÃÀÛÇÕ´Ï´Ù.
+        // ë Œë”ë§ ì¢…ë£Œ í›„, í”„ë ˆì  íŠ¸ë¥¼ ì‹œì‘í•©ë‹ˆë‹¤.
         VulkanEngine::presentFrame(&imageIndex);
 
         this->currentFrame = (this->currentFrame + 1) % this->frames;
@@ -276,14 +276,14 @@ namespace vkengine {
             ImGui::Checkbox("Use Prefiltered Cube Texture", &checkPrefilteredCubeTexture);
             ImGui::Checkbox("Use Irradiance Cube Texture", &checkIrradianceCubeTexture);
 
-            // SubUniform µ¥ÀÌÅÍ ¾÷µ¥ÀÌÆ®
+            // SubUniform ë°ì´í„° ì—…ë°ì´íŠ¸
             this->subUniform.subUniform.camPos = this->camera->getPos();
             this->subUniform.subUniform.exposure = this->uboParamsData.exposure;
             this->subUniform.subUniform.gamma = this->uboParamsData.gamma;
-            this->subUniform.subUniform.useTexture = checkUseTexture ? VK_TRUE : VK_FALSE; // ÅØ½ºÃÄ »ç¿ë ¿©ºÎ
-            this->subUniform.subUniform.brdfLUTTexture = checkBRDFLUTTexture ? VK_TRUE : VK_FALSE; // BRDF LUT ÅØ½ºÃ³ »ç¿ë ¿©ºÎ
-            this->subUniform.subUniform.prefilteredCubeTexture = checkPrefilteredCubeTexture ? VK_TRUE : VK_FALSE; // Prefiltered Cube ÅØ½ºÃ³ »ç¿ë ¿©ºÎ
-            this->subUniform.subUniform.irradianceCubeTexture = checkIrradianceCubeTexture ? VK_TRUE : VK_FALSE; // Irradiance Cube ÅØ½ºÃ³ »ç¿ë ¿©ºÎ
+            this->subUniform.subUniform.useTexture = checkUseTexture ? VK_TRUE : VK_FALSE; // í…ìŠ¤ì³ ì‚¬ìš© ì—¬ë¶€
+            this->subUniform.subUniform.brdfLUTTexture = checkBRDFLUTTexture ? VK_TRUE : VK_FALSE; // BRDF LUT í…ìŠ¤ì²˜ ì‚¬ìš© ì—¬ë¶€
+            this->subUniform.subUniform.prefilteredCubeTexture = checkPrefilteredCubeTexture ? VK_TRUE : VK_FALSE; // Prefiltered Cube í…ìŠ¤ì²˜ ì‚¬ìš© ì—¬ë¶€
+            this->subUniform.subUniform.irradianceCubeTexture = checkIrradianceCubeTexture ? VK_TRUE : VK_FALSE; // Irradiance Cube í…ìŠ¤ì²˜ ì‚¬ìš© ì—¬ë¶€
 
             // normal vector UI
             ImGui::Checkbox("Use Normal Rander", &this->useNormalRander);
@@ -369,17 +369,17 @@ namespace vkengine {
 
     void iblpbrEngine::recordCommandBuffer(FrameData* framedata, uint32_t imageIndex)
     {
-        // Ä¿¸Çµå ¹öÆÛ ±â·ÏÀ» ½ÃÀÛÇÕ´Ï´Ù.
+        // ì»¤ë§¨ë“œ ë²„í¼ ê¸°ë¡ì„ ì‹œì‘í•©ë‹ˆë‹¤.
         VkCommandBufferBeginInfo beginInfo = framedata->commandBufferBeginInfo(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
 
         _VK_CHECK_RESULT_(vkBeginCommandBuffer(framedata->mainCommandBuffer, &beginInfo));
 
-        // ·»´õ ÆĞ½º¸¦ ½ÃÀÛÇÏ±â À§ÇÑ Å¬¸®¾î °ª ¼³Á¤
+        // ë Œë” íŒ¨ìŠ¤ë¥¼ ì‹œì‘í•˜ê¸° ìœ„í•œ í´ë¦¬ì–´ ê°’ ì„¤ì •
         std::array<VkClearValue, 2> clearValues{};
         clearValues[0].color = { {0.0f, 0.0f, 0.0f, 1.0f} };
         clearValues[1].depthStencil = { 1.0f, 0 };
 
-        // ·»´õ ÆĞ½º ½ÃÀÛ Á¤º¸ ±¸Á¶Ã¼¸¦ ÃÊ±âÈ­ÇÕ´Ï´Ù.
+        // ë Œë” íŒ¨ìŠ¤ ì‹œì‘ ì •ë³´ êµ¬ì¡°ì²´ë¥¼ ì´ˆê¸°í™”í•©ë‹ˆë‹¤.
         VkRenderPassBeginInfo renderPassInfo{};
         renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
         renderPassInfo.renderPass = *this->VKrenderPass.get();
@@ -389,7 +389,7 @@ namespace vkengine {
         renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());;
         renderPassInfo.pClearValues = clearValues.data();
 
-        // ·»´õ ÆĞ½º¸¦ ½ÃÀÛÇÕ´Ï´Ù.
+        // ë Œë” íŒ¨ìŠ¤ë¥¼ ì‹œì‘í•©ë‹ˆë‹¤.
         vkCmdBeginRenderPass(framedata->mainCommandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
         {
             VkViewport viewport{};
@@ -425,7 +425,7 @@ namespace vkengine {
         }
         vkCmdEndRenderPass(framedata->mainCommandBuffer);
 
-        // Ä¿¸Çµå ¹öÆÛ ±â·ÏÀ» Á¾·áÇÕ´Ï´Ù.
+        // ì»¤ë§¨ë“œ ë²„í¼ ê¸°ë¡ì„ ì¢…ë£Œí•©ë‹ˆë‹¤.
         _VK_CHECK_RESULT_(vkEndCommandBuffer(framedata->mainCommandBuffer));
     }
 
@@ -464,7 +464,7 @@ namespace vkengine {
         this->modelObject->getModelViewProjUniformBuffer(0)->createDescriptorBufferInfo();
         this->modelObject->getModelViewProjUniformBuffer(1)->createDescriptorBufferInfo();
 
-        // ¸ÓÆ¼¸®¾ó ¹öÆÛ »ı¼º
+        // ë¨¸í‹°ë¦¬ì–¼ ë²„í¼ ìƒì„±
         VkDeviceSize bufferSize = sizeof(cMaterial);
 
         material.size = bufferSize;
@@ -490,71 +490,71 @@ namespace vkengine {
 
     void iblpbrEngine::createDescriptor()
     {
-        // SkyBox µğ½ºÅ©¸³ÅÍ »ı¼º
+        // SkyBox ë””ìŠ¤í¬ë¦½í„° ìƒì„±
         this->skyboxDescriptor2 = new VKDescriptor2(this->VKdevice->logicaldevice, this->frames);
 
         // pool create
         std::vector<VkDescriptorPoolSize> skyboxPoolSizes = {
-            helper::descriptorPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, this->frames), // Ä«¸Ş¶ó
-            helper::descriptorPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, this->frames), // ÅØ½ºÃÄ
-            helper::descriptorPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, this->frames) // ¸ÓÆ¼¸®¾ó
+            helper::descriptorPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, this->frames), // ì¹´ë©”ë¼
+            helper::descriptorPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, this->frames), // í…ìŠ¤ì³
+            helper::descriptorPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, this->frames) // ë¨¸í‹°ë¦¬ì–¼
         };
         this->skyboxDescriptor2->poolInfo = helper::descriptorPoolCreateInfo(skyboxPoolSizes, this->frames);
         this->skyboxDescriptor2->createDescriptorPool();
 
         // layout create
         std::vector<VkDescriptorSetLayoutBinding> setLayoutBindingsSkyBox = {
-            helper::descriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT, 0), // Ä«¸Ş¶ó
-            helper::descriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, 1), // ÅØ½ºÃÄ
-            helper::descriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_FRAGMENT_BIT, 2) // ¸ÓÆ¼¸®¾ó
+            helper::descriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT, 0), // ì¹´ë©”ë¼
+            helper::descriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, 1), // í…ìŠ¤ì³
+            helper::descriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_FRAGMENT_BIT, 2) // ë¨¸í‹°ë¦¬ì–¼
         };
         this->skyboxDescriptor2->layoutInfo = helper::descriptorSetLayoutCreateInfo(setLayoutBindingsSkyBox);
         this->skyboxDescriptor2->createDescriptorSetLayout();
 
-        // descriptor set »ı¼º
+        // descriptor set ìƒì„±
         std::vector<VkDescriptorSetLayout> layouts(this->skyboxDescriptor2->frames, this->skyboxDescriptor2->VKdescriptorSetLayout);
         this->skyboxDescriptor2->allocInfo = helper::descriptorSetAllocateInfo(
             this->skyboxDescriptor2->VKdescriptorPool,
             *layouts.data(),
-            this->frames); // object°¡ ÇÑ°³´Ù
+            this->frames); // objectê°€ í•œê°œë‹¤
         this->skyboxDescriptor2->VKdescriptorSets.resize(this->frames);
         this->skyboxDescriptor2->createAllocateDescriptorSets();
 
-        // descriptor set ¾÷µ¥ÀÌÆ®
+        // descriptor set ì—…ë°ì´íŠ¸
         std::vector<VkWriteDescriptorSet> writeDescriptorSets_skyBox01 = {
             helper::writeDescriptorSet(
                 this->skyboxDescriptor2->VKdescriptorSets[0],
                 VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
                 0,
-                &this->skyBox->getModelViewProjUniformBuffer(0)->descriptor), // Ä«¸Ş¶ó
+                &this->skyBox->getModelViewProjUniformBuffer(0)->descriptor), // ì¹´ë©”ë¼
             helper::writeDescriptorSet(
                 this->skyboxDescriptor2->VKdescriptorSets[0],
                 VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
                 1,
-                &this->skyBox->getTexture()->imageData[0].imageInfo), // ÅØ½ºÃÄ
+                &this->skyBox->getTexture()->imageData[0].imageInfo), // í…ìŠ¤ì³
             helper::writeDescriptorSet(
                 this->skyboxDescriptor2->VKdescriptorSets[0],
                 VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
                 2,
-                &this->uboParams.descriptor) // ¸ÓÆ¼¸®¾ó
+                &this->uboParams.descriptor) // ë¨¸í‹°ë¦¬ì–¼
         };
-        // descriptor set ¾÷µ¥ÀÌÆ®
+        // descriptor set ì—…ë°ì´íŠ¸
         std::vector<VkWriteDescriptorSet> writeDescriptorSets_skyBox02 = {
             helper::writeDescriptorSet(
                 this->skyboxDescriptor2->VKdescriptorSets[1],
                 VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
                 0,
-                &this->skyBox->getModelViewProjUniformBuffer(1)->descriptor), // Ä«¸Ş¶ó
+                &this->skyBox->getModelViewProjUniformBuffer(1)->descriptor), // ì¹´ë©”ë¼
             helper::writeDescriptorSet(
                 this->skyboxDescriptor2->VKdescriptorSets[1],
                 VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
                 1,
-                &this->skyBox->getTexture()->imageData[0].imageInfo), // ÅØ½ºÃÄ
+                &this->skyBox->getTexture()->imageData[0].imageInfo), // í…ìŠ¤ì³
             helper::writeDescriptorSet(
                 this->skyboxDescriptor2->VKdescriptorSets[1],
                 VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
                 2,
-                &this->uboParams.descriptor) // ¸ÓÆ¼¸®¾ó
+                &this->uboParams.descriptor) // ë¨¸í‹°ë¦¬ì–¼
         };
 
         vkUpdateDescriptorSets(
@@ -572,9 +572,9 @@ namespace vkengine {
         // pool create
         std::vector<VkDescriptorPoolSize> modelPoolSizes =
         {
-            helper::descriptorPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, this->frames), // Ä«¸Ş¶ó
-            helper::descriptorPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, this->frames), // ¸ÓÆ¼¸®¾ó
-            helper::descriptorPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, this->frames), // ¼­ºê uniform
+            helper::descriptorPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, this->frames), // ì¹´ë©”ë¼
+            helper::descriptorPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, this->frames), // ë¨¸í‹°ë¦¬ì–¼
+            helper::descriptorPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, this->frames), // ì„œë¸Œ uniform
             helper::descriptorPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, this->frames), // samplerIrradiance
             helper::descriptorPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, this->frames), // samplerBRDFLUT
             helper::descriptorPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, this->frames) // prefilteredMap
@@ -584,9 +584,9 @@ namespace vkengine {
 
         // layout create
         std::vector<VkDescriptorSetLayoutBinding> setLayoutBindingsModel = {
-            helper::descriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0), // Ä«¸Ş¶ó
-            helper::descriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_FRAGMENT_BIT, 1), // ¸ÓÆ¼¸®¾ó
-            helper::descriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_FRAGMENT_BIT, 2), // ¼­ºê uniform
+            helper::descriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0), // ì¹´ë©”ë¼
+            helper::descriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_FRAGMENT_BIT, 1), // ë¨¸í‹°ë¦¬ì–¼
+            helper::descriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_FRAGMENT_BIT, 2), // ì„œë¸Œ uniform
             helper::descriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, 3), // samplerIrradiance
             helper::descriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, 4), // samplerBRDFLUT
             helper::descriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, 5) // prefilteredMap
@@ -594,32 +594,32 @@ namespace vkengine {
         this->modeltDescriptor2->layoutInfo = helper::descriptorSetLayoutCreateInfo(setLayoutBindingsModel);
         this->modeltDescriptor2->createDescriptorSetLayout();
 
-        // descriptor set »ı¼º
+        // descriptor set ìƒì„±
         std::vector<VkDescriptorSetLayout> layouts2(this->modeltDescriptor2->frames, this->modeltDescriptor2->VKdescriptorSetLayout);
         this->modeltDescriptor2->allocInfo = helper::descriptorSetAllocateInfo(
             this->modeltDescriptor2->VKdescriptorPool,
             *layouts2.data(),
-            this->frames); // object°¡ ÇÑ°³´Ù
+            this->frames); // objectê°€ í•œê°œë‹¤
         this->modeltDescriptor2->VKdescriptorSets.resize(this->frames);
         this->modeltDescriptor2->createAllocateDescriptorSets();
 
-        // descriptor set ¾÷µ¥ÀÌÆ®
+        // descriptor set ì—…ë°ì´íŠ¸
         std::vector<VkWriteDescriptorSet> writeDescirptorSets_Model01 = {
             helper::writeDescriptorSet(
                 this->modeltDescriptor2->VKdescriptorSets[0],
                 VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
                 0,
-                &this->modelObject->getModelViewProjUniformBuffer(0)->descriptor), // Ä«¸Ş¶ó
+                &this->modelObject->getModelViewProjUniformBuffer(0)->descriptor), // ì¹´ë©”ë¼
             helper::writeDescriptorSet(
                 this->modeltDescriptor2->VKdescriptorSets[0],
                 VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
                 1,
-                &this->material.descriptor), // ¸ÓÆ¼¸®¾ó
+                &this->material.descriptor), // ë¨¸í‹°ë¦¬ì–¼
             helper::writeDescriptorSet(
                 this->modeltDescriptor2->VKdescriptorSets[0],
                 VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
                 2,
-                &this->subUniform.descriptor), // ¼­ºê uniform
+                &this->subUniform.descriptor), // ì„œë¸Œ uniform
             helper::writeDescriptorSet(
                 this->modeltDescriptor2->VKdescriptorSets[0],
                 VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
@@ -642,17 +642,17 @@ namespace vkengine {
                 this->modeltDescriptor2->VKdescriptorSets[1],
                 VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
                 0,
-                &this->modelObject->getModelViewProjUniformBuffer(1)->descriptor), // Ä«¸Ş¶ó
+                &this->modelObject->getModelViewProjUniformBuffer(1)->descriptor), // ì¹´ë©”ë¼
             helper::writeDescriptorSet(
                 this->modeltDescriptor2->VKdescriptorSets[1],
                 VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
                 1,
-                &this->material.descriptor), // ¸ÓÆ¼¸®¾ó
+                &this->material.descriptor), // ë¨¸í‹°ë¦¬ì–¼
             helper::writeDescriptorSet(
                 this->modeltDescriptor2->VKdescriptorSets[1],
                 VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
                 2,
-                &this->subUniform.descriptor), // ¼­ºê uniform
+                &this->subUniform.descriptor), // ì„œë¸Œ uniform
             helper::writeDescriptorSet(
                 this->modeltDescriptor2->VKdescriptorSets[1],
                 VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
@@ -721,7 +721,7 @@ namespace vkengine {
 
 
         std::vector<VkPushConstantRange> pushConstantRanges = {
-            helper::pushConstantRange(VK_SHADER_STAGE_VERTEX_BIT, sizeof(cVec3), 0), // Çª½Ã »ó¼ö ¹üÀ§ ¼³Á¤
+            helper::pushConstantRange(VK_SHADER_STAGE_VERTEX_BIT, sizeof(cVec3), 0), // í‘¸ì‹œ ìƒìˆ˜ ë²”ìœ„ ì„¤ì •
             helper::pushConstantRange(VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(cMaterial), sizeof(glm::vec3))
         };
 
@@ -811,12 +811,12 @@ namespace vkengine {
         VkPipelineDynamicStateCreateInfo dynamicState = helper::pipelineDynamicStateCreateInfo(dynamicStates);
 
         VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
-        pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO; // ±¸Á¶Ã¼ Å¸ÀÔÀ» ¼³Á¤
-        pipelineLayoutInfo.pNext = nullptr;                                       // ´ÙÀ½ ±¸Á¶Ã¼ Æ÷ÀÎÅÍ¸¦ ¼³Á¤
-        pipelineLayoutInfo.setLayoutCount = 1;                                    // ·¹ÀÌ¾Æ¿ô °³¼ö¸¦ ¼³Á¤
-        pipelineLayoutInfo.pSetLayouts = &this->skyboxDescriptor2->VKdescriptorSetLayout;            // ·¹ÀÌ¾Æ¿ô Æ÷ÀÎÅÍ¸¦ ¼³Á¤
-        pipelineLayoutInfo.pushConstantRangeCount = 0;                            // Çª½Ã »ó¼ö ¹üÀ§ °³¼ö¸¦ ¼³Á¤
-        pipelineLayoutInfo.pPushConstantRanges = nullptr;                         // Çª½Ã »ó¼ö ¹üÀ§ Æ÷ÀÎÅÍ¸¦ ¼³Á¤
+        pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO; // êµ¬ì¡°ì²´ íƒ€ì…ì„ ì„¤ì •
+        pipelineLayoutInfo.pNext = nullptr;                                       // ë‹¤ìŒ êµ¬ì¡°ì²´ í¬ì¸í„°ë¥¼ ì„¤ì •
+        pipelineLayoutInfo.setLayoutCount = 1;                                    // ë ˆì´ì•„ì›ƒ ê°œìˆ˜ë¥¼ ì„¤ì •
+        pipelineLayoutInfo.pSetLayouts = &this->skyboxDescriptor2->VKdescriptorSetLayout;            // ë ˆì´ì•„ì›ƒ í¬ì¸í„°ë¥¼ ì„¤ì •
+        pipelineLayoutInfo.pushConstantRangeCount = 0;                            // í‘¸ì‹œ ìƒìˆ˜ ë²”ìœ„ ê°œìˆ˜ë¥¼ ì„¤ì •
+        pipelineLayoutInfo.pPushConstantRanges = nullptr;                         // í‘¸ì‹œ ìƒìˆ˜ ë²”ìœ„ í¬ì¸í„°ë¥¼ ì„¤ì •
 
         _VK_CHECK_RESULT_(vkCreatePipelineLayout(this->VKdevice->logicaldevice, &pipelineLayoutInfo, nullptr, &this->skyboxDescriptor2->VKpipelineLayout));
 
@@ -865,10 +865,10 @@ namespace vkengine {
 
     void iblpbrEngine::generateBRDFLUT()
     {
-        // BRDF LUT »ı¼º ·ÎÁ÷À» ¿©±â¿¡ Ãß°¡ÇÕ´Ï´Ù.
-        // ÀÌ ÇÔ¼ö´Â IBL PBR ¿£Áø¿¡¼­ BRDF LUT¸¦ »ı¼ºÇÏ´Â µ¥ »ç¿ëµË´Ï´Ù.
-        // ¿¹¸¦ µé¾î, ·»´õ ÆĞ½º¸¦ ¼³Á¤ÇÏ°í, ¼ÎÀÌ´õ¸¦ ½ÇÇàÇÏ¿© BRDF LUT¸¦ »ı¼ºÇÒ ¼ö ÀÖ½À´Ï´Ù.
-        // ÇÏÁö¸¸ ±ÍÂúÀº °ü°è·Î ÆÄÀÏÀ» °¡Á®¿À´Â Çü½ÄÀ¸·Î ¾¸
+        // BRDF LUT ìƒì„± ë¡œì§ì„ ì—¬ê¸°ì— ì¶”ê°€í•©ë‹ˆë‹¤.
+        // ì´ í•¨ìˆ˜ëŠ” IBL PBR ì—”ì§„ì—ì„œ BRDF LUTë¥¼ ìƒì„±í•˜ëŠ” ë° ì‚¬ìš©ë©ë‹ˆë‹¤.
+        // ì˜ˆë¥¼ ë“¤ì–´, ë Œë” íŒ¨ìŠ¤ë¥¼ ì„¤ì •í•˜ê³ , ì…°ì´ë”ë¥¼ ì‹¤í–‰í•˜ì—¬ BRDF LUTë¥¼ ìƒì„±í•  ìˆ˜ ìˆìŠµë‹ˆë‹¤.
+        // í•˜ì§€ë§Œ ê·€ì°®ì€ ê´€ê³„ë¡œ íŒŒì¼ì„ ê°€ì ¸ì˜¤ëŠ” í˜•ì‹ìœ¼ë¡œ ì”€
 #if 1
 
         const VkFormat format = VK_FORMAT_R16G16_SFLOAT;	// R16G16 is supported pretty much everywhere
@@ -886,7 +886,7 @@ namespace vkengine {
         brdfLUTTexture->imageData.reserve(1);
         brdfLUTTexture->imageData.push_back(vkengine::VKimageData{});
 
-        // BRDF LUT ÅØ½ºÃÄ »ı¼º
+        // BRDF LUT í…ìŠ¤ì³ ìƒì„±
         VkImageCreateInfo imageCI{};
         imageCI.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
         imageCI.imageType = VK_IMAGE_TYPE_2D;
@@ -917,10 +917,10 @@ namespace vkengine {
         _VK_CHECK_RESULT_(vkBindImageMemory(this->VKdevice->logicaldevice, this->brdfLUTTexture->imageData[0].image, this->brdfLUTTexture->imageData[0].imageMemory, 0));
 
 
-        // ÀÌ¹ÌÁö ºä »ı¼º
+        // ì´ë¯¸ì§€ ë·° ìƒì„±
         brdfLUTTexture->createTextureImageView(format);
 
-        // »ùÇÃ·¯ »ı¼º
+        // ìƒ˜í”ŒëŸ¬ ìƒì„±
         VkPhysicalDeviceProperties properties{};
         vkGetPhysicalDeviceProperties(brdfLUTTexture->physicalDevice, &properties);
         VkSamplerCreateInfo samplerInfo{};
@@ -1005,7 +1005,7 @@ namespace vkengine {
         VkFramebuffer framebuffer{};
         _VK_CHECK_RESULT_(vkCreateFramebuffer(this->VKdevice->logicaldevice, &framebufferCI, nullptr, &framebuffer));
 
-        VKDescriptor2* brdfDescriptors = nullptr;         // ¸ğµ¨ ¿ÀºêÁ§Æ® µğ½ºÅ©¸³ÅÍ
+        VKDescriptor2* brdfDescriptors = nullptr;         // ëª¨ë¸ ì˜¤ë¸Œì íŠ¸ ë””ìŠ¤í¬ë¦½í„°
         brdfDescriptors = new VKDescriptor2(this->VKdevice->logicaldevice, 1);
 
         // Descriptors
@@ -1030,12 +1030,12 @@ namespace vkengine {
         brdfDescriptors->createAllocateDescriptorSets();
 
         VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
-        pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO; // ±¸Á¶Ã¼ Å¸ÀÔÀ» ¼³Á¤
-        pipelineLayoutInfo.pNext = nullptr;                                       // ´ÙÀ½ ±¸Á¶Ã¼ Æ÷ÀÎÅÍ¸¦ ¼³Á¤
-        pipelineLayoutInfo.setLayoutCount = 1;                                    // ·¹ÀÌ¾Æ¿ô °³¼ö¸¦ ¼³Á¤
-        pipelineLayoutInfo.pSetLayouts = &brdfDescriptors->VKdescriptorSetLayout;// ·¹ÀÌ¾Æ¿ô Æ÷ÀÎÅÍ¸¦ ¼³Á¤
-        pipelineLayoutInfo.pushConstantRangeCount = 0;                            // Çª½Ã »ó¼ö ¹üÀ§ °³¼ö¸¦ ¼³Á¤
-        pipelineLayoutInfo.pPushConstantRanges = nullptr;                         // Çª½Ã »ó¼ö ¹üÀ§ Æ÷ÀÎÅÍ¸¦ ¼³Á¤
+        pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO; // êµ¬ì¡°ì²´ íƒ€ì…ì„ ì„¤ì •
+        pipelineLayoutInfo.pNext = nullptr;                                       // ë‹¤ìŒ êµ¬ì¡°ì²´ í¬ì¸í„°ë¥¼ ì„¤ì •
+        pipelineLayoutInfo.setLayoutCount = 1;                                    // ë ˆì´ì•„ì›ƒ ê°œìˆ˜ë¥¼ ì„¤ì •
+        pipelineLayoutInfo.pSetLayouts = &brdfDescriptors->VKdescriptorSetLayout;// ë ˆì´ì•„ì›ƒ í¬ì¸í„°ë¥¼ ì„¤ì •
+        pipelineLayoutInfo.pushConstantRangeCount = 0;                            // í‘¸ì‹œ ìƒìˆ˜ ë²”ìœ„ ê°œìˆ˜ë¥¼ ì„¤ì •
+        pipelineLayoutInfo.pPushConstantRanges = nullptr;                         // í‘¸ì‹œ ìƒìˆ˜ ë²”ìœ„ í¬ì¸í„°ë¥¼ ì„¤ì •
 
         _VK_CHECK_RESULT_(vkCreatePipelineLayout(this->VKdevice->logicaldevice, &pipelineLayoutInfo, nullptr, &brdfDescriptors->VKpipelineLayout));
 
@@ -1208,7 +1208,7 @@ namespace vkengine {
         _VK_CHECK_RESULT_(vkAllocateMemory(this->VKdevice->logicaldevice, &memAllocInfo, nullptr, &this->prefilteredCubeTexture->imageData[0].imageMemory));
         _VK_CHECK_RESULT_(vkBindImageMemory(this->VKdevice->logicaldevice, this->prefilteredCubeTexture->imageData[0].image, this->prefilteredCubeTexture->imageData[0].imageMemory, 0));
 
-        //this->prefilteredCubeTexture->imageDataCount = 1; // ÀÌ¹ÌÁö µ¥ÀÌÅÍ °³¼ö ¼³Á¤
+        //this->prefilteredCubeTexture->imageDataCount = 1; // ì´ë¯¸ì§€ ë°ì´í„° ê°œìˆ˜ ì„¤ì •
 
         // Image view
         this->prefilteredCubeTexture->createTextureImageView(format);
@@ -1352,7 +1352,7 @@ namespace vkengine {
             );
         }
 
-        VKDescriptor2* prefilteredCubeDescriptors = nullptr;         // ¸ğµ¨ ¿ÀºêÁ§Æ® µğ½ºÅ©¸³ÅÍ
+        VKDescriptor2* prefilteredCubeDescriptors = nullptr;         // ëª¨ë¸ ì˜¤ë¸Œì íŠ¸ ë””ìŠ¤í¬ë¦½í„°
         prefilteredCubeDescriptors = new VKDescriptor2(this->VKdevice->logicaldevice, 1);
 
         // Descriptors
@@ -1852,7 +1852,7 @@ namespace vkengine {
 #endif
         }
 
-        VKDescriptor2* irradianceCubeDescriptors = nullptr;         // ¸ğµ¨ ¿ÀºêÁ§Æ® µğ½ºÅ©¸³ÅÍ
+        VKDescriptor2* irradianceCubeDescriptors = nullptr;         // ëª¨ë¸ ì˜¤ë¸Œì íŠ¸ ë””ìŠ¤í¬ë¦½í„°
         irradianceCubeDescriptors = new VKDescriptor2(this->VKdevice->logicaldevice, 1);
 
         // Descriptors
@@ -1876,7 +1876,7 @@ namespace vkengine {
         irradianceCubeDescriptors->VKdescriptorSets.resize(1);
         irradianceCubeDescriptors->createAllocateDescriptorSets();
 
-        // descriptor set ¾÷µ¥ÀÌÆ®
+        // descriptor set ì—…ë°ì´íŠ¸
         std::vector<VkWriteDescriptorSet> writeDescriptorSets01 = {
             helper::writeDescriptorSet(
                 irradianceCubeDescriptors->VKdescriptorSets[0],

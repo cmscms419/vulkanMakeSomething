@@ -8,14 +8,14 @@
 #include "struct.h"
 #include "log.h"
 
-// https://github.com/SaschaWillems/Vulkan¿¡¼­ Âü°íÇØ¼­ ÇÔ¼ö »ı¼º
+// https://github.com/SaschaWillems/Vulkanì—ì„œ ì°¸ê³ í•´ì„œ í•¨ìˆ˜ ìƒì„±
 
 namespace vkengine {
 
     namespace helper {
 
-        // VkPipelineShaderStageCreateInfo »ı¼º
-        // ÀÌ ÇÔ¼ö´Â ¼ÎÀÌ´õ ¸ğµâ°ú ¿£Æ®¸® Æ÷ÀÎÆ®¸¦ »ç¿ëÇÏ¿© ÆÄÀÌÇÁ¶óÀÎ ¼ÎÀÌ´õ ½ºÅ×ÀÌÁö Á¤º¸¸¦ »ı¼ºÇÕ´Ï´Ù.
+        // VkPipelineShaderStageCreateInfo ìƒì„±
+        // ì´ í•¨ìˆ˜ëŠ” ì…°ì´ë” ëª¨ë“ˆê³¼ ì—”íŠ¸ë¦¬ í¬ì¸íŠ¸ë¥¼ ì‚¬ìš©í•˜ì—¬ íŒŒì´í”„ë¼ì¸ ì…°ì´ë” ìŠ¤í…Œì´ì§€ ì •ë³´ë¥¼ ìƒì„±í•©ë‹ˆë‹¤.
         inline VkPipelineShaderStageCreateInfo pipelineShaderStageCreateInfo(
             VkShaderStageFlagBits stage,
             VkShaderModule shaderModule,
@@ -29,8 +29,8 @@ namespace vkengine {
             return shaderStageInfo;
         }
 
-        // VkPipelineVertexInputStateCreateInfo »ı¼º
-        // ÀÌ ÇÔ¼ö´Â ¹öÅØ½º ÀÔ·Â ¹ÙÀÎµù ¹× ¼Ó¼º ¼³¸íÀ» »ç¿ëÇÏ¿© ÆÄÀÌÇÁ¶óÀÎ ¹öÅØ½º ÀÔ·Â »óÅÂ Á¤º¸¸¦ »ı¼ºÇÕ´Ï´Ù.
+        // VkPipelineVertexInputStateCreateInfo ìƒì„±
+        // ì´ í•¨ìˆ˜ëŠ” ë²„í…ìŠ¤ ì…ë ¥ ë°”ì¸ë”© ë° ì†ì„± ì„¤ëª…ì„ ì‚¬ìš©í•˜ì—¬ íŒŒì´í”„ë¼ì¸ ë²„í…ìŠ¤ ì…ë ¥ ìƒíƒœ ì •ë³´ë¥¼ ìƒì„±í•©ë‹ˆë‹¤.
         inline VkPipelineVertexInputStateCreateInfo pipelineVertexInputStateCreateInfo(
             const VkVertexInputBindingDescription& bindingDescriptions,
             const VkVertexInputAttributeDescription& attributeDescriptions,
@@ -48,7 +48,7 @@ namespace vkengine {
             return vertexInputInfo;
         }
 
-        // VkPipelineInputAssemblyStateCreateInfo »ı¼º
+        // VkPipelineInputAssemblyStateCreateInfo ìƒì„±
         inline VkPipelineInputAssemblyStateCreateInfo pipelineInputAssemblyStateCreateInfo(
             VkPrimitiveTopology topology,
             VkPipelineInputAssemblyStateCreateFlags flags,
@@ -62,7 +62,7 @@ namespace vkengine {
             return pipelineInputAssemblyStateCreateInfo;
         }
 
-        // ºäÆ÷Æ® ¼³Á¤
+        // ë·°í¬íŠ¸ ì„¤ì •
         inline VkPipelineViewportStateCreateInfo pipelineViewportStateCreateInfo(
             const VkViewport& viewport,
             const VkRect2D& scissor,
@@ -80,7 +80,7 @@ namespace vkengine {
             return viewportState;
         }
 
-        // ·¡½ºÅÍÈ­ ¼³Á¤
+        // ë˜ìŠ¤í„°í™” ì„¤ì •
         inline VkPipelineRasterizationStateCreateInfo pipelineRasterizationStateCreateInfo(
             VkPolygonMode polygonMode = VK_POLYGON_MODE_FILL,
             VkCullModeFlags cullMode = VK_CULL_MODE_BACK_BIT,
@@ -104,14 +104,14 @@ namespace vkengine {
             rasterizer.lineWidth = lineWidth;
             rasterizer.cullMode = cullMode;
             rasterizer.frontFace = frontFace;
-            rasterizer.depthBiasEnable = VK_FALSE;                    // ±íÀÌ ¹ÙÀÌ¾î½º ºñÈ°¼ºÈ­
-            rasterizer.depthBiasConstantFactor = depthBiasConstantFactor;              // ±íÀÌ ¹ÙÀÌ¾î½º »ó¼ö ¿ä¼Ò¸¦ 0.0f·Î ¼³Á¤
-            rasterizer.depthBiasClamp = depthBiasClamp;                       // ±íÀÌ ¹ÙÀÌ¾î½º Å¬·¥ÇÁ¸¦ 0.0f·Î ¼³Á¤
-            rasterizer.depthBiasSlopeFactor = depthBiasSlopeFactor;                 // ±íÀÌ ¹ÙÀÌ¾î½º ½½·ÎÇÁ ¿ä¼Ò¸¦ 0.0f·Î ¼³Á¤
+            rasterizer.depthBiasEnable = VK_FALSE;                    // ê¹Šì´ ë°”ì´ì–´ìŠ¤ ë¹„í™œì„±í™”
+            rasterizer.depthBiasConstantFactor = depthBiasConstantFactor;              // ê¹Šì´ ë°”ì´ì–´ìŠ¤ ìƒìˆ˜ ìš”ì†Œë¥¼ 0.0fë¡œ ì„¤ì •
+            rasterizer.depthBiasClamp = depthBiasClamp;                       // ê¹Šì´ ë°”ì´ì–´ìŠ¤ í´ë¨í”„ë¥¼ 0.0fë¡œ ì„¤ì •
+            rasterizer.depthBiasSlopeFactor = depthBiasSlopeFactor;                 // ê¹Šì´ ë°”ì´ì–´ìŠ¤ ìŠ¬ë¡œí”„ ìš”ì†Œë¥¼ 0.0fë¡œ ì„¤ì •
             return rasterizer;
         }
 
-        // ´ÙÁß »ùÇÃ¸µ ¼³Á¤
+        // ë‹¤ì¤‘ ìƒ˜í”Œë§ ì„¤ì •
         inline VkPipelineMultisampleStateCreateInfo pipelineMultisampleStateCreateInfo(
             VkSampleCountFlagBits rasterizationSamples,
             VkPipelineMultisampleStateCreateFlags flags = 0)
@@ -123,7 +123,7 @@ namespace vkengine {
             return pipelineMultisampleStateCreateInfo;
         }
 
-        // ±íÀÌ ½ºÅÙ½Ç Å×½ºÆ® ¼³Á¤
+        // ê¹Šì´ ìŠ¤í…ì‹¤ í…ŒìŠ¤íŠ¸ ì„¤ì •
         inline VkPipelineDepthStencilStateCreateInfo pipelineDepthStencilStateCreateInfo(
             VkBool32 depthTestEnable,
             VkBool32 depthWriteEnable,
@@ -151,19 +151,19 @@ namespace vkengine {
         )
         {
             VkPipelineColorBlendAttachmentState colorBlendAttachment{};
-            colorBlendAttachment.colorWriteMask = colorWriteMask;;                // ÄÃ·¯ ºí·»µù ¿¬»êÀ» ¼³Á¤
+            colorBlendAttachment.colorWriteMask = colorWriteMask;;                // ì»¬ëŸ¬ ë¸”ë Œë”© ì—°ì‚°ì„ ì„¤ì •
             colorBlendAttachment.blendEnable = blendEnable;
-            colorBlendAttachment.srcColorBlendFactor = srcColorBlendFactor;     // ¼Ò½º ÄÃ·¯ ºí·»µù ÆÑÅÍ¸¦ ¼³Á¤
-            colorBlendAttachment.dstColorBlendFactor = dstColorBlendFactor;    // ´ë»ó ÄÃ·¯ ºí·»µù ÆÑÅÍ¸¦ ¼³Á¤
-            colorBlendAttachment.srcAlphaBlendFactor = srcAlphaBlendFactor;     // ¼Ò½º ¾ËÆÄ ºí·»µù ÆÑÅÍ¸¦ ¼³Á¤
-            colorBlendAttachment.dstAlphaBlendFactor = dstAlphaBlendFactor;    // ´ë»ó ¾ËÆÄ ºí·»µù ÆÑÅÍ¸¦ ¼³Á¤
-            colorBlendAttachment.alphaBlendOp = alphaBlendOp;                // ¾ËÆÄ ºí·»µù ¿¬»êÀ» ¼³Á¤
-            colorBlendAttachment.colorBlendOp = colorBlendOp;                // ÄÃ·¯ ºí·»µù ¿¬»êÀ» ¼³Á¤
+            colorBlendAttachment.srcColorBlendFactor = srcColorBlendFactor;     // ì†ŒìŠ¤ ì»¬ëŸ¬ ë¸”ë Œë”© íŒ©í„°ë¥¼ ì„¤ì •
+            colorBlendAttachment.dstColorBlendFactor = dstColorBlendFactor;    // ëŒ€ìƒ ì»¬ëŸ¬ ë¸”ë Œë”© íŒ©í„°ë¥¼ ì„¤ì •
+            colorBlendAttachment.srcAlphaBlendFactor = srcAlphaBlendFactor;     // ì†ŒìŠ¤ ì•ŒíŒŒ ë¸”ë Œë”© íŒ©í„°ë¥¼ ì„¤ì •
+            colorBlendAttachment.dstAlphaBlendFactor = dstAlphaBlendFactor;    // ëŒ€ìƒ ì•ŒíŒŒ ë¸”ë Œë”© íŒ©í„°ë¥¼ ì„¤ì •
+            colorBlendAttachment.alphaBlendOp = alphaBlendOp;                // ì•ŒíŒŒ ë¸”ë Œë”© ì—°ì‚°ì„ ì„¤ì •
+            colorBlendAttachment.colorBlendOp = colorBlendOp;                // ì»¬ëŸ¬ ë¸”ë Œë”© ì—°ì‚°ì„ ì„¤ì •
 
             return colorBlendAttachment;
         }
 
-        // ÄÃ·¯ ºí·»µù »óÅÂ »ı¼º Á¤º¸ ±¸Á¶Ã¼
+        // ì»¬ëŸ¬ ë¸”ë Œë”© ìƒíƒœ ìƒì„± ì •ë³´ êµ¬ì¡°ì²´
         inline VkPipelineColorBlendStateCreateInfo pipelineColorBlendStateCreateInfo(
             cUint32_t attachmentCount,
             const VkPipelineColorBlendAttachmentState* pAttachments)
@@ -175,7 +175,7 @@ namespace vkengine {
             return pipelineColorBlendStateCreateInfo;
         }
 
-        // ´ÙÀÌ³ª¹Í »óÅÂ ¼³Á¤ -> ·¹½ºÅÍÈ­ »óÅÂ¸¦ µ¿ÀûÀ¸·Î º¯°æÇÒ ¼ö ÀÖ½À´Ï´Ù.
+        // ë‹¤ì´ë‚˜ë¯¹ ìƒíƒœ ì„¤ì • -> ë ˆìŠ¤í„°í™” ìƒíƒœë¥¼ ë™ì ìœ¼ë¡œ ë³€ê²½í•  ìˆ˜ ìˆìŠµë‹ˆë‹¤.
         inline VkPipelineDynamicStateCreateInfo pipelineDynamicStateCreateInfo(
             const std::vector<VkDynamicState>& dynamicStates)
         {
@@ -229,7 +229,7 @@ namespace vkengine {
             VkFormat depthAttachmentFormat = VK_FORMAT_UNDEFINED,
             VkFormat stencilAttachmentFormat = VK_FORMAT_UNDEFINED)
         {
-            static thread_local std::vector<VkFormat> formats; // thread-safeÇÑ Á¤Àû ÀúÀå¼Ò
+            static thread_local std::vector<VkFormat> formats; // thread-safeí•œ ì •ì  ì €ì¥ì†Œ
             formats = std::move(colorAttachmentFormats);
 
             VkPipelineRenderingCreateInfo pipelineRenderingCreateInfo{};
@@ -261,9 +261,9 @@ namespace vkengine {
             return info;
         }
 
-        // VkWriteDescriptorSet ±¸Á¶Ã¼¸¦ »ı¼ºÇÏ´Â ÇÔ¼öµé
+        // VkWriteDescriptorSet êµ¬ì¡°ì²´ë¥¼ ìƒì„±í•˜ëŠ” í•¨ìˆ˜ë“¤
 
-        // Buffer¸¦ »ç¿ëÇÏ´Â °æ¿ì
+        // Bufferë¥¼ ì‚¬ìš©í•˜ëŠ” ê²½ìš°
         inline VkWriteDescriptorSet writeDescriptorSet(
             VkDescriptorSet dstSet,
             VkDescriptorType type,
@@ -281,7 +281,7 @@ namespace vkengine {
             return writeDescriptorSet;
         }
 
-        // Image¸¦ »ç¿ëÇÏ´Â °æ¿ì
+        // Imageë¥¼ ì‚¬ìš©í•˜ëŠ” ê²½ìš°
         inline VkWriteDescriptorSet writeDescriptorSet(
             VkDescriptorSet dstSet,
             VkDescriptorType type,
@@ -430,7 +430,7 @@ namespace vkengine {
             cUint32_t arrayLayer,
             VkImageCreateFlagBits flag);
 
-        // buffer¸¦ »ı¼ºÇÏ´Â ÇÔ¼ö
+        // bufferë¥¼ ìƒì„±í•˜ëŠ” í•¨ìˆ˜
         void createBuffer(
             VkDevice device,
             VkPhysicalDevice physicalDevice,
@@ -440,7 +440,7 @@ namespace vkengine {
             VkBuffer& buffer,
             VkDeviceMemory& bufferMemory);
 
-        // buffer¸¦ »ı¼ºÇÏ´Â ÇÔ¼ö 2
+        // bufferë¥¼ ìƒì„±í•˜ëŠ” í•¨ìˆ˜ 2
         void createBuffer2(
             VkDevice device,
             VkPhysicalDevice physicalDevice,
@@ -473,16 +473,16 @@ namespace vkengine {
             VkDevice device, VkImage image, VkFormat format, VkImageAspectFlags aspectFlags, cUint32_t mipLevels);
 
 
-        // commandPood¿¡ ´ëÇÑ informationÀ» »ı¼ºÇÏ´Â ÇÔ¼ö
+        // commandPoodì— ëŒ€í•œ informationì„ ìƒì„±í•˜ëŠ” í•¨ìˆ˜
         VkCommandPoolCreateInfo commandPoolCreateInfo(cUint32_t queueFamilyIndex, VkCommandPoolCreateFlags flags = 0);
 
-        // commandBuffer¿¡ ´ëÇÑ informationÀ» »ı¼ºÇÏ´Â ÇÔ¼ö
+        // commandBufferì— ëŒ€í•œ informationì„ ìƒì„±í•˜ëŠ” í•¨ìˆ˜
         VkCommandBufferAllocateInfo commandBufferAllocateInfo(VkCommandPool pool, cUint32_t count, VkCommandBufferLevel level);
 
-        // Fencee¿¡ ´ëÇÑ informationÀ» »ı¼ºÇÏ´Â ÇÔ¼ö
+        // Fenceeì— ëŒ€í•œ informationì„ ìƒì„±í•˜ëŠ” í•¨ìˆ˜
         VkFenceCreateInfo fenceCreateInfo(VkFenceCreateFlags flags = 0);
 
-        // Semaphore¿¡ ´ëÇÑ informationÀ» »ı¼ºÇÏ´Â ÇÔ¼ö
+        // Semaphoreì— ëŒ€í•œ informationì„ ìƒì„±í•˜ëŠ” í•¨ìˆ˜
         VkSemaphoreCreateInfo semaphoreCreateInfo(VkSemaphoreCreateFlags flags = 0);
 
     }

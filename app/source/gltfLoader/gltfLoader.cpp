@@ -14,10 +14,10 @@ namespace vkengine {
     {
         VulkanEngine::init();
         this->camera = std::make_shared<vkengine::object::Camera>(
-            cVec3(0.0f, 0.0f, 1.0f), // Ä«¸Ş¶ó À§Ä¡
-            cVec3(0.0f, -1.0f, 0.0f), // Ä«¸Ş¶ó up
-            cVec3(0.0f, 0.0f, 1.0f), // Ä«¸Ş¶ó dir
-            cVec3(1.0f, 0.0f, 0.0f) // Ä«¸Ş¶ó right
+            cVec3(0.0f, 0.0f, 1.0f), // ì¹´ë©”ë¼ ìœ„ì¹˜
+            cVec3(0.0f, -1.0f, 0.0f), // ì¹´ë©”ë¼ up
+            cVec3(0.0f, 0.0f, 1.0f), // ì¹´ë©”ë¼ dir
+            cVec3(1.0f, 0.0f, 0.0f) // ì¹´ë©”ë¼ right
         );
     }
 
@@ -33,7 +33,7 @@ namespace vkengine {
         cString path = "/noGit/sponza/glTF/Sponza.gltf";
         
         helper::loadModel::GLTF::loadAsset(path, this->modelObject);
-        this->modelObject->setScale(cVec3(0.3f, 0.3f, 0.3f)); // ¸ğµ¨ Å©±â Á¶Á¤
+        this->modelObject->setScale(cVec3(0.3f, 0.3f, 0.3f)); // ëª¨ë¸ í¬ê¸° ì¡°ì •
         this->modelObject->updateMatrix();
 
         this->createVertexbuffer();
@@ -240,12 +240,12 @@ namespace vkengine {
     {
         VkCommandBufferBeginInfo beginInfo = framedata->commandBufferBeginInfo(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
 
-        // ·»´õ ÆĞ½º¸¦ ½ÃÀÛÇÏ±â À§ÇÑ Å¬¸®¾î °ª ¼³Á¤
+        // ë Œë” íŒ¨ìŠ¤ë¥¼ ì‹œì‘í•˜ê¸° ìœ„í•œ í´ë¦¬ì–´ ê°’ ì„¤ì •
         std::array<VkClearValue, 2> clearValues{};
         clearValues[0].color = { {0.4f, 0.4f, 0.4f, 1.0f} };
         clearValues[1].depthStencil = { 1.0f, 0 };
 
-        // ·»´õ ÆĞ½º ½ÃÀÛ Á¤º¸ ±¸Á¶Ã¼¸¦ ÃÊ±âÈ­ÇÕ´Ï´Ù.
+        // ë Œë” íŒ¨ìŠ¤ ì‹œì‘ ì •ë³´ êµ¬ì¡°ì²´ë¥¼ ì´ˆê¸°í™”í•©ë‹ˆë‹¤.
         VkRenderPassBeginInfo renderPassInfo{};
         renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
         renderPassInfo.renderPass = *this->VKrenderPass.get();
@@ -307,8 +307,8 @@ namespace vkengine {
         this->modelObject->getTexture()->createDescriptorImageInfo();
     }
 
-    // ÀÓ½Ã·Î µğ½ºÅ©¸³ÅÍ¸¦ »ı¼ºÇÏ´Â ÇÔ¼ö
-    // TODO : µğ½ºÅ©¸³ÅÍ¸¦ »ı¼ºÇÏ´Â ÇÔ¼ö¸¦ ÀÛ¼ºÇØ¾ßÇÔ
+    // ì„ì‹œë¡œ ë””ìŠ¤í¬ë¦½í„°ë¥¼ ìƒì„±í•˜ëŠ” í•¨ìˆ˜
+    // TODO : ë””ìŠ¤í¬ë¦½í„°ë¥¼ ìƒì„±í•˜ëŠ” í•¨ìˆ˜ë¥¼ ì‘ì„±í•´ì•¼í•¨
     void gltfLoaderEngine::createDescriptor()
     {
         manager = DescriptorManager(this->VKdevice->logicaldevice);
@@ -328,12 +328,12 @@ namespace vkengine {
 
         VkDescriptorSetLayoutBinding setLayoutBindingsModel = helper::descriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT, 0);
         manager.setLayouts.insert({ "matrix", setLayoutBinding(setLayoutBindingsModel) });
-        manager.setLayouts["matrix"].createInfo(1); // createInfo()¸¦ È£ÃâÇÏ¿© layoutInfo¸¦ ¼³Á¤ÇÕ´Ï´Ù.
+        manager.setLayouts["matrix"].createInfo(1); // createInfo()ë¥¼ í˜¸ì¶œí•˜ì—¬ layoutInfoë¥¼ ì„¤ì •í•©ë‹ˆë‹¤.
 
         manager.createDescriptorSetLayouts("matrix");
         setLayoutBindingsModel = helper::descriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, 0);
         manager.setLayouts.insert({ "textures", setLayoutBinding(setLayoutBindingsModel) });
-        manager.setLayouts["textures"].createInfo(1); // createInfo()¸¦ È£ÃâÇÏ¿© layoutInfo¸¦ ¼³Á¤ÇÕ´Ï´Ù.
+        manager.setLayouts["textures"].createInfo(1); // createInfo()ë¥¼ í˜¸ì¶œí•˜ì—¬ layoutInfoë¥¼ ì„¤ì •í•©ë‹ˆë‹¤.
         
         manager.createDescriptorSetLayouts("textures");
 
@@ -345,7 +345,7 @@ namespace vkengine {
         vkUpdateDescriptorSets(this->VKdevice->logicaldevice, 1, &writeDescriptorSet01, 0, nullptr);
 
         // Descriptor set layout for textures
-        // layout°ú descriptorset°¡ ´Ù¸£±â ¶§¹®¿¡, °¢°¢ÀÇ ÀÌ¹ÌÁö¿¡ ´ëÇØ descriptorSetÀ» »ı¼ºÇØ¾ß ÇÑ´Ù.
+        // layoutê³¼ descriptorsetê°€ ë‹¤ë¥´ê¸° ë•Œë¬¸ì—, ê°ê°ì˜ ì´ë¯¸ì§€ì— ëŒ€í•´ descriptorSetì„ ìƒì„±í•´ì•¼ í•œë‹¤.
 
         int index = 0;
         for (auto& image : this->modelObject->getTexture()->imageData)
@@ -399,8 +399,8 @@ namespace vkengine {
         VkPipelineDynamicStateCreateInfo dynamicState = helper::pipelineDynamicStateCreateInfo(dynamicStates);
 
         std::vector<VkPushConstantRange> pushConstantRanges = {
-            helper::pushConstantRange(VK_SHADER_STAGE_VERTEX_BIT, sizeof(cMat4), 0), // Çª½Ã »ó¼ö ¹üÀ§ ¼³Á¤
-            helper::pushConstantRange(VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(cFloat), sizeof(cMat4)) // texture index »ç¿ë -> sampler array¸¦ »ç¿ëÇÏ±â ¶§¹®¿¡
+            helper::pushConstantRange(VK_SHADER_STAGE_VERTEX_BIT, sizeof(cMat4), 0), // í‘¸ì‹œ ìƒìˆ˜ ë²”ìœ„ ì„¤ì •
+            helper::pushConstantRange(VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(cFloat), sizeof(cMat4)) // texture index ì‚¬ìš© -> sampler arrayë¥¼ ì‚¬ìš©í•˜ê¸° ë•Œë¬¸ì—
         };
 #if 0
         std::array<VkDescriptorSetLayout, 2> setLayouts = { descriptorSetLayouts.matrices, descriptorSetLayouts.textures };

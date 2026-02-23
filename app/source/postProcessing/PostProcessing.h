@@ -1,7 +1,7 @@
 #ifndef POST_PROCESSING_H_
 #define POST_PROCESSING_H_
 
-// È«Á¤¸ğ vulkan ±×·¡ÇÈ½º ¿¹Á¦ Ex11_PostProcessing ÇÁ·ÎÁ§Æ® »ç¿ë
+// í™ì •ëª¨ vulkan ê·¸ë˜í”½ìŠ¤ ì˜ˆì œ Ex11_PostProcessing í”„ë¡œì íŠ¸ ì‚¬ìš©
 
 #include "VKengine2.h"
 #include "VKgui.h"

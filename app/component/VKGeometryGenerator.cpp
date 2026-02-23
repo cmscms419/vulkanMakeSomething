@@ -16,7 +16,7 @@ namespace vkengine
             float stackStep = XM_PI / sectors;
             float sectorAngle, stackAngle;
 
-            // Vertex »ı¼º
+            // Vertex ìƒì„±
             for (int i = 0; i <= sectors; ++i)
             {
                 stackAngle = XM_PI / 2 - i * stackStep;        // starting from pi/2 to -pi/2
@@ -36,7 +36,7 @@ namespace vkengine
                     
                     vertex.pos = cVec3(x, y, z);
 
-                    vertex.normal = glm::normalize(cVec3(x, y, z)); // Á¤±ÔÈ­µÈ ¹ı¼± º¤ÅÍ
+                    vertex.normal = glm::normalize(cVec3(x, y, z)); // ì •ê·œí™”ëœ ë²•ì„  ë²¡í„°
 
 
                     // vertex tex coord (s, t) range between [0, 1]
@@ -44,7 +44,7 @@ namespace vkengine
                     t = (float)i / sectors;
                     vertex.texCoord = cVec3(s, t, 0.0f);
 
-                    // tangent °è»ê (±¸¸éÀÇ tangent´Â longitude ¹æÇâ)
+                    // tangent ê³„ì‚° (êµ¬ë©´ì˜ tangentëŠ” longitude ë°©í–¥)
                     float tx = -sinf(sectorAngle);
                     float ty = cosf(sectorAngle);
                     float tz = 0.0f;
@@ -59,7 +59,7 @@ namespace vkengine
                 }
             }
 
-            // ÀÎµ¦½º »ı¼º
+            // ì¸ë±ìŠ¤ ìƒì„±
             uint32_t k1, k2;
             for (int i = 0; i < sectors; ++i)
             {

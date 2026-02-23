@@ -5,10 +5,10 @@ using namespace vkengine::Log;
 
 namespace vkengine {
 
-    // Vertex/Index´Â ¼öµ¿À¸·Î ¼³Á¤
-    // ReflectionÀ¸·Î´Â ÀÚ·áÇüÀÌ ¾Ö¸ÅÇÏ±â ¶§¹®
-    // (¼ÎÀÌ´õ¿¡¼­ vertex/index ÀÚ·áÇüÀ» ÁöÁ¤ÇÏÁö ¾ÊÀ½)
-    // °³¼ö È®ÀÎ Á¤µµ´Â °¡´É
+    // Vertex/IndexëŠ” ìˆ˜ë™ìœ¼ë¡œ ì„¤ì •
+    // Reflectionìœ¼ë¡œëŠ” ìë£Œí˜•ì´ ì• ë§¤í•˜ê¸° ë•Œë¬¸
+    // (ì…°ì´ë”ì—ì„œ vertex/index ìë£Œí˜•ì„ ì§€ì •í•˜ì§€ ì•ŠìŒ)
+    // ê°œìˆ˜ í™•ì¸ ì •ë„ëŠ” ê°€ëŠ¥
     void PipeLineHandle::createGuiPipeline(VkFormat outColorFormat)
     {
 #if 0

@@ -13,9 +13,9 @@ namespace vkengine {
     
     struct setLayoutBinding {
 
-        VkDescriptorSetLayout layout{ VK_NULL_HANDLE }; ///< µð½ºÅ©¸³ÅÍ ¼¼Æ® ·¹ÀÌ¾Æ¿ô
-        VkDescriptorSetLayoutBinding binding{}; ///< µð½ºÅ©¸³ÅÍ ¼¼Æ® ·¹ÀÌ¾Æ¿ô ¹ÙÀÎµù Á¤º¸
-        VkDescriptorSetLayoutCreateInfo layoutInfo{}; ///< µð½ºÅ©¸³ÅÍ ¼¼Æ® ·¹ÀÌ¾Æ¿ô »ý¼º Á¤º¸
+        VkDescriptorSetLayout layout{ VK_NULL_HANDLE }; ///< ë””ìŠ¤í¬ë¦½í„° ì„¸íŠ¸ ë ˆì´ì•„ì›ƒ
+        VkDescriptorSetLayoutBinding binding{}; ///< ë””ìŠ¤í¬ë¦½í„° ì„¸íŠ¸ ë ˆì´ì•„ì›ƒ ë°”ì¸ë”© ì •ë³´
+        VkDescriptorSetLayoutCreateInfo layoutInfo{}; ///< ë””ìŠ¤í¬ë¦½í„° ì„¸íŠ¸ ë ˆì´ì•„ì›ƒ ìƒì„± ì •ë³´
 
         setLayoutBinding(
             VkDescriptorSetLayoutBinding binding = VkDescriptorSetLayoutBinding{}) :

@@ -75,7 +75,7 @@ namespace vkengine {
                 }
             }
 
-            // ´Ù¸¥ º¹»ç »ı¼ºÀÚ¿Í ´ëÀÔ ¿¬»êÀÚ¸¦ »èÁ¦ÇÏ¿© ½Ì±ÛÅæ ÆĞÅÏÀ» º¸Àå
+            // ë‹¤ë¥¸ ë³µì‚¬ ìƒì„±ìì™€ ëŒ€ì… ì—°ì‚°ìë¥¼ ì‚­ì œí•˜ì—¬ ì‹±ê¸€í†¤ íŒ¨í„´ì„ ë³´ì¥
             Logger(const Logger&) = delete;
             Logger& operator=(const Logger&) = delete;
 

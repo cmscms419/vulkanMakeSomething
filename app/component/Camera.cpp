@@ -47,26 +47,26 @@ namespace vkengine {
 
         void Camera::RotateScreenStandard(cFloat xpos, cFloat ypos, int windowWidth, int windowHeight)
         {
-            // ¸¶¿ì½º Ä¿¼­ÀÇ À§Ä¡¸¦ NDC·Î º¯È¯
-            // ¸¶¿ì½º Ä¿¼­´Â ÁÂÃø »ó´Ü (0, 0), ¿ìÃø ÇÏ´Ü(width-1, height-1)
-            // NDC´Â ÁÂÃø »ó´ÜÀÌ (-1, -1), ¿ìÃø ÇÏ´Ü(1, 1)
+            // ë§ˆìš°ìŠ¤ ì»¤ì„œì˜ ìœ„ì¹˜ë¥¼ NDCë¡œ ë³€í™˜
+            // ë§ˆìš°ìŠ¤ ì»¤ì„œëŠ” ì¢Œì¸¡ ìƒë‹¨ (0, 0), ìš°ì¸¡ í•˜ë‹¨(width-1, height-1)
+            // NDCëŠ” ì¢Œì¸¡ ìƒë‹¨ì´ (-1, -1), ìš°ì¸¡ í•˜ë‹¨(1, 1)
             cFloat x = xpos * 2.0f / windowWidth - 1.0f;
             cFloat y = ypos * 2.0f / windowHeight - 1.0f;
 
-            // Ä¿¼­°¡ È­¸é ¹ÛÀ¸·Î ³ª°¬À» °æ¿ì ¹üÀ§ Á¶Àı
-            // °ÔÀÓ¿¡¼­´Â Å¬·¥ÇÁ¸¦ ¾ÈÇÒ ¼öµµ ÀÖ½À´Ï´Ù.
+            // ì»¤ì„œê°€ í™”ë©´ ë°–ìœ¼ë¡œ ë‚˜ê°”ì„ ê²½ìš° ë²”ìœ„ ì¡°ì ˆ
+            // ê²Œì„ì—ì„œëŠ” í´ë¨í”„ë¥¼ ì•ˆí•  ìˆ˜ë„ ìˆìŠµë‹ˆë‹¤.
             //x = glm::clamp(x, -1.0f, 1.0f);
             //y = glm::clamp(y, -1.0f, 1.0f);
 
-            this->yaw = x * vkMath::XM_PI; // 0 ~ 180µµ ¸¶¿ì½º È¸Àü -> YÃà ±âÁØÀ¸·Î È¸Àü
-            this->pitch = y * vkMath::XM_PIDIV4; // 0 ~ 180µµ ¸¶¿ì½º È¸Àü -> XÃà ±âÁØÀ¸·Î È¸Àü
+            this->yaw = x * vkMath::XM_PI; // 0 ~ 180ë„ ë§ˆìš°ìŠ¤ íšŒì „ -> Yì¶• ê¸°ì¤€ìœ¼ë¡œ íšŒì „
+            this->pitch = y * vkMath::XM_PIDIV4; // 0 ~ 180ë„ ë§ˆìš°ìŠ¤ íšŒì „ -> Xì¶• ê¸°ì¤€ìœ¼ë¡œ íšŒì „
 
-            // ¹æÇâ º¤ÅÍ È¸Àü
+            // ë°©í–¥ ë²¡í„° íšŒì „
             cVec3 dirction(0.0f, 0.0f, -1.0f);
 #if 1
-            // °¢ Ãàº° quaternion »ı¼º
-            cQuat qYaw = glm::angleAxis(this->yaw, this->Yaxis); // YÃà
-            cQuat qPitch = glm::angleAxis(this->pitch, this->Xaxis); // XÃà
+            // ê° ì¶•ë³„ quaternion ìƒì„±
+            cQuat qYaw = glm::angleAxis(this->yaw, this->Yaxis); // Yì¶•
+            cQuat qPitch = glm::angleAxis(this->pitch, this->Xaxis); // Xì¶•
 
             cQuat Result = qYaw * qPitch; 
             dirction = vkMath::RotationQuat(Result, dirction);
@@ -87,14 +87,14 @@ namespace vkengine {
             this->yaw += yawDelta;
             this->pitch += pitchDelta;
             
-            // Á¦ÇÑµÈ ÇÇÄ¡ °¢µµ
+            // ì œí•œëœ í”¼ì¹˜ ê°ë„
             if (constrainPitch)
             {
                 this->pitch = glm::clamp(this->pitch, -MAX_PITCH_VALUE, MAX_PITCH_VALUE);
             }
 
-            cQuat qYaw = glm::angleAxis(this->yaw, this->Yaxis); // YÃà
-            cQuat qPitch = glm::angleAxis(this->pitch, this->Xaxis); // XÃà
+            cQuat qYaw = glm::angleAxis(this->yaw, this->Yaxis); // Yì¶•
+            cQuat qPitch = glm::angleAxis(this->pitch, this->Xaxis); // Xì¶•
             cVec3 zVec = this->Zaxis;
 
             cQuat Result = qYaw * qPitch;
@@ -145,8 +145,8 @@ namespace vkengine {
             * In Vulkan, the y-axis is inverted compared to OpenGL.
             * This line multiplies the y-axis scale factor by -1 to correct the direction.
             *
-            * Vulkan¿¡¼­´Â OpenGL¿¡ ºñÇØ yÃàÀÌ ¹İÀüµË´Ï´Ù.
-            * ÀÌ ¼±Àº yÃà ¹èÀ² ÀÎ¼ö¿¡ -1À» °öÇÏ¿© ¹æÇâÀ» ¼öÁ¤ÇÕ´Ï´Ù.
+            * Vulkanì—ì„œëŠ” OpenGLì— ë¹„í•´ yì¶•ì´ ë°˜ì „ë©ë‹ˆë‹¤.
+            * ì´ ì„ ì€ yì¶• ë°°ìœ¨ ì¸ìˆ˜ì— -1ì„ ê³±í•˜ì—¬ ë°©í–¥ì„ ìˆ˜ì •í•©ë‹ˆë‹¤.
             */
 
             projectionMatrix[1][1] *= -1.f;

@@ -54,7 +54,7 @@ namespace vkengine {
             return window;
         }
 
-        // WindowManager ±¸Çö
+        // WindowManager êµ¬í˜„
         WindowManager* WindowManager::s_instance = nullptr;
 
         WindowManager& WindowManager::getInstance() {
@@ -69,14 +69,14 @@ namespace vkengine {
         }
 
         void WindowManager::pollAllEvents() {
-            // ¸ğµç µî·ÏµÈ À©µµ¿ìÀÇ ÀÌº¥Æ® Æú¸µ
+            // ëª¨ë“  ë“±ë¡ëœ ìœˆë„ìš°ì˜ ì´ë²¤íŠ¸ í´ë§
             for (auto it = m_windows.begin(); it != m_windows.end();) {
                 if (auto window = it->lock()) {
                     window->pollEvents();
                     ++it;
                 }
                 else {
-                    // weak_ptrÀÌ ¸¸·áµÈ °æ¿ì Á¦°Å
+                    // weak_ptrì´ ë§Œë£Œëœ ê²½ìš° ì œê±°
                     it = m_windows.erase(it);
                 }
             }
@@ -94,7 +94,7 @@ namespace vkengine {
                     return;
                 }
 
-                m_isCreated = false; // ÃÊ±âÈ­ »óÅÂ ¼³Á¤
+                m_isCreated = false; // ì´ˆê¸°í™” ìƒíƒœ ì„¤ì •
 
                 this->createWindow(WindowCreateInfo());
             }
@@ -107,7 +107,7 @@ namespace vkengine {
                     return;
                 }
 
-                m_isCreated = false; // ÃÊ±âÈ­ »óÅÂ ¼³Á¤
+                m_isCreated = false; // ì´ˆê¸°í™” ìƒíƒœ ì„¤ì •
 
                 this->createWindow(createInfo);
             }
@@ -124,7 +124,7 @@ namespace vkengine {
             {
                 m_createInfo = createInfo;
 
-                // GLFW À©µµ¿ì ÈùÆ® ¼³Á¤
+                // GLFW ìœˆë„ìš° íŒíŠ¸ ì„¤ì •
                 glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
                 glfwWindowHint(GLFW_RESIZABLE, m_createInfo.resizable ? GLFW_TRUE : GLFW_FALSE);
                 glfwWindowHint(GLFW_VISIBLE, m_createInfo.visible ? GLFW_TRUE : GLFW_FALSE);
@@ -144,10 +144,10 @@ namespace vkengine {
                     EXIT_TO_LOGGER("Failed to create GLFW window\n");
                 }
                 else {
-                    // »ç¿ëÀÚ Æ÷ÀÎÅÍ ¼³Á¤ (Äİ¹é¿¡¼­ this Æ÷ÀÎÅÍ Á¢±Ù¿ë)
+                    // ì‚¬ìš©ì í¬ì¸í„° ì„¤ì • (ì½œë°±ì—ì„œ this í¬ì¸í„° ì ‘ê·¼ìš©)
                     glfwSetWindowUserPointer(m_window, this);
 
-                    // Äİ¹é ÇÔ¼öµé µî·Ï
+                    // ì½œë°± í•¨ìˆ˜ë“¤ ë“±ë¡
                     glfwSetFramebufferSizeCallback(m_window, framebufferSizeCallback);
                     glfwSetWindowCloseCallback(m_window, windowCloseCallback);
                     glfwSetKeyCallback(m_window, keyCallback);
@@ -203,7 +203,7 @@ namespace vkengine {
 
             std::vector<const char*> glfwWindow::getRequiredExtensions()
             {
-                // OS¿¡ µû¶ó ¾î¶² EXT°¡ ÇÊ¿äÇÑÁö GLFW¸¦ ÅëÇØ¼­ °¡Á®¿É´Ï´Ù.
+                // OSì— ë”°ë¼ ì–´ë–¤ EXTê°€ í•„ìš”í•œì§€ GLFWë¥¼ í†µí•´ì„œ ê°€ì ¸ì˜µë‹ˆë‹¤.
 
                 std::vector<const char*> instanceExtensions{};
 
@@ -282,7 +282,7 @@ namespace vkengine {
                     glfwSetWindowShouldClose(window, GLFW_TRUE);
                 }
 
-                // key °ªÀÌ m_keyPressed ¹è¿­ÀÇ À¯È¿ ÀÎµ¦½º ¹üÀ§(0~255)ÀÎÁö È®ÀÎ ÈÄ Á¢±Ù
+                // key ê°’ì´ m_keyPressed ë°°ì—´ì˜ ìœ íš¨ ì¸ë±ìŠ¤ ë²”ìœ„(0~255)ì¸ì§€ í™•ì¸ í›„ ì ‘ê·¼
                 if (key >= 0 && key < static_cast<cInt>(sizeof(instance->getKeyBoardState().m_keyPressed) / sizeof(instance->getKeyBoardState().m_keyPressed[0])))
                 {
                     if (action == GLFW_PRESS || action == GLFW_REPEAT) {
@@ -336,7 +336,7 @@ namespace vkengine {
 
             void glfwWindow::cursorPosCallback(GLFWwindow* window, cDouble xpos, cDouble ypos)
             {
-                // GLFW À©µµ¿ì »ó¿¡¼­ÀÇ ¸¶¿ì½º x,y ÁÂÇ¥¸¦ °¡Á®¿Â´Ù
+                // GLFW ìœˆë„ìš° ìƒì—ì„œì˜ ë§ˆìš°ìŠ¤ x,y ì¢Œí‘œë¥¼ ê°€ì ¸ì˜¨ë‹¤
                 glfwGetCursorPos(window, &xpos, &ypos);
 
                 // Retrieve the glfwWindow instance associated with this GLFWwindow

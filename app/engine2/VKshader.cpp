@@ -50,27 +50,27 @@ namespace vkengine {
     {
         std::vector<VkVertexInputAttributeDescription> attributes;
 
-        // ¹öÅØ½º ½¦ÀÌ´õ¸¸ ¹öÅØ½º ÀÔ·Â ¼Ó¼ºÀ» °¡Áú ¼ö ÀÖ½À´Ï´Ù.
+        // ë²„í…ìŠ¤ ì‰ì´ë”ë§Œ ë²„í…ìŠ¤ ì…ë ¥ ì†ì„±ì„ ê°€ì§ˆ ìˆ˜ ìˆìŠµë‹ˆë‹¤.
         if (this->stage != VK_SHADER_STAGE_VERTEX_BIT) {
             EXIT_TO_LOGGER("Shader stage is not vertex shader. No vertex input attributes.\n");
             return attributes;
         }
 
-        // ÀÔ·Â º¯¼ö °³¼ö¿Í º¯¼ö ¹è¿­ÀÌ À¯È¿ÇÑÁö È®ÀÎ
+        // ì…ë ¥ ë³€ìˆ˜ ê°œìˆ˜ì™€ ë³€ìˆ˜ ë°°ì—´ì´ ìœ íš¨í•œì§€ í™•ì¸
         cUint32_t varCount = this->reflectModule.input_variable_count;
         if (varCount == 0 || this->reflectModule.input_variables == nullptr) {
             PRINT_TO_LOGGER("[Warning] No input variables found in shader: %s\n", name);
             return attributes;
         }
 
-        // verCountÀÇ Å©±â¸¸Å­ ¼Ó¼º º¤ÅÍ ¿¹¾à
+        // verCountì˜ í¬ê¸°ë§Œí¼ ì†ì„± ë²¡í„° ì˜ˆì•½
         attributes.reserve(varCount);
 
-        // ÀÔ·Â º¯¼ö ¹è¿­ »ı¼º
+        // ì…ë ¥ ë³€ìˆ˜ ë°°ì—´ ìƒì„±
         std::vector<const SpvReflectInterfaceVariable*> inputVars(this->reflectModule.input_variables,
             this->reflectModule.input_variables + varCount);
 
-        // °¢ ÀÔ·Â º¯¼ö¿¡ ´ëÇØ VkVertexInputAttributeDescription »ı¼º
+        // ê° ì…ë ¥ ë³€ìˆ˜ì— ëŒ€í•´ VkVertexInputAttributeDescription ìƒì„±
         sort(inputVars.begin(), inputVars.end(),
             [](const SpvReflectInterfaceVariable* a, const SpvReflectInterfaceVariable* b) {
             return a->location < b->location;
@@ -79,7 +79,7 @@ namespace vkengine {
         cUint32_t offset = 0;
         for (const SpvReflectInterfaceVariable* var : inputVars) {
             if (var->decoration_flags & SPV_REFLECT_DECORATION_BUILT_IN) {
-                // ³»Àå º¯¼ö´Â ¹«½Ã
+                // ë‚´ì¥ ë³€ìˆ˜ëŠ” ë¬´ì‹œ
                 continue;
             }
 
@@ -90,14 +90,14 @@ namespace vkengine {
 
             if (cString(var->name) == "gl_VertexIndex")
             {
-                continue; // gl_VertexIndex´Â ¹öÅØ½º ÀÔ·Â ¼Ó¼ºÀÌ ¾Æ´Ï¹Ç·Î ¹«½Ã
+                continue; // gl_VertexIndexëŠ” ë²„í…ìŠ¤ ì…ë ¥ ì†ì„±ì´ ì•„ë‹ˆë¯€ë¡œ ë¬´ì‹œ
             }
 
             VkVertexInputAttributeDescription attribute{};
             attribute.location = var->location;
-            attribute.binding = 0; // ´ÜÀÏ ¹ÙÀÎµù °¡Á¤
+            attribute.binding = 0; // ë‹¨ì¼ ë°”ì¸ë”© ê°€ì •
             attribute.format = helper::getVkFormatFromSpvReflectFormat(var->format);
-            attribute.offset = offset; // ¿ÀÇÁ¼ÂÀº ³ªÁß¿¡ ¹öÅØ½º ¹ÙÀÎµù¿¡¼­ ¼³Á¤
+            attribute.offset = offset; // ì˜¤í”„ì…‹ì€ ë‚˜ì¤‘ì— ë²„í…ìŠ¤ ë°”ì¸ë”©ì—ì„œ ì„¤ì •
 
             PRINT_TO_LOGGER("Attribute - Location: %d, Binding: %d, Format: %d, Offset: %d, Name: %s\n",
                 attribute.location, attribute.binding, attribute.format, attribute.offset,

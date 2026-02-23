@@ -111,7 +111,7 @@ namespace vkengine {
                 {
                     _PRINT_TO_CONSOLE_("Loading node: %s\n", NodeInput.name.c_str());
                     Node* node = new Node();
-                    node->matrix = cMat4(1.0f); // ±âº» ´ÜÀ§ Çà·Ä·Î ÃÊ±âÈ­
+                    node->matrix = cMat4(1.0f); // ê¸°ë³¸ ë‹¨ìœ„ í–‰ë ¬ë¡œ ì´ˆê¸°í™”
                     node->parent = parent;
 
                     if (NodeInput.translation.size() == 3) {
@@ -207,9 +207,9 @@ namespace vkengine {
                                     vert.normal = glm::normalize(glm::vec3(normalsBuffer ? glm::make_vec3(&normalsBuffer[v * 3]) : glm::vec3(0.0f)));
                                     vert.texCoord = texCoordsBuffer ? cVec3(glm::make_vec2(&texCoordsBuffer[v * 2]), 0.0f) : glm::vec3(0.0f);
 #if 0
-                                    vert.inTangent = tangentsBuffer ? glm::vec4(glm::make_vec4(&tangentsBuffer[v * 4])) : glm::vec4(1.0f); // Tangent°¡ ¾Æ´Ñ shader¿¡¼­ color·Î »ç¿ëµÉ ¼ö ÀÖÀ½
+                                    vert.inTangent = tangentsBuffer ? glm::vec4(glm::make_vec4(&tangentsBuffer[v * 4])) : glm::vec4(1.0f); // Tangentê°€ ì•„ë‹Œ shaderì—ì„œ colorë¡œ ì‚¬ìš©ë  ìˆ˜ ìˆìŒ
 #else
-                                    vert.inTangent = glm::vec4(1.0f); // Tangent°¡ ¾Æ´Ñ shader¿¡¼­ color·Î »ç¿ëµÉ ¼ö ÀÖÀ½
+                                    vert.inTangent = glm::vec4(1.0f); // Tangentê°€ ì•„ë‹Œ shaderì—ì„œ colorë¡œ ì‚¬ìš©ë  ìˆ˜ ìˆìŒ
 #endif
                                     /*_PRINT_TO_CONSOLE_(
                                         "Vertex %zu: Position: (%.2f, %.2f, %.2f), Normal: (%.2f, %.2f, %.2f), TexCoord: (%.2f, %.2f)\n",
@@ -324,7 +324,7 @@ namespace vkengine {
                         nodes.push_back(GLTF::loadNodes(node, glTFInput, nullptr, indices, vertices));
                     }
                     
-                    // ModelObject¿¡ µ¥ÀÌÅÍ ¼³Á¤
+                    // ModelObjectì— ë°ì´í„° ì„¤ì •
                     modelObject->getVertices()->assign(vertices.begin(), vertices.end());
                     modelObject->getIndices()->assign(indices.begin(), indices.end());
 
@@ -334,7 +334,7 @@ namespace vkengine {
 
                     size_t extPos = resoursePath.find(".gltf");
                     if (extPos != std::string::npos) {
-                        // ".gltf"°¡ Æ÷ÇÔµÈ ÆÄÀÏ¸í ¾ÕÀÇ '/' À§Ä¡ Ã£±â
+                        // ".gltf"ê°€ í¬í•¨ëœ íŒŒì¼ëª… ì•ì˜ '/' ìœ„ì¹˜ ì°¾ê¸°
                         size_t lastSlash = resoursePath.rfind('/', extPos);
                         if (lastSlash != std::string::npos) {
                             resoursePath.erase(lastSlash + 1);
@@ -355,7 +355,7 @@ namespace vkengine {
                             continue;
                         }
 
-                        // ".png" ¹®ÀÚ¿­ÀÌ Æ÷ÇÔµÇ¾î ÀÖ´ÂÁö È®ÀÎ
+                        // ".png" ë¬¸ìì—´ì´ í¬í•¨ë˜ì–´ ìˆëŠ”ì§€ í™•ì¸
                         if (image.uri.find(".png") != std::string::npos) {
                             _PRINT_TO_CONSOLE_("Image %s contains '.png' extension.\n", image.uri.c_str());
 

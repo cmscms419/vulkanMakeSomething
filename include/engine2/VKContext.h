@@ -15,7 +15,7 @@ namespace vkengine {
     {
     public:
 
-        // VKcontext Å¬·¡½º¿¡ Ãß°¡
+        // VKcontext í´ë˜ìŠ¤ì— ì¶”ê°€
         VKcontext(const VKcontext&) = delete;
         VKcontext& operator=(const VKcontext&) = delete;
 
@@ -23,21 +23,21 @@ namespace vkengine {
         ~VKcontext();
 
         void cleanup();
-        virtual cBool createInstance(std::vector<const char*> requiredInstanceExtensions);  // ÀÎ½ºÅÏ½º »ı¼º
-        virtual cBool createPysicalDevice();                                                // µğ¹ÙÀÌ½º(logical, pysical)
-        virtual cBool createLogicalDevice(cBool useSwapchain);                              // ¹°¸® µğ¹ÙÀÌ½º ¼±ÅÃ
-        virtual cBool createCommandPools();                                                 // Ä¿¸Çµå Ç® »ı¼º (grapic, compute, transfer)
-        virtual cBool createQueues();                                                       // Å¥ »ı¼º (grapic, compute, transfer)
-        virtual cBool createPipelineCache();                                                // ÆÄÀÌÇÁ¶óÀÎ Ä³½Ã »ı¼º
-        virtual cBool createDepthStencilFormat();                                           // ±íÀÌ ½ºÅÙ½Ç Æ÷¸Ë »ı¼º
+        virtual cBool createInstance(std::vector<const char*> requiredInstanceExtensions);  // ì¸ìŠ¤í„´ìŠ¤ ìƒì„±
+        virtual cBool createPysicalDevice();                                                // ë””ë°”ì´ìŠ¤(logical, pysical)
+        virtual cBool createLogicalDevice(cBool useSwapchain);                              // ë¬¼ë¦¬ ë””ë°”ì´ìŠ¤ ì„ íƒ
+        virtual cBool createCommandPools();                                                 // ì»¤ë§¨ë“œ í’€ ìƒì„± (grapic, compute, transfer)
+        virtual cBool createQueues();                                                       // í ìƒì„± (grapic, compute, transfer)
+        virtual cBool createPipelineCache();                                                // íŒŒì´í”„ë¼ì¸ ìºì‹œ ìƒì„±
+        virtual cBool createDepthStencilFormat();                                           // ê¹Šì´ ìŠ¤í…ì‹¤ í¬ë§· ìƒì„±
         virtual cBool setupDebugCallback();
 
-        // µµ±¸
-        cBool checkValidationLayerSupport(const cChar* str); // °ËÁõ ·¹ÀÌ¾î Áö¿ø È®ÀÎ
-        VKCommandBufferHander createGrapicsCommandBufferHander(VkCommandBufferLevel level, cBool begin); // Ä¿¸Çµå ¹öÆÛ »ı¼º
-        std::vector<VKCommandBufferHander> createGrapicsCommandBufferHanders(cUint32_t count); // ¿©·¯°³ÀÇ grapics Ä¿¸Çµå ¹öÆÛ »ı¼º
+        // ë„êµ¬
+        cBool checkValidationLayerSupport(const cChar* str); // ê²€ì¦ ë ˆì´ì–´ ì§€ì› í™•ì¸
+        VKCommandBufferHander createGrapicsCommandBufferHander(VkCommandBufferLevel level, cBool begin); // ì»¤ë§¨ë“œ ë²„í¼ ìƒì„±
+        std::vector<VKCommandBufferHander> createGrapicsCommandBufferHanders(cUint32_t count); // ì—¬ëŸ¬ê°œì˜ grapics ì»¤ë§¨ë“œ ë²„í¼ ìƒì„±
         VKCommandBufferHander createTransferCommandBufferHander(VkCommandBufferLevel level, cBool begin);
-        std::vector<VKCommandBufferHander> createTransferCommandBufferHanders(cUint32_t count); // ¿©·¯°³ÀÇ grapics Ä¿¸Çµå ¹öÆÛ »ı¼º
+        std::vector<VKCommandBufferHander> createTransferCommandBufferHanders(cUint32_t count); // ì—¬ëŸ¬ê°œì˜ grapics ì»¤ë§¨ë“œ ë²„í¼ ìƒì„±
 
         
         cUint32_t getMemoryTypeIndex(cUint32_t typeBits, VkMemoryPropertyFlags properties);
@@ -57,12 +57,12 @@ namespace vkengine {
         void waitGraphicsQueueIdle();
 
     private:
-        VkInstance VKinstance{};                              // Vulkan ÀÎ½ºÅÏ½º -> Vulkan API¸¦ »ç¿ëÇÏ±â À§ÇÑ ÀÎ½ºÅÏ½º
-        VKdeviceHandler2 VKdevice;                            // µğ¹ÙÀÌ½º -> GPU Logical,Physical struct Handle
-        VkPipelineCache VKpipelineCache{ VK_NULL_HANDLE };    // ÆÄÀÌÇÁ¶óÀÎ Ä³½Ã -> ÆÄÀÌÇÁ¶óÀÎ Ä³½Ã¸¦ »ı¼º
-        depthStencill VKdepthStencill{};                      // ±íÀÌ ½ºÅÙ½Ç -> ±íÀÌ ½ºÅÙ½Ç ÀÌ¹ÌÁö¿Í ¸Ş¸ğ¸®
-        DescriptorManager2 descriptorManager2;               // µğ½ºÅ©¸³ÅÍ ¸Å´ÏÀú -> µğ½ºÅ©¸³ÅÍ ¼¼Æ® ·¹ÀÌ¾Æ¿ô°ú µğ½ºÅ©¸³ÅÍ Ç® °ü¸®
-        VkDebugUtilsMessengerEXT VKdebugUtilsMessenger{};  // µğ¹ö±× ¸Ş½ÅÀú -> µğ¹ö±ëÀ» À§ÇÑ ¸Ş½ÅÀú
+        VkInstance VKinstance{};                              // Vulkan ì¸ìŠ¤í„´ìŠ¤ -> Vulkan APIë¥¼ ì‚¬ìš©í•˜ê¸° ìœ„í•œ ì¸ìŠ¤í„´ìŠ¤
+        VKdeviceHandler2 VKdevice;                            // ë””ë°”ì´ìŠ¤ -> GPU Logical,Physical struct Handle
+        VkPipelineCache VKpipelineCache{ VK_NULL_HANDLE };    // íŒŒì´í”„ë¼ì¸ ìºì‹œ -> íŒŒì´í”„ë¼ì¸ ìºì‹œë¥¼ ìƒì„±
+        depthStencill VKdepthStencill{};                      // ê¹Šì´ ìŠ¤í…ì‹¤ -> ê¹Šì´ ìŠ¤í…ì‹¤ ì´ë¯¸ì§€ì™€ ë©”ëª¨ë¦¬
+        DescriptorManager2 descriptorManager2;               // ë””ìŠ¤í¬ë¦½í„° ë§¤ë‹ˆì € -> ë””ìŠ¤í¬ë¦½í„° ì„¸íŠ¸ ë ˆì´ì•„ì›ƒê³¼ ë””ìŠ¤í¬ë¦½í„° í’€ ê´€ë¦¬
+        VkDebugUtilsMessengerEXT VKdebugUtilsMessenger{};  // ë””ë²„ê·¸ ë©”ì‹ ì € -> ë””ë²„ê¹…ì„ ìœ„í•œ ë©”ì‹ ì €
         cBool useDepthStencil = false;
     };
 }

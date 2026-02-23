@@ -27,20 +27,20 @@ int main(int argc, char* argv[]) {
         root_path = path;
     }
     else {
-        std::cerr << "°æ·Î¸¦ °¡Á®¿À´Â µ¥ ½ÇÆÐÇß½À´Ï´Ù." << std::endl;
+        std::cerr << "ê²½ë¡œë¥¼ ê°€ì ¸ì˜¤ëŠ” ë° ì‹¤íŒ¨í–ˆìŠµë‹ˆë‹¤." << std::endl;
     }
 
     cString shaderComPath = root_path + "../../../../../../shader/compCSsample.spv";
 
     SpvReflectShaderModule module;
 
-    // shader ÀÐ±â
+    // shader ì½ê¸°
 
     std::vector<cChar> shaderCode = vkengine::helper::readSPVFile(shaderComPath);
 
     PRINT_TO_LOGGER("Shader Code Size: %zu bytes\n", shaderCode.size());
 
-    // SPIR-V ¸ðµâ ÃÊ±âÈ­
+    // SPIR-V ëª¨ë“ˆ ì´ˆê¸°í™”
     SpvReflectResult result = spvReflectCreateShaderModule(
         shaderCode.size(), reinterpret_cast<const uint32_t*>(shaderCode.data()), &module);
 
@@ -49,10 +49,10 @@ int main(int argc, char* argv[]) {
     }
 
 
-    // reflection Á¤º¸ Ãâ·Â
+    // reflection ì •ë³´ ì¶œë ¥
     printReflectionInfo(module);
 
-    // ¸ðµâ Á¤¸®
+    // ëª¨ë“ˆ ì •ë¦¬
     spvReflectDestroyShaderModule(&module);
 
     PRINT_TO_LOGGER("\nShader reflection completed successfully!");

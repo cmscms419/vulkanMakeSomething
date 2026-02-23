@@ -33,7 +33,7 @@ namespace vkengine {
 
         cBool _isInitialized{ false };
         cBool stop_rendering{ false };
-        cBool framebufferResized{ false };   // ÇÁ·¹ÀÓ ¹öÆÛ Å©±â Á¶Á¤ ¿©ºÎ
+        cBool framebufferResized{ false };   // í”„ë ˆì„ ë²„í¼ í¬ê¸° ì¡°ì • ì—¬ë¶€
 
         FrameData& getCurrnetFrameData();
 
@@ -57,10 +57,10 @@ namespace vkengine {
         // drawFrame
         virtual void drawFrame() = 0;
 
-        // ÇÁ·¹ÀÓÀ» ÁØºñÇÏ´Â ÇÔ¼ö
+        // í”„ë ˆì„ì„ ì¤€ë¹„í•˜ëŠ” í•¨ìˆ˜
         void prepareFame(uint32_t* imageIndex);
 
-        // present frame -> È­¸é¿¡ ·»´õ¸µµÈ ÀÌ¹ÌÁö¸¦ Ç¥½Ã
+        // present frame -> í™”ë©´ì— ë Œë”ë§ëœ ì´ë¯¸ì§€ë¥¼ í‘œì‹œ
         void presentFrame(uint32_t* imageIndex);
 
         void createDescriptorPoolImGui();
@@ -125,79 +125,79 @@ namespace vkengine {
         virtual cBool init_command_pool();
         virtual cBool init_sync_structures();
 
-        // ¿£Áø ÃÊ±âÈ­
-        virtual cBool createInstance();                             // ÀÎ½ºÅÏ½º »ı¼º
-        virtual cBool setupDebugCallback();                         // µğ¹ö±× ¸Ş½ÅÀú »ı¼º
-        virtual cBool createSurface();                              // ¼­ÇÇ½º »ı¼º
-        virtual cBool createDevice();                               // µğ¹ÙÀÌ½º(logical, pysical) »ı¼º
-        virtual cBool createDepthStencilResources();                // ±íÀÌ ½ºÅÙ½Ç »ı¼º
-        virtual cBool createRenderPass();                           // ·»´õ ÆĞ½º »ı¼º
-        virtual cBool createPipelineCache();                        // ÆÄÀÌÇÁ¶óÀÎ Ä³½Ã »ı¼º
-        virtual cBool createFramebuffers();                         // ÇÁ·¹ÀÓ ¹öÆÛ »ı¼º
-        virtual cBool recreateSwapChain();                          // ½º¿Ò Ã¼ÀÎ Àç»ı¼º
-        virtual cBool createCommandBuffer();                        // Ä¿¸Çµå ¹öÆÛ »ı¼º
+        // ì—”ì§„ ì´ˆê¸°í™”
+        virtual cBool createInstance();                             // ì¸ìŠ¤í„´ìŠ¤ ìƒì„±
+        virtual cBool setupDebugCallback();                         // ë””ë²„ê·¸ ë©”ì‹ ì € ìƒì„±
+        virtual cBool createSurface();                              // ì„œí”¼ìŠ¤ ìƒì„±
+        virtual cBool createDevice();                               // ë””ë°”ì´ìŠ¤(logical, pysical) ìƒì„±
+        virtual cBool createDepthStencilResources();                // ê¹Šì´ ìŠ¤í…ì‹¤ ìƒì„±
+        virtual cBool createRenderPass();                           // ë Œë” íŒ¨ìŠ¤ ìƒì„±
+        virtual cBool createPipelineCache();                        // íŒŒì´í”„ë¼ì¸ ìºì‹œ ìƒì„±
+        virtual cBool createFramebuffers();                         // í”„ë ˆì„ ë²„í¼ ìƒì„±
+        virtual cBool recreateSwapChain();                          // ìŠ¤ì™‘ ì²´ì¸ ì¬ìƒì„±
+        virtual cBool createCommandBuffer();                        // ì»¤ë§¨ë“œ ë²„í¼ ìƒì„±
 
-        virtual void recordCommandBuffer(FrameData* framedata, uint32_t imageIndex);    // Ä¿¸Çµå ¹öÆÛ ·¹ÄÚµå
+        virtual void recordCommandBuffer(FrameData* framedata, uint32_t imageIndex);    // ì»¤ë§¨ë“œ ë²„í¼ ë ˆì½”ë“œ
 
-        // µµ±¸
-        cBool checkValidationLayerSupport();               // °ËÁõ ·¹ÀÌ¾î Áö¿ø È®ÀÎ
-        std::vector<const cChar*> getRequiredExtensions(); // ÇÊ¿äÇÑ È®Àå ¸ñ·Ï °¡Á®¿À±â
+        // ë„êµ¬
+        cBool checkValidationLayerSupport();               // ê²€ì¦ ë ˆì´ì–´ ì§€ì› í™•ì¸
+        std::vector<const cChar*> getRequiredExtensions(); // í•„ìš”í•œ í™•ì¥ ëª©ë¡ ê°€ì ¸ì˜¤ê¸°
 
-        GLFWwindow* VKwindow{ nullptr };  // GLFW À©µµ¿ì ÇÚµé -> GLFW À©µµ¿ì ÇÚµéÀ» ÀúÀå
-        VkInstance VKinstance{};                              // Vulkan ÀÎ½ºÅÏ½º -> Vulkan API¸¦ »ç¿ëÇÏ±â À§ÇÑ ÀÎ½ºÅÏ½º
-        VkDebugUtilsMessengerEXT VKdebugUtilsMessenger{};  // µğ¹ö±× ¸Ş½ÅÀú -> µğ¹ö±ëÀ» À§ÇÑ ¸Ş½ÅÀú
-        VkSurfaceKHR VKsurface{ VK_NULL_HANDLE };  // ¼­ÇÇ½º -> À©µµ¿ì ½Ã½ºÅÛ°ú VulkanÀ» ¿¬°áÇÏ´Â ÀÎÅÍÆäÀÌ½º
+        GLFWwindow* VKwindow{ nullptr };  // GLFW ìœˆë„ìš° í•¸ë“¤ -> GLFW ìœˆë„ìš° í•¸ë“¤ì„ ì €ì¥
+        VkInstance VKinstance{};                              // Vulkan ì¸ìŠ¤í„´ìŠ¤ -> Vulkan APIë¥¼ ì‚¬ìš©í•˜ê¸° ìœ„í•œ ì¸ìŠ¤í„´ìŠ¤
+        VkDebugUtilsMessengerEXT VKdebugUtilsMessenger{};  // ë””ë²„ê·¸ ë©”ì‹ ì € -> ë””ë²„ê¹…ì„ ìœ„í•œ ë©”ì‹ ì €
+        VkSurfaceKHR VKsurface{ VK_NULL_HANDLE };  // ì„œí”¼ìŠ¤ -> ìœˆë„ìš° ì‹œìŠ¤í…œê³¼ Vulkanì„ ì—°ê²°í•˜ëŠ” ì¸í„°í˜ì´ìŠ¤
 
-        FrameData VKframeData[MAX_FRAMES_IN_FLIGHT];        // ÇÁ·¹ÀÓ µ¥ÀÌÅÍ -> ÇÁ·¹ÀÓ µ¥ÀÌÅÍ ±¸Á¶Ã¼
-        std::unique_ptr<VkRenderPass> VKrenderPass{ VK_NULL_HANDLE };        // ·»´õ ÆĞ½º -> ·»´õ¸µ ÀÛ¾÷À» Á¤ÀÇÇÏ´Â µ¥ »ç¿ë
-        std::vector<VkFramebuffer> VKswapChainFramebuffers; // ½º¿Ò Ã¼ÀÎ ÇÁ·¹ÀÓ ¹öÆÛ -> ½º¿Ò Ã¼ÀÎ ÀÌ¹ÌÁö¸¦ ·»´õ¸µÇÒ ¶§ »ç¿ë (ÇÁ·¹ÀÓ ¹öÆÛ´Â ÀÌ¹ÌÁö¸¦ ·»´õ¸µÇÏ´Â µ¥ »ç¿ë)
-        depthStencill VKdepthStencill{};  // ±íÀÌ ½ºÅÙ½Ç -> ±íÀÌ ½ºÅÙ½Ç ÀÌ¹ÌÁö¿Í ¸Ş¸ğ¸®
+        FrameData VKframeData[MAX_FRAMES_IN_FLIGHT];        // í”„ë ˆì„ ë°ì´í„° -> í”„ë ˆì„ ë°ì´í„° êµ¬ì¡°ì²´
+        std::unique_ptr<VkRenderPass> VKrenderPass{ VK_NULL_HANDLE };        // ë Œë” íŒ¨ìŠ¤ -> ë Œë”ë§ ì‘ì—…ì„ ì •ì˜í•˜ëŠ” ë° ì‚¬ìš©
+        std::vector<VkFramebuffer> VKswapChainFramebuffers; // ìŠ¤ì™‘ ì²´ì¸ í”„ë ˆì„ ë²„í¼ -> ìŠ¤ì™‘ ì²´ì¸ ì´ë¯¸ì§€ë¥¼ ë Œë”ë§í•  ë•Œ ì‚¬ìš© (í”„ë ˆì„ ë²„í¼ëŠ” ì´ë¯¸ì§€ë¥¼ ë Œë”ë§í•˜ëŠ” ë° ì‚¬ìš©)
+        depthStencill VKdepthStencill{};  // ê¹Šì´ ìŠ¤í…ì‹¤ -> ê¹Šì´ ìŠ¤í…ì‹¤ ì´ë¯¸ì§€ì™€ ë©”ëª¨ë¦¬
 
-        std::unique_ptr<VKSwapChain> VKswapChain;  // ½º¿Ò Ã¼ÀÎ -> ½º¿Ò Ã¼ÀÎ Å¬·¡½º
-        std::unique_ptr<VKdeviceHandler> VKdevice{};  // µğ¹ÙÀÌ½º -> GPU Logical,Physical struct Handle
-        VkPipelineCache VKpipelineCache{ VK_NULL_HANDLE }; // ÆÄÀÌÇÁ¶óÀÎ Ä³½Ã -> ÆÄÀÌÇÁ¶óÀÎ Ä³½Ã¸¦ »ı¼º
-        VkSampleCountFlagBits VKmsaaSamples = VK_SAMPLE_COUNT_1_BIT; // MSAA »ùÇÃ -> MSAA »ùÇÃ ¼ö
+        std::unique_ptr<VKSwapChain> VKswapChain;  // ìŠ¤ì™‘ ì²´ì¸ -> ìŠ¤ì™‘ ì²´ì¸ í´ë˜ìŠ¤
+        std::unique_ptr<VKdeviceHandler> VKdevice{};  // ë””ë°”ì´ìŠ¤ -> GPU Logical,Physical struct Handle
+        VkPipelineCache VKpipelineCache{ VK_NULL_HANDLE }; // íŒŒì´í”„ë¼ì¸ ìºì‹œ -> íŒŒì´í”„ë¼ì¸ ìºì‹œë¥¼ ìƒì„±
+        VkSampleCountFlagBits VKmsaaSamples = VK_SAMPLE_COUNT_1_BIT; // MSAA ìƒ˜í”Œ -> MSAA ìƒ˜í”Œ ìˆ˜
 
         VkDescriptorPool VKdescriptorPool{ VK_NULL_HANDLE };
         VkDescriptorSetLayout VKdescriptorSetLayout{ VK_NULL_HANDLE };
         std::vector<VkDescriptorSet> VKdescriptorSets = {};
 
-        std::shared_ptr<vkengine::object::Camera> camera = nullptr;  // Ä«¸Ş¶ó -> Ä«¸Ş¶ó Å¬·¡½º
+        std::shared_ptr<vkengine::object::Camera> camera = nullptr;  // ì¹´ë©”ë¼ -> ì¹´ë©”ë¼ í´ë˜ìŠ¤
 
-        // ·»´õ¸µÀ» ½ÃÀÛÇÏ±â Àü¿¡ ·»´õ¸µÇÒ ÁØºñ°¡ µÇ¾ú´ÂÁö È®ÀÎÇÏ´Â º¯¼ö
-        VkSubmitInfo VKsubmitInfo{};  // Á¦Ãâ Á¤º¸ -> Á¦ÃâÇÒ ¸í·É ¹öÆÛ¿Í ¼¼¸¶Æ÷¾î¸¦ ÀúÀå
+        // ë Œë”ë§ì„ ì‹œì‘í•˜ê¸° ì „ì— ë Œë”ë§í•  ì¤€ë¹„ê°€ ë˜ì—ˆëŠ”ì§€ í™•ì¸í•˜ëŠ” ë³€ìˆ˜
+        VkSubmitInfo VKsubmitInfo{};  // ì œì¶œ ì •ë³´ -> ì œì¶œí•  ëª…ë ¹ ë²„í¼ì™€ ì„¸ë§ˆí¬ì–´ë¥¼ ì €ì¥
 
-        cString RootPath = "";                              // ·çÆ® °æ·Î
-        cString ResourcePath = "../../../../../../source/"; // ¸®¼Ò½º °æ·Î
-        size_t currentFrame = 0;                            // ÇöÀç ÇÁ·¹ÀÓ ÀÎµ¦½º
-        cBool state = false;                                 // ÇÁ·Î±×·¥ »óÅÂ 
-        int windowWidth = WIDTH;                            // À©µµ¿ì ³Êºñ
-        int windowHeight = HEIGHT;                          // À©µµ¿ì ³ôÀÌ
+        cString RootPath = "";                              // ë£¨íŠ¸ ê²½ë¡œ
+        cString ResourcePath = "../../../../../../source/"; // ë¦¬ì†ŒìŠ¤ ê²½ë¡œ
+        size_t currentFrame = 0;                            // í˜„ì¬ í”„ë ˆì„ ì¸ë±ìŠ¤
+        cBool state = false;                                 // í”„ë¡œê·¸ë¨ ìƒíƒœ 
+        int windowWidth = WIDTH;                            // ìœˆë„ìš° ë„ˆë¹„
+        int windowHeight = HEIGHT;                          // ìœˆë„ìš° ë†’ì´
 
-        // ÇöÀç Å°º¸µå°¡ ´­·È´ÂÁö »óÅÂ¸¦ ÀúÀåÇÏ´Â ¹è¿­
+        // í˜„ì¬ í‚¤ë³´ë“œê°€ ëˆŒë ¸ëŠ”ì§€ ìƒíƒœë¥¼ ì €ì¥í•˜ëŠ” ë°°ì—´
         cBool m_keyPressed[256] = {
             false,
         };
 
-        // ¸¶¿ì½º Ä¿¼­ À§Ä¡
+        // ë§ˆìš°ìŠ¤ ì»¤ì„œ ìœ„ì¹˜
         cFloat lastMouseX = 0;
         cFloat lastMouseY = 0;
 
         cBool m_mousePressed[3] = {
-            false, // ¿ŞÂÊ ¹öÆ°
-            false, // ¿À¸¥ÂÊ ¹öÆ°
-            false, // °¡¿îµ¥ ¹öÆ°
+            false, // ì™¼ìª½ ë²„íŠ¼
+            false, // ì˜¤ë¥¸ìª½ ë²„íŠ¼
+            false, // ê°€ìš´ë° ë²„íŠ¼
         };
 
-        // Camera Move ¿©ºÎ
+        // Camera Move ì—¬ë¶€
         cBool cameraMove = false;
-        cBool cameraMoveStyle = false; // Ä«¸Ş¶ó ÀÌµ¿ ½ºÅ¸ÀÏ
+        cBool cameraMoveStyle = false; // ì¹´ë©”ë¼ ì´ë™ ìŠ¤íƒ€ì¼
 
-        // ÇöÀç ½Ã°£
+        // í˜„ì¬ ì‹œê°„
         std::chrono::high_resolution_clock::time_point currentTime;
         std::chrono::high_resolution_clock::time_point startTime;
 
-        // ÃÖ´ë ÇÁ·¹ÀÓ ¼ö
+        // ìµœëŒ€ í”„ë ˆì„ ìˆ˜
         uint16_t frames = MAX_FRAMES_IN_FLIGHT;
     };
 

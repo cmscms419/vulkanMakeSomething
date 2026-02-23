@@ -6,23 +6,23 @@ namespace vkengine {
 
     VkCommandBuffer VKBarrierHelper::beginSingleTimeCommands2(VkDevice device, VkCommandPool commandPool, VkCommandBufferLevel level, cBool oneTime)
     {
-        VkCommandBuffer buffer{ VK_NULL_HANDLE }; // Ä¿¸Çµå ¹öÆÛ ÇÚµé
+        VkCommandBuffer buffer{ VK_NULL_HANDLE }; // ì»¤ë§¨ë“œ ë²„í¼ í•¸ë“¤
 
         VkCommandBufferAllocateInfo allocInfo = helper::commandBufferAllocateInfo(commandPool, 1, level);
 
-        _VK_CHECK_RESULT_(vkAllocateCommandBuffers(device, &allocInfo, &buffer));  // Ä¿¸Çµå ¹öÆÛ¸¦ ÇÒ´çÇÕ´Ï´Ù.
+        _VK_CHECK_RESULT_(vkAllocateCommandBuffers(device, &allocInfo, &buffer));  // ì»¤ë§¨ë“œ ë²„í¼ë¥¼ í• ë‹¹í•©ë‹ˆë‹¤.
 
         VkCommandBufferBeginInfo beginInfo{};
-        // VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO : ¸í·É ¹öÆÛÀÇ ½ÃÀÛ Á¤º¸¸¦ ¼³Á¤ÇÕ´Ï´Ù.
+        // VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO : ëª…ë ¹ ë²„í¼ì˜ ì‹œì‘ ì •ë³´ë¥¼ ì„¤ì •í•©ë‹ˆë‹¤.
         beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 
-        // VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT : Ä¿¸Çµå ¹öÆÛ¸¦ ÇÑ ¹ø¸¸ »ç¿ëÇÏ·Á´Â °æ¿ì »ç¿ëÇÕ´Ï´Ù.
+        // VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT : ì»¤ë§¨ë“œ ë²„í¼ë¥¼ í•œ ë²ˆë§Œ ì‚¬ìš©í•˜ë ¤ëŠ” ê²½ìš° ì‚¬ìš©í•©ë‹ˆë‹¤.
         if (oneTime)
         {
             beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
         }
         
-        // Ä¿¸Çµå ¹öÆÛ¸¦ ½ÃÀÛÇÕ´Ï´Ù.
+        // ì»¤ë§¨ë“œ ë²„í¼ë¥¼ ì‹œì‘í•©ë‹ˆë‹¤.
         _VK_CHECK_RESULT_(vkBeginCommandBuffer(buffer, &beginInfo));
 
         return buffer;
@@ -32,40 +32,40 @@ namespace vkengine {
     {
         _VK_CHECK_RESULT_(vkEndCommandBuffer(commandBuffer));
 
-        // Ä¿¸Çµå ¹öÆÛ Á¦Ãâ Á¤º¸¸¦ ¼³Á¤ÇÕ´Ï´Ù.
-        // ±¸Á¶Ã¼ Å¸ÀÔÀ» ¼³Á¤ÇÕ´Ï´Ù.
+        // ì»¤ë§¨ë“œ ë²„í¼ ì œì¶œ ì •ë³´ë¥¼ ì„¤ì •í•©ë‹ˆë‹¤.
+        // êµ¬ì¡°ì²´ íƒ€ì…ì„ ì„¤ì •í•©ë‹ˆë‹¤.
         VkCommandBufferSubmitInfo cmdSubmitInfo{ VK_STRUCTURE_TYPE_COMMAND_BUFFER_SUBMIT_INFO };
-        cmdSubmitInfo.commandBuffer = commandBuffer; // Á¦ÃâÇÒ Ä¿¸Çµå ¹öÆÛ¸¦ ÁöÁ¤ÇÕ´Ï´Ù.
-        cmdSubmitInfo.pNext = nullptr;  // È®Àå Á¤º¸¸¦ À§ÇÑ Æ÷ÀÎÅÍ¸¦ ¼³Á¤ÇÕ´Ï´Ù (¾øÀ¸¸é nullptr).
-        cmdSubmitInfo.deviceMask = 0;   // ¸ÖÆ¼ GPU È¯°æ¿¡¼­ »ç¿ëÇÒ µğ¹ÙÀÌ½º ¸¶½ºÅ©¸¦ ¼³Á¤ÇÕ´Ï´Ù (´ÜÀÏ GPU¿¡¼­´Â 0).
+        cmdSubmitInfo.commandBuffer = commandBuffer; // ì œì¶œí•  ì»¤ë§¨ë“œ ë²„í¼ë¥¼ ì§€ì •í•©ë‹ˆë‹¤.
+        cmdSubmitInfo.pNext = nullptr;  // í™•ì¥ ì •ë³´ë¥¼ ìœ„í•œ í¬ì¸í„°ë¥¼ ì„¤ì •í•©ë‹ˆë‹¤ (ì—†ìœ¼ë©´ nullptr).
+        cmdSubmitInfo.deviceMask = 0;   // ë©€í‹° GPU í™˜ê²½ì—ì„œ ì‚¬ìš©í•  ë””ë°”ì´ìŠ¤ ë§ˆìŠ¤í¬ë¥¼ ì„¤ì •í•©ë‹ˆë‹¤ (ë‹¨ì¼ GPUì—ì„œëŠ” 0).
 
-        // Á¦Ãâ Á¤º¸¸¦ ´ãÀº ±¸Á¶Ã¼¸¦ ÃÊ±âÈ­ÇÕ´Ï´Ù.
-        // VkSubmitInfoº¸´Ù »õ·Î¿î VkSubmitInfo2¸¦ »ç¿ëÇÕ´Ï´Ù.
-        // Å¸ÀÓ¶óÀÎ ¼¼¸¶Æ÷¾î °ª Áö¿ø, ´õ Á¤È®ÇÑ µ¿±âÈ­ Æ÷ÀÎÆ® ÁöÁ¤
-        // ¸ÖÆ¼ GPU È¯°æ¿¡¼­ µğ¹ÙÀÌ½º ¸¶½ºÅ© ÁöÁ¤ °¡´É, ´õ Á¤È®ÇÑ Á¦Ãâ Á¦¾î
-        VkSubmitInfo2 submitInfo2{ VK_STRUCTURE_TYPE_SUBMIT_INFO_2 }; // ±¸Á¶Ã¼ Å¸ÀÔÀ» ¼³Á¤ÇÕ´Ï´Ù.
-        submitInfo2.pNext = nullptr; // È®Àå Á¤º¸¸¦ À§ÇÑ Æ÷ÀÎÅÍ¸¦ ¼³Á¤ÇÕ´Ï´Ù (¾øÀ¸¸é nullptr).
-        submitInfo2.flags = 0; // Á¦Ãâ ÇÃ·¡±×¸¦ ¼³Á¤ÇÕ´Ï´Ù (±âº»°ªÀº 0).
-        submitInfo2.waitSemaphoreInfoCount = 0; // ´ë±âÇÒ ¼¼¸¶Æ÷¾î Á¤º¸ÀÇ °³¼ö¸¦ ¼³Á¤ÇÕ´Ï´Ù (¾øÀ¸¸é 0).
-        submitInfo2.pWaitSemaphoreInfos = nullptr; // ´ë±âÇÒ ¼¼¸¶Æ÷¾î Á¤º¸ ¹è¿­À» ¼³Á¤ÇÕ´Ï´Ù (¾øÀ¸¸é nullptr).
-        submitInfo2.commandBufferInfoCount = 1; // Á¦ÃâÇÒ Ä¿¸Çµå ¹öÆÛ Á¤º¸ÀÇ °³¼ö¸¦ ¼³Á¤ÇÕ´Ï´Ù.
-        submitInfo2.pCommandBufferInfos = &cmdSubmitInfo; // Á¦ÃâÇÒ Ä¿¸Çµå ¹öÆÛ Á¤º¸ ¹è¿­À» ¼³Á¤ÇÕ´Ï´Ù.
+        // ì œì¶œ ì •ë³´ë¥¼ ë‹´ì€ êµ¬ì¡°ì²´ë¥¼ ì´ˆê¸°í™”í•©ë‹ˆë‹¤.
+        // VkSubmitInfoë³´ë‹¤ ìƒˆë¡œìš´ VkSubmitInfo2ë¥¼ ì‚¬ìš©í•©ë‹ˆë‹¤.
+        // íƒ€ì„ë¼ì¸ ì„¸ë§ˆí¬ì–´ ê°’ ì§€ì›, ë” ì •í™•í•œ ë™ê¸°í™” í¬ì¸íŠ¸ ì§€ì •
+        // ë©€í‹° GPU í™˜ê²½ì—ì„œ ë””ë°”ì´ìŠ¤ ë§ˆìŠ¤í¬ ì§€ì • ê°€ëŠ¥, ë” ì •í™•í•œ ì œì¶œ ì œì–´
+        VkSubmitInfo2 submitInfo2{ VK_STRUCTURE_TYPE_SUBMIT_INFO_2 }; // êµ¬ì¡°ì²´ íƒ€ì…ì„ ì„¤ì •í•©ë‹ˆë‹¤.
+        submitInfo2.pNext = nullptr; // í™•ì¥ ì •ë³´ë¥¼ ìœ„í•œ í¬ì¸í„°ë¥¼ ì„¤ì •í•©ë‹ˆë‹¤ (ì—†ìœ¼ë©´ nullptr).
+        submitInfo2.flags = 0; // ì œì¶œ í”Œë˜ê·¸ë¥¼ ì„¤ì •í•©ë‹ˆë‹¤ (ê¸°ë³¸ê°’ì€ 0).
+        submitInfo2.waitSemaphoreInfoCount = 0; // ëŒ€ê¸°í•  ì„¸ë§ˆí¬ì–´ ì •ë³´ì˜ ê°œìˆ˜ë¥¼ ì„¤ì •í•©ë‹ˆë‹¤ (ì—†ìœ¼ë©´ 0).
+        submitInfo2.pWaitSemaphoreInfos = nullptr; // ëŒ€ê¸°í•  ì„¸ë§ˆí¬ì–´ ì •ë³´ ë°°ì—´ì„ ì„¤ì •í•©ë‹ˆë‹¤ (ì—†ìœ¼ë©´ nullptr).
+        submitInfo2.commandBufferInfoCount = 1; // ì œì¶œí•  ì»¤ë§¨ë“œ ë²„í¼ ì •ë³´ì˜ ê°œìˆ˜ë¥¼ ì„¤ì •í•©ë‹ˆë‹¤.
+        submitInfo2.pCommandBufferInfos = &cmdSubmitInfo; // ì œì¶œí•  ì»¤ë§¨ë“œ ë²„í¼ ì •ë³´ ë°°ì—´ì„ ì„¤ì •í•©ë‹ˆë‹¤.
 
-        // Fence »ı¼º(¸í·É ¹öÆÛ ½ÇÇà ¿Ï·á¸¦ ¾Ë¸®±â À§ÇØ)
+        // Fence ìƒì„±(ëª…ë ¹ ë²„í¼ ì‹¤í–‰ ì™„ë£Œë¥¼ ì•Œë¦¬ê¸° ìœ„í•´)
         VkFenceCreateInfo fenceInfo{ VK_STRUCTURE_TYPE_FENCE_CREATE_INFO };
         VkFence fence;
 
-        // fence »ı¼º
+        // fence ìƒì„±
         _VK_CHECK_RESULT_(vkCreateFence(device, &fenceInfo, nullptr, &fence));
 
-        // Ä¿¸Çµå ¹öÆÛ¸¦ Å¥¿¡ Á¦Ãâ
+        // ì»¤ë§¨ë“œ ë²„í¼ë¥¼ íì— ì œì¶œ
         _VK_CHECK_RESULT_(vkQueueSubmit2(Queue, 1, &submitInfo2, fence));
 
-        // Á¦ÃâµÈ Ä¿¸Çµå ¹öÆÛ°¡ ¿Ï·áµÉ ¶§±îÁö ´ë±â
+        // ì œì¶œëœ ì»¤ë§¨ë“œ ë²„í¼ê°€ ì™„ë£Œë  ë•Œê¹Œì§€ ëŒ€ê¸°
         _VK_CHECK_RESULT_(vkWaitForFences(device, 1, &fence, VK_TRUE, UINT64_MAX));
         vkDestroyFence(device, fence, nullptr);
 
-        // Ä¿¸Çµå ¹öÆÛ¸¦ ÇØÁ¦ÇÕ´Ï´Ù.
+        // ì»¤ë§¨ë“œ ë²„í¼ë¥¼ í•´ì œí•©ë‹ˆë‹¤.
         vkFreeCommandBuffers(device, commandPool, 1, &commandBuffer);
     }
 
@@ -87,40 +87,40 @@ namespace vkengine {
             return;
         }
 
-        // ÀÌ¹ÌÁö ¸Ş¸ğ¸® ¹è¸®¾î ±¸Á¶Ã¼¸¦ ÃÊ±âÈ­ÇÏ¿© ·¹ÀÌ¾Æ¿ô ÀüÈ¯ ¹× Á¢±Ù ±ÇÇÑ º¯°æÀ» Á¤ÀÇÇÕ´Ï´Ù.
-        // ±âº»ÀûÀ¸·Î »ö»ó Á¤º¸¸¦ ´ë»óÀ¸·Î ÇÏÁö¸¸, ÀÌÈÄ Á¶°Ç¿¡ µû¶ó ¼öÁ¤µË´Ï´Ù.
+        // ì´ë¯¸ì§€ ë©”ëª¨ë¦¬ ë°°ë¦¬ì–´ êµ¬ì¡°ì²´ë¥¼ ì´ˆê¸°í™”í•˜ì—¬ ë ˆì´ì•„ì›ƒ ì „í™˜ ë° ì ‘ê·¼ ê¶Œí•œ ë³€ê²½ì„ ì •ì˜í•©ë‹ˆë‹¤.
+        // ê¸°ë³¸ì ìœ¼ë¡œ ìƒ‰ìƒ ì •ë³´ë¥¼ ëŒ€ìƒìœ¼ë¡œ í•˜ì§€ë§Œ, ì´í›„ ì¡°ê±´ì— ë”°ë¼ ìˆ˜ì •ë©ë‹ˆë‹¤.
         VkImageMemoryBarrier2 barrier2{ VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2 };
 
-        barrier2.image = image; // ÀüÈ¯ÇÒ ÀÌ¹ÌÁö ÇÚµé ¼³Á¤
-        barrier2.srcStageMask = (currentStage != VK_PIPELINE_STAGE_2_NONE)  // ÆÄÀÌÇÁ¶óÀÎ ´Ü°è ¼³Á¤
+        barrier2.image = image; // ì „í™˜í•  ì´ë¯¸ì§€ í•¸ë“¤ ì„¤ì •
+        barrier2.srcStageMask = (currentStage != VK_PIPELINE_STAGE_2_NONE)  // íŒŒì´í”„ë¼ì¸ ë‹¨ê³„ ì„¤ì •
             ? currentStage : VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT;
-        barrier2.dstStageMask = newStage;                                  // ÆÄÀÌÇÁ¶óÀÎ ´Ü°è¿¡ Àû¿ëµÉ flag
-        barrier2.srcAccessMask = currentAccess;                             // ¿øº»ÀÇ ¸¶½ºÅ©¸¦ Á¤ÀÇ
-        barrier2.dstAccessMask = newAccess;                                 // ÀüÈ¯ µÉ ¸¶½ºÅ©¸¦ Á¤ÀÇ
-        barrier2.oldLayout = currentLayout;                                 // ÀüÈ¯ Àü ÀÌ¹ÌÁö ·¹ÀÌ¾Æ¿ô
-        barrier2.newLayout = newLayout;                                     // ÀüÈ¯ÇÒ ÀÌ¹ÌÁö ·¹ÀÌ¾Æ¿ô
+        barrier2.dstStageMask = newStage;                                  // íŒŒì´í”„ë¼ì¸ ë‹¨ê³„ì— ì ìš©ë  flag
+        barrier2.srcAccessMask = currentAccess;                             // ì›ë³¸ì˜ ë§ˆìŠ¤í¬ë¥¼ ì •ì˜
+        barrier2.dstAccessMask = newAccess;                                 // ì „í™˜ ë  ë§ˆìŠ¤í¬ë¥¼ ì •ì˜
+        barrier2.oldLayout = currentLayout;                                 // ì „í™˜ ì „ ì´ë¯¸ì§€ ë ˆì´ì•„ì›ƒ
+        barrier2.newLayout = newLayout;                                     // ì „í™˜í•  ì´ë¯¸ì§€ ë ˆì´ì•„ì›ƒ
 
-        // ±âº»ÀûÀ¸·Î »ö»ó Á¤º¸¸¦ ´ë»óÀ¸·Î ÇÏÁö¸¸, ÀÌÈÄ Á¶°Ç¿¡ µû¶ó ¼öÁ¤µË´Ï´Ù.
+        // ê¸°ë³¸ì ìœ¼ë¡œ ìƒ‰ìƒ ì •ë³´ë¥¼ ëŒ€ìƒìœ¼ë¡œ í•˜ì§€ë§Œ, ì´í›„ ì¡°ê±´ì— ë”°ë¼ ìˆ˜ì •ë©ë‹ˆë‹¤.
         barrier2.subresourceRange = {
-            getAspectFlagsFromLayout(this->format),     // ÀÌ¹ÌÁöÀÇ ¾î¶² ºÎºĞ(»ö»ó, ±íÀÌ µî)¿¡ ¿µÇâÀ» ¹ÌÄ¥Áö Á¤ÀÇ
-            baseMipLevel,                               // Ã¹ ¹øÂ° ¹ÌÇÁ¸Ê ·¹º§ºÎÅÍ ½ÃÀÛ
-            actualLevelCount,                           // Àû¿ëÇÒ ¹ÌÇÁ¸ÊÀÇ ¼ö     
-            baseArrayLayer,                             // Ã¹ ¹øÂ° ¹è¿­ ·¹ÀÌ¾îºÎÅÍ ½ÃÀÛ
-            actualLayerCount                            // ¹è¿­ ³» ·¹ÀÌ¾î °³¼ö 
+            getAspectFlagsFromLayout(this->format),     // ì´ë¯¸ì§€ì˜ ì–´ë–¤ ë¶€ë¶„(ìƒ‰ìƒ, ê¹Šì´ ë“±)ì— ì˜í–¥ì„ ë¯¸ì¹ ì§€ ì •ì˜
+            baseMipLevel,                               // ì²« ë²ˆì§¸ ë¯¸í”„ë§µ ë ˆë²¨ë¶€í„° ì‹œì‘
+            actualLevelCount,                           // ì ìš©í•  ë¯¸í”„ë§µì˜ ìˆ˜     
+            baseArrayLayer,                             // ì²« ë²ˆì§¸ ë°°ì—´ ë ˆì´ì–´ë¶€í„° ì‹œì‘
+            actualLayerCount                            // ë°°ì—´ ë‚´ ë ˆì´ì–´ ê°œìˆ˜ 
         };
 
-        barrier2.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;  // ¼Ò½º Å¥ ÆĞ¹Ğ¸® ÀÎµ¦½º ¹«½Ã
-        barrier2.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;  // ´ë»ó Å¥ ÆĞ¹Ğ¸® ÀÎµ¦½º ¹«½Ã
+        barrier2.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;  // ì†ŒìŠ¤ í íŒ¨ë°€ë¦¬ ì¸ë±ìŠ¤ ë¬´ì‹œ
+        barrier2.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;  // ëŒ€ìƒ í íŒ¨ë°€ë¦¬ ì¸ë±ìŠ¤ ë¬´ì‹œ
 
-        // ÆÄÀÌÇÁ¶óÀÎ ¹è¸®¾î¸¦ Ãß°¡ÇÏ¿© ·¹ÀÌ¾Æ¿ô ÀüÈ¯ ¸í·ÉÀ» ±â·ÏÇÕ´Ï´Ù.
+        // íŒŒì´í”„ë¼ì¸ ë°°ë¦¬ì–´ë¥¼ ì¶”ê°€í•˜ì—¬ ë ˆì´ì•„ì›ƒ ì „í™˜ ëª…ë ¹ì„ ê¸°ë¡í•©ë‹ˆë‹¤.
         VkDependencyInfo depInfo{ VK_STRUCTURE_TYPE_DEPENDENCY_INFO };
         depInfo.imageMemoryBarrierCount = 1;
         depInfo.pImageMemoryBarriers = &barrier2;
 
-        // ´ÜÀÏ ¸í·É ¹öÆÛ¸¦ Á¦ÃâÇÏ°í, Å¥°¡ ÇØ´ç ÀÛ¾÷À» ¿Ï·áÇÒ ¶§±îÁö ´ë±âÇÕ´Ï´Ù.
+        // ë‹¨ì¼ ëª…ë ¹ ë²„í¼ë¥¼ ì œì¶œí•˜ê³ , íê°€ í•´ë‹¹ ì‘ì—…ì„ ì™„ë£Œí•  ë•Œê¹Œì§€ ëŒ€ê¸°í•©ë‹ˆë‹¤.
         vkCmdPipelineBarrier2(commandBuffer, &depInfo);
 
-        // ÇöÀç »óÅÂ¸¦ ¾÷µ¥ÀÌÆ®ÇÕ´Ï´Ù.
+        // í˜„ì¬ ìƒíƒœë¥¼ ì—…ë°ì´íŠ¸í•©ë‹ˆë‹¤.
         if (baseMipLevel == 0 && actualLevelCount == mipLevels &&
             baseArrayLayer == 0 && actualLayerCount == arrayLayers) {
             currentLayout = newLayout;

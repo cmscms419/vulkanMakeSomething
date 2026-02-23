@@ -39,7 +39,7 @@ namespace vkengine {
 
         cBool _isInitialized{ false };
         cBool stop_rendering{ false };
-        cBool framebufferResized{ false };   // ÇÁ·¹ÀÓ ¹öÆÛ Å©±â Á¶Á¤ ¿©ºÎ
+        cBool framebufferResized{ false };   // í”„ë ˆì„ ë²„í¼ í¬ê¸° ì¡°ì • ì—¬ë¶€
 
     protected:
 

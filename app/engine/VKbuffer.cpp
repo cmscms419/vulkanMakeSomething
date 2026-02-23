@@ -16,21 +16,21 @@ namespace vkengine {
         }
     }
 
-    // ╧Жфш ╦ч╦П╦╝╦╕ ╦егнго©╘ CPU©║╪╜ а╒╠ыгр ╪Ж юж╣╣╥о гу╢о╢ы. 
-    // vkMapMemory гт╪Ж╦╕ хёцБго©╘ ╦ч╦П╦╝╦╕ ╦егнго╟М, 
-    // ╦егн╣х ╦ч╦П╦╝юг фВюнем╦╕ mapped ╦Б╧Ж ╨╞╪Ж©║ юЗюЕгу╢о╢ы.
+    // К╡└М█╪ К╘■К╙╗К╕╛К╔╪ К╖╓М∙▒М∙≤Л≈╛ CPUЛ≈░Л└° Л═▒Й╥╪М∙═ Л┬≤ Л·┬К▐└К║² М∙╘К▀┬К▀╓. 
+    // vkMapMemory М∙╗Л┬≤К╔╪ М≤╦Л╤°М∙≤Л≈╛ К╘■К╙╗К╕╛К╔╪ К╖╓М∙▒М∙≤ЙЁ═, 
+    // К╖╓М∙▒К░° К╘■К╙╗К╕╛Л²≤ М▐╛Л²╦М└╟К╔╪ mapped К╘╓К╡└ КЁ─Л┬≤Л≈░ Л═─Л·╔М∙╘К▀┬К▀╓.
     VkResult VkBaseBuffer::mapToMeBuffer(VkDeviceSize size, VkDeviceSize offset)
     {
-        // ╧Жфш ╦ч╦П╦╝╦╕ ╦егнгу╢о╢ы.
+        // К╡└М█╪ К╘■К╙╗К╕╛К╔╪ К╖╓М∙▒М∙╘К▀┬К▀╓.
         return vkMapMemory(device, memory, offset, size, 0, &mapped);
     }
 
     void VkBaseBuffer::copyToMeBuffer(void* data, VkDeviceSize size)
     {
-        // ╦егн╣х ╦ч╦П╦╝©║ ╣╔юлем╦╕ ╨╧╩Ггу╢о╢ы.
+        // К╖╓М∙▒К░° К╘■К╙╗К╕╛Л≈░ К█╟Л²╢М└╟К╔╪ КЁ╣Л┌╛М∙╘К▀┬К▀╓.
         memcpy(this->mapped, data, size);
 
-        // ╧Жфш ╦ч╦П╦╝юг ╦егню╩ гьа╕гу╢о╢ы.
+        // К╡└М█╪ К╘■К╙╗К╕╛Л²≤ К╖╓М∙▒Л²└ М∙╢Л═°М∙╘К▀┬К▀╓.
         vkUnmapMemory(device, memory);
     }
 

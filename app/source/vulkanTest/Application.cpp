@@ -81,13 +81,13 @@ namespace vkutil {
     }
 
     void Application::init() {
-        initWindow(); //    GLFW À©µµ¿ì »ı¼º
+        initWindow(); //    GLFW ìœˆë„ìš° ìƒì„±
         initVulkan();
         initUI();
     }
 
     void Application::update() {
-        // ¸¸µç°ÍÀ» ¾÷µ¥ÀÌÆ®
+        // ë§Œë“ ê²ƒì„ ì—…ë°ì´íŠ¸
     }
 
     void Application::setup()
@@ -168,7 +168,7 @@ namespace vkutil {
 
         glfwSetWindowUserPointer(this->VKwindow, this);
         glfwSetFramebufferSizeCallback(this->VKwindow, framebufferResizeCallback);
-        glfwSetKeyCallback(this->VKwindow, vkutil::key_callback);  // Å° ÀÔ·Â Äİ¹é ¼³Á¤
+        glfwSetKeyCallback(this->VKwindow, vkutil::key_callback);  // í‚¤ ì…ë ¥ ì½œë°± ì„¤ì •
     }
 
     void Application::initVulkan() {
@@ -177,7 +177,7 @@ namespace vkutil {
             throw std::runtime_error("Vulkan is not supported");
         }
         
-        // ±âº»
+        // ê¸°ë³¸
         this->createInstance();
         this->setupDebugCallback();
         this->createSurface();
@@ -187,14 +187,14 @@ namespace vkutil {
         this->createImageViews();
         this->createRenderPass();
         
-        // shader ¼³Á¤
+        // shader ì„¤ì •
         this->createDescriptorSetLayout();
         this->createGraphicsPipeline();
         
         this->createCommandPool();
         this->createCommandBuffers();
         
-        // ±×·¡ÇÈ ÆÄÀÌÇÁ¶óÀÎ ¼³Á¤ ÈÄ, ÄÃ·¯ ¹× ±íÀÌ ¸®¼Ò½º¸¦ »ı¼ºÇÕ´Ï´Ù.
+        // ê·¸ë˜í”½ íŒŒì´í”„ë¼ì¸ ì„¤ì • í›„, ì»¬ëŸ¬ ë° ê¹Šì´ ë¦¬ì†ŒìŠ¤ë¥¼ ìƒì„±í•©ë‹ˆë‹¤.
         this->createColorResources();
         this->createDepthResources();
         
@@ -217,65 +217,65 @@ namespace vkutil {
 
     void Application::drawFrame()
     {
-        // ·»´õ¸µÀ» ½ÃÀÛÇÏ±â Àü¿¡ ÇÁ·¹ÀÓÀ» ·»´õ¸µÇÒ ÁØºñ°¡ µÇ¾ú´ÂÁö È®ÀÎÇÕ´Ï´Ù.
+        // ë Œë”ë§ì„ ì‹œì‘í•˜ê¸° ì „ì— í”„ë ˆì„ì„ ë Œë”ë§í•  ì¤€ë¹„ê°€ ë˜ì—ˆëŠ”ì§€ í™•ì¸í•©ë‹ˆë‹¤.
         vkWaitForFences(this->VKdevice, 1, &this->VkinFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
 
         uint32_t imageIndex;
 
-        // ÀÌ¹ÌÁö¸¦ °¡Á®¿À±â À§ÇØ ½º¿Ò Ã¼ÀÎ¿¡¼­ ÀÌ¹ÌÁö ÀÎµ¦½º¸¦ °¡Á®¿É´Ï´Ù.
-        // ÁÖ¾îÁø ½º¿ÒÃ¼ÀÎ¿¡¼­ ´ÙÀ½ ÀÌ¹ÌÁö¸¦ È¹µæÇÏ°í, 
-        // ¼±ÅÃÀûÀ¸·Î ¼¼¸¶Æ÷¾î¿Í Ææ½º¸¦ »ç¿ëÇÏ¿© µ¿±âÈ­¸¦ °ü¸®ÇÏ´Â Vulkan APIÀÇ ÇÔ¼öÀÔ´Ï´Ù.
+        // ì´ë¯¸ì§€ë¥¼ ê°€ì ¸ì˜¤ê¸° ìœ„í•´ ìŠ¤ì™‘ ì²´ì¸ì—ì„œ ì´ë¯¸ì§€ ì¸ë±ìŠ¤ë¥¼ ê°€ì ¸ì˜µë‹ˆë‹¤.
+        // ì£¼ì–´ì§„ ìŠ¤ì™‘ì²´ì¸ì—ì„œ ë‹¤ìŒ ì´ë¯¸ì§€ë¥¼ íšë“í•˜ê³ , 
+        // ì„ íƒì ìœ¼ë¡œ ì„¸ë§ˆí¬ì–´ì™€ íœìŠ¤ë¥¼ ì‚¬ìš©í•˜ì—¬ ë™ê¸°í™”ë¥¼ ê´€ë¦¬í•˜ëŠ” Vulkan APIì˜ í•¨ìˆ˜ì…ë‹ˆë‹¤.
         VkResult result = vkAcquireNextImageKHR(this->VKdevice, this->VKswapChain, UINT64_MAX, this->VkimageavailableSemaphore[this->currentFrame], VK_NULL_HANDLE, &imageIndex);
 
         if (result == VK_ERROR_OUT_OF_DATE_KHR) {
-            this->recreateSwapChain(); // ½º¿Ò Ã¼ÀÎÀ» ´Ù½Ã »ı¼ºÇÕ´Ï´Ù.
+            this->recreateSwapChain(); // ìŠ¤ì™‘ ì²´ì¸ì„ ë‹¤ì‹œ ìƒì„±í•©ë‹ˆë‹¤.
             return;
         }
         else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
             throw std::runtime_error("failed to acquire swap chain image!");
         }
 
-        // uniform ¹öÆÛ¸¦ ¾÷µ¥ÀÌÆ®ÇÕ´Ï´Ù.
+        // uniform ë²„í¼ë¥¼ ì—…ë°ì´íŠ¸í•©ë‹ˆë‹¤.
         this->updateUniformBuffer(currentFrame);
 
-        vkResetFences(this->VKdevice, 1, &this->VkinFlightFences[currentFrame]); // ÇÃ·¡±×¸¦ Àç¼³Á¤ÇÕ´Ï´Ù. -> ·»´õ¸µÀÌ ³¡³ª¸é ÇÃ·¡±×¸¦ Àç¼³Á¤ÇÕ´Ï´Ù.
+        vkResetFences(this->VKdevice, 1, &this->VkinFlightFences[currentFrame]); // í”Œë˜ê·¸ë¥¼ ì¬ì„¤ì •í•©ë‹ˆë‹¤. -> ë Œë”ë§ì´ ëë‚˜ë©´ í”Œë˜ê·¸ë¥¼ ì¬ì„¤ì •í•©ë‹ˆë‹¤.
         
         this->recordCommandBuffer(this->VKcommandBuffers[currentFrame], imageIndex);
 
-        // ·»´õ¸µÀ» ½ÃÀÛÇÏ±â Àü¿¡ ·»´õ¸µÇÒ ÁØºñ°¡ µÇ¾ú´ÂÁö È®ÀÎÇÕ´Ï´Ù.
+        // ë Œë”ë§ì„ ì‹œì‘í•˜ê¸° ì „ì— ë Œë”ë§í•  ì¤€ë¹„ê°€ ë˜ì—ˆëŠ”ì§€ í™•ì¸í•©ë‹ˆë‹¤.
         VkSubmitInfo submitInfo{};
 
-        // VkSubmitInfo ±¸Á¶Ã¼´Â Å¥¿¡ Á¦ÃâÇÒ ¸í·É ¹öÆÛ¸¦ ÁöÁ¤ÇÕ´Ï´Ù.
-        submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO; // ±¸Á¶Ã¼ Å¸ÀÔÀ» ÁöÁ¤ÇÕ´Ï´Ù.
+        // VkSubmitInfo êµ¬ì¡°ì²´ëŠ” íì— ì œì¶œí•  ëª…ë ¹ ë²„í¼ë¥¼ ì§€ì •í•©ë‹ˆë‹¤.
+        submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO; // êµ¬ì¡°ì²´ íƒ€ì…ì„ ì§€ì •í•©ë‹ˆë‹¤.
 
-        // ·»´õ¸µÀ» ½ÃÀÛÇÏ±â Àü¿¡ ¼¼¸¶Æ÷¾î¸¦ ¼³Á¤ÇÕ´Ï´Ù.
+        // ë Œë”ë§ì„ ì‹œì‘í•˜ê¸° ì „ì— ì„¸ë§ˆí¬ì–´ë¥¼ ì„¤ì •í•©ë‹ˆë‹¤.
         VkSemaphore waitSemaphores[] = { this->VkimageavailableSemaphore[currentFrame] };
         VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
         submitInfo.waitSemaphoreCount = 1;
         submitInfo.pWaitSemaphores = waitSemaphores;
         submitInfo.pWaitDstStageMask = waitStages;
 
-        // ·»´õ¸µÀ» ½ÃÀÛÇÏ±â Àü¿¡ Ä¿¸Çµå ¹öÆÛ¸¦ ¼³Á¤ÇÕ´Ï´Ù.
+        // ë Œë”ë§ì„ ì‹œì‘í•˜ê¸° ì „ì— ì»¤ë§¨ë“œ ë²„í¼ë¥¼ ì„¤ì •í•©ë‹ˆë‹¤.
         submitInfo.commandBufferCount = 1;
         submitInfo.pCommandBuffers = &this->VKcommandBuffers[currentFrame];
 
-        // ·»´õ¸µÀ» ½ÃÀÛÇÏ±â Àü¿¡ ¼¼¸¶Æ÷¾î¸¦ ¼³Á¤ÇÕ´Ï´Ù.
+        // ë Œë”ë§ì„ ì‹œì‘í•˜ê¸° ì „ì— ì„¸ë§ˆí¬ì–´ë¥¼ ì„¤ì •í•©ë‹ˆë‹¤.
         VkSemaphore signalSemaphores[] = { this->VkrenderFinishedSemaphore[currentFrame] };
         submitInfo.signalSemaphoreCount = 1;
         submitInfo.pSignalSemaphores = signalSemaphores;
 
-        vkResetFences(this->VKdevice, 1, &this->VkinFlightFences[currentFrame]); // ÇÃ·¡±×¸¦ Àç¼³Á¤ÇÕ´Ï´Ù. -> ·»´õ¸µÀÌ ³¡³ª¸é ÇÃ·¡±×¸¦ Àç¼³Á¤ÇÕ´Ï´Ù.
+        vkResetFences(this->VKdevice, 1, &this->VkinFlightFences[currentFrame]); // í”Œë˜ê·¸ë¥¼ ì¬ì„¤ì •í•©ë‹ˆë‹¤. -> ë Œë”ë§ì´ ëë‚˜ë©´ í”Œë˜ê·¸ë¥¼ ì¬ì„¤ì •í•©ë‹ˆë‹¤.
 
-        // ·»´õ¸µÀ» ½ÃÀÛÇÕ´Ï´Ù.
+        // ë Œë”ë§ì„ ì‹œì‘í•©ë‹ˆë‹¤.
         if (vkQueueSubmit(this->graphicsVKQueue, 1, &submitInfo, this->VkinFlightFences[currentFrame]) != VK_SUCCESS) {
             throw std::runtime_error("failed to submit draw command buffer!");
         }
 
-        // ·»´õ¸µÀ» ½ÃÀÛÇÏ±â Àü¿¡ ¼¼¸¶Æ÷¾î¸¦ ¼³Á¤ÇÕ´Ï´Ù.
+        // ë Œë”ë§ì„ ì‹œì‘í•˜ê¸° ì „ì— ì„¸ë§ˆí¬ì–´ë¥¼ ì„¤ì •í•©ë‹ˆë‹¤.
         VkPresentInfoKHR presentInfo{};
 
-        // VkPresentInfoKHR ±¸Á¶Ã¼´Â ½º¿Ò Ã¼ÀÎ ÀÌ¹ÌÁöÀÇ ÇÁ·¹Á¨Å×ÀÌ¼ÇÀ» À§ÇÑ Á¤º¸¸¦ Á¦°øÇÕ´Ï´Ù.
-        presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR; // ±¸Á¶Ã¼ Å¸ÀÔÀ» ÁöÁ¤ÇÕ´Ï´Ù.
+        // VkPresentInfoKHR êµ¬ì¡°ì²´ëŠ” ìŠ¤ì™‘ ì²´ì¸ ì´ë¯¸ì§€ì˜ í”„ë ˆì  í…Œì´ì…˜ì„ ìœ„í•œ ì •ë³´ë¥¼ ì œê³µí•©ë‹ˆë‹¤.
+        presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR; // êµ¬ì¡°ì²´ íƒ€ì…ì„ ì§€ì •í•©ë‹ˆë‹¤.
 
         presentInfo.waitSemaphoreCount = 1;
         presentInfo.pWaitSemaphores = signalSemaphores;
@@ -287,7 +287,7 @@ namespace vkutil {
 
         presentInfo.pImageIndices = &imageIndex;
 
-        result = vkQueuePresentKHR(this->presentVKQueue, &presentInfo); // ÇÁ·¹Á¨Å×ÀÌ¼Ç Å¥¿¡ ÀÌ¹ÌÁö¸¦ Á¦ÃâÇÕ´Ï´Ù.
+        result = vkQueuePresentKHR(this->presentVKQueue, &presentInfo); // í”„ë ˆì  í…Œì´ì…˜ íì— ì´ë¯¸ì§€ë¥¼ ì œì¶œí•©ë‹ˆë‹¤.
 
         if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || framebufferResized) {
             this->recreateSwapChain();
@@ -354,25 +354,25 @@ namespace vkutil {
             throw std::runtime_error("validation layers requested, but not available!");
         }
 
-        // VkApplicationInfo ±¸Á¶Ã¼´Â ¾ÖÇÃ¸®ÄÉÀÌ¼Ç¿¡ ´ëÇÑ Á¤º¸¸¦ Vulkan¿¡°Ô Á¦°øÇÏ±â À§ÇØ »ç¿ëµË´Ï´Ù.
+        // VkApplicationInfo êµ¬ì¡°ì²´ëŠ” ì• í”Œë¦¬ì¼€ì´ì…˜ì— ëŒ€í•œ ì •ë³´ë¥¼ Vulkanì—ê²Œ ì œê³µí•˜ê¸° ìœ„í•´ ì‚¬ìš©ë©ë‹ˆë‹¤.
         VkApplicationInfo appInfo = {};
-        appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;     // ±¸Á¶Ã¼ Å¸ÀÔÀ» ÁöÁ¤ÇÕ´Ï´Ù.
-        appInfo.pApplicationName = "Vulkan Test";               // ¾ÖÇÃ¸®ÄÉÀÌ¼Ç ÀÌ¸§À» ÁöÁ¤ÇÕ´Ï´Ù.
-        appInfo.applicationVersion = VK_MAKE_VERSION(0, 0, 0);  // ¾ÖÇÃ¸®ÄÉÀÌ¼Ç ¹öÀüÀ» ÁöÁ¤ÇÕ´Ï´Ù.
-        appInfo.pEngineName = "cms491 Engine";                  // ¿£Áø ÀÌ¸§À» ÁöÁ¤ÇÕ´Ï´Ù.
-        appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);       // ¿£Áø ¹öÀüÀ» ÁöÁ¤ÇÕ´Ï´Ù.
-        appInfo.apiVersion = VK_API_VERSION_1_0;                // »ç¿ëÇÒ Vulkan API ¹öÀüÀ» ÁöÁ¤ÇÕ´Ï´Ù.
+        appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;     // êµ¬ì¡°ì²´ íƒ€ì…ì„ ì§€ì •í•©ë‹ˆë‹¤.
+        appInfo.pApplicationName = "Vulkan Test";               // ì• í”Œë¦¬ì¼€ì´ì…˜ ì´ë¦„ì„ ì§€ì •í•©ë‹ˆë‹¤.
+        appInfo.applicationVersion = VK_MAKE_VERSION(0, 0, 0);  // ì• í”Œë¦¬ì¼€ì´ì…˜ ë²„ì „ì„ ì§€ì •í•©ë‹ˆë‹¤.
+        appInfo.pEngineName = "cms491 Engine";                  // ì—”ì§„ ì´ë¦„ì„ ì§€ì •í•©ë‹ˆë‹¤.
+        appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);       // ì—”ì§„ ë²„ì „ì„ ì§€ì •í•©ë‹ˆë‹¤.
+        appInfo.apiVersion = VK_API_VERSION_1_0;                // ì‚¬ìš©í•  Vulkan API ë²„ì „ì„ ì§€ì •í•©ë‹ˆë‹¤.
 
-        // VkInstanceCreateInfo ±¸Á¶Ã¼´Â Vulkan ÀÎ½ºÅÏ½º¸¦ »ı¼ºÇÏ±â À§ÇÑ Á¤º¸¸¦ Á¦°øÇÕ´Ï´Ù.
+        // VkInstanceCreateInfo êµ¬ì¡°ì²´ëŠ” Vulkan ì¸ìŠ¤í„´ìŠ¤ë¥¼ ìƒì„±í•˜ê¸° ìœ„í•œ ì •ë³´ë¥¼ ì œê³µí•©ë‹ˆë‹¤.
         VkInstanceCreateInfo createInfo = {};
-        createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO; // ±¸Á¶Ã¼ Å¸ÀÔÀ» ÁöÁ¤ÇÕ´Ï´Ù.
-        createInfo.pApplicationInfo = &appInfo;                    // VkApplicationInfo ±¸Á¶Ã¼¸¦ ÂüÁ¶ÇÕ´Ï´Ù.
+        createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO; // êµ¬ì¡°ì²´ íƒ€ì…ì„ ì§€ì •í•©ë‹ˆë‹¤.
+        createInfo.pApplicationInfo = &appInfo;                    // VkApplicationInfo êµ¬ì¡°ì²´ë¥¼ ì°¸ì¡°í•©ë‹ˆë‹¤.
 
         uint32_t glfwExtensionCount = 0;
-        std::vector<const char*> extensions = getRequiredExtensions();           // È®Àå ¸ñ·ÏÀ» ÀúÀåÇÒ º¯¼ö¸¦ ¼±¾ğÇÕ´Ï´Ù.
-        glfwExtensionCount = static_cast<uint32_t>(extensions.size());           // È®Àå °³¼ö¸¦ ÀúÀåÇÕ´Ï´Ù.
-        createInfo.enabledExtensionCount = glfwExtensionCount;                   // È°¼ºÈ­ÇÒ È®Àå °³¼ö¸¦ ÁöÁ¤ÇÕ´Ï´Ù.
-        createInfo.ppEnabledExtensionNames = extensions.data();                  // È°¼ºÈ­ÇÒ È®Àå ¸ñ·ÏÀ» ÁöÁ¤ÇÕ´Ï´Ù.
+        std::vector<const char*> extensions = getRequiredExtensions();           // í™•ì¥ ëª©ë¡ì„ ì €ì¥í•  ë³€ìˆ˜ë¥¼ ì„ ì–¸í•©ë‹ˆë‹¤.
+        glfwExtensionCount = static_cast<uint32_t>(extensions.size());           // í™•ì¥ ê°œìˆ˜ë¥¼ ì €ì¥í•©ë‹ˆë‹¤.
+        createInfo.enabledExtensionCount = glfwExtensionCount;                   // í™œì„±í™”í•  í™•ì¥ ê°œìˆ˜ë¥¼ ì§€ì •í•©ë‹ˆë‹¤.
+        createInfo.ppEnabledExtensionNames = extensions.data();                  // í™œì„±í™”í•  í™•ì¥ ëª©ë¡ì„ ì§€ì •í•©ë‹ˆë‹¤.
 
         if (enableValidationLayers) {
 
@@ -388,9 +388,9 @@ namespace vkutil {
             createInfo.enabledLayerCount = 0;
         }
 
-        // Vulkan ÀÎ½ºÅÏ½º¸¦ »ı¼ºÇÕ´Ï´Ù.
+        // Vulkan ì¸ìŠ¤í„´ìŠ¤ë¥¼ ìƒì„±í•©ë‹ˆë‹¤.
         if (vkCreateInstance(&createInfo, nullptr, &VKinstance) != VK_SUCCESS) {
-            throw std::runtime_error("failed to create instance!"); // ÀÎ½ºÅÏ½º »ı¼º ½ÇÆĞ ½Ã ¿¹¿Ü¸¦ ¹ß»ı½ÃÅµ´Ï´Ù.
+            throw std::runtime_error("failed to create instance!"); // ì¸ìŠ¤í„´ìŠ¤ ìƒì„± ì‹¤íŒ¨ ì‹œ ì˜ˆì™¸ë¥¼ ë°œìƒì‹œí‚µë‹ˆë‹¤.
         }
         else
         {
@@ -467,13 +467,13 @@ namespace vkutil {
 
     void Application::createLogicalDevice() {
 
-        // 1. ¹°¸® ÀåÄ¡¿¡¼­ Å¥ ÆĞ¹Ğ¸® ÀÎµ¦½º¸¦ Ã£½À´Ï´Ù.
-        // 2. Å¥ »ı¼º Á¤º¸ ±¸Á¶Ã¼¸¦ ÃÊ±âÈ­ÇÕ´Ï´Ù.
-        // 3. ¹°¸® ÀåÄ¡ ±â´É ±¸Á¶Ã¼¸¦ ÃÊ±âÈ­ÇÕ´Ï´Ù.
-        // 4. ³í¸® ÀåÄ¡ »ı¼º Á¤º¸ ±¸Á¶Ã¼¸¦ ÃÊ±âÈ­ÇÕ´Ï´Ù.
-        // 5. ³í¸® ÀåÄ¡¸¦ »ı¼ºÇÕ´Ï´Ù.
+        // 1. ë¬¼ë¦¬ ì¥ì¹˜ì—ì„œ í íŒ¨ë°€ë¦¬ ì¸ë±ìŠ¤ë¥¼ ì°¾ìŠµë‹ˆë‹¤.
+        // 2. í ìƒì„± ì •ë³´ êµ¬ì¡°ì²´ë¥¼ ì´ˆê¸°í™”í•©ë‹ˆë‹¤.
+        // 3. ë¬¼ë¦¬ ì¥ì¹˜ ê¸°ëŠ¥ êµ¬ì¡°ì²´ë¥¼ ì´ˆê¸°í™”í•©ë‹ˆë‹¤.
+        // 4. ë…¼ë¦¬ ì¥ì¹˜ ìƒì„± ì •ë³´ êµ¬ì¡°ì²´ë¥¼ ì´ˆê¸°í™”í•©ë‹ˆë‹¤.
+        // 5. ë…¼ë¦¬ ì¥ì¹˜ë¥¼ ìƒì„±í•©ë‹ˆë‹¤.
 
-        // Å¥ »ı¼º Á¤º¸ ±¸Á¶Ã¼¸¦ ÃÊ±âÈ­ÇÕ´Ï´Ù.
+        // í ìƒì„± ì •ë³´ êµ¬ì¡°ì²´ë¥¼ ì´ˆê¸°í™”í•©ë‹ˆë‹¤.
         std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
         
         std::set<uint32_t> uniqueQueueFamilies = {
@@ -481,30 +481,30 @@ namespace vkutil {
             this->VKqueueFamilyIndices.presentFamily
         };
 
-        float queuePriority = 1.0f;                                                                      // Å¥ÀÇ ¿ì¼±¼øÀ§¸¦ ¼³Á¤ÇÕ´Ï´Ù.
+        float queuePriority = 1.0f;                                                                      // íì˜ ìš°ì„ ìˆœìœ„ë¥¼ ì„¤ì •í•©ë‹ˆë‹¤.
         for (uint32_t queueFamily : uniqueQueueFamilies) {
             VkDeviceQueueCreateInfo queueCreateInfo{};
-            queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;                          // ±¸Á¶Ã¼ Å¸ÀÔÀ» ÁöÁ¤ÇÕ´Ï´Ù.
-            queueCreateInfo.queueFamilyIndex = queueFamily;                                              // ±×·¡ÇÈ½º Å¥ ÆĞ¹Ğ¸® ÀÎµ¦½º¸¦ ¼³Á¤ÇÕ´Ï´Ù.
-            queueCreateInfo.queueCount = 1;                                                              // Å¥ÀÇ °³¼ö¸¦ ¼³Á¤ÇÕ´Ï´Ù.
+            queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;                          // êµ¬ì¡°ì²´ íƒ€ì…ì„ ì§€ì •í•©ë‹ˆë‹¤.
+            queueCreateInfo.queueFamilyIndex = queueFamily;                                              // ê·¸ë˜í”½ìŠ¤ í íŒ¨ë°€ë¦¬ ì¸ë±ìŠ¤ë¥¼ ì„¤ì •í•©ë‹ˆë‹¤.
+            queueCreateInfo.queueCount = 1;                                                              // íì˜ ê°œìˆ˜ë¥¼ ì„¤ì •í•©ë‹ˆë‹¤.
             queueCreateInfo.pQueuePriorities = &queuePriority;
             queueCreateInfos.push_back(queueCreateInfo);
         }
 
-        // ¹°¸® ÀåÄ¡ ±â´É ±¸Á¶Ã¼¸¦ ÃÊ±âÈ­ÇÕ´Ï´Ù.
+        // ë¬¼ë¦¬ ì¥ì¹˜ ê¸°ëŠ¥ êµ¬ì¡°ì²´ë¥¼ ì´ˆê¸°í™”í•©ë‹ˆë‹¤.
         VkPhysicalDeviceFeatures deviceFeatures{};
-        deviceFeatures.samplerAnisotropy = VK_TRUE; // »ùÇÃ·¯¸¦ »ç¿ëÇÏ¿© ÅØ½ºÃ³¸¦ º¸°£ÇÕ´Ï´Ù.
-        deviceFeatures.sampleRateShading = VK_TRUE; // »ùÇÃ ·¹ÀÌÆ® ½¦ÀÌµùÀ» »ç¿ëÇÏ¿© ÇÈ¼¿À» ±×¸³´Ï´Ù.
+        deviceFeatures.samplerAnisotropy = VK_TRUE; // ìƒ˜í”ŒëŸ¬ë¥¼ ì‚¬ìš©í•˜ì—¬ í…ìŠ¤ì²˜ë¥¼ ë³´ê°„í•©ë‹ˆë‹¤.
+        deviceFeatures.sampleRateShading = VK_TRUE; // ìƒ˜í”Œ ë ˆì´íŠ¸ ì‰ì´ë”©ì„ ì‚¬ìš©í•˜ì—¬ í”½ì…€ì„ ê·¸ë¦½ë‹ˆë‹¤.
 
 
-        // ³í¸® ÀåÄ¡ »ı¼º Á¤º¸ ±¸Á¶Ã¼¸¦ ÃÊ±âÈ­ÇÕ´Ï´Ù.
+        // ë…¼ë¦¬ ì¥ì¹˜ ìƒì„± ì •ë³´ êµ¬ì¡°ì²´ë¥¼ ì´ˆê¸°í™”í•©ë‹ˆë‹¤.
         VkDeviceCreateInfo createInfo{};
-        createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;                          // ±¸Á¶Ã¼ Å¸ÀÔÀ» ÁöÁ¤ÇÕ´Ï´Ù.
-        createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size()); // Å¥ »ı¼º Á¤º¸ÀÇ °³¼ö¸¦ ¼³Á¤ÇÕ´Ï´Ù.
-        createInfo.pQueueCreateInfos = queueCreateInfos.data();                           // Å¥ »ı¼º Á¤º¸ Æ÷ÀÎÅÍ¸¦ ¼³Á¤ÇÕ´Ï´Ù.
-        createInfo.enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size());// È°¼ºÈ­ÇÒ È®Àå °³¼ö¸¦ 0À¸·Î ¼³Á¤ÇÕ´Ï´Ù.
-        createInfo.ppEnabledExtensionNames = deviceExtensions.data();                     // È°¼ºÈ­ÇÒ È®Àå ¸ñ·ÏÀ» ¼³Á¤ÇÕ´Ï´Ù.
-        createInfo.pEnabledFeatures = &deviceFeatures;                                    // ¹°¸® ÀåÄ¡ ±â´É Æ÷ÀÎÅÍ¸¦ ¼³Á¤ÇÕ´Ï´Ù.
+        createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;                          // êµ¬ì¡°ì²´ íƒ€ì…ì„ ì§€ì •í•©ë‹ˆë‹¤.
+        createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size()); // í ìƒì„± ì •ë³´ì˜ ê°œìˆ˜ë¥¼ ì„¤ì •í•©ë‹ˆë‹¤.
+        createInfo.pQueueCreateInfos = queueCreateInfos.data();                           // í ìƒì„± ì •ë³´ í¬ì¸í„°ë¥¼ ì„¤ì •í•©ë‹ˆë‹¤.
+        createInfo.enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size());// í™œì„±í™”í•  í™•ì¥ ê°œìˆ˜ë¥¼ 0ìœ¼ë¡œ ì„¤ì •í•©ë‹ˆë‹¤.
+        createInfo.ppEnabledExtensionNames = deviceExtensions.data();                     // í™œì„±í™”í•  í™•ì¥ ëª©ë¡ì„ ì„¤ì •í•©ë‹ˆë‹¤.
+        createInfo.pEnabledFeatures = &deviceFeatures;                                    // ë¬¼ë¦¬ ì¥ì¹˜ ê¸°ëŠ¥ í¬ì¸í„°ë¥¼ ì„¤ì •í•©ë‹ˆë‹¤.
 
         if (enableValidationLayers) {
             createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
@@ -514,14 +514,14 @@ namespace vkutil {
             createInfo.enabledLayerCount = 0;
         }
 
-        // ³í¸® ÀåÄ¡¸¦ »ı¼ºÇÕ´Ï´Ù.
+        // ë…¼ë¦¬ ì¥ì¹˜ë¥¼ ìƒì„±í•©ë‹ˆë‹¤.
         if (vkCreateDevice(this->VKphysicalDevice, &createInfo, nullptr, &this->VKdevice) != VK_SUCCESS) {
-            throw std::runtime_error("failed to create logical device!"); // ³í¸® ÀåÄ¡ »ı¼º ½ÇÆĞ ½Ã ¿¹¿Ü¸¦ ¹ß»ı½ÃÅµ´Ï´Ù.
+            throw std::runtime_error("failed to create logical device!"); // ë…¼ë¦¬ ì¥ì¹˜ ìƒì„± ì‹¤íŒ¨ ì‹œ ì˜ˆì™¸ë¥¼ ë°œìƒì‹œí‚µë‹ˆë‹¤.
         }
 
-        // ³í¸® µğ¹ÙÀÌ½º¿¡¼­ ±×·¡ÇÈ Å¥ ÇÚµéÀ» °¡Á®¿É´Ï´Ù.
+        // ë…¼ë¦¬ ë””ë°”ì´ìŠ¤ì—ì„œ ê·¸ë˜í”½ í í•¸ë“¤ì„ ê°€ì ¸ì˜µë‹ˆë‹¤.
         vkGetDeviceQueue(this->VKdevice, this->VKqueueFamilyIndices.graphicsAndComputeFamily, 0, &this->graphicsVKQueue);
-        // ³í¸® µğ¹ÙÀÌ½º¿¡¼­ ÇÁ·¹Á¨Å×ÀÌ¼Ç Å¥ ÇÚµéÀ» °¡Á®¿É´Ï´Ù.
+        // ë…¼ë¦¬ ë””ë°”ì´ìŠ¤ì—ì„œ í”„ë ˆì  í…Œì´ì…˜ í í•¸ë“¤ì„ ê°€ì ¸ì˜µë‹ˆë‹¤.
         vkGetDeviceQueue(this->VKdevice, this->VKqueueFamilyIndices.presentFamily, 0, &this->presentVKQueue);
     }
 
@@ -558,36 +558,36 @@ namespace vkutil {
             imageCount = swapChainSupport.capabilities.maxImageCount;
         }
 
-        // ½º¿Ò Ã¼ÀÎ »ı¼º Á¤º¸ ±¸Á¶Ã¼¸¦ ÃÊ±âÈ­ÇÕ´Ï´Ù.
+        // ìŠ¤ì™‘ ì²´ì¸ ìƒì„± ì •ë³´ êµ¬ì¡°ì²´ë¥¼ ì´ˆê¸°í™”í•©ë‹ˆë‹¤.
         VkSwapchainCreateInfoKHR createInfo{};
         createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
         createInfo.surface = this->VKsurface;
 
-        createInfo.minImageCount = imageCount;                          // ÀÌ¹ÌÁö °³¼ö¸¦ ¼³Á¤ÇÕ´Ï´Ù.
-        createInfo.imageFormat = surfaceFormat.format;                  // ÀÌ¹ÌÁö Çü½ÄÀ» ¼³Á¤ÇÕ´Ï´Ù.
-        createInfo.imageColorSpace = surfaceFormat.colorSpace;          // ÀÌ¹ÌÁö »ö»ó °ø°£À» ¼³Á¤ÇÕ´Ï´Ù.
-        createInfo.imageExtent = extent;                                // ÀÌ¹ÌÁö ÇØ»óµµ¸¦ ¼³Á¤ÇÕ´Ï´Ù.
-        createInfo.imageArrayLayers = 1;                                // ÀÌ¹ÌÁö ¹è¿­ ·¹ÀÌ¾î¸¦ ¼³Á¤ÇÕ´Ï´Ù.
-        createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;    // ÀÌ¹ÌÁö »ç¿ë ¹æ¹ıÀ» ¼³Á¤ÇÕ´Ï´Ù.
+        createInfo.minImageCount = imageCount;                          // ì´ë¯¸ì§€ ê°œìˆ˜ë¥¼ ì„¤ì •í•©ë‹ˆë‹¤.
+        createInfo.imageFormat = surfaceFormat.format;                  // ì´ë¯¸ì§€ í˜•ì‹ì„ ì„¤ì •í•©ë‹ˆë‹¤.
+        createInfo.imageColorSpace = surfaceFormat.colorSpace;          // ì´ë¯¸ì§€ ìƒ‰ìƒ ê³µê°„ì„ ì„¤ì •í•©ë‹ˆë‹¤.
+        createInfo.imageExtent = extent;                                // ì´ë¯¸ì§€ í•´ìƒë„ë¥¼ ì„¤ì •í•©ë‹ˆë‹¤.
+        createInfo.imageArrayLayers = 1;                                // ì´ë¯¸ì§€ ë°°ì—´ ë ˆì´ì–´ë¥¼ ì„¤ì •í•©ë‹ˆë‹¤.
+        createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;    // ì´ë¯¸ì§€ ì‚¬ìš© ë°©ë²•ì„ ì„¤ì •í•©ë‹ˆë‹¤.
 
-        // Å¥ ÆĞ¹Ğ¸® ÀÎµ¦½º¸¦ °¡Á®¿É´Ï´Ù.
+        // í íŒ¨ë°€ë¦¬ ì¸ë±ìŠ¤ë¥¼ ê°€ì ¸ì˜µë‹ˆë‹¤.
         uint32_t queueFamilyIndices[] = { this->VKqueueFamilyIndices.graphicsAndComputeFamily, this->VKqueueFamilyIndices.presentFamily };
 
-        // ¿©·¯ Å¥ ÆĞ¹Ğ¸®¿¡ °ÉÃÄ »ç¿ëµÉ ½º¿Ò Ã¼ÀÎ ÀÌ¹ÌÁö¸¦ Ã³¸®ÇÏ´Â ¹æ¹ıÀ» ÁöÁ¤
+        // ì—¬ëŸ¬ í íŒ¨ë°€ë¦¬ì— ê±¸ì³ ì‚¬ìš©ë  ìŠ¤ì™‘ ì²´ì¸ ì´ë¯¸ì§€ë¥¼ ì²˜ë¦¬í•˜ëŠ” ë°©ë²•ì„ ì§€ì •
         if (this->VKqueueFamilyIndices.graphicsAndComputeFamily != this->VKqueueFamilyIndices.presentFamily) {
-            createInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT; // µ¿½Ã °øÀ¯ ¸ğµå¸¦ ¼³Á¤ÇÕ´Ï´Ù.
+            createInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT; // ë™ì‹œ ê³µìœ  ëª¨ë“œë¥¼ ì„¤ì •í•©ë‹ˆë‹¤.
             createInfo.queueFamilyIndexCount = 2;
             createInfo.pQueueFamilyIndices = queueFamilyIndices;
         }
         else {
-            createInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;  // ¹èÅ¸Àû °øÀ¯ ¸ğµå¸¦ ¼³Á¤ÇÕ´Ï´Ù.
+            createInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;  // ë°°íƒ€ì  ê³µìœ  ëª¨ë“œë¥¼ ì„¤ì •í•©ë‹ˆë‹¤.
         }
 
-        createInfo.preTransform = swapChainSupport.capabilities.currentTransform; // ÀÌ¹ÌÁö º¯È¯À» ¼³Á¤ÇÕ´Ï´Ù.
-        createInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;            // ¾ËÆÄ ºí·»µùÀ» ¼³Á¤ÇÕ´Ï´Ù.
-        createInfo.presentMode = presentMode;                                     // ÇÁ·¹Á¨Å×ÀÌ¼Ç ¸ğµå¸¦ ¼³Á¤ÇÕ´Ï´Ù.
-        createInfo.clipped = VK_TRUE;                                             // Å¬¸®ÇÎÀ» ¼³Á¤ÇÕ´Ï´Ù. -> ´Ù¸¥ Ã¢ÀÌ ¾Õ¿¡ ÀÖ±â ¶§¹®¿¡ °¡·ÁÁø ÇÈ¼¿ÀÇ »ö»óÀ» ½Å°æ ¾²Áö ¾Ê´Â´Ù´Â ÀÇ¹Ì
-        createInfo.oldSwapchain = VK_NULL_HANDLE;                                 // ÀÌÀü ½º¿Ò Ã¼ÀÎÀ» ¼³Á¤ÇÕ´Ï´Ù. -> ³ªÁß¿¡ ¼³Á¤
+        createInfo.preTransform = swapChainSupport.capabilities.currentTransform; // ì´ë¯¸ì§€ ë³€í™˜ì„ ì„¤ì •í•©ë‹ˆë‹¤.
+        createInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;            // ì•ŒíŒŒ ë¸”ë Œë”©ì„ ì„¤ì •í•©ë‹ˆë‹¤.
+        createInfo.presentMode = presentMode;                                     // í”„ë ˆì  í…Œì´ì…˜ ëª¨ë“œë¥¼ ì„¤ì •í•©ë‹ˆë‹¤.
+        createInfo.clipped = VK_TRUE;                                             // í´ë¦¬í•‘ì„ ì„¤ì •í•©ë‹ˆë‹¤. -> ë‹¤ë¥¸ ì°½ì´ ì•ì— ìˆê¸° ë•Œë¬¸ì— ê°€ë ¤ì§„ í”½ì…€ì˜ ìƒ‰ìƒì„ ì‹ ê²½ ì“°ì§€ ì•ŠëŠ”ë‹¤ëŠ” ì˜ë¯¸
+        createInfo.oldSwapchain = VK_NULL_HANDLE;                                 // ì´ì „ ìŠ¤ì™‘ ì²´ì¸ì„ ì„¤ì •í•©ë‹ˆë‹¤. -> ë‚˜ì¤‘ì— ì„¤ì •
 
         if (vkCreateSwapchainKHR(this->VKdevice, &createInfo, nullptr, &this->VKswapChain) != VK_SUCCESS) {
             throw std::runtime_error("failed to create swap chain!");
@@ -634,7 +634,7 @@ namespace vkutil {
 
     void Application::createRenderPass()
     {
-        // ·»´õ ÆĞ½º »ı¼º Á¤º¸ ±¸Á¶Ã¼¸¦ ÃÊ±âÈ­ÇÕ´Ï´Ù.
+        // ë Œë” íŒ¨ìŠ¤ ìƒì„± ì •ë³´ êµ¬ì¡°ì²´ë¥¼ ì´ˆê¸°í™”í•©ë‹ˆë‹¤.
         VkAttachmentDescription colorAttachment{};
         colorAttachment.format = this->VKswapChainImageFormat;
         colorAttachment.samples = this->VKmsaaSamples;
@@ -645,7 +645,7 @@ namespace vkutil {
         colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
         colorAttachment.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
-        // ±íÀÌ Ã·ºÎ ÆÄÀÏÀ» ¼³Á¤ÇÕ´Ï´Ù.
+        // ê¹Šì´ ì²¨ë¶€ íŒŒì¼ì„ ì„¤ì •í•©ë‹ˆë‹¤.
         VkAttachmentDescription depthAttachment{};
         depthAttachment.format = helper_::findDepthFormat(this->VKphysicalDevice);
         depthAttachment.samples = this->VKmsaaSamples;
@@ -656,7 +656,7 @@ namespace vkutil {
         depthAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
         depthAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
         
-        // »ö»ó Ã·ºÎ ÆÄÀÏÀ» ¼³Á¤ÇÕ´Ï´Ù.
+        // ìƒ‰ìƒ ì²¨ë¶€ íŒŒì¼ì„ ì„¤ì •í•©ë‹ˆë‹¤.
         VkAttachmentDescription colorAttachmentResolve{};
         colorAttachmentResolve.format = this->VKswapChainImageFormat;
         colorAttachmentResolve.samples = VK_SAMPLE_COUNT_1_BIT;
@@ -667,22 +667,22 @@ namespace vkutil {
         colorAttachmentResolve.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
         colorAttachmentResolve.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
-        // ·»´õ ÆĞ½º ¼­ºêÆĞ½º¸¦ ¼³Á¤ÇÕ´Ï´Ù.
+        // ë Œë” íŒ¨ìŠ¤ ì„œë¸ŒíŒ¨ìŠ¤ë¥¼ ì„¤ì •í•©ë‹ˆë‹¤.
         VkAttachmentReference colorAttachmentRef{};
         colorAttachmentRef.attachment = 0;
         colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
-        // »ö»ó Ã·ºÎ ÆÄÀÏ ÂüÁ¶¸¦ ¼³Á¤ÇÕ´Ï´Ù.
+        // ìƒ‰ìƒ ì²¨ë¶€ íŒŒì¼ ì°¸ì¡°ë¥¼ ì„¤ì •í•©ë‹ˆë‹¤.
         VkAttachmentReference colorAttachmentResolveRef{};
         colorAttachmentResolveRef.attachment = 2;
         colorAttachmentResolveRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
-        // ±íÀÌ Ã·ºÎ ÆÄÀÏ ÂüÁ¶¸¦ ¼³Á¤ÇÕ´Ï´Ù.
+        // ê¹Šì´ ì²¨ë¶€ íŒŒì¼ ì°¸ì¡°ë¥¼ ì„¤ì •í•©ë‹ˆë‹¤.
         VkAttachmentReference depthAttachmentRef{};
         depthAttachmentRef.attachment = 1;
         depthAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
-        // ¼­ºêÆĞ½º¸¦ ¼³Á¤ÇÕ´Ï´Ù.
+        // ì„œë¸ŒíŒ¨ìŠ¤ë¥¼ ì„¤ì •í•©ë‹ˆë‹¤.
         VkSubpassDescription subpass{};
         subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
         subpass.colorAttachmentCount = 1;
@@ -690,22 +690,22 @@ namespace vkutil {
         subpass.pResolveAttachments = &colorAttachmentResolveRef;
         subpass.pDepthStencilAttachment = &depthAttachmentRef;
 
-        // ¼­ºêÆĞ½º Á¾¼Ó¼ºÀ» ¼³Á¤ÇÕ´Ï´Ù.
-        // ¿ÜºÎ ¼­ºêÆĞ½º¿Í ´ë»ó ¼­ºêÆĞ½º¸¦ ¼³Á¤ÇÕ´Ï´Ù.
-        // ¼Ò½º ½ºÅ×ÀÌÁö ¸¶½ºÅ©¿Í ´ë»ó ½ºÅ×ÀÌÁö ¸¶½ºÅ©¸¦ ¼³Á¤ÇÕ´Ï´Ù.
+        // ì„œë¸ŒíŒ¨ìŠ¤ ì¢…ì†ì„±ì„ ì„¤ì •í•©ë‹ˆë‹¤.
+        // ì™¸ë¶€ ì„œë¸ŒíŒ¨ìŠ¤ì™€ ëŒ€ìƒ ì„œë¸ŒíŒ¨ìŠ¤ë¥¼ ì„¤ì •í•©ë‹ˆë‹¤.
+        // ì†ŒìŠ¤ ìŠ¤í…Œì´ì§€ ë§ˆìŠ¤í¬ì™€ ëŒ€ìƒ ìŠ¤í…Œì´ì§€ ë§ˆìŠ¤í¬ë¥¼ ì„¤ì •í•©ë‹ˆë‹¤.
         VkSubpassDependency dependency{};
-        dependency.srcSubpass = VK_SUBPASS_EXTERNAL; // ¿ÜºÎ ¼­ºêÆĞ½º
-        dependency.dstSubpass = 0;                   // ´ë»ó ¼­ºêÆĞ½º
-        dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;   // ¼Ò½º ½ºÅ×ÀÌÁö ¸¶½ºÅ© -> »ö»ó Ã·ºÎ Ãâ·Â ºñÆ®
-        dependency.srcAccessMask = 0;                                                                                           // ¼Ò½º ¾×¼¼½º ¸¶½ºÅ© -> 0
-        dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;   // ´ë»ó ½ºÅ×ÀÌÁö ¸¶½ºÅ© -> »ö»ó Ã·ºÎ Ãâ·Â ºñÆ®
-        dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;         // ´ë»ó ¾×¼¼½º ¸¶½ºÅ© -> »ö»ó Ã·ºÎ ¾²±â ºñÆ®
+        dependency.srcSubpass = VK_SUBPASS_EXTERNAL; // ì™¸ë¶€ ì„œë¸ŒíŒ¨ìŠ¤
+        dependency.dstSubpass = 0;                   // ëŒ€ìƒ ì„œë¸ŒíŒ¨ìŠ¤
+        dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;   // ì†ŒìŠ¤ ìŠ¤í…Œì´ì§€ ë§ˆìŠ¤í¬ -> ìƒ‰ìƒ ì²¨ë¶€ ì¶œë ¥ ë¹„íŠ¸
+        dependency.srcAccessMask = 0;                                                                                           // ì†ŒìŠ¤ ì•¡ì„¸ìŠ¤ ë§ˆìŠ¤í¬ -> 0
+        dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;   // ëŒ€ìƒ ìŠ¤í…Œì´ì§€ ë§ˆìŠ¤í¬ -> ìƒ‰ìƒ ì²¨ë¶€ ì¶œë ¥ ë¹„íŠ¸
+        dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;         // ëŒ€ìƒ ì•¡ì„¸ìŠ¤ ë§ˆìŠ¤í¬ -> ìƒ‰ìƒ ì²¨ë¶€ ì“°ê¸° ë¹„íŠ¸
 
-        // Ã·ºÎ ÆÄÀÏÀ» ¼³Á¤ÇÕ´Ï´Ù.
+        // ì²¨ë¶€ íŒŒì¼ì„ ì„¤ì •í•©ë‹ˆë‹¤.
         std::array<VkAttachmentDescription, 3> attachments = { colorAttachment, depthAttachment, colorAttachmentResolve };
         
-        // ·»´õ ÆĞ½º »ı¼º Á¤º¸ ±¸Á¶Ã¼¸¦ ÃÊ±âÈ­ÇÕ´Ï´Ù.
-        // ·»´õ ÆĞ½º »ı¼º Á¤º¸ ±¸Á¶Ã¼¿¡ Ã·ºÎ ÆÄÀÏ ¹× ¼­ºêÆĞ½º¸¦ ¼³Á¤ÇÕ´Ï´Ù.
+        // ë Œë” íŒ¨ìŠ¤ ìƒì„± ì •ë³´ êµ¬ì¡°ì²´ë¥¼ ì´ˆê¸°í™”í•©ë‹ˆë‹¤.
+        // ë Œë” íŒ¨ìŠ¤ ìƒì„± ì •ë³´ êµ¬ì¡°ì²´ì— ì²¨ë¶€ íŒŒì¼ ë° ì„œë¸ŒíŒ¨ìŠ¤ë¥¼ ì„¤ì •í•©ë‹ˆë‹¤.
         VkRenderPassCreateInfo renderPassInfo{};
         renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
         renderPassInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
@@ -748,7 +748,7 @@ namespace vkutil {
         auto bindingDescription = Vertex::getBindingDescription();
         auto attributeDescriptions = Vertex::getAttributeDescriptions();
 
-        // ±×·¡ÇÈ ÆÄÀÌÇÁ¶óÀÎ ·¹ÀÌ¾Æ¿ôÀ» »ı¼ºÇÕ´Ï´Ù.
+        // ê·¸ë˜í”½ íŒŒì´í”„ë¼ì¸ ë ˆì´ì•„ì›ƒì„ ìƒì„±í•©ë‹ˆë‹¤.
         VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
         vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
         vertexInputInfo.vertexBindingDescriptionCount = 1;
@@ -756,11 +756,11 @@ namespace vkutil {
         vertexInputInfo.pVertexBindingDescriptions = &bindingDescription;
         vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
 
-        // ÀÔ·Â µ¥ÀÌÅÍ¸¦ ¾î¶² ÇüÅÂ·Î Á¶¸³ÇÒ °ÍÀÎÁö °áÁ¤ÇÕ´Ï´Ù.
+        // ì…ë ¥ ë°ì´í„°ë¥¼ ì–´ë–¤ í˜•íƒœë¡œ ì¡°ë¦½í•  ê²ƒì¸ì§€ ê²°ì •í•©ë‹ˆë‹¤.
         VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
         inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
-        inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST; // »ï°¢Çü ¸®½ºÆ®·Î ¼³Á¤
-        inputAssembly.primitiveRestartEnable = VK_FALSE; // ÇÁ¸®¹ÌÆ¼ºê Àç½ÃÀÛ ºñÈ°¼ºÈ­
+        inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST; // ì‚¼ê°í˜• ë¦¬ìŠ¤íŠ¸ë¡œ ì„¤ì •
+        inputAssembly.primitiveRestartEnable = VK_FALSE; // í”„ë¦¬ë¯¸í‹°ë¸Œ ì¬ì‹œì‘ ë¹„í™œì„±í™”
 
         VkViewport viewpport{};
         viewpport.x = 0.0f;
@@ -774,7 +774,7 @@ namespace vkutil {
         scissor.offset = { 0, 0 };
         scissor.extent = this->VKswapChainExtent;
 
-        // ºäÆ÷Æ® ¼³Á¤
+        // ë·°í¬íŠ¸ ì„¤ì •
         VkPipelineViewportStateCreateInfo viewportState{};
         viewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
         viewportState.viewportCount = 1;
@@ -782,31 +782,31 @@ namespace vkutil {
         viewportState.scissorCount = 1;
         viewportState.pScissors = &scissor;
 
-        // ·¡½ºÅÍÈ­ ¼³Á¤
+        // ë˜ìŠ¤í„°í™” ì„¤ì •
         VkPipelineRasterizationStateCreateInfo rasterizer{};
         rasterizer.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
-        rasterizer.depthClampEnable = VK_FALSE;                 // ±íÀÌ Å¬·¥ÇÎ ºñÈ°¼ºÈ­
-        rasterizer.rasterizerDiscardEnable = VK_FALSE;          // ·¡½ºÅÍÈ­ ¹ö¸² ºñÈ°¼ºÈ­
-        rasterizer.polygonMode = VK_POLYGON_MODE_FILL;          // ´Ù°¢Çü ¸ğµå¸¦ Ã¤¿ì±â·Î ¼³Á¤
-        rasterizer.lineWidth = 1.0f;                            // ¶óÀÎ ³Êºñ¸¦ 1.0f·Î ¼³Á¤
-        rasterizer.cullMode = VK_CULL_MODE_BACK_BIT;            // ÈÄ¸é ¸éÀ» Á¦°Å
-        rasterizer.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE; // Àü¸é ¸éÀ» ¹İ½Ã°è ¹æÇâÀ¸·Î ¼³Á¤
-        rasterizer.depthBiasEnable = VK_FALSE;                  // ±íÀÌ ¹ÙÀÌ¾î½º ºñÈ°¼ºÈ­
-        //rasterizer.depthBiasConstantFactor = 0.0f;              // ±íÀÌ ¹ÙÀÌ¾î½º »ó¼ö ¿ä¼Ò¸¦ 0.0f·Î ¼³Á¤
-        //rasterizer.depthBiasClamp = 0.0f;                       // ±íÀÌ ¹ÙÀÌ¾î½º Å¬·¥ÇÁ¸¦ 0.0f·Î ¼³Á¤
-        //rasterizer.depthBiasSlopeFactor = 0.0f;                 // ±íÀÌ ¹ÙÀÌ¾î½º ½½·ÎÇÁ ¿ä¼Ò¸¦ 0.0f·Î ¼³Á¤
+        rasterizer.depthClampEnable = VK_FALSE;                 // ê¹Šì´ í´ë¨í•‘ ë¹„í™œì„±í™”
+        rasterizer.rasterizerDiscardEnable = VK_FALSE;          // ë˜ìŠ¤í„°í™” ë²„ë¦¼ ë¹„í™œì„±í™”
+        rasterizer.polygonMode = VK_POLYGON_MODE_FILL;          // ë‹¤ê°í˜• ëª¨ë“œë¥¼ ì±„ìš°ê¸°ë¡œ ì„¤ì •
+        rasterizer.lineWidth = 1.0f;                            // ë¼ì¸ ë„ˆë¹„ë¥¼ 1.0fë¡œ ì„¤ì •
+        rasterizer.cullMode = VK_CULL_MODE_BACK_BIT;            // í›„ë©´ ë©´ì„ ì œê±°
+        rasterizer.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE; // ì „ë©´ ë©´ì„ ë°˜ì‹œê³„ ë°©í–¥ìœ¼ë¡œ ì„¤ì •
+        rasterizer.depthBiasEnable = VK_FALSE;                  // ê¹Šì´ ë°”ì´ì–´ìŠ¤ ë¹„í™œì„±í™”
+        //rasterizer.depthBiasConstantFactor = 0.0f;              // ê¹Šì´ ë°”ì´ì–´ìŠ¤ ìƒìˆ˜ ìš”ì†Œë¥¼ 0.0fë¡œ ì„¤ì •
+        //rasterizer.depthBiasClamp = 0.0f;                       // ê¹Šì´ ë°”ì´ì–´ìŠ¤ í´ë¨í”„ë¥¼ 0.0fë¡œ ì„¤ì •
+        //rasterizer.depthBiasSlopeFactor = 0.0f;                 // ê¹Šì´ ë°”ì´ì–´ìŠ¤ ìŠ¬ë¡œí”„ ìš”ì†Œë¥¼ 0.0fë¡œ ì„¤ì •
 
-        // ´ÙÁß »ùÇÃ¸µ ¼³Á¤
+        // ë‹¤ì¤‘ ìƒ˜í”Œë§ ì„¤ì •
         VkPipelineMultisampleStateCreateInfo multisampling{};
         multisampling.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO; //
-        multisampling.sampleShadingEnable = VK_TRUE;               // »ùÇÃ¸µ ½¦ÀÌµù ºñÈ°¼ºÈ­
-        multisampling.rasterizationSamples = this->VKmsaaSamples; // ·¡½ºÅÍÈ­ »ùÇÃ ¼ö¸¦ 1ºñÆ®·Î ¼³Á¤
-        multisampling.minSampleShading = 0.2f;                      // ÃÖ¼Ò »ùÇÃ¸µÀ» 0.2f·Î ¼³Á¤
-        multisampling.pSampleMask = nullptr;                        // »ùÇÃ ¸¶½ºÅ©¸¦ nullptr·Î ¼³Á¤ -> option
-        multisampling.alphaToCoverageEnable = VK_FALSE;             // ¾ËÆÄ Ä¿¹ö¸®Áö ºñÈ°¼ºÈ­ -> option
-        multisampling.alphaToOneEnable = VK_FALSE;                  // ¾ËÆÄ ¿ø ºñÈ°¼ºÈ­ -> option
+        multisampling.sampleShadingEnable = VK_TRUE;               // ìƒ˜í”Œë§ ì‰ì´ë”© ë¹„í™œì„±í™”
+        multisampling.rasterizationSamples = this->VKmsaaSamples; // ë˜ìŠ¤í„°í™” ìƒ˜í”Œ ìˆ˜ë¥¼ 1ë¹„íŠ¸ë¡œ ì„¤ì •
+        multisampling.minSampleShading = 0.2f;                      // ìµœì†Œ ìƒ˜í”Œë§ì„ 0.2fë¡œ ì„¤ì •
+        multisampling.pSampleMask = nullptr;                        // ìƒ˜í”Œ ë§ˆìŠ¤í¬ë¥¼ nullptrë¡œ ì„¤ì • -> option
+        multisampling.alphaToCoverageEnable = VK_FALSE;             // ì•ŒíŒŒ ì»¤ë²„ë¦¬ì§€ ë¹„í™œì„±í™” -> option
+        multisampling.alphaToOneEnable = VK_FALSE;                  // ì•ŒíŒŒ ì› ë¹„í™œì„±í™” -> option
 
-        // ±íÀÌ ½ºÅÙ½Ç Å×½ºÆ® ¼³Á¤
+        // ê¹Šì´ ìŠ¤í…ì‹¤ í…ŒìŠ¤íŠ¸ ì„¤ì •
         VkPipelineDepthStencilStateCreateInfo depthStencil{};
         depthStencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
         depthStencil.depthTestEnable = VK_TRUE;
@@ -820,19 +820,19 @@ namespace vkutil {
         depthStencil.front = {}; // Optional
         depthStencil.back = {}; // Optional
 
-        // ÄÃ·¯ ºí·»µù ¼³Á¤
+        // ì»¬ëŸ¬ ë¸”ë Œë”© ì„¤ì •
         VkPipelineColorBlendAttachmentState colorBlendAttachment{};
         colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT |
             VK_COLOR_COMPONENT_G_BIT |
             VK_COLOR_COMPONENT_B_BIT |
-            VK_COLOR_COMPONENT_A_BIT;     // ÄÃ·¯ ¾²±â ¸¶½ºÅ©¸¦ ¼³Á¤
-        colorBlendAttachment.blendEnable = VK_FALSE;                        // ºí·»µùÀ» ºñÈ°¼ºÈ­
-        colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_ONE;     // ¼Ò½º ÄÃ·¯ ºí·»µù ÆÑÅÍ¸¦ ¼³Á¤
-        colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO;    // ´ë»ó ÄÃ·¯ ºí·»µù ÆÑÅÍ¸¦ ¼³Á¤
-        colorBlendAttachment.colorBlendOp = VK_BLEND_OP_ADD;                // ÄÃ·¯ ºí·»µù ¿¬»êÀ» ¼³Á¤
-        colorBlendAttachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;     // ¼Ò½º ¾ËÆÄ ºí·»µù ÆÑÅÍ¸¦ ¼³Á¤
-        colorBlendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;    // ´ë»ó ¾ËÆÄ ºí·»µù ÆÑÅÍ¸¦ ¼³Á¤
-        colorBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD;                // ¾ËÆÄ ºí·»µù ¿¬»êÀ» ¼³Á¤
+            VK_COLOR_COMPONENT_A_BIT;     // ì»¬ëŸ¬ ì“°ê¸° ë§ˆìŠ¤í¬ë¥¼ ì„¤ì •
+        colorBlendAttachment.blendEnable = VK_FALSE;                        // ë¸”ë Œë”©ì„ ë¹„í™œì„±í™”
+        colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_ONE;     // ì†ŒìŠ¤ ì»¬ëŸ¬ ë¸”ë Œë”© íŒ©í„°ë¥¼ ì„¤ì •
+        colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO;    // ëŒ€ìƒ ì»¬ëŸ¬ ë¸”ë Œë”© íŒ©í„°ë¥¼ ì„¤ì •
+        colorBlendAttachment.colorBlendOp = VK_BLEND_OP_ADD;                // ì»¬ëŸ¬ ë¸”ë Œë”© ì—°ì‚°ì„ ì„¤ì •
+        colorBlendAttachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;     // ì†ŒìŠ¤ ì•ŒíŒŒ ë¸”ë Œë”© íŒ©í„°ë¥¼ ì„¤ì •
+        colorBlendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;    // ëŒ€ìƒ ì•ŒíŒŒ ë¸”ë Œë”© íŒ©í„°ë¥¼ ì„¤ì •
+        colorBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD;                // ì•ŒíŒŒ ë¸”ë Œë”© ì—°ì‚°ì„ ì„¤ì •
         /*
         if (blendEnable) {
             finalColor.rgb = (srcColorBlendFactor * newColor.rgb) <colorBlendOp> (dstColorBlendFactor * oldColor.rgb);
@@ -844,38 +844,38 @@ namespace vkutil {
         finalColor = finalColor & colorWriteMask;
         */
 
-        // ÄÃ·¯ ºí·»µù »óÅÂ »ı¼º Á¤º¸ ±¸Á¶Ã¼¸¦ ÃÊ±âÈ­ÇÕ´Ï´Ù.
+        // ì»¬ëŸ¬ ë¸”ë Œë”© ìƒíƒœ ìƒì„± ì •ë³´ êµ¬ì¡°ì²´ë¥¼ ì´ˆê¸°í™”í•©ë‹ˆë‹¤.
         VkPipelineColorBlendStateCreateInfo colorBlending{};
-        colorBlending.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO; // ±¸Á¶Ã¼ Å¸ÀÔÀ» ¼³Á¤
-        colorBlending.logicOpEnable = VK_FALSE;                                       // ³í¸® ¿¬»êÀ» ºñÈ°¼ºÈ­
-        colorBlending.logicOp = VK_LOGIC_OP_COPY;                                     // ³í¸® ¿¬»êÀ» ¼³Á¤
-        colorBlending.attachmentCount = 1;                                            // ÄÃ·¯ ºí·»µù Ã·ºÎ °³¼ö¸¦ ¼³Á¤
-        colorBlending.pAttachments = &colorBlendAttachment;                           // ÄÃ·¯ ºí·»µù Ã·ºÎ Æ÷ÀÎÅÍ¸¦ ¼³Á¤
-        colorBlending.blendConstants[0] = 0.0f;                                       // ºí·»µù »ó¼ö¸¦ ¼³Á¤
-        colorBlending.blendConstants[1] = 0.0f;                                       // ºí·»µù »ó¼ö¸¦ ¼³Á¤
-        colorBlending.blendConstants[2] = 0.0f;                                       // ºí·»µù »ó¼ö¸¦ ¼³Á¤
-        colorBlending.blendConstants[3] = 0.0f;                                       // ºí·»µù »ó¼ö¸¦ ¼³Á¤
+        colorBlending.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO; // êµ¬ì¡°ì²´ íƒ€ì…ì„ ì„¤ì •
+        colorBlending.logicOpEnable = VK_FALSE;                                       // ë…¼ë¦¬ ì—°ì‚°ì„ ë¹„í™œì„±í™”
+        colorBlending.logicOp = VK_LOGIC_OP_COPY;                                     // ë…¼ë¦¬ ì—°ì‚°ì„ ì„¤ì •
+        colorBlending.attachmentCount = 1;                                            // ì»¬ëŸ¬ ë¸”ë Œë”© ì²¨ë¶€ ê°œìˆ˜ë¥¼ ì„¤ì •
+        colorBlending.pAttachments = &colorBlendAttachment;                           // ì»¬ëŸ¬ ë¸”ë Œë”© ì²¨ë¶€ í¬ì¸í„°ë¥¼ ì„¤ì •
+        colorBlending.blendConstants[0] = 0.0f;                                       // ë¸”ë Œë”© ìƒìˆ˜ë¥¼ ì„¤ì •
+        colorBlending.blendConstants[1] = 0.0f;                                       // ë¸”ë Œë”© ìƒìˆ˜ë¥¼ ì„¤ì •
+        colorBlending.blendConstants[2] = 0.0f;                                       // ë¸”ë Œë”© ìƒìˆ˜ë¥¼ ì„¤ì •
+        colorBlending.blendConstants[3] = 0.0f;                                       // ë¸”ë Œë”© ìƒìˆ˜ë¥¼ ì„¤ì •
 
-        // °íÁ¤ ±â´É »óÅÂ¸¦ ¼³Á¤ÇÕ´Ï´Ù.
+        // ê³ ì • ê¸°ëŠ¥ ìƒíƒœë¥¼ ì„¤ì •í•©ë‹ˆë‹¤.
         VkPipelineDynamicStateCreateInfo dynamicState{};
         dynamicState.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
         dynamicState.dynamicStateCount = static_cast<uint32_t>(dynamicStates.size());
         dynamicState.pDynamicStates = dynamicStates.data();
 
-        // ±×·¡ÇÈ ÆÄÀÌÇÁ¶óÀÎ ·¹ÀÌ¾Æ¿ôÀ» »ı¼ºÇÕ´Ï´Ù.
+        // ê·¸ë˜í”½ íŒŒì´í”„ë¼ì¸ ë ˆì´ì•„ì›ƒì„ ìƒì„±í•©ë‹ˆë‹¤.
         VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
-        pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO; // ±¸Á¶Ã¼ Å¸ÀÔÀ» ¼³Á¤
-        pipelineLayoutInfo.setLayoutCount = 1;                                    // ·¹ÀÌ¾Æ¿ô °³¼ö¸¦ ¼³Á¤
-        pipelineLayoutInfo.pSetLayouts = &this->VKdescriptorSetLayout;            // ·¹ÀÌ¾Æ¿ô Æ÷ÀÎÅÍ¸¦ ¼³Á¤
-        pipelineLayoutInfo.pushConstantRangeCount = 0;                            // Çª½Ã »ó¼ö ¹üÀ§ °³¼ö¸¦ ¼³Á¤
-        pipelineLayoutInfo.pPushConstantRanges = nullptr;                         // Çª½Ã »ó¼ö ¹üÀ§ Æ÷ÀÎÅÍ¸¦ ¼³Á¤
+        pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO; // êµ¬ì¡°ì²´ íƒ€ì…ì„ ì„¤ì •
+        pipelineLayoutInfo.setLayoutCount = 1;                                    // ë ˆì´ì•„ì›ƒ ê°œìˆ˜ë¥¼ ì„¤ì •
+        pipelineLayoutInfo.pSetLayouts = &this->VKdescriptorSetLayout;            // ë ˆì´ì•„ì›ƒ í¬ì¸í„°ë¥¼ ì„¤ì •
+        pipelineLayoutInfo.pushConstantRangeCount = 0;                            // í‘¸ì‹œ ìƒìˆ˜ ë²”ìœ„ ê°œìˆ˜ë¥¼ ì„¤ì •
+        pipelineLayoutInfo.pPushConstantRanges = nullptr;                         // í‘¸ì‹œ ìƒìˆ˜ ë²”ìœ„ í¬ì¸í„°ë¥¼ ì„¤ì •
 
         if (vkCreatePipelineLayout(this->VKdevice, &pipelineLayoutInfo, nullptr, &this->VKpipelineLayout) != VK_SUCCESS) {
             throw std::runtime_error("failed to create pipeline layout!");
         }
 
 
-        // ±×·¡ÇÈ ÆÄÀÌÇÁ¶óÀÎ »ı¼º Á¤º¸ ±¸Á¶Ã¼¸¦ ÃÊ±âÈ­ÇÕ´Ï´Ù.
+        // ê·¸ë˜í”½ íŒŒì´í”„ë¼ì¸ ìƒì„± ì •ë³´ êµ¬ì¡°ì²´ë¥¼ ì´ˆê¸°í™”í•©ë‹ˆë‹¤.
         VkGraphicsPipelineCreateInfo pipelineInfo{};
         pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
         pipelineInfo.stageCount = 2;
@@ -934,10 +934,10 @@ namespace vkutil {
         QueueFamilyIndices queueFamilyIndices = this->VKqueueFamilyIndices;
         VkCommandPoolCreateInfo poolInfo{};
 
-        // Ä¿¸Çµå Ç® »ı¼º Á¤º¸ ±¸Á¶Ã¼¸¦ ÃÊ±âÈ­ÇÕ´Ï´Ù.
-        poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;             // ±¸Á¶Ã¼ Å¸ÀÔÀ» ¼³Á¤
-        poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;        // Ä¿¸Çµå ¹öÆÛ¸¦ Àç¼³Á¤ÇÏ´Â ÇÃ·¡±×¸¦ ¼³Á¤
-        poolInfo.queueFamilyIndex = queueFamilyIndices.graphicsAndComputeFamily; // Å¥ ÆĞ¹Ğ¸® ÀÎµ¦½º¸¦ ¼³Á¤
+        // ì»¤ë§¨ë“œ í’€ ìƒì„± ì •ë³´ êµ¬ì¡°ì²´ë¥¼ ì´ˆê¸°í™”í•©ë‹ˆë‹¤.
+        poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;             // êµ¬ì¡°ì²´ íƒ€ì…ì„ ì„¤ì •
+        poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;        // ì»¤ë§¨ë“œ ë²„í¼ë¥¼ ì¬ì„¤ì •í•˜ëŠ” í”Œë˜ê·¸ë¥¼ ì„¤ì •
+        poolInfo.queueFamilyIndex = queueFamilyIndices.graphicsAndComputeFamily; // í íŒ¨ë°€ë¦¬ ì¸ë±ìŠ¤ë¥¼ ì„¤ì •
         
         if (vkCreateCommandPool(this->VKdevice, &poolInfo, nullptr, &this->VKcommandPool) != VK_SUCCESS) {
             throw std::runtime_error("failed to create command pool!");
@@ -952,7 +952,7 @@ namespace vkutil {
         allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
         allocInfo.commandPool = this->VKcommandPool;
         allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-        allocInfo.commandBufferCount = static_cast<uint32_t>(this->VKcommandBuffers.size()); // Ä¿¸Çµå ¹öÆÛ °³¼ö¸¦ ¼³Á¤
+        allocInfo.commandBufferCount = static_cast<uint32_t>(this->VKcommandBuffers.size()); // ì»¤ë§¨ë“œ ë²„í¼ ê°œìˆ˜ë¥¼ ì„¤ì •
 
         if (vkAllocateCommandBuffers(this->VKdevice, &allocInfo, this->VKcommandBuffers.data()) != VK_SUCCESS) {
             throw std::runtime_error("failed to allocate command buffers!");
@@ -989,24 +989,24 @@ namespace vkutil {
 
     void Application::cleanupSwapChain()
     {
-        vkDestroyImageView(this->VKdevice, this->VKcolorImageView, nullptr); // ÄÃ·¯ ÀÌ¹ÌÁö ºä¸¦ Á¦°ÅÇÕ´Ï´Ù.
-        vkDestroyImage(this->VKdevice, this->VKcolorImage, nullptr); // ÄÃ·¯ ÀÌ¹ÌÁö¸¦ Á¦°ÅÇÕ´Ï´Ù.
-        vkFreeMemory(this->VKdevice, this->VKcolorImageMemory, nullptr); // ÄÃ·¯ ÀÌ¹ÌÁö ¸Ş¸ğ¸®¸¦ Á¦°ÅÇÕ´Ï´Ù.
+        vkDestroyImageView(this->VKdevice, this->VKcolorImageView, nullptr); // ì»¬ëŸ¬ ì´ë¯¸ì§€ ë·°ë¥¼ ì œê±°í•©ë‹ˆë‹¤.
+        vkDestroyImage(this->VKdevice, this->VKcolorImage, nullptr); // ì»¬ëŸ¬ ì´ë¯¸ì§€ë¥¼ ì œê±°í•©ë‹ˆë‹¤.
+        vkFreeMemory(this->VKdevice, this->VKcolorImageMemory, nullptr); // ì»¬ëŸ¬ ì´ë¯¸ì§€ ë©”ëª¨ë¦¬ë¥¼ ì œê±°í•©ë‹ˆë‹¤.
 
-        vkDestroyImageView(this->VKdevice, this->VKdepthImageView, nullptr); // ±íÀÌ ÀÌ¹ÌÁö ºä¸¦ Á¦°ÅÇÕ´Ï´Ù.
-        vkDestroyImage(this->VKdevice, this->VKdepthImage, nullptr); // ±íÀÌ ÀÌ¹ÌÁö¸¦ Á¦°ÅÇÕ´Ï´Ù.
-        vkFreeMemory(this->VKdevice, this->VKdepthImageMemory, nullptr); // ±íÀÌ ÀÌ¹ÌÁö ¸Ş¸ğ¸®¸¦ Á¦°ÅÇÕ´Ï´Ù.
+        vkDestroyImageView(this->VKdevice, this->VKdepthImageView, nullptr); // ê¹Šì´ ì´ë¯¸ì§€ ë·°ë¥¼ ì œê±°í•©ë‹ˆë‹¤.
+        vkDestroyImage(this->VKdevice, this->VKdepthImage, nullptr); // ê¹Šì´ ì´ë¯¸ì§€ë¥¼ ì œê±°í•©ë‹ˆë‹¤.
+        vkFreeMemory(this->VKdevice, this->VKdepthImageMemory, nullptr); // ê¹Šì´ ì´ë¯¸ì§€ ë©”ëª¨ë¦¬ë¥¼ ì œê±°í•©ë‹ˆë‹¤.
 
         for (auto framebuffer : VKswapChainFramebuffers)
         {
-            vkDestroyFramebuffer(this->VKdevice, framebuffer, nullptr); // ÇÁ·¹ÀÓ ¹öÆÛ¸¦ Á¦°ÅÇÕ´Ï´Ù.
+            vkDestroyFramebuffer(this->VKdevice, framebuffer, nullptr); // í”„ë ˆì„ ë²„í¼ë¥¼ ì œê±°í•©ë‹ˆë‹¤.
         }
 
         for (auto swapChainView : this->VKswapChainImageViews) {
-            vkDestroyImageView(this->VKdevice, swapChainView, nullptr); // ÀÌ¹ÌÁö ºä¸¦ Á¦°ÅÇÕ´Ï´Ù.
+            vkDestroyImageView(this->VKdevice, swapChainView, nullptr); // ì´ë¯¸ì§€ ë·°ë¥¼ ì œê±°í•©ë‹ˆë‹¤.
         }
 
-        vkDestroySwapchainKHR(this->VKdevice, this->VKswapChain, nullptr); // ±×·¡ÇÈ ÆÄÀÌÇÁ¶óÀÎÀ» Á¦°ÅÇÕ´Ï´Ù.
+        vkDestroySwapchainKHR(this->VKdevice, this->VKswapChain, nullptr); // ê·¸ë˜í”½ íŒŒì´í”„ë¼ì¸ì„ ì œê±°í•©ë‹ˆë‹¤.
     }
 
     void Application::recreateSwapChain()
@@ -1021,13 +1021,13 @@ namespace vkutil {
 
         vkDeviceWaitIdle(this->VKdevice);
 
-        this->cleanupSwapChain(); // ½º¿Ò Ã¼ÀÎÀ» Á¤¸®ÇÕ´Ï´Ù.
+        this->cleanupSwapChain(); // ìŠ¤ì™‘ ì²´ì¸ì„ ì •ë¦¬í•©ë‹ˆë‹¤.
 
-        this->createSwapChain();  // ½º¿Ò Ã¼ÀÎÀ» »ı¼ºÇÕ´Ï´Ù.
-        this->createImageViews(); // ÀÌ¹ÌÁö ºä¸¦ »ı¼ºÇÕ´Ï´Ù.
-        this->createColorResources(); // ÄÃ·¯ ¸®¼Ò½º¸¦ »ı¼ºÇÕ´Ï´Ù.
-        this->createDepthResources(); // ±íÀÌ ¸®¼Ò½º¸¦ »ı¼ºÇÕ´Ï´Ù.
-        this->createFramebuffers(); // ·»´õ ÆĞ½º¸¦ »ı¼ºÇÕ´Ï´Ù.
+        this->createSwapChain();  // ìŠ¤ì™‘ ì²´ì¸ì„ ìƒì„±í•©ë‹ˆë‹¤.
+        this->createImageViews(); // ì´ë¯¸ì§€ ë·°ë¥¼ ìƒì„±í•©ë‹ˆë‹¤.
+        this->createColorResources(); // ì»¬ëŸ¬ ë¦¬ì†ŒìŠ¤ë¥¼ ìƒì„±í•©ë‹ˆë‹¤.
+        this->createDepthResources(); // ê¹Šì´ ë¦¬ì†ŒìŠ¤ë¥¼ ìƒì„±í•©ë‹ˆë‹¤.
+        this->createFramebuffers(); // ë Œë” íŒ¨ìŠ¤ë¥¼ ìƒì„±í•©ë‹ˆë‹¤.
 
         this->framebufferResized = false;
     }
@@ -1071,7 +1071,7 @@ namespace vkutil {
             this->VKvertexBuffer, 
             bufferSize);
 
-        // ½ºÅ×ÀÌÂ¡ ¹öÆÛ¿¡¼­ µğ¹ÙÀÌ½º ¹öÆÛ·Î µ¥ÀÌÅÍ¸¦ º¹»çÇÑ ÈÄ¿¡´Â ÀÌ¸¦ Á¤¸®ÇØ¾ß ÇÕ´Ï´Ù:
+        // ìŠ¤í…Œì´ì§• ë²„í¼ì—ì„œ ë””ë°”ì´ìŠ¤ ë²„í¼ë¡œ ë°ì´í„°ë¥¼ ë³µì‚¬í•œ í›„ì—ëŠ” ì´ë¥¼ ì •ë¦¬í•´ì•¼ í•©ë‹ˆë‹¤:
         vkDestroyBuffer(this->VKdevice, stagingBuffer, nullptr);
         vkFreeMemory(this->VKdevice, stagingBufferMemory, nullptr);
     }
@@ -1123,7 +1123,7 @@ namespace vkutil {
 
     void Application::createDescriptorSetLayout()
     {
-        // µğ½ºÅ©¸³ÅÍ ¼¼Æ® ·¹ÀÌ¾Æ¿ô ¹ÙÀÎµùÀ» ¼³Á¤ÇÕ´Ï´Ù.
+        // ë””ìŠ¤í¬ë¦½í„° ì„¸íŠ¸ ë ˆì´ì•„ì›ƒ ë°”ì¸ë”©ì„ ì„¤ì •í•©ë‹ˆë‹¤.
         VkDescriptorSetLayoutBinding uboLayoutBinding{};
         uboLayoutBinding.binding = 0;
         uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
@@ -1131,13 +1131,13 @@ namespace vkutil {
         uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
         uboLayoutBinding.pImmutableSamplers = nullptr; // Optional
 
-        // µğ½ºÅ©¸³ÅÍ ¼¼Æ® ·¹ÀÌ¾Æ¿ô »ı¼º Á¤º¸ ±¸Á¶Ã¼¸¦ ÃÊ±âÈ­ÇÕ´Ï´Ù. -> ÀÌÀü ÄÚµå Âü°í¿ë
+        // ë””ìŠ¤í¬ë¦½í„° ì„¸íŠ¸ ë ˆì´ì•„ì›ƒ ìƒì„± ì •ë³´ êµ¬ì¡°ì²´ë¥¼ ì´ˆê¸°í™”í•©ë‹ˆë‹¤. -> ì´ì „ ì½”ë“œ ì°¸ê³ ìš©
         //VkDescriptorSetLayoutCreateInfo layoutInfo{};
         //layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
         //layoutInfo.bindingCount = 1;
         //layoutInfo.pBindings = &uboLayoutBinding;
 
-        // »ùÇÃ·¯ ·¹ÀÌ¾Æ¿ô ¹ÙÀÎµùÀ» ¼³Á¤ÇÕ´Ï´Ù.
+        // ìƒ˜í”ŒëŸ¬ ë ˆì´ì•„ì›ƒ ë°”ì¸ë”©ì„ ì„¤ì •í•©ë‹ˆë‹¤.
         VkDescriptorSetLayoutBinding samplerLayoutBinding{};
         samplerLayoutBinding.binding = 1;
         samplerLayoutBinding.descriptorCount = 1;
@@ -1145,7 +1145,7 @@ namespace vkutil {
         samplerLayoutBinding.pImmutableSamplers = nullptr;
         samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
         
-        // µğ½ºÅ©¸³ÅÍ ¼¼Æ® ·¹ÀÌ¾Æ¿ô »ı¼º Á¤º¸ ±¸Á¶Ã¼¸¦ ÃÊ±âÈ­ÇÕ´Ï´Ù.
+        // ë””ìŠ¤í¬ë¦½í„° ì„¸íŠ¸ ë ˆì´ì•„ì›ƒ ìƒì„± ì •ë³´ êµ¬ì¡°ì²´ë¥¼ ì´ˆê¸°í™”í•©ë‹ˆë‹¤.
         std::array<VkDescriptorSetLayoutBinding, 2> bindings = { uboLayoutBinding, samplerLayoutBinding };
         VkDescriptorSetLayoutCreateInfo layoutInfo{};
         layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
@@ -1184,14 +1184,14 @@ namespace vkutil {
 
     void Application::createDescriptorPool()
     {
-        //// µğ½ºÅ©¸³ÅÍ Ç® Å©±â¸¦ ¼³Á¤ÇÕ´Ï´Ù.
+        //// ë””ìŠ¤í¬ë¦½í„° í’€ í¬ê¸°ë¥¼ ì„¤ì •í•©ë‹ˆë‹¤.
         std::array<VkDescriptorPoolSize, 2> poolSizes{};
         poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
         poolSizes[0].descriptorCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
         poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
         poolSizes[1].descriptorCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT) * 2;
 
-        // µğ½ºÅ©¸³ÅÍ Ç® »ı¼º Á¤º¸ ±¸Á¶Ã¼¸¦ ÃÊ±âÈ­ÇÕ´Ï´Ù.
+        // ë””ìŠ¤í¬ë¦½í„° í’€ ìƒì„± ì •ë³´ êµ¬ì¡°ì²´ë¥¼ ì´ˆê¸°í™”í•©ë‹ˆë‹¤.
         VkDescriptorPoolCreateInfo poolInfo{};
         poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
         poolInfo.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
@@ -1207,36 +1207,36 @@ namespace vkutil {
 
     void Application::createDescriptorSets()
     {
-        // µğ½ºÅ©¸³ÅÍ ¼¼Æ® ·¹ÀÌ¾Æ¿ôÀ» ¼³Á¤ÇÕ´Ï´Ù.
+        // ë””ìŠ¤í¬ë¦½í„° ì„¸íŠ¸ ë ˆì´ì•„ì›ƒì„ ì„¤ì •í•©ë‹ˆë‹¤.
         std::vector<VkDescriptorSetLayout> layouts(MAX_FRAMES_IN_FLIGHT, this->VKdescriptorSetLayout);
 
-        // µğ½ºÅ©¸³ÅÍ ¼¼Æ® ÇÒ´ç Á¤º¸ ±¸Á¶Ã¼¸¦ ÃÊ±âÈ­ÇÕ´Ï´Ù.
+        // ë””ìŠ¤í¬ë¦½í„° ì„¸íŠ¸ í• ë‹¹ ì •ë³´ êµ¬ì¡°ì²´ë¥¼ ì´ˆê¸°í™”í•©ë‹ˆë‹¤.
         VkDescriptorSetAllocateInfo allocInfo{};
 
-        // µğ½ºÅ©¸³ÅÍ ¼¼Æ® ÇÒ´ç Á¤º¸ ±¸Á¶Ã¼¿¡ µğ½ºÅ©¸³ÅÍ Ç®°ú µğ½ºÅ©¸³ÅÍ ¼¼Æ® °³¼ö¸¦ ¼³Á¤ÇÕ´Ï´Ù.
+        // ë””ìŠ¤í¬ë¦½í„° ì„¸íŠ¸ í• ë‹¹ ì •ë³´ êµ¬ì¡°ì²´ì— ë””ìŠ¤í¬ë¦½í„° í’€ê³¼ ë””ìŠ¤í¬ë¦½í„° ì„¸íŠ¸ ê°œìˆ˜ë¥¼ ì„¤ì •í•©ë‹ˆë‹¤.
         allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
         allocInfo.descriptorPool = this->VKdescriptorPool;
         allocInfo.descriptorSetCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
         allocInfo.pSetLayouts = layouts.data();
 
-        // µğ½ºÅ©¸³ÅÍ ¼¼Æ®¸¦ »ı¼ºÇÕ´Ï´Ù.
+        // ë””ìŠ¤í¬ë¦½í„° ì„¸íŠ¸ë¥¼ ìƒì„±í•©ë‹ˆë‹¤.
         this->VKdescriptorSets.resize(MAX_FRAMES_IN_FLIGHT);
 
-        // µğ½ºÅ©¸³ÅÍ ¼¼Æ®¸¦ ÇÒ´çÇÕ´Ï´Ù.
+        // ë””ìŠ¤í¬ë¦½í„° ì„¸íŠ¸ë¥¼ í• ë‹¹í•©ë‹ˆë‹¤.
         if (vkAllocateDescriptorSets(this->VKdevice, &allocInfo, this->VKdescriptorSets.data()) != VK_SUCCESS) {
             throw std::runtime_error("failed to allocate descriptor sets!");
         }
         
-        // µğ½ºÅ©¸³ÅÍ ¼¼Æ®¸¦ ¼³Á¤ÇÕ´Ï´Ù.
+        // ë””ìŠ¤í¬ë¦½í„° ì„¸íŠ¸ë¥¼ ì„¤ì •í•©ë‹ˆë‹¤.
         for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
             
-            // µğ½ºÅ©¸³ÅÍ ¹öÆÛ Á¤º¸¸¦ ¼³Á¤ÇÕ´Ï´Ù.
+            // ë””ìŠ¤í¬ë¦½í„° ë²„í¼ ì •ë³´ë¥¼ ì„¤ì •í•©ë‹ˆë‹¤.
             VkDescriptorBufferInfo bufferInfo{};
             bufferInfo.buffer = this->VKuniformBuffers[i];
             bufferInfo.offset = 0;
             bufferInfo.range = sizeof(object::UniformBufferObject);
 
-            // µğ½ºÅ©¸³ÅÍ ÀÌ¹ÌÁö Á¤º¸¸¦ ¼³Á¤ÇÕ´Ï´Ù.
+            // ë””ìŠ¤í¬ë¦½í„° ì´ë¯¸ì§€ ì •ë³´ë¥¼ ì„¤ì •í•©ë‹ˆë‹¤.
             VkDescriptorImageInfo imageInfo{};
             imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
             imageInfo.imageView = this->VKtextureImageView;
@@ -1329,9 +1329,9 @@ namespace vkutil {
             this->VKtextureImage,
             static_cast<uint32_t>(texWidth),
             static_cast<uint32_t>(texHeight));
-        // ¹Ó¸ÊÀ» »ı¼ºÇÏ´Â µ¿¾È VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL·Î ÀüÈ¯µÇ¾ú½À´Ï´Ù.
-        // VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL·Î ÀüÈ¯µÇ¸é ÀÌ¹ÌÁö°¡ ¼ÎÀÌ´õ¿¡¼­ ÀĞÀ» ¼ö ÀÖ½À´Ï´Ù.
-        // ±×·¡¼­ ¾Æ·¡ÀÇ ÄÚµå´Â Á¦°Å
+        // ë°‰ë§µì„ ìƒì„±í•˜ëŠ” ë™ì•ˆ VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMALë¡œ ì „í™˜ë˜ì—ˆìŠµë‹ˆë‹¤.
+        // VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMALë¡œ ì „í™˜ë˜ë©´ ì´ë¯¸ì§€ê°€ ì…°ì´ë”ì—ì„œ ì½ì„ ìˆ˜ ìˆìŠµë‹ˆë‹¤.
+        // ê·¸ë˜ì„œ ì•„ë˜ì˜ ì½”ë“œëŠ” ì œê±°
 
         vkDestroyBuffer(this->VKdevice, stagingBuffer, nullptr);
         vkFreeMemory(this->VKdevice, stagingBufferMemory, nullptr);
@@ -1350,7 +1350,7 @@ namespace vkutil {
 
     void Application::createTextureImageView()
     {
-        // ÀÌ¹ÌÁö ºä »ı¼º Á¤º¸ ±¸Á¶Ã¼¸¦ ÃÊ±âÈ­ÇÕ´Ï´Ù.
+        // ì´ë¯¸ì§€ ë·° ìƒì„± ì •ë³´ êµ¬ì¡°ì²´ë¥¼ ì´ˆê¸°í™”í•©ë‹ˆë‹¤.
         this->VKtextureImageView = 
             helper_::createImageView(
             this->VKdevice,
@@ -1389,14 +1389,14 @@ namespace vkutil {
         }
     }
 
-    // ±íÀÌ ¸®¼Ò½º´Â ±íÀÌ Å×½ºÆ®¿¡ ÇÊ¿äÇÑ ÀÌ¹ÌÁö¸¦ »ı¼ºÇÏ¿©,
-    // 3D ¾À¿¡¼­ °´Ã¼ °£ÀÇ »ó´ëÀûÀÎ ±íÀÌ¸¦ Á¤È®ÇÏ°Ô °è»êÇÏ´Â µ¥ »ç¿ëµË´Ï´Ù.
+    // ê¹Šì´ ë¦¬ì†ŒìŠ¤ëŠ” ê¹Šì´ í…ŒìŠ¤íŠ¸ì— í•„ìš”í•œ ì´ë¯¸ì§€ë¥¼ ìƒì„±í•˜ì—¬,
+    // 3D ì”¬ì—ì„œ ê°ì²´ ê°„ì˜ ìƒëŒ€ì ì¸ ê¹Šì´ë¥¼ ì •í™•í•˜ê²Œ ê³„ì‚°í•˜ëŠ” ë° ì‚¬ìš©ë©ë‹ˆë‹¤.
     void Application::createDepthResources()
     {
-        // ±íÀÌ ÀÌ¹ÌÁö¸¦ »ı¼ºÇÕ´Ï´Ù.
+        // ê¹Šì´ ì´ë¯¸ì§€ë¥¼ ìƒì„±í•©ë‹ˆë‹¤.
         VkFormat depthFormat = helper_::findDepthFormat(this->VKphysicalDevice);
 
-        // ÀÌ¹ÌÁö »ı¼º Á¤º¸ ±¸Á¶Ã¼¸¦ ÃÊ±âÈ­ÇÕ´Ï´Ù.
+        // ì´ë¯¸ì§€ ìƒì„± ì •ë³´ êµ¬ì¡°ì²´ë¥¼ ì´ˆê¸°í™”í•©ë‹ˆë‹¤.
         helper_::createImage(
             this->VKdevice,
             this->VKphysicalDevice,
@@ -1411,7 +1411,7 @@ namespace vkutil {
             this->VKdepthImage,
             this->VKdepthImageMemory);
         
-        // ÀÌ¹ÌÁö ºä¸¦ »ı¼ºÇÕ´Ï´Ù.
+        // ì´ë¯¸ì§€ ë·°ë¥¼ ìƒì„±í•©ë‹ˆë‹¤.
         this->VKdepthImageView = helper_::createImageView(
             this->VKdevice,
             this->VKdepthImage,
@@ -1419,7 +1419,7 @@ namespace vkutil {
             VK_IMAGE_ASPECT_DEPTH_BIT,
             1);
 
-        // ±íÀÌ ÀÌ¹ÌÁö ·¹ÀÌ¾Æ¿ôÀ» ¼³Á¤ÇÕ´Ï´Ù.
+        // ê¹Šì´ ì´ë¯¸ì§€ ë ˆì´ì•„ì›ƒì„ ì„¤ì •í•©ë‹ˆë‹¤.
         helper_::transitionImageLayout(
             this->VKdevice,
             this->VKcommandPool,
@@ -1478,8 +1478,8 @@ namespace vkutil {
         }
     }
 
-    // ÄÃ·¯ ¸®¼Ò½º´Â ¸ÖÆ¼»ùÇÃ¸µ Ã³¸®¸¦ À§ÇØ Ãß°¡ÀûÀÎ »ö»ó ÀÌ¹ÌÁö¸¦ »ı¼ºÇÏ¸ç,
-    // ÃÖÁ¾ ·»´õ¸µ °á°úÀÇ Ç°Áú Çâ»óÀ» µµ¸ğÇÕ´Ï´Ù.
+    // ì»¬ëŸ¬ ë¦¬ì†ŒìŠ¤ëŠ” ë©€í‹°ìƒ˜í”Œë§ ì²˜ë¦¬ë¥¼ ìœ„í•´ ì¶”ê°€ì ì¸ ìƒ‰ìƒ ì´ë¯¸ì§€ë¥¼ ìƒì„±í•˜ë©°,
+    // ìµœì¢… ë Œë”ë§ ê²°ê³¼ì˜ í’ˆì§ˆ í–¥ìƒì„ ë„ëª¨í•©ë‹ˆë‹¤.
     void Application::createColorResources()
     {
         VkFormat colorFormat = this->VKswapChainImageFormat;
@@ -1503,20 +1503,20 @@ namespace vkutil {
 
     const QueueFamilyIndices Application::findQueueFamilies(VkPhysicalDevice device)
     {
-        QueueFamilyIndices indices; // Å¥ ÆĞ¹Ğ¸®ÀÇ °³¼ö¸¦ ÀúÀåÇÒ º¯¼ö¸¦ ÃÊ±âÈ­
+        QueueFamilyIndices indices; // í íŒ¨ë°€ë¦¬ì˜ ê°œìˆ˜ë¥¼ ì €ì¥í•  ë³€ìˆ˜ë¥¼ ì´ˆê¸°í™”
         uint32_t queueFamilyCount = 0;
 
-        // ÁÖ¾îÁø ¹°¸® ÀåÄ¡¿¡¼­ Å¥ ÆĞ¹Ğ¸® ¼Ó¼ºÀ» °¡Á®¿È (Ã¹ ¹øÂ° È£ÃâÀº °³¼ö¸¸ °¡Á®¿È)
+        // ì£¼ì–´ì§„ ë¬¼ë¦¬ ì¥ì¹˜ì—ì„œ í íŒ¨ë°€ë¦¬ ì†ì„±ì„ ê°€ì ¸ì˜´ (ì²« ë²ˆì§¸ í˜¸ì¶œì€ ê°œìˆ˜ë§Œ ê°€ì ¸ì˜´)
         vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);
-        // Å¥ ÆĞ¹Ğ¸® ¼Ó¼ºÀ» ÀúÀåÇÒ º¤ÅÍ¸¦ ÃÊ±âÈ­
+        // í íŒ¨ë°€ë¦¬ ì†ì„±ì„ ì €ì¥í•  ë²¡í„°ë¥¼ ì´ˆê¸°í™”
         std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
-        // ÁÖ¾îÁø ¹°¸® ÀåÄ¡¿¡¼­ Å¥ ÆĞ¹Ğ¸® ¼Ó¼ºÀ» °¡Á®¿È (µÎ ¹øÂ° È£ÃâÀº ½ÇÁ¦ ¼Ó¼ºÀ» °¡Á®¿È)
+        // ì£¼ì–´ì§„ ë¬¼ë¦¬ ì¥ì¹˜ì—ì„œ í íŒ¨ë°€ë¦¬ ì†ì„±ì„ ê°€ì ¸ì˜´ (ë‘ ë²ˆì§¸ í˜¸ì¶œì€ ì‹¤ì œ ì†ì„±ì„ ê°€ì ¸ì˜´)
         vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, queueFamilies.data());
-        // ¸ğµç Å¥ ÆĞ¹Ğ¸®¸¦ ¼øÈ¸
+        // ëª¨ë“  í íŒ¨ë°€ë¦¬ë¥¼ ìˆœíšŒ
         int i = 0;
         getPyhsicalDeviceProperties(device);
         for (const auto& queueFamily : queueFamilies) {
-            // ÇöÀç Å¥ ÆĞ¹Ğ¸®°¡ ±×·¡ÇÈ½º Å¥¸¦ Áö¿øÇÏ´ÂÁö È®ÀÎ
+            // í˜„ì¬ í íŒ¨ë°€ë¦¬ê°€ ê·¸ë˜í”½ìŠ¤ íë¥¼ ì§€ì›í•˜ëŠ”ì§€ í™•ì¸
 
 #ifdef DEBUG_
             printf("QueueFamily %d\n", i);
@@ -1632,8 +1632,8 @@ namespace vkutil {
 
         for (const auto& availableFormat : availableFormats)
         {
-            if (availableFormat.format == VK_FORMAT_B8G8R8A8_UNORM &&            // 32ºñÆ® BGR »ö»ó ±¸Á¶¸¦ Áö¿øÇÏ´ÂÁö È®ÀÎ
-                availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR // SRGB »ö»ó °ø°£À» Áö¿øÇÏ´ÂÁö È®ÀÎ
+            if (availableFormat.format == VK_FORMAT_B8G8R8A8_UNORM &&            // 32ë¹„íŠ¸ BGR ìƒ‰ìƒ êµ¬ì¡°ë¥¼ ì§€ì›í•˜ëŠ”ì§€ í™•ì¸
+                availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR // SRGB ìƒ‰ìƒ ê³µê°„ì„ ì§€ì›í•˜ëŠ”ì§€ í™•ì¸
                 )
             {
                 targetformat = availableFormat;
@@ -1693,7 +1693,7 @@ namespace vkutil {
 
     void Application::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex)
     {
-        // Ä¿¸Çµå ¹öÆÛ ±â·ÏÀ» ½ÃÀÛÇÕ´Ï´Ù.
+        // ì»¤ë§¨ë“œ ë²„í¼ ê¸°ë¡ì„ ì‹œì‘í•©ë‹ˆë‹¤.
         VkCommandBufferBeginInfo beginInfo{};
         beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
         beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT; // Optional
@@ -1703,7 +1703,7 @@ namespace vkutil {
             throw std::runtime_error("failed to begin recording command buffer!");
         }
 
-        // ·»´õ ÆĞ½º ½ÃÀÛ Á¤º¸ ±¸Á¶Ã¼¸¦ ÃÊ±âÈ­ÇÕ´Ï´Ù.
+        // ë Œë” íŒ¨ìŠ¤ ì‹œì‘ ì •ë³´ êµ¬ì¡°ì²´ë¥¼ ì´ˆê¸°í™”í•©ë‹ˆë‹¤.
         VkRenderPassBeginInfo renderPassInfo{};
         renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
         renderPassInfo.renderPass = this->VKrenderPass;
@@ -1711,7 +1711,7 @@ namespace vkutil {
         renderPassInfo.renderArea.offset = { 0, 0 };
         renderPassInfo.renderArea.extent = this->VKswapChainExtent;
 
-        // ·»´õ ÆĞ½º¸¦ ½ÃÀÛÇÏ±â À§ÇÑ Å¬¸®¾î °ª ¼³Á¤
+        // ë Œë” íŒ¨ìŠ¤ë¥¼ ì‹œì‘í•˜ê¸° ìœ„í•œ í´ë¦¬ì–´ ê°’ ì„¤ì •
         std::array<VkClearValue, 2> clearValues{};
         //clearValues[0].color = { {0.2f, 0.2f, 0.2f, 1.0f} };
         clearValues[0].color = { {0.0f, 0.0f, 0.0f, 1.0f} };
@@ -1720,10 +1720,10 @@ namespace vkutil {
         renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());;
         renderPassInfo.pClearValues = clearValues.data();
 
-        // ·»´õ ÆĞ½º¸¦ ½ÃÀÛÇÕ´Ï´Ù.
+        // ë Œë” íŒ¨ìŠ¤ë¥¼ ì‹œì‘í•©ë‹ˆë‹¤.
         vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
         {
-            // ±×·¡ÇÈ ÆÄÀÌÇÁ¶óÀÎÀ» ¹ÙÀÎµùÇÕ´Ï´Ù.
+            // ê·¸ë˜í”½ íŒŒì´í”„ë¼ì¸ì„ ë°”ì¸ë”©í•©ë‹ˆë‹¤.
             vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->VKgraphicsPipeline);
 
             VkViewport viewport{};
@@ -1740,17 +1740,17 @@ namespace vkutil {
             scissor.extent = this->VKswapChainExtent;
             vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
-            // ¹öÅØ½º ¹öÆÛ¸¦ ¹ÙÀÎµùÇÕ´Ï´Ù.
+            // ë²„í…ìŠ¤ ë²„í¼ë¥¼ ë°”ì¸ë”©í•©ë‹ˆë‹¤.
             VkBuffer vertexBuffers[] = { this->VKvertexBuffer };
             VkDeviceSize offsets[] = { 0 };
             vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
             
-            // ÀÎµ¦½º ¹öÆÛ¸¦ ¹ÙÀÎµùÇÕ´Ï´Ù.
+            // ì¸ë±ìŠ¤ ë²„í¼ë¥¼ ë°”ì¸ë”©í•©ë‹ˆë‹¤.
             vkCmdBindIndexBuffer(commandBuffer, this->VKindexBuffer, 0, VK_INDEX_TYPE_UINT32);
 
-            // µğ½ºÅ©¸³ÅÍ ¼¼Æ®¸¦ ¹ÙÀÎµùÇÕ´Ï´Ù.
+            // ë””ìŠ¤í¬ë¦½í„° ì„¸íŠ¸ë¥¼ ë°”ì¸ë”©í•©ë‹ˆë‹¤.
             vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, this->VKpipelineLayout, 0, 1, &this->VKdescriptorSets[currentFrame], 0, nullptr);
-            // ·»´õ ÆĞ½º¸¦ Á¾·áÇÕ´Ï´Ù.
+            // ë Œë” íŒ¨ìŠ¤ë¥¼ ì¢…ë£Œí•©ë‹ˆë‹¤.
             vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(this->VKindices.size()), 1, 0, 0, 0);
 
             ImGui_ImplVulkan_NewFrame();
@@ -1765,7 +1765,7 @@ namespace vkutil {
 
         vkCmdEndRenderPass(commandBuffer);
 
-        // Ä¿¸Çµå ¹öÆÛ ±â·ÏÀ» Á¾·áÇÕ´Ï´Ù.
+        // ì»¤ë§¨ë“œ ë²„í¼ ê¸°ë¡ì„ ì¢…ë£Œí•©ë‹ˆë‹¤.
         if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS) {
             throw std::runtime_error("failed to record command buffer!");
         }

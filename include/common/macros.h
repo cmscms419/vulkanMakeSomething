@@ -16,7 +16,7 @@ namespace vkengine {
     inline const cInt getHash(const cString& str) {
         cInt hash = 0;
         for (cChar ch : str) {
-            hash = (hash * 31) + ch; // °£´ÜÇÑ ÇØ½Ã ÇÔ¼ö
+            hash = (hash * 31) + ch; // ê°„ë‹¨í•œ í•´ì‹œ í•¨ìˆ˜
         }
         return hash;
     }
@@ -25,7 +25,7 @@ namespace vkengine {
 #define _EXIT_WITH_MESSAGE_(mes, ...)          \
 {                                           \
     const cString localUserName = UserName; \
-    const cString targetUserName = static_cast<const cString>(DEBUG_USER_NAME_0); /* ¿©±â¿¡ ÀÚ½ÅÀÇ »ç¿ëÀÚ ÀÌ¸§À» ÀÔ·ÂÇÏ¼¼¿ä */ \
+    const cString targetUserName = static_cast<const cString>(DEBUG_USER_NAME_0); /* ì—¬ê¸°ì— ìì‹ ì˜ ì‚¬ìš©ì ì´ë¦„ì„ ì…ë ¥í•˜ì„¸ìš” */ \
     if (vkengine::enableValidationLayers && localUserName == targetUserName) { \
         printf(mes, __VA_ARGS__);          \
         exit(-1);                          \
@@ -36,7 +36,7 @@ namespace vkengine {
 #define _PRINT_TO_CONSOLE_(text, ...)              \
 {                                           \
     const cString localUserName = UserName; \
-    const cString targetUserName = static_cast<const cString>(DEBUG_USER_NAME_0); /* ¿©±â¿¡ ÀÚ½ÅÀÇ »ç¿ëÀÚ ÀÌ¸§À» ÀÔ·ÂÇÏ¼¼¿ä */ \
+    const cString targetUserName = static_cast<const cString>(DEBUG_USER_NAME_0); /* ì—¬ê¸°ì— ìì‹ ì˜ ì‚¬ìš©ì ì´ë¦„ì„ ì…ë ¥í•˜ì„¸ìš” */ \
     if (vkengine::enableValidationLayers && localUserName == targetUserName) { \
         printf(text, __VA_ARGS__);          \
     }                                       \
@@ -45,7 +45,7 @@ namespace vkengine {
 #define _CHECK_RESULT_(f)                                                  \
 {                                                                        \
     const cString localUserName = UserName; \
-    const cString targetUserName = static_cast<const cString>(DEBUG_USER_NAME_0); /* ¿©±â¿¡ ÀÚ½ÅÀÇ »ç¿ëÀÚ ÀÌ¸§À» ÀÔ·ÂÇÏ¼¼¿ä */ \
+    const cString targetUserName = static_cast<const cString>(DEBUG_USER_NAME_0); /* ì—¬ê¸°ì— ìì‹ ì˜ ì‚¬ìš©ì ì´ë¦„ì„ ì…ë ¥í•˜ì„¸ìš” */ \
     cBool res = (f);                                                     \
     if (vkengine::enableValidationLayers && localUserName == targetUserName) {        \
         if (res != true) {                                                  \
@@ -59,7 +59,7 @@ namespace vkengine {
 #define _VK_CHECK_RESULT_(f)                                               \
 {                                                                        \
     const cString localUserName = UserName; \
-    const cString targetUserName = static_cast<const cString>(DEBUG_USER_NAME_0); /* ¿©±â¿¡ ÀÚ½ÅÀÇ »ç¿ëÀÚ ÀÌ¸§À» ÀÔ·ÂÇÏ¼¼¿ä */ \
+    const cString targetUserName = static_cast<const cString>(DEBUG_USER_NAME_0); /* ì—¬ê¸°ì— ìì‹ ì˜ ì‚¬ìš©ì ì´ë¦„ì„ ì…ë ¥í•˜ì„¸ìš” */ \
     VkResult res = (f);                                                  \
     if (vkengine::enableValidationLayers && localUserName == targetUserName) {        \
     if (res != VK_SUCCESS) {                                             \

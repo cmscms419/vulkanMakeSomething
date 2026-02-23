@@ -21,7 +21,7 @@ namespace vkengine {
         VKCommandBufferHander(VKCommandBufferHander&& other) noexcept
             : device(other.device), commandPool(other.commandPool), queue(other.queue), handle(other.handle)
         {
-            other.handle = VK_NULL_HANDLE; // ´Ù¸¥ °´Ã¼ÀÇ ÇÚµéÀ» null·Î ¼³Á¤ÇÏ¿© ¼ÒÀ¯±Ç ÀÌÀüÀ» ¸íÈ®È÷ ÇÔ
+            other.handle = VK_NULL_HANDLE; // ë‹¤ë¥¸ ê°ì²´ì˜ í•¸ë“¤ì„ nullë¡œ ì„¤ì •í•˜ì—¬ ì†Œìœ ê¶Œ ì´ì „ì„ ëª…í™•íˆ í•¨
         }
 
         void cleanup() {
