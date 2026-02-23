@@ -1,4 +1,4 @@
-#include "VKgui.h"
+﻿#include "VKgui.h"
 
 using namespace vkengine::Log;
 
@@ -38,7 +38,7 @@ namespace vkengine {
             {
                 // 폰트 경로를 재수정 해야한다.
                 const cString fontFileName =
-                    path + "/noGit/Noto_Sans_KR/static/NotoSansKR_SemiBold.ttf"; // Korean Font
+                    path + "/Roboto-Medium.ttf"; // Korean Font
 
                 unsigned char* fontData = nullptr;
                 int texWidth, texHeight;

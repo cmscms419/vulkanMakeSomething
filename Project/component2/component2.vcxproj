@@ -13,14 +13,17 @@
   <ItemGroup>
     <ClCompile Include="..\..\app\component2\Application2.cpp" />
     <ClCompile Include="..\..\app\component2\Camera2.cpp" />
+    <ClCompile Include="..\..\app\component2\imgui\imgui.cpp" />
+    <ClCompile Include="..\..\app\component2\imgui\imgui_demo.cpp" />
+    <ClCompile Include="..\..\app\component2\imgui\imgui_draw.cpp" />
+    <ClCompile Include="..\..\app\component2\imgui\imgui_impl_glfw.cpp" />
+    <ClCompile Include="..\..\app\component2\imgui\imgui_impl_vulkan.cpp" />
+    <ClCompile Include="..\..\app\component2\imgui\imgui_tables.cpp" />
+    <ClCompile Include="..\..\app\component2\imgui\imgui_widgets.cpp" />
     <ClCompile Include="..\..\app\component2\VKengine2.cpp" />
     <ClCompile Include="..\..\app\component2\VKgui.cpp" />
     <ClCompile Include="..\..\app\component2\VKrenderer.cpp" />
     <ClCompile Include="..\..\app\component2\VKwindow.cpp" />
-    <ClCompile Include="..\..\app\component\imgui\imgui.cpp" />
-    <ClCompile Include="..\..\app\component\imgui\imgui_draw.cpp" />
-    <ClCompile Include="..\..\app\component\imgui\imgui_tables.cpp" />
-    <ClCompile Include="..\..\app\component\imgui\imgui_widgets.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\include\component2\Application2.h" />
@@ -80,6 +83,7 @@
       <LanguageStandard_C>stdc11</LanguageStandard_C>
       <AdditionalIncludeDirectories>./;$(CudaToolkitDir)/include;$(VULKAN_SDK)/include;../../include/common;../../include/engine2/;../../include/component2/;../../include/helper/;../../external/ktx/include;../../external/GLFW/include;../../external/imgui;../../external/tinygltf/;../../external/include;../../external/assimp/include/</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -100,6 +104,7 @@
       <LanguageStandard_C>stdc11</LanguageStandard_C>
       <AdditionalIncludeDirectories>./;$(CudaToolkitDir)/include;$(VULKAN_SDK)/include;../../include/common;../../include/engine2/;../../include/component2/;../../include/helper/;../../external/ktx/include;../../external/GLFW/include;../../external/imgui;../../external/tinygltf/;../../external/include;../../external/assimp/include/</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>

@@ -5,7 +5,7 @@
       <UniqueIdentifier>{23b77d1d-218f-4907-b49e-4701d8ae6b27}</UniqueIdentifier>
     </Filter>
     <Filter Include="imgui">
-      <UniqueIdentifier>{7f18d27f-f875-4182-9ff8-cb9d6fd69754}</UniqueIdentifier>
+      <UniqueIdentifier>{ec9cfb0d-f6d4-4e08-971d-62c7e41c6fae}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -21,23 +21,32 @@
     <ClCompile Include="..\..\app\component2\VKengine2.cpp">
       <Filter>component2</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\app\component\imgui\imgui.cpp">
-      <Filter>imgui</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\app\component\imgui\imgui_draw.cpp">
-      <Filter>imgui</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\app\component\imgui\imgui_tables.cpp">
-      <Filter>imgui</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\app\component\imgui\imgui_widgets.cpp">
-      <Filter>imgui</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\app\component2\Application2.cpp">
       <Filter>component2</Filter>
     </ClCompile>
     <ClCompile Include="..\..\app\component2\VKrenderer.cpp">
       <Filter>component2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\component2\imgui\imgui.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\component2\imgui\imgui_demo.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\component2\imgui\imgui_draw.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\component2\imgui\imgui_impl_glfw.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\component2\imgui\imgui_impl_vulkan.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\component2\imgui\imgui_tables.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\component2\imgui\imgui_widgets.cpp">
+      <Filter>imgui</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
