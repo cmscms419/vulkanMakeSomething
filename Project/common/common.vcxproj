@@ -18,7 +18,6 @@
     <ClInclude Include="..\..\include\common\log.h" />
     <ClInclude Include="..\..\include\common\macros.h" />
     <ClInclude Include="..\..\include\common\resourseload.h" />
-    <ClInclude Include="..\..\include\common\struct.h" />
     <ClInclude Include="..\..\include\common\VectorCMS.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
@@ -30,7 +29,18 @@
     <ClInclude Include="..\..\include\common\VKmath.h" />
     <ClInclude Include="..\..\include\helper\helper.h" />
     <ClInclude Include="..\..\include\helper\helperCreate.h" />
+    <ClInclude Include="..\..\include\helper\helperDevice.h" />
     <ClInclude Include="..\..\include\helper\helperFile.h" />
+    <ClInclude Include="..\..\include\helper\helperbuffer.h" />
+    <ClInclude Include="..\..\include\struct\geometry.h" />
+    <ClInclude Include="..\..\include\struct\material.h" />
+    <ClInclude Include="..\..\include\struct\resource.h" />
+    <ClInclude Include="..\..\include\struct\configtype.h" />
+    <ClInclude Include="..\..\include\struct\type.h" />
+    <ClInclude Include="..\..\include\struct\ubo.h" />
+    <ClInclude Include="..\..\include\struct\vkdevice.h" />
+    <ClInclude Include="..\..\include\struct\object.h" />
+    <ClInclude Include="..\..\include\struct\data.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\app\common\common.cpp" />
@@ -38,7 +48,6 @@
     <ClCompile Include="..\..\app\common\log.cpp" />
     <ClCompile Include="..\..\app\common\macros.cpp" />
     <ClCompile Include="..\..\app\common\resourseload.cpp" />
-    <ClCompile Include="..\..\app\common\struct.cpp" />
     <ClCompile Include="..\..\app\common\VectorCMS.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
@@ -46,8 +55,13 @@
     <ClCompile Include="..\..\app\common\VKmath.cpp" />
     <ClCompile Include="..\..\app\helper\helper.cpp" />
     <ClCompile Include="..\..\app\helper\helperCreate.cpp" />
+    <ClInclude Include="..\..\include\helper\helperDevice.cpp" />
     <ClCompile Include="..\..\app\helper\helperFile.cpp" />
+    <ClCompile Include="..\..\app\helper\helperbuffer.cpp" />
     <ClCompile Include="..\..\external\include\spirv-reflect\spirv_reflect.c" />
+    <ClInclude Include="..\..\app\struct\geometry.cpp" />
+    <ClInclude Include="..\..\app\struct\type.cpp" />
+    <ClInclude Include="..\..\app\struct\data.cpp" /> 
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{1950486a-e32d-424d-b403-243f6a452517}</ProjectGuid>
@@ -97,7 +111,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>DEBUG_;WIN32;WIN64;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <LanguageStandard_C>stdc11</LanguageStandard_C>
-      <AdditionalIncludeDirectories>./;$(CudaToolkitDir)/include;$(VULKAN_SDK)/include;../../include/common;../../include/helper/;../../external/include;../../external/ktx/include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>./;$(CudaToolkitDir)/include;$(VULKAN_SDK)/include;../../include/struct;../../include/common;../../include/helper/;../../external/include;../../external/ktx/include</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
@@ -118,7 +132,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;WIN64;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <LanguageStandard_C>stdc11</LanguageStandard_C>
-      <AdditionalIncludeDirectories>./;$(CudaToolkitDir)/include;$(VULKAN_SDK)/include;../../include/common;../../include/helper/;../../external/include;../../external/ktx/include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>./;$(CudaToolkitDir)/include;$(VULKAN_SDK)/include;../../include/struct;../../include/common;../../include/helper/;../../external/include;../../external/ktx/include</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>

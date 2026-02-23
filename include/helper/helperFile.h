@@ -5,23 +5,25 @@
 #include <fstream>
 
 #include "common.h"
-#include "struct.h"
 #include "log.h"
 
+namespace vkengine
+{
+    namespace helper
+    {
+        namespace file
+        {
 
-namespace vkengine {
-    namespace helper {
+            cString extractFilename(const cString &spvFilename);
 
-        cString extractFilename(const cString& spvFilename);
+            // 파일을 읽어오는 함수
+            std::vector<cChar> readFile(const cString &filename);
 
-        // 파일을 읽어오는 함수
-        std::vector<cChar> readFile(const cString& filename);
+            // spv 파일을 읽어오는 함수
+            std::vector<cChar> readSPVFile(const cString &filename);
 
-        // spv 파일을 읽어오는 함수
-        std::vector<cChar> readSPVFile(const cString& filename);
-
-        bool fileExists(const cString& filename);
-
+            bool fileExists(const cString &filename);
+        }
     }
 }
 
