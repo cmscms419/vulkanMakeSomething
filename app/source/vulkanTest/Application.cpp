@@ -1,4 +1,4 @@
-#include "Application.h"
+﻿#include "Application.h"
 #include "DebugFunction.h"
 #include "Camera.h"
 
@@ -6,11 +6,11 @@
 
 #ifndef STB_IMAGE_IMPLEMENTATION
 #define STB_IMAGE_IMPLEMENTATION
-#include "../../include/common/stb_image.h"
+#include "../../external/include/stb_image.h"
 #endif
 
 #define TINYOBJLOADER_IMPLEMENTATION
-#include "../../include/common/tiny_obj_loader.h"
+#include "../../external/include/tiny_obj_loader.h"
 
 #include "imgui.h" 
 #include "imconfig.h"

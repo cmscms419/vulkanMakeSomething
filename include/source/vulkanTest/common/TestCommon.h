@@ -1,4 +1,4 @@
-#ifndef INCLUDE_TEST_COMMON_H
+﻿#ifndef INCLUDE_TEST_COMMON_H
 #define INCLUDE_TEST_COMMON_H
 
 #include <algorithm>
@@ -84,9 +84,9 @@ const std::vector<VkDynamicState> dynamicStates = {
     VK_DYNAMIC_STATE_SCISSOR
 };
 
-const std::string MODEL_PATH = "../../../../../../source/viking_room.obj";
-const std::string TEXTURE_PATH = "../../../../../../source/viking_room.png";
-const std::string TEST_TEXTURE_PATH = "../../../../../../source/image.jpg";
+const std::string MODEL_PATH = "../../../../../../resource/viking_room.obj";
+const std::string TEXTURE_PATH = "../../../../../../resource/viking_room.png";
+const std::string TEST_TEXTURE_PATH = "../../../../../../resource/image.jpg";
 
 #ifdef DEBUG_
 const bool enableValidationLayers = true;
