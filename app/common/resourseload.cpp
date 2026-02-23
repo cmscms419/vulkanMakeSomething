@@ -56,7 +56,7 @@ cUChar* load_png_rgba(const cChar* filename, cUint32_t* width, cUint32_t* height
         return NULL;
     }
 
-    for (int y = 0; y < (*height); y++) {
+    for (cUint32_t y = 0; y < (*height); y++) {
         row_pointers[y] = image_data + y * (*width) * 4;
     }
 
@@ -71,8 +71,6 @@ cUChar* load_png_rgba(const cChar* filename, cUint32_t* width, cUint32_t* height
 
 ktxTexture* load_ktx_texture(const cChar* filename, ktxTexture* texture)
 {
-    ktxVulkanDeviceInfo kvdi;
-    
     KTX_error_code ktxresult;
 
     ktxresult = ktxTexture_CreateFromNamedFile(filename, KTX_TEXTURE_CREATE_LOAD_IMAGE_DATA_BIT, &texture);
