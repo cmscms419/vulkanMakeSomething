@@ -462,8 +462,6 @@ external/basicEngine2/x64/Release/basicEngine2.lib
 external/basicEngine2/x64/Debug/basicEngine2.idb
 external/basicEngine2/x64/Release/basicEngine2.idb
 
-external/common/x64/Debug/common.lib
-external/common/x64/Release/common.lib
 external/common/x64/Debug/common.idb
 external/common/x64/Release/common.idb
 
