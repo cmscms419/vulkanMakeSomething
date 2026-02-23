@@ -472,6 +472,8 @@ external/component2/x64/Release/component2.lib
 external/component2/x64/Debug/component2.idb
 external/component2/x64/Release/component2.idb
 
+Project/common/**
+
 .clang-format
 
 
