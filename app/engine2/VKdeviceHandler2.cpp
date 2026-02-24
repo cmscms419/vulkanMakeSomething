@@ -1,4 +1,4 @@
-#include "VKdeviceHandler2.h"
+﻿#include "VKdeviceHandler2.h"
 
 using namespace vkengine::Log;
 
@@ -23,7 +23,10 @@ namespace vkengine {
         // queue family properties 가져오기
         cUint32_t queueFamilyCount = 0;
         vkGetPhysicalDeviceQueueFamilyProperties(this->physicalDevice, &queueFamilyCount, nullptr);
-        _CHECK_RESULT_(queueFamilyCount > 0, "Failed to get queue family properties");
+        if (queueFamilyCount > 0)
+        {
+            EXIT_TO_LOGGER("Failed to get queue family properties\n");
+        }
         this->queueFamilyProperties.resize(queueFamilyCount);
         vkGetPhysicalDeviceQueueFamilyProperties(this->physicalDevice, &queueFamilyCount,
             this->queueFamilyProperties.data());
@@ -50,7 +53,7 @@ namespace vkengine {
         PRINT_TO_LOGGER("Select DeviceProperties.deviceType: %d\n", properties.deviceType);
         PRINT_TO_LOGGER("Select Device Name: %s\n", properties.deviceName);
 
-        helper::getDeviceExtensionSupport(physicalDevice, &this->supportedExtensions);
+        helper::device::getDeviceExtensionSupport(physicalDevice, &this->supportedExtensions);
     }
 
     VKdeviceHandler2::~VKdeviceHandler2()
@@ -61,7 +64,7 @@ namespace vkengine {
     void VKdeviceHandler2::printPysicaldeviceProperties() const
     {
         PRINT_TO_LOGGER("Selected %s (%s)\n", properties.deviceName,
-            helper::getPhysicalDeviceTypeString(properties.deviceType).c_str());
+            helper::device::getPhysicalDeviceTypeString(properties.deviceType).c_str());
         PRINT_TO_LOGGER("  nonCoherentAtomSize: %llu\n", properties.limits.nonCoherentAtomSize);
         PRINT_TO_LOGGER("  Max UBO size: %u KBytes\n", properties.limits.maxUniformBufferRange / 1024);
         PRINT_TO_LOGGER("  Max SSBO size: %u KBytes\n", properties.limits.maxStorageBufferRange / 1024);
@@ -137,17 +140,17 @@ namespace vkengine {
         if (requestedQueueTypes & VK_QUEUE_GRAPHICS_BIT) {
             VkDeviceQueueCreateInfo queueInfo{};
             queueInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-            queueInfo.queueFamilyIndex = queueFamilyIndices.grapicFamily;
+            queueInfo.queueFamilyIndex = queueFamilyIndices.graphicFamily;
             queueInfo.queueCount = 1;
             queueInfo.pQueuePriorities = &defaultQueuePriority;
             queueCreateInfos.push_back(queueInfo);
         }
         else {
-            queueFamilyIndices.grapicFamily = 0;
+            queueFamilyIndices.graphicFamily = 0;
         }
 
         if (requestedQueueTypes & VK_QUEUE_COMPUTE_BIT) {
-            if (queueFamilyIndices.computerFamily != queueFamilyIndices.grapicFamily) {
+            if (queueFamilyIndices.computerFamily != queueFamilyIndices.graphicFamily) {
                 VkDeviceQueueCreateInfo queueInfo{};
                 queueInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
                 queueInfo.queueFamilyIndex = queueFamilyIndices.computerFamily;
@@ -158,11 +161,11 @@ namespace vkengine {
         }
         else {
 
-            queueFamilyIndices.computerFamily = queueFamilyIndices.grapicFamily;
+            queueFamilyIndices.computerFamily = queueFamilyIndices.graphicFamily;
         }
 
         if (requestedQueueTypes & VK_QUEUE_TRANSFER_BIT) {
-            if ((queueFamilyIndices.transferFamily != queueFamilyIndices.grapicFamily) &&
+            if ((queueFamilyIndices.transferFamily != queueFamilyIndices.graphicFamily) &&
                 (queueFamilyIndices.transferFamily != queueFamilyIndices.computerFamily)) {
                 VkDeviceQueueCreateInfo queueInfo{};
                 queueInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
@@ -173,7 +176,7 @@ namespace vkengine {
             }
         }
         else {
-            queueFamilyIndices.transferFamily = queueFamilyIndices.grapicFamily;
+            queueFamilyIndices.transferFamily = queueFamilyIndices.graphicFamily;
         }
 
         std::vector<const cChar*> deviceExtensions;
@@ -213,15 +216,15 @@ namespace vkengine {
 
         if (this->graphicsCommandPool == VK_NULL_HANDLE)
         {
-            VkCommandPoolCreateInfo poolInfo = helper::commandPoolCreateInfo(queueFamilyIndices.grapicFamily, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
+            VkCommandPoolCreateInfo poolInfo = helper::device::commandPoolCreateInfo(queueFamilyIndices.graphicFamily, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
 
             _VK_CHECK_RESULT_(vkCreateCommandPool(this->logicaldevice, &poolInfo, nullptr, &this->graphicsCommandPool));
         }
 
         // 그래픽스와 컴퓨트가 같은 패밀리면 커맨드 풀도 하나만 생성
-        if (queueFamilyIndices.grapicFamily != queueFamilyIndices.computerFamily)
+        if (queueFamilyIndices.graphicFamily != queueFamilyIndices.computerFamily)
         {
-            VkCommandPoolCreateInfo poolInfo = helper::commandPoolCreateInfo(queueFamilyIndices.computerFamily, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
+            VkCommandPoolCreateInfo poolInfo = helper::device::commandPoolCreateInfo(queueFamilyIndices.computerFamily, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
             _VK_CHECK_RESULT_(vkCreateCommandPool(this->logicaldevice, &poolInfo, nullptr, &this->computeCommandPool));
         }
         else
@@ -229,10 +232,10 @@ namespace vkengine {
             this->computeCommandPool = this->graphicsCommandPool;
         }
 
-        if (this->queueFamilyIndices.transferFamily != queueFamilyIndices.grapicFamily &&
+        if (this->queueFamilyIndices.transferFamily != queueFamilyIndices.graphicFamily &&
             this->queueFamilyIndices.transferFamily != queueFamilyIndices.computerFamily)
         {
-            VkCommandPoolCreateInfo poolInfo = helper::commandPoolCreateInfo(queueFamilyIndices.transferFamily, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
+            VkCommandPoolCreateInfo poolInfo = helper::device::commandPoolCreateInfo(queueFamilyIndices.transferFamily, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
             _VK_CHECK_RESULT_(vkCreateCommandPool(this->logicaldevice, &poolInfo, nullptr, &this->transferCommandPool));
         }
         else if (this->queueFamilyIndices.transferFamily == this->queueFamilyIndices.computerFamily)
@@ -250,7 +253,7 @@ namespace vkengine {
     cBool VKdeviceHandler2::createQueues()
     {
 
-        if (this->queueFamilyIndices.grapicFamily == cUint32_t(-1) ||
+        if (this->queueFamilyIndices.graphicFamily == cUint32_t(-1) ||
             this->queueFamilyIndices.computerFamily == cUint32_t(-1) ||
             this->queueFamilyIndices.transferFamily == cUint32_t(-1))
         {
@@ -258,10 +261,10 @@ namespace vkengine {
             return false;
         }
         // 그래픽 큐 핸들을 가져옵니다.
-        vkGetDeviceQueue(this->logicaldevice, this->queueFamilyIndices.grapicFamily, 0, &this->graphicsVKQueue);
+        vkGetDeviceQueue(this->logicaldevice, this->queueFamilyIndices.graphicFamily, 0, &this->graphicsVKQueue);
 
         // 컴퓨터 큐 핸들을 가져옵니다.
-        if (queueFamilyIndices.computerFamily != queueFamilyIndices.grapicFamily &&
+        if (queueFamilyIndices.computerFamily != queueFamilyIndices.graphicFamily &&
             queueFamilyIndices.computerFamily != cUint32_t(-1)) {
             vkGetDeviceQueue(this->logicaldevice, queueFamilyIndices.computerFamily, 0, &this->computerVKQueue);
         }
@@ -270,7 +273,7 @@ namespace vkengine {
         }
 
         // 트랜스퍼 큐 핸들을 가져옵니다.
-        if (queueFamilyIndices.transferFamily != queueFamilyIndices.grapicFamily &&
+        if (queueFamilyIndices.transferFamily != queueFamilyIndices.graphicFamily &&
             queueFamilyIndices.transferFamily != queueFamilyIndices.computerFamily &&
             queueFamilyIndices.transferFamily != cUint32_t(-1)) {
             vkGetDeviceQueue(this->logicaldevice, queueFamilyIndices.transferFamily, 0, &this->transferVKQueue);
@@ -296,7 +299,7 @@ namespace vkengine {
 
     const VkShaderModule VKdeviceHandler2::createShaderModule(const std::string& path) const
     {
-        auto shaderCode = helper::readFile(path);
+        auto shaderCode = helper::file::readFile(path);
 
         VkShaderModuleCreateInfo createInfo{};
         createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;

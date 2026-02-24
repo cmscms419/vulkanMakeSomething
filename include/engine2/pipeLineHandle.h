@@ -1,8 +1,7 @@
-#ifndef VK_PIPELIN_INCLUDE_H_
+﻿#ifndef VK_PIPELIN_INCLUDE_H_
 #define VK_PIPELIN_INCLUDE_H_
 
 #include "common.h"
-#include "struct.h"
 #include "log.h"
 #include <optional>
 

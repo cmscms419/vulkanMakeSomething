@@ -2,7 +2,6 @@
 #define VK_MODEL_NODE_INCLUDE_H_
 
 #include "common.h"
-#include "struct.h"
 #include <memory>
 
 namespace vkengine {

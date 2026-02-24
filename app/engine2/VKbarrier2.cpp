@@ -1,4 +1,4 @@
-#include "VKbarrier2.h"
+﻿#include "VKbarrier2.h"
 
 using namespace vkengine::Log;
 
@@ -8,7 +8,7 @@ namespace vkengine {
     {
         VkCommandBuffer buffer{ VK_NULL_HANDLE }; // 커맨드 버퍼 핸들
 
-        VkCommandBufferAllocateInfo allocInfo = helper::commandBufferAllocateInfo(commandPool, 1, level);
+        VkCommandBufferAllocateInfo allocInfo = helper::device::commandBufferAllocateInfo(commandPool, 1, level);
 
         _VK_CHECK_RESULT_(vkAllocateCommandBuffers(device, &allocInfo, &buffer));  // 커맨드 버퍼를 할당합니다.
 

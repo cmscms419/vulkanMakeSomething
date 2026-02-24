@@ -2,20 +2,46 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "Build: common (Debug)",
+      "label": "Build: basicEngine2 (Debug)",
       "type": "shell",
       "command": "C:/Program Files/Microsoft Visual Studio/2022/Community/MSBuild/Current/Bin/MSBuild.exe",
       "args": [
-        "${workspaceFolder}/Project/common/common.vcxproj",
+        "${workspaceFolder}/Project/basicEngine2/basicEngine2.vcxproj",
         "/p:Configuration=Debug",
         "/p:Platform=x64",
         "/p:SolutionDir=${workspaceFolder}/Project/",
         "/v:minimal"
       ],
+      "dependsOn": [
+        "Build: common (Debug)"
+      ],
+      "dependsOrder": "sequence",
       "group": {
         "kind": "build",
         "isDefault": true
       },
+      "problemMatcher": "$msCompile",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "Build: component2 (Debug)",
+      "type": "shell",
+      "command": "C:/Program Files/Microsoft Visual Studio/2022/Community/MSBuild/Current/Bin/MSBuild.exe",
+      "args": [
+        "${workspaceFolder}/Project/component2/component2.vcxproj",
+        "/p:Configuration=Debug",
+        "/p:Platform=x64",
+        "/p:SolutionDir=${workspaceFolder}/Project/",
+        "/v:minimal"
+      ],
+      "dependsOn": [
+        "Build: common (Debug)"
+      ],
+      "dependsOrder": "sequence",
+      "group": "build",
       "problemMatcher": "$msCompile",
       "presentation": {
         "reveal": "always",

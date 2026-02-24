@@ -1,8 +1,7 @@
-#ifndef _VK_BARRIER_H_
+﻿#ifndef _VK_BARRIER_H_
 #define _VK_BARRIER_H_
 
 #include "common.h"
-#include "struct.h"
 #include "helper.h"
 #include "log.h"
 

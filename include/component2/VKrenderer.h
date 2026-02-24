@@ -1,8 +1,10 @@
-#ifndef VK_RENDERER_INCLUDE_H_
+﻿#ifndef VK_RENDERER_INCLUDE_H_
 #define VK_RENDERER_INCLUDE_H_
 
 #include "log.h"
 #include "resourseload.h"
+#include "ubo.h"
+#include "config.h"
 
 #include "Camera2.h"
 #include "VKDescriptorSet.h"

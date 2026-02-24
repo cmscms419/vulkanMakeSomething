@@ -1,8 +1,7 @@
-#ifndef VK_SHDAER_H_
+﻿#ifndef VK_SHDAER_H_
 #define VK_SHDAER_H_
 
 #include "common.h"
-#include "struct.h"
 #include "log.h"
 
 #include "VKcontext.h"

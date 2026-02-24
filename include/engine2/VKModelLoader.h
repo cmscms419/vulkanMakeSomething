@@ -1,7 +1,6 @@
 ﻿#pragma once
 
 #include "common.h"
-#include "struct.h"
 #include "log.h"
 
 #include <assimp/Importer.hpp>

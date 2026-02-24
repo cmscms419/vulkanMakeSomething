@@ -2,8 +2,7 @@
 #define VK_MESH_INCLUDE_H_
 
 #include "common.h"
-#include "struct.h"
-
+#include "type.h"
 #include "VKContext.h"
 #include "VKMaterial.h"
 #include "VKViewFrustum.h"

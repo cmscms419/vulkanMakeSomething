@@ -1,4 +1,4 @@
-#include "VKCommadBufferHander.h"
+﻿#include "VKCommadBufferHander.h"
 #include "macros.h"
 #include "helper.h"
 
@@ -6,7 +6,7 @@ namespace vkengine {
     VKCommandBufferHander::VKCommandBufferHander(VkDevice& device, VkCommandPool& commandPool, VkQueue& queue, VkCommandBufferLevel level, cBool begin)
         : device(device), commandPool(commandPool), queue(queue)
     {
-        VkCommandBufferAllocateInfo allocInfo = helper::commandBufferAllocateInfo(commandPool, 1, level);
+        VkCommandBufferAllocateInfo allocInfo = helper::device::commandBufferAllocateInfo(commandPool, 1, level);
 
         _VK_CHECK_RESULT_(vkAllocateCommandBuffers(device, &allocInfo, &handle));
 

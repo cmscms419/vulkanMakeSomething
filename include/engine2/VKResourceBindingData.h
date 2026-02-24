@@ -1,8 +1,7 @@
-#ifndef VK_RESOURCEBINDINGDATA_H_
+﻿#ifndef VK_RESOURCEBINDINGDATA_H_
 #define VK_RESOURCEBINDINGDATA_H_
 
 #include "common.h"
-#include "struct.h"
 #include "log.h"
 #include "VKbarrier2.h"
 

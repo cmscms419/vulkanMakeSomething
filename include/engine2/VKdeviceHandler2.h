@@ -1,8 +1,7 @@
-#ifndef INCLUDE_VULKAN_DEVICE_2_H_
+﻿#ifndef INCLUDE_VULKAN_DEVICE_2_H_
 #define INCLUDE_VULKAN_DEVICE_2_H_
 
 #include "common.h"
-#include "struct.h"
 #include "helper.h"
 
 #include "log.h"

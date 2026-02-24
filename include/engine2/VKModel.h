@@ -2,6 +2,7 @@
 #define VK_MODEL_INCLUDE_H_
 
 #include "common.h"
+#include "material.h"
 #include "log.h"
 #include <memory>
 

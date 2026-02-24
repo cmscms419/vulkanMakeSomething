@@ -1,8 +1,7 @@
-#ifndef INCLUDE_PUSHCONSTANTS_H_
+﻿#ifndef INCLUDE_PUSHCONSTANTS_H_
 #define INCLUDE_PUSHCONSTANTS_H_
 
 #include "common.h"
-#include "struct.h"
 #include "log.h"
 
 #include "VKContext.h"

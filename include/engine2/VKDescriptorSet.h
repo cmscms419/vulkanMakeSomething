@@ -1,8 +1,7 @@
-#ifndef INCLUDE_VK_DESCRIPTOR_SET_H_
+﻿#ifndef INCLUDE_VK_DESCRIPTOR_SET_H_
 #define INCLUDE_VK_DESCRIPTOR_SET_H_
 
 #include "common.h"
-#include "struct.h"
 #include "helper.h"
 
 #include "VKContext.h"

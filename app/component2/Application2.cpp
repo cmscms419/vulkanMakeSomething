@@ -613,7 +613,7 @@ namespace vkengine {
     
     void Application2::initializeVulkanResources()
     {
-        this->msaaSamples = helper::getMaxUsableSampleCount(this->cxt->getDevice()->physicalDevice);
+        this->msaaSamples = helper::device::getMaxUsableSampleCount(this->cxt->getDevice()->physicalDevice);
         this->commandBuffers = this->cxt->createGrapicsCommandBufferHanders(this->kMaxFramesInFlight);
         this->camera = std::make_shared<vkengine::object::Camera2>();
 

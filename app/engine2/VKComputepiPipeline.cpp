@@ -1,5 +1,4 @@
-#include "pipeLineHandle.h"
-#include "log.h"
+﻿#include "pipeLineHandle.h"
 
 using namespace vkengine::Log;
 

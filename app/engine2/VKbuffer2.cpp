@@ -1,4 +1,4 @@
-#include "helper.h"
+﻿#include "helper.h"
 #include "VKbuffer2.h"
 
 using namespace vkengine::helper;
@@ -31,7 +31,7 @@ namespace vkengine {
         this->size = size;
         this->offset = 0;
 
-        vkengine::helper::createBuffer2(
+        vkengine::helper::resource::createBuffer2(
             this->ctx.getDevice()->logicaldevice,
             this->ctx.getDevice()->physicalDevice,
             this->size,
@@ -121,7 +121,7 @@ namespace vkengine {
         this->size = size;
         this->offset = 0;
 
-        vkengine::helper::createBuffer2(
+        vkengine::helper::resource::createBuffer2(
             this->ctx.getDevice()->logicaldevice,
             this->ctx.getDevice()->physicalDevice,
             this->size,
@@ -143,7 +143,7 @@ namespace vkengine {
         this->size = size;
         this->offset = 0;
 
-        vkengine::helper::createBuffer2(
+        vkengine::helper::resource::createBuffer2(
             this->ctx.getDevice()->logicaldevice,
             this->ctx.getDevice()->physicalDevice,
             this->size,

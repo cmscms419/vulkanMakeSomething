@@ -1,4 +1,4 @@
-#include "VKImage2D.h"
+﻿#include "VKImage2D.h"
 
 using namespace vkengine::Log;
 
@@ -61,7 +61,7 @@ namespace vkengine
         this->aspectFlags = aspectMask;
 
         // VKimage2D 이미지 생성
-        vkengine::helper::createImage2(
+        vkengine::helper::resource::createImage2(
             ctx.getDevice()->logicaldevice,
             this->ctx.getDevice()->physicalDevice,
             width,
@@ -78,7 +78,7 @@ namespace vkengine
             flags
         );
 
-        this->imageView = vkengine::helper::createImageView(
+        this->imageView = vkengine::helper::resource::createImageView(
             ctx.getDevice()->logicaldevice,
             this->image,
             format,
@@ -104,7 +104,7 @@ namespace vkengine
         this->aspectFlags = aspectMask;
 
         // VKimage2D 이미지 생성
-        vkengine::helper::createImage2(
+        vkengine::helper::resource::createImage2(
             ctx.getDevice()->logicaldevice,
             this->ctx.getDevice()->physicalDevice,
             width,
@@ -121,7 +121,7 @@ namespace vkengine
             flags
         );
 
-        this->imageView = vkengine::helper::createCubeImageView(
+        this->imageView = vkengine::helper::resource::createCubeImageView(
             ctx.getDevice()->logicaldevice,
             this->image,
             format,
@@ -240,7 +240,7 @@ namespace vkengine
                 VK_ACCESS_2_TRANSFER_WRITE_BIT,
                 VK_PIPELINE_STAGE_2_TRANSFER_BIT);
 
-            vkengine::helper::copyBufferToImageKTX2(
+            vkengine::helper::resource::copyBufferToImageKTX2(
                 cmb,
                 stagingBuffer.Buffer(),
                 this->image,
@@ -357,7 +357,7 @@ namespace vkengine
             VK_ACCESS_2_TRANSFER_WRITE_BIT,
             VK_PIPELINE_STAGE_2_TRANSFER_BIT);
 
-        vkengine::helper::copyBufferToImage3(
+        vkengine::helper::resource::copyBufferToImage3(
             cmb,
             stagingBuffer.Buffer(),
             this->image,

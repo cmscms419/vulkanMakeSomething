@@ -1,8 +1,8 @@
-#ifndef INCLUDE_VK_CONTEXT_H_
+﻿#ifndef INCLUDE_VK_CONTEXT_H_
 #define INCLUDE_VK_CONTEXT_H_
 
 #include "common.h"
-#include "struct.h"
+#include "vkdevice.h"
 
 #include "VKCommadBufferHander.h"
 #include "VKdeviceHandler2.h"
@@ -50,7 +50,7 @@ namespace vkengine {
         DescriptorManager2* getDescriptorManager() { return &descriptorManager2; }
         VkInstance getInstance() { return VKinstance; }
         VkPipelineCache getPipelineCache() { return VKpipelineCache; }
-        depthStencill* getDepthStencil() { return &VKdepthStencill; }
+        depthStencil* getDepthStencil() { return &VKdepthStencill; }
         cBool getUSEdepthStencil() { return useDepthStencil; }
 
         void waitIdle();
@@ -60,7 +60,7 @@ namespace vkengine {
         VkInstance VKinstance{};                              // Vulkan 인스턴스 -> Vulkan API를 사용하기 위한 인스턴스
         VKdeviceHandler2 VKdevice;                            // 디바이스 -> GPU Logical,Physical struct Handle
         VkPipelineCache VKpipelineCache{ VK_NULL_HANDLE };    // 파이프라인 캐시 -> 파이프라인 캐시를 생성
-        depthStencill VKdepthStencill{};                      // 깊이 스텐실 -> 깊이 스텐실 이미지와 메모리
+        depthStencil VKdepthStencill{};                      // 깊이 스텐실 -> 깊이 스텐실 이미지와 메모리
         DescriptorManager2 descriptorManager2;               // 디스크립터 매니저 -> 디스크립터 세트 레이아웃과 디스크립터 풀 관리
         VkDebugUtilsMessengerEXT VKdebugUtilsMessenger{};  // 디버그 메신저 -> 디버깅을 위한 메신저
         cBool useDepthStencil = false;

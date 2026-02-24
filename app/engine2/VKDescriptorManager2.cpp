@@ -1,4 +1,4 @@
-#include "VKDescriptorManager2.h"
+﻿#include "VKDescriptorManager2.h"
 
 using namespace vkengine::Log;
 
@@ -52,10 +52,10 @@ namespace vkengine {
                 }
                 else {
                     // Convert string to VkDescriptorType using VulkanTools function
-                    VkDescriptorType type = helper::stringToDescriptorType(typeStr);
+                    VkDescriptorType type = helper::descriptor::stringToDescriptorType(typeStr);
 
                     if (type != VK_DESCRIPTOR_TYPE_MAX_ENUM) {
-                        VkDescriptorPoolSize poolSize = helper::descriptorPoolSize(type, count);
+                        VkDescriptorPoolSize poolSize = helper::descriptor::descriptorPoolSize(type, count);
                         poolSizes.push_back(poolSize);
                     }
                 }
@@ -95,7 +95,7 @@ namespace vkengine {
     {
         // Create descriptor pool
         // VKdescriptorPoolSize vector를 받아서 descriptor pool을 생성한다.
-        VkDescriptorPoolCreateInfo poolInfo = helper::descriptorPoolCreateInfo(typeCounts, maxSets);
+        VkDescriptorPoolCreateInfo poolInfo = helper::descriptor::descriptorPoolCreateInfo(typeCounts, maxSets);
 
         VkDescriptorPool descriptorPool = VK_NULL_HANDLE;
         _VK_CHECK_RESULT_(vkCreateDescriptorPool(logicaldevice, &poolInfo, nullptr, &descriptorPool));
@@ -136,7 +136,7 @@ namespace vkengine {
             poolSizes.reserve(requiredTypeCounts.size());
 
             for (const auto& [type, count] : requiredTypeCounts) {
-                VkDescriptorPoolSize poolSize = helper::descriptorPoolSize(type, count);
+                VkDescriptorPoolSize poolSize = helper::descriptor::descriptorPoolSize(type, count);
                 poolSizes.push_back(poolSize);
             }
 
@@ -150,7 +150,7 @@ namespace vkengine {
         }
 
         // 4. 마지막 pool를 사용해서 descriptor set을 할당한다.
-        VkDescriptorSetAllocateInfo allocInfo = helper::descriptorSetAllocateInfo(
+        VkDescriptorSetAllocateInfo allocInfo = helper::descriptor::descriptorSetAllocateInfo(
             this->descriptorPools.back(), layout, 1);
 
         VkDescriptorSet descriptorSet{ VK_NULL_HANDLE };
@@ -176,7 +176,7 @@ namespace vkengine {
     {
         for (const auto& layoutInfo : layoutInfos)
         {
-            VkDescriptorSetLayoutCreateInfo layoutCreateInfo = helper::descriptorSetLayoutCreateInfo(layoutInfo.bindings);
+            VkDescriptorSetLayoutCreateInfo layoutCreateInfo = helper::descriptor::descriptorSetLayoutCreateInfo(layoutInfo.bindings);
             VkDescriptorSetLayout layout = VK_NULL_HANDLE;
 
             _VK_CHECK_RESULT_(vkCreateDescriptorSetLayout(this->logicaldevice, &layoutCreateInfo, nullptr, &layout));
@@ -201,8 +201,8 @@ namespace vkengine {
             for (size_t j = 0; j < info.bindings.size(); ++j) {
                 const auto& binding = info.bindings[j];
                 PRINT_TO_LOGGER("    Binding %d: type= %s, count= %d, stages= %s\n", binding.binding,
-                    helper::descriptorTypeToString(binding.descriptorType).c_str(), binding.descriptorCount,
-                    helper::shaderStageFlagsToString(binding.stageFlags).c_str());
+                    helper::descriptor::descriptorTypeToString(binding.descriptorType).c_str(), binding.descriptorCount,
+                    helper::shader::shaderStageFlagsToString(binding.stageFlags).c_str());
             }
         }
     }
@@ -222,7 +222,7 @@ namespace vkengine {
 
         for (const auto& [type, count] : this->allocatedTypeCounts_)
         {
-            PRINT_TO_LOGGER("- %s: %u\n", helper::descriptorTypeToString(type).c_str(), count);
+            PRINT_TO_LOGGER("- %s: %u\n", helper::descriptor::descriptorTypeToString(type).c_str(), count);
         }
 
         PRINT_TO_LOGGER("\n");
@@ -259,7 +259,6 @@ namespace vkengine {
                 return storedLayout;  // 값 반환
             }
         }
-
         EXIT_TO_LOGGER("Error: Descriptor set layout with the specified bindings not found.\n");
         return VK_NULL_HANDLE;  // 예외 처리 (실제로는 실행되지 않음)
     }
@@ -278,7 +277,7 @@ namespace vkengine {
                 // 남아있는 descriptor type과 개수를 스크립트 파일에 기록한다.
                 for (const auto& [type, count] : this->remainingTypeCounts_)
                 {
-                    file << helper::descriptorTypeToString(type) << " " << count << "\n";
+                    file << helper::descriptor::descriptorTypeToString(type) << " " << count << "\n";
                 }
                 file.close();
                 PRINT_TO_LOGGER("Saved remaining descriptor pool capacity to %s\n", this->kScriptFilename_.c_str());

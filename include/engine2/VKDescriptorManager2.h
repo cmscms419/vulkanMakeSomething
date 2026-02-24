@@ -1,11 +1,10 @@
-#ifndef INCLUDE_VK_DESCRIPTOR_MANAGER_s_H_
+﻿#ifndef INCLUDE_VK_DESCRIPTOR_MANAGER_s_H_
 #define INCLUDE_VK_DESCRIPTOR_MANAGER_s_H_
 
 // 해당 코드는 Real-Time Rendering with Vulkan 이라는 강의에서 발췌한 코드입니다.
 // 해당 강의 주소 : https://www.honglab.ai/courses/real-time-vulkan
 
 #include "common.h"
-#include "struct.h"
 #include "log.h"
 #include "helper.h"
 

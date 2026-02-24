@@ -1,4 +1,4 @@
-#include "VKengine2.h"
+﻿#include "VKengine2.h"
 
 namespace vkengine
 {
@@ -24,7 +24,7 @@ namespace vkengine
         this->cxt = std::make_shared<VKcontext>(this->window->getRequiredExtensions(), true);
         this->swapChain = std::make_shared<VKSwapChain>(*this->cxt, window->createVulkanSurface(this->cxt->getInstance()), extent, true);
 
-        helper::initializeSynchronization(
+        helper::resource::initializeSynchronization(
             this->cxt->getDevice()->logicaldevice,
             MAX_FRAMES_IN_FLIGHT, // 최대 개수를 2개로 지정
             this->swapChain->getSwapChainImageCount(),
@@ -107,7 +107,7 @@ namespace vkengine
             VkFormat depthFormat = this->cxt->getDepthStencil()->depthFormat;
 
             // Depth image 재생성
-            vkengine::helper::createImage2(
+            vkengine::helper::resource::createImage2(
                 this->cxt->getDevice()->logicaldevice,
                 this->cxt->getDevice()->physicalDevice,
                 this->extent.width,
@@ -125,7 +125,7 @@ namespace vkengine
             );
 
             // Depth image view 재생성
-            this->cxt->getDepthStencil()->depthImageView = vkengine::helper::createImageView(
+            this->cxt->getDepthStencil()->depthImageView = vkengine::helper::resource::createImageView(
                 this->cxt->getDevice()->logicaldevice,
                 this->cxt->getDepthStencil()->depthImage,
                 depthFormat,

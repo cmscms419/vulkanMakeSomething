@@ -1,4 +1,7 @@
-#include "Debug.h"
+#include "debug.h"
+
+#include <chrono>
+#include <iostream>
 
 namespace vkengine {
     namespace debug {

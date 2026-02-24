@@ -1,8 +1,7 @@
-#ifndef  INCLUDE_VK_WINDOWS_H_
+﻿#ifndef  INCLUDE_VK_WINDOWS_H_
 #define  INCLUDE_VK_WINDOWS_H_
 
 #include "common.h"
-#include "struct.h"
 #include "log.h"
 
 #include "Camera2.h"

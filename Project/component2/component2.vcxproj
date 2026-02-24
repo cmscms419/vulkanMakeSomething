@@ -81,7 +81,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>DEBUG_;WIN32;WIN64;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <LanguageStandard_C>stdc11</LanguageStandard_C>
-      <AdditionalIncludeDirectories>./;$(CudaToolkitDir)/include;$(VULKAN_SDK)/include;../../include/common;../../include/engine2/;../../include/component2/;../../include/helper/;../../external/ktx/include;../../external/GLFW/include;../../external/imgui;../../external/tinygltf/;../../external/include;../../external/assimp/include/</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>./;$(CudaToolkitDir)/include;$(VULKAN_SDK)/include;../../include/struct;../../include/common;../../include/engine2/;../../include/component2/;../../include/helper/;../../external/ktx/include;../../external/GLFW/include;../../external/imgui;../../external/tinygltf/;../../external/include;../../external/assimp/include/</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
@@ -102,7 +102,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;WIN64;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <LanguageStandard_C>stdc11</LanguageStandard_C>
-      <AdditionalIncludeDirectories>./;$(CudaToolkitDir)/include;$(VULKAN_SDK)/include;../../include/common;../../include/engine2/;../../include/component2/;../../include/helper/;../../external/ktx/include;../../external/GLFW/include;../../external/imgui;../../external/tinygltf/;../../external/include;../../external/assimp/include/</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>./;$(CudaToolkitDir)/include;$(VULKAN_SDK)/include;../../include/struct;../../include/common;../../include/engine2/;../../include/component2/;../../include/helper/;../../external/ktx/include;../../external/GLFW/include;../../external/imgui;../../external/tinygltf/;../../external/include;../../external/assimp/include/</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>

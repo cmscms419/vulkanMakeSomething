@@ -1,4 +1,4 @@
-#include "VKswapchain.h"
+﻿#include "VKswapchain.h"
 
 using namespace vkengine::Log;
 
@@ -16,7 +16,7 @@ namespace vkengine
         constexpr uint32_t INVALID_INDEX = UINT32_MAX;
         this->surface = surface;
 
-        SwapChainSupportDetails swapChainSupport = helper::querySwapChainSupport(this->ctx.getDevice()->physicalDevice, this->surface);
+        SwapChainSupportDetails swapChainSupport = helper::device::querySwapChainSupport(this->ctx.getDevice()->physicalDevice, this->surface);
 
         VkSurfaceFormatKHR surfaceFormat = chooseSwapSurfaceFormat(swapChainSupport.formats);
         VkPresentModeKHR presentMode = chooseSwapPresentMode(swapChainSupport.presentModes, vsync);
@@ -38,7 +38,7 @@ namespace vkengine
     {
         QueueFamilyIndices2 VKqueueFamilyIndices = this->ctx.getDevice()->queueFamilyIndices;
 
-        cUint32_t graphicsQueueIndex = VKqueueFamilyIndices.grapicFamily;
+        cUint32_t graphicsQueueIndex = VKqueueFamilyIndices.graphicFamily;
         cUint32_t presentQueueindex = UINT32_MAX; // 프레젠트 큐 인덱스 초기화
 
         cUint32_t queueCount = static_cast<cUint32_t>(ctx.getDevice()->queueFamilyProperties.size());
@@ -149,7 +149,7 @@ namespace vkengine
 
         for (int8_t i = 0; i < this->Images.size(); i++)
         {
-            this->ImageViews[i] = helper::createImageView(
+            this->ImageViews[i] = helper::resource::createImageView(
                 this->ctx.getDevice()->logicaldevice,
                 this->Images[i],
                 this->ImageFormat,

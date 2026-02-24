@@ -1,8 +1,7 @@
-#ifndef INCLUDE_VKBUFFER_H_
+﻿#ifndef INCLUDE_VKBUFFER_H_
 #define INCLUDE_VKBUFFER_H_
 
 #include "common.h"
-#include "struct.h"
 #include "macros.h"
 
 #include "VKContext.h"

@@ -1,4 +1,4 @@
-#include "VKshader.h"
+﻿#include "VKshader.h"
 
 using namespace vkengine::Log;
 
@@ -7,12 +7,12 @@ namespace vkengine {
     VKshader::VKshader(VKcontext& ctx, cString filepath)
         : ctx(ctx)
     {
-        this->name = helper::extractFilename(filepath);
+        this->name = helper::file::extractFilename(filepath);
 
-        std::vector<cChar> shaderCode = helper::readSPVFile(filepath);
+        std::vector<cChar> shaderCode = helper::file::readSPVFile(filepath);
         
-        this->module = helper::createShaderModule(this->ctx.getDevice()->logicaldevice, shaderCode);
-        this->reflectModule = helper::createSpvReflectModule(shaderCode);
+        this->module = helper::shader::createShaderModule(this->ctx.getDevice()->logicaldevice, shaderCode);
+        this->reflectModule = helper::shader::createSpvReflectModule(shaderCode);
         this->stage = static_cast<VkShaderStageFlagBits>(this->reflectModule.shader_stage);
     }
 
@@ -96,7 +96,7 @@ namespace vkengine {
             VkVertexInputAttributeDescription attribute{};
             attribute.location = var->location;
             attribute.binding = 0; // 단일 바인딩 가정
-            attribute.format = helper::getVkFormatFromSpvReflectFormat(var->format);
+            attribute.format = helper::shader::getVkFormatFromSpvReflectFormat(var->format);
             attribute.offset = offset; // 오프셋은 나중에 버텍스 바인딩에서 설정
 
             PRINT_TO_LOGGER("Attribute - Location: %d, Binding: %d, Format: %d, Offset: %d, Name: %s\n",
@@ -105,7 +105,7 @@ namespace vkengine {
 
             attributes.push_back(attribute);
 
-            offset += helper::getFormatSize(attribute.format);
+            offset += helper::shader::getFormatSize(attribute.format);
         }
 
         return attributes;

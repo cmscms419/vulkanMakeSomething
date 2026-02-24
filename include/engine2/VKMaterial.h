@@ -2,6 +2,7 @@
 #define VK_MATERIAL_INCLUDE_H_
 
 #include "common.h"
+#include "material.h"
 
 #include "VKContext.h"
 #include "VKSampler.h"

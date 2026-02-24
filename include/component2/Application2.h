@@ -1,4 +1,4 @@
-#ifndef VK_APPLICATION_2_H_
+﻿#ifndef VK_APPLICATION_2_H_
 #define VK_APPLICATION_2_H_
 
 #include "common.h"

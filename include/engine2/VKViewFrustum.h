@@ -1,8 +1,8 @@
-#ifndef VK_VIEW_FRUSTUM_INCLUDE_H_
+﻿#ifndef VK_VIEW_FRUSTUM_INCLUDE_H_
 #define VK_VIEW_FRUSTUM_INCLUDE_H_
 
 #include "common.h"
-#include "struct.h"
+#include "geometry.h"
 #include "log.h"
 
 namespace vkengine

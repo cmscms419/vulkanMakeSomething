@@ -1,4 +1,4 @@
-#include "pipeLineHandle.h"
+﻿#include "pipeLineHandle.h"
 
 using namespace vkengine::Log;
 
@@ -23,7 +23,7 @@ namespace vkengine {
         std::vector<VkDescriptorSetLayout> layouts = this->ctx.getDescriptorManager()->getLayoutsForPipeline(this->name);
         VkPushConstantRange pushConstantRange = this->shaderManager.pushConstantsRange(this->name);
 
-        VkPipelineLayoutCreateInfo pipelineLayoutCI = helper::pipelineLayoutCreateInfo(layouts.data(), static_cast<cUint32_t>(layouts.size()));
+        VkPipelineLayoutCreateInfo pipelineLayoutCI = helper::pipeline::pipelineLayoutCreateInfo(layouts.data(), static_cast<cUint32_t>(layouts.size()));
 
         if (pushConstantRange.size > 0) {
             pipelineLayoutCI.pushConstantRangeCount = 1;

@@ -1,4 +1,4 @@
-#include "VKContext.h"
+﻿#include "VKContext.h"
 
 using namespace vkengine::Log;
 
@@ -185,9 +185,9 @@ namespace vkengine {
 
         uint16_t selectQueueFamilyIndeices = 0;
         for (VkPhysicalDevice& device : devices) {
-            if (helper::isDeviceSuitableWithoutSurface(device, indices[selectQueueFamilyIndeices]))
+            if (helper::device::isDeviceSuitableWithoutSurface(device, indices[selectQueueFamilyIndeices]))
             {
-                int score = helper::rateDeviceSuitability(device);
+                int score = helper::device::rateDeviceSuitability(device);
                 candidates.insert(std::make_pair(score, device));
                 selectQueueFamilyIndeices++;
             }
@@ -271,7 +271,7 @@ namespace vkengine {
     {
         cBool check = true;
 
-        this->VKdepthStencill.depthFormat = helper::findDepthFormat(this->VKdevice.physicalDevice);
+        this->VKdepthStencill.depthFormat = helper::device::findDepthFormat(this->VKdevice.physicalDevice);
         
         if (this->VKdepthStencill.depthFormat == VK_FORMAT_UNDEFINED) {
             check = false;

@@ -1,21 +1,18 @@
 #ifndef INCLUDE_MACROS_H_
 #define INCLUDE_MACROS_H_
 
-#include <windows.h>
-#include <Lmcons.h>
-#include <algorithm>
+#include <string>
 
-#include "common.h"
 #define UNIQUE_VERTEXTYPE 1
 
-constexpr const cChar* DEBUG_USER_NAME_0 = "alstj";
+constexpr const char* DEBUG_USER_NAME_0 = "alstj";
 
 namespace vkengine {
-    extern const cBool enableValidationLayers;
+    extern const bool enableValidationLayers;
 
-    inline const cInt getHash(const cString& str) {
-        cInt hash = 0;
-        for (cChar ch : str) {
+    inline const int getHash(const std::string& str) {
+        int hash = 0;
+        for (char ch : str) {
             hash = (hash * 31) + ch; // 간단한 해시 함수
         }
         return hash;
@@ -24,8 +21,8 @@ namespace vkengine {
 
 #define _EXIT_WITH_MESSAGE_(mes, ...)          \
 {                                           \
-    const cString localUserName = UserName; \
-    const cString targetUserName = static_cast<const cString>(DEBUG_USER_NAME_0); /* 여기에 자신의 사용자 이름을 입력하세요 */ \
+    const std::string localUserName = UserName; \
+    const std::string targetUserName = static_cast<const std::string>(DEBUG_USER_NAME_0); /* 여기에 자신의 사용자 이름을 입력하세요 */ \
     if (vkengine::enableValidationLayers && localUserName == targetUserName) { \
         printf(mes, __VA_ARGS__);          \
         exit(-1);                          \
@@ -35,8 +32,8 @@ namespace vkengine {
 #if DEBUG_
 #define _PRINT_TO_CONSOLE_(text, ...)              \
 {                                           \
-    const cString localUserName = UserName; \
-    const cString targetUserName = static_cast<const cString>(DEBUG_USER_NAME_0); /* 여기에 자신의 사용자 이름을 입력하세요 */ \
+    const std::string localUserName = UserName; \
+    const std::string targetUserName = static_cast<const std::string>(DEBUG_USER_NAME_0); /* 여기에 자신의 사용자 이름을 입력하세요 */ \
     if (vkengine::enableValidationLayers && localUserName == targetUserName) { \
         printf(text, __VA_ARGS__);          \
     }                                       \
@@ -44,9 +41,9 @@ namespace vkengine {
 
 #define _CHECK_RESULT_(f)                                                  \
 {                                                                        \
-    const cString localUserName = UserName; \
-    const cString targetUserName = static_cast<const cString>(DEBUG_USER_NAME_0); /* 여기에 자신의 사용자 이름을 입력하세요 */ \
-    cBool res = (f);                                                     \
+    const std::string localUserName = UserName; \
+    const std::string targetUserName = static_cast<const std::string>(DEBUG_USER_NAME_0); /* 여기에 자신의 사용자 이름을 입력하세요 */ \
+    bool res = (f);                                                     \
     if (vkengine::enableValidationLayers && localUserName == targetUserName) {        \
         if (res != true) {                                                  \
             printf("Fatal : function is %d in %s at line %d\n", res, __FILE__,  \
@@ -58,8 +55,8 @@ namespace vkengine {
 
 #define _VK_CHECK_RESULT_(f)                                               \
 {                                                                        \
-    const cString localUserName = UserName; \
-    const cString targetUserName = static_cast<const cString>(DEBUG_USER_NAME_0); /* 여기에 자신의 사용자 이름을 입력하세요 */ \
+    const std::string localUserName = UserName; \
+    const std::string targetUserName = static_cast<const std::string>(DEBUG_USER_NAME_0); /* 여기에 자신의 사용자 이름을 입력하세요 */ \
     VkResult res = (f);                                                  \
     if (vkengine::enableValidationLayers && localUserName == targetUserName) {        \
     if (res != VK_SUCCESS) {                                             \
@@ -80,6 +77,6 @@ namespace vkengine {
 
 #endif // DEBUG_
 
-extern const cString UserName;
+extern const std::string UserName;
 
 #endif // !INCLUDE_MACROS_H_

@@ -1,4 +1,4 @@
-#include "pipeLineHandle.h"
+﻿#include "pipeLineHandle.h"
 
 using namespace vkengine::Log;
 
@@ -15,44 +15,44 @@ namespace vkengine {
 
         // Fixed vertex input - no vertex buffers needed for procedural triangle
         // 
-        VkPipelineVertexInputStateCreateInfo vertexInputCI = helper::pipelineVertexInputStateCreateInfo(
+        VkPipelineVertexInputStateCreateInfo vertexInputCI = helper::pipeline::pipelineVertexInputStateCreateInfo(
             VkVertexInputBindingDescription{},
             VkVertexInputAttributeDescription{},
             0,
             0
         );
 
-        VkPipelineInputAssemblyStateCreateInfo inputAssembly = helper::pipelineInputAssemblyStateCreateInfo(
+        VkPipelineInputAssemblyStateCreateInfo inputAssembly = helper::pipeline::pipelineInputAssemblyStateCreateInfo(
             VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0, VK_FALSE);
 
-        VkPipelineViewportStateCreateInfo viewportState = helper::pipelineViewportStateCreateInfo(
+        VkPipelineViewportStateCreateInfo viewportState = helper::pipeline::pipelineViewportStateCreateInfo(
             VkViewport{},
             VkRect2D{},
             1, 1);
 
-        VkPipelineRasterizationStateCreateInfo rasterizer = helper::pipelineRasterizationStateCreateInfo(
+        VkPipelineRasterizationStateCreateInfo rasterizer = helper::pipeline::pipelineRasterizationStateCreateInfo(
             VK_POLYGON_MODE_FILL,
             VK_CULL_MODE_NONE,
             VK_FRONT_FACE_COUNTER_CLOCKWISE);
 
         VkPipelineMultisampleStateCreateInfo multisampling =
-            helper::pipelineMultisampleStateCreateInfo(VK_SAMPLE_COUNT_1_BIT);
+            helper::pipeline::pipelineMultisampleStateCreateInfo(VK_SAMPLE_COUNT_1_BIT);
 
         VkPipelineDepthStencilStateCreateInfo depthStencil =
-            helper::pipelineDepthStencilStateCreateInfo(VK_FALSE, VK_FALSE, VK_COMPARE_OP_ALWAYS);
+            helper::pipeline::pipelineDepthStencilStateCreateInfo(VK_FALSE, VK_FALSE, VK_COMPARE_OP_ALWAYS);
 
         // 0xf == VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | 
         //        VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT
         VkPipelineColorBlendAttachmentState colorBlendAttachment =
-            helper::pipelineColorBlendAttachmentState(0xf, VK_FALSE);
+            helper::pipeline::pipelineColorBlendAttachmentState(0xf, VK_FALSE);
 
-        VkPipelineColorBlendStateCreateInfo colorBlending = helper::pipelineColorBlendStateCreateInfo(
+        VkPipelineColorBlendStateCreateInfo colorBlending = helper::pipeline::pipelineColorBlendStateCreateInfo(
             1, &colorBlendAttachment);
 
         // dynamic states에서 뷰포트와 시저를 설정
         // 파이프라인 생성 후에 커맨드 버퍼에서 설정 가능
         VkPipelineDynamicStateCreateInfo dynamicState =
-            helper::pipelineDynamicStateCreateInfo(dynamicStates);
+            helper::pipeline::pipelineDynamicStateCreateInfo(dynamicStates);
 
         // 쉐이더 스테이지 생성
         // 쉐이더 모듈을 로드하고 파이프라인 쉐이더 스테이지 생성 정보를 만듭니다.

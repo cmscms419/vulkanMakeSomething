@@ -1,8 +1,9 @@
-#ifndef POST_PROCESSING_H_
+﻿#ifndef POST_PROCESSING_H_
 #define POST_PROCESSING_H_
 
 // 홍정모 vulkan 그래픽스 예제 Ex11_PostProcessing 프로젝트 사용
 
+#include "ubo.h"
 #include "VKengine2.h"
 #include "VKgui.h"
 #include "VKsampler.h"
