@@ -1,8 +1,7 @@
 ﻿#ifndef INCLUDE_HELPER_FILE_H_
 #define INCLUDE_HELPER_FILE_H_
 
-#include <set>
-#include <fstream>
+#include <vector>
 
 #include "common.h"
 #include "log.h"

@@ -1,7 +1,8 @@
 ﻿#ifndef INCLUDE_MATH_H_
 #define INCLUDE_MATH_H_
 
-#include "common.h"
+#include "base_types.h"
+#include "math_types.h"
 
 namespace vkMath
 {

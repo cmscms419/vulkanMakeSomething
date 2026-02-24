@@ -1,12 +1,13 @@
 #ifndef INCLUDE_HELPER_DEVICE_H_
 #define INCLUDE_HELPER_DEVICE_H_
 
-#include <set>
-#include <fstream>
+// #include <set>
+// #include <fstream>
 
 #include "common.h"
-#include "log.h"
 #include "vkdevice.h"
+
+#include <set>
 
 namespace vkengine
 {

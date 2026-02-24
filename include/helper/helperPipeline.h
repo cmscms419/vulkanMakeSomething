@@ -3,7 +3,6 @@
 
 #include "common.h"
 #include "vkdevice.h"
-#include "log.h"
 
 namespace vkengine
 {

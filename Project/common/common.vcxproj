@@ -13,11 +13,11 @@
   <ItemGroup>
     <ClInclude Include="..\..\external\include\spirv-reflect\spirv_reflect.h" />
     <ClInclude Include="..\..\include\common\common.h" />
-    <ClInclude Include="..\..\include\common\debug.h" />
-    <ClInclude Include="..\..\include\common\exception.h" />
+    <ClInclude Include="..\..\include\common\base_types.h" />
+    <ClInclude Include="..\..\include\common\math_types.h" />
     <ClInclude Include="..\..\include\common\log.h" />
     <ClInclude Include="..\..\include\common\macros.h" />
-    <ClInclude Include="..\..\include\common\resourseload.h" />
+    <ClInclude Include="..\..\include\common\vkmath.h" />
     <ClInclude Include="..\..\include\common\VectorCMS.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
@@ -26,7 +26,6 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClInclude>
-    <ClInclude Include="..\..\include\common\VKmath.h" />
     <ClInclude Include="..\..\include\helper\helper.h" />
     <ClInclude Include="..\..\include\helper\helperResource.h" />
     <ClInclude Include="..\..\include\helper\helperDescriptor.h" />
@@ -34,6 +33,8 @@
     <ClInclude Include="..\..\include\helper\helperFile.h" />
     <ClInclude Include="..\..\include\helper\helperPipeLine.h" />
     <ClInclude Include="..\..\include\helper\helperShader.h" />
+    <ClInclude Include="..\..\include\helper\debug.h" />
+    <ClInclude Include="..\..\include\helper\resourseload.h" />
     <ClInclude Include="..\..\include\struct\geometry.h" />
     <ClInclude Include="..\..\include\struct\material.h" />
     <ClInclude Include="..\..\include\struct\resource.h" />
@@ -45,22 +46,21 @@
     <ClInclude Include="..\..\include\struct\data.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\app\common\common.cpp" />
-    <ClCompile Include="..\..\app\common\debug.cpp" />
     <ClCompile Include="..\..\app\common\log.cpp" />
     <ClCompile Include="..\..\app\common\macros.cpp" />
-    <ClCompile Include="..\..\app\common\resourseload.cpp" />
+    <ClCompile Include="..\..\app\common\vkmath.cpp" />
     <ClCompile Include="..\..\app\common\VectorCMS.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="..\..\app\common\VKmath.cpp" />
     <ClCompile Include="..\..\app\helper\helperResource.cpp" />
     <ClCompile Include="..\..\app\helper\helperDescriptor.cpp" />
     <ClCompile Include="..\..\app\helper\helperDevice.cpp" />
     <ClCompile Include="..\..\app\helper\helperFile.cpp" />
     <ClCompile Include="..\..\app\helper\helperPipeLine.cpp" />
     <ClCompile Include="..\..\app\helper\helperShader.cpp" />
+    <ClCompile Include="..\..\app\helper\debug.cpp" />
+    <ClCompile Include="..\..\app\helper\resourseload.cpp" />
     <ClCompile Include="..\..\external\include\spirv-reflect\spirv_reflect.c" />
     <ClCompile Include="..\..\app\struct\geometry.cpp" />
     <ClCompile Include="..\..\app\struct\type.cpp" />

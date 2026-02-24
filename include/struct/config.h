@@ -4,6 +4,8 @@
 #include "common.h"
 #include "macros.h"
 
+#include <vector>
+
 // NEW: Model configuration structure
 struct ModelConfig
 {

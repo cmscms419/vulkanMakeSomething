@@ -1,6 +1,9 @@
 #ifndef INCLUDE_TYPE_H_
 #define INCLUDE_TYPE_H_
 
+#include <array>
+#include <vector>
+
 #include "common.h"
 #include "macros.h"
 
@@ -165,6 +168,19 @@ struct Particle {
 
         return attributeDescriptions;
     }
+};
+
+// Hash function for vector<VkDescriptorSetLayoutBinding>
+struct BindingHash
+{
+    size_t operator()(const std::vector<VkDescriptorSetLayoutBinding>& bindings) const;
+};
+
+// Equality function for vector<VkDescriptorSetLayoutBinding>
+struct BindingEqual
+{
+    bool operator()(const std::vector<VkDescriptorSetLayoutBinding>& lhs,
+        const std::vector<VkDescriptorSetLayoutBinding>& rhs) const;
 };
 
 #endif // !INCLUDE_TYPE_H_

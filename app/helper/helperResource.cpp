@@ -1,5 +1,6 @@
 #include "helperResource.h"
 #include "helperDevice.h"
+#include "log.h"
 
 using namespace vkengine::Log;
 

@@ -1,6 +1,8 @@
 #include "helperShader.h"
 #include "helperDescriptor.h"
 
+#include "log.h"
+
 using namespace vkengine::Log;
 
 namespace vkengine

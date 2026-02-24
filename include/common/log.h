@@ -1,9 +1,8 @@
 #ifndef _INCLUDE_LOG_H_
 #define _INCLUDE_LOG_H_
 
-#include "common.h"
+#include "base_types.h"
 #include "macros.h"
-
 
 #include <fstream>
 #include <iostream>
@@ -21,46 +20,13 @@ namespace vkengine {
 
         class Logger {
         public:
-            ~Logger() {
-                if (logFile.is_open()) {
-                    logFile.flush();
-                    logFile.close();
-                }
-            }
+            ~Logger();
 
-            static Logger& getInstance()
-            {
-                if (!instance) {
-                    instance = std::unique_ptr<Logger>(new Logger());
-                }
-                return *instance;
-            }
+            static Logger& getInstance();
 
-            static void printLog(cString message)
-            {
-                Logger& logger = getInstance();
+            static void printLog(cString message);
 
-                _PRINT_TO_CONSOLE_("%s", message.c_str());
-
-                if (logger.logFile.is_open()) {
-                    logger.logFile << message.c_str();
-                    logger.logFile.flush();
-                    logger.messagesProcessed++;
-                }
-                else {
-                    _PRINT_TO_CONSOLE_("Error: Log file is not open.\n");
-                    _PRINT_TO_CONSOLE_("message lost: %s", message.c_str());
-                }
-            }
-
-            template <typename... Args>
-            std::string formatToString(const Args&... args) {
-                std::ostringstream oss;
-                (oss << ... << args); // fold expression (C++17)
-                return oss.str();
-            }
-
-        private:
+            private:
             static std::unique_ptr<Logger> instance;
 
             std::ofstream logFile;
@@ -78,6 +44,7 @@ namespace vkengine {
             Logger(const Logger&) = delete;
             Logger& operator=(const Logger&) = delete;
 
+            void cleanup();
         };
 
         template <typename... Args>

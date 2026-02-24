@@ -1,4 +1,5 @@
 #include "helperPipeline.h"
+#include "log.h"
 
 using namespace vkengine::Log;
 

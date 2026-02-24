@@ -1,4 +1,7 @@
 #include "helperDescriptor.h"
+#include "log.h"
+
+#include <unordered_map>
 
 using namespace vkengine::Log;
 
@@ -8,6 +11,87 @@ namespace vkengine
     {
         namespace descriptor
         {
+            VkWriteDescriptorSet writeDescriptorSet(VkDescriptorSet dstSet, VkDescriptorType type, cUint32_t binding, VkDescriptorBufferInfo *bufferInfo, cUint32_t descriptorCount)
+            {
+                VkWriteDescriptorSet writeDescriptorSet{};
+                writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+                writeDescriptorSet.dstSet = dstSet;
+                writeDescriptorSet.descriptorType = type;
+                writeDescriptorSet.dstBinding = binding;
+                writeDescriptorSet.pBufferInfo = bufferInfo;
+                writeDescriptorSet.descriptorCount = descriptorCount;
+                return writeDescriptorSet;
+            }
+
+            // Image를 사용하는 경우
+            VkWriteDescriptorSet writeDescriptorSet(VkDescriptorSet dstSet, VkDescriptorType type, cUint32_t binding, VkDescriptorImageInfo *imageInfo, cUint32_t descriptorCount)
+            {
+                VkWriteDescriptorSet writeDescriptorSet{};
+                writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+                writeDescriptorSet.dstSet = dstSet;
+                writeDescriptorSet.descriptorType = type;
+                writeDescriptorSet.dstBinding = binding;
+                writeDescriptorSet.pImageInfo = imageInfo;
+                writeDescriptorSet.descriptorCount = descriptorCount;
+                return writeDescriptorSet;
+            }
+
+            VkDescriptorPoolCreateInfo descriptorPoolCreateInfo(const std::vector<VkDescriptorPoolSize> &poolSizes, cUint32_t maxSets)
+            {
+                VkDescriptorPoolCreateInfo descriptorPoolInfo{};
+                descriptorPoolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+                descriptorPoolInfo.poolSizeCount = static_cast<cUint32_t>(poolSizes.size());
+                descriptorPoolInfo.pPoolSizes = poolSizes.data();
+                descriptorPoolInfo.maxSets = maxSets;
+                return descriptorPoolInfo;
+            }
+
+            VkDescriptorSetLayoutBinding descriptorSetLayoutBinding(VkDescriptorType type, VkShaderStageFlags stageFlags, cUint32_t binding, cUint32_t descriptorCount)
+            {
+                VkDescriptorSetLayoutBinding setLayoutBinding{};
+                setLayoutBinding.descriptorType = type;
+                setLayoutBinding.stageFlags = stageFlags;
+                setLayoutBinding.binding = binding;
+                setLayoutBinding.descriptorCount = descriptorCount;
+                return setLayoutBinding;
+            }
+
+            VkDescriptorSetLayoutCreateInfo descriptorSetLayoutCreateInfo(const std::vector<VkDescriptorSetLayoutBinding> &bindings)
+            {
+                VkDescriptorSetLayoutCreateInfo descriptorSetLayoutCreateInfo{};
+                descriptorSetLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+                descriptorSetLayoutCreateInfo.pBindings = bindings.data();
+                descriptorSetLayoutCreateInfo.bindingCount = static_cast<cUint32_t>(bindings.size());
+                return descriptorSetLayoutCreateInfo;
+            }
+
+            VkDescriptorSetLayoutCreateInfo descriptorSetLayoutCreateInfo2(const VkDescriptorSetLayoutBinding &bindings, cUint32_t bindingCount)
+            {
+                VkDescriptorSetLayoutCreateInfo descriptorSetLayoutCreateInfo{};
+                descriptorSetLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+                descriptorSetLayoutCreateInfo.pBindings = &bindings;
+                descriptorSetLayoutCreateInfo.bindingCount = bindingCount;
+                return descriptorSetLayoutCreateInfo;
+            }
+
+            VkDescriptorSetAllocateInfo descriptorSetAllocateInfo(const VkDescriptorPool &descriptorPool, const VkDescriptorSetLayout &pSetLayouts, cUint32_t descriptorSetCount)
+            {
+                VkDescriptorSetAllocateInfo descriptorSetAllocateInfo{};
+                descriptorSetAllocateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+                descriptorSetAllocateInfo.descriptorPool = descriptorPool;
+                descriptorSetAllocateInfo.pSetLayouts = &pSetLayouts;
+                descriptorSetAllocateInfo.descriptorSetCount = descriptorSetCount;
+
+                return descriptorSetAllocateInfo;
+            }
+
+            VkDescriptorPoolSize descriptorPoolSize(VkDescriptorType type, cUint32_t descriptorCount)
+            {
+                VkDescriptorPoolSize descriptorPoolSize{};
+                descriptorPoolSize.type = type;
+                descriptorPoolSize.descriptorCount = descriptorCount;
+                return descriptorPoolSize;
+            }
 
             cString descriptorTypeToString(VkDescriptorType type)
             {

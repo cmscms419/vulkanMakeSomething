@@ -3,7 +3,8 @@
 
 #include "common.h"
 #include "resource.h"
-#include "log.h"
+
+#include <vector>
 
 namespace vkengine
 {

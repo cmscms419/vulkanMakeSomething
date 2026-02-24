@@ -2,7 +2,6 @@
 #define INCLUDE_HELPER_SHADER_H_
 
 #include "common.h"
-#include "log.h"
 
 namespace vkengine
 {
