@@ -1,5 +1,5 @@
-#ifndef INCLUDE_HELPER_BUFFER_H_
-#define INCLUDE_HELPER_BUFFER_H_
+#ifndef INCLUDE_HELPER_RESOURCE_H_
+#define INCLUDE_HELPER_RESOURCE_H_
 
 #include "common.h"
 #include "resource.h"
@@ -9,19 +9,92 @@ namespace vkengine
 {
     namespace helper
     {
-        namespace buffer
+        namespace resource
         {
+
+            // setupCommandBuffer 나중에 추가
+            // flushSetupCommands 나중에 추가
+
             // https://steel-gourd-618.notion.site/Images-19618a41dc6f80b89bc1d1575bcf3d04 참고
             // 시작하려는 명령버퍼를 생성하는 함수
             VkCommandBuffer beginSingleTimeCommands(VkDevice device, VkCommandPool commandPool);
 
             // 명령버퍼를 종료하는 함수
             void endSingleTimeCommands(VkDevice device, VkCommandPool commandPool, VkQueue Queue, VkCommandBuffer commandBuffer);
-            // 버퍼를 복사하는 함수
-            void copyBuffer(VkDevice VKdevice, VkCommandPool VKcommandPool, VkQueue graphicsVKQueue, VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
+
+            void createImage(
+                VkDevice VKdevice,
+                VkPhysicalDevice VKphysicalDevice,
+                cUint32_t width,
+                cUint32_t height,
+                cUint32_t mipLevels,
+                VkSampleCountFlagBits numSamples,
+                VkFormat format,
+                VkImageTiling tiling,
+                VkImageUsageFlags usage,
+                VkMemoryPropertyFlags properties,
+                VkImage &image,
+                VkDeviceMemory &imageMemory,
+                cUint32_t arrayLayer = 1);
+
+            void createImage2(
+                VkDevice VKdevice,
+                VkPhysicalDevice VKphysicalDevice,
+                cUint32_t width,
+                cUint32_t height,
+                cUint32_t mipLevels,
+                VkSampleCountFlagBits numSamples,
+                VkFormat format,
+                VkImageTiling tiling,
+                VkImageUsageFlags usage,
+                VkMemoryPropertyFlags properties,
+                VkImage &image,
+                VkDeviceMemory &imageMemory,
+                cUint32_t arrayLayer,
+                VkImageCreateFlagBits flag);
 
             // buffer를 생성하는 함수
-            void createBuffer(VkDevice device, VkPhysicalDevice physicalDevice, VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer &buffer, VkDeviceMemory &bufferMemory);
+            void createBuffer(
+                VkDevice device,
+                VkPhysicalDevice physicalDevice,
+                VkDeviceSize size,
+                VkBufferUsageFlags usage,
+                VkMemoryPropertyFlags properties,
+                VkBuffer &buffer,
+                VkDeviceMemory &bufferMemory);
+
+            // buffer를 생성하는 함수 2
+            void createBuffer2(
+                VkDevice device,
+                VkPhysicalDevice physicalDevice,
+                VkDeviceSize size,
+                VkBufferUsageFlags usage,
+                VkMemoryPropertyFlags properties,
+                VkBuffer &buffer,
+                VkDeviceMemory &bufferMemory,
+                VkDeviceSize *allocatedSize,
+                VkDeviceSize *alignment);
+
+            VkImageView createImageView(
+                VkDevice device,
+                VkImage image,
+                VkFormat format,
+                VkImageAspectFlags aspectFlags,
+                cUint32_t mipLevels,
+                cSize imageCount = 1);
+
+            VkImageView createArrayImageView(
+                VkDevice device,
+                VkImage image,
+                VkFormat format,
+                VkImageAspectFlags aspectFlags,
+                cUint32_t mipLevels,
+                cSize imageCount);
+
+            VkImageView createCubeImageView(VkDevice device, VkImage image, VkFormat format, VkImageAspectFlags aspectFlags, cUint32_t mipLevels);
+
+            // 버퍼를 복사하는 함수
+            void copyBuffer(VkDevice VKdevice, VkCommandPool VKcommandPool, VkQueue graphicsVKQueue, VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
 
             void copyBufferToImage(VkDevice device, VkCommandPool commandPool, VkQueue graphicsQueue, VkBuffer buffer, VkImage image, cUint32_t width, cUint32_t height);
 
@@ -62,10 +135,6 @@ namespace vkengine
              */
             void updateimageLayoutcmd(VkCommandBuffer cmdbuffer, VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout, cUint32_t levelCount = 1, cUint32_t layerCount = 1);
 
-            VkAccessFlags getFromOldLayoutToVkAccessFlags(VkImageLayout format);
-
-            VkAccessFlags getFromNewLayoutToVkAccessFlags(VkImageLayout format);
-
             // Mipmaps을 생성하는 함수
             // 이미지를 생성하고 이미지 레이아웃을 변경한 다음 이미지를 복사 -> 단일 이미지에 대한 mipmap 생성
             void generateMipmaps(VkPhysicalDevice physicalDevice, VkDevice device, VkCommandPool commandPool, VkQueue graphicsQueue, VkImage image, VkFormat imageFormat, int32_t texWidth, int32_t texHeight, cUint32_t mipLevels);
@@ -78,10 +147,7 @@ namespace vkengine
             void generateMipmapsCubeMap2(VkImage image, VkFormat imageFormat, int32_t texWidth, int32_t texHeight, cUint32_t mipLevels);
 
             // 동기화 객체 초기화
-            void initializeSynchronization(VkDevice device, cUint32_t maxFramesInFlight, cUint32_t imageCount,
-                                           std::vector<VkSemaphore> &presentSemaphores,
-                                           std::vector<VkSemaphore> &renderSemaphores,
-                                           std::vector<VkFence> &inFlightFences);
+            void initializeSynchronization(VkDevice device, cUint32_t maxFramesInFlight, cUint32_t imageCount, std::vector<VkSemaphore> &presentSemaphores, std::vector<VkSemaphore> &renderSemaphores, std::vector<VkFence> &inFlightFences);
 
             void cleanupSynchronization(VkDevice device, std::vector<VkSemaphore> &presentSemaphores, std::vector<VkSemaphore> &renderSemaphores, std::vector<VkFence> &inFlightFences);
 
@@ -89,11 +155,27 @@ namespace vkengine
 
             size_t alignedSize(size_t value, size_t alignment);
 
-        VkDeviceSize alignedVkSize(VkDeviceSize value, VkDeviceSize alignment);
+            VkDeviceSize alignedVkSize(VkDeviceSize value, VkDeviceSize alignment);
 
+            // 특정 데이터를 VkDeviceMemory 객체로 복사하는 함수
+            template <typename T>
+            inline void copyToDeviceMemory(VkDevice device, const T *src, VkDeviceMemory dst, VkDeviceSize size, VkDeviceSize offset = 0, VkMemoryMapFlags flags = 0)
+            {
+                void *data;
+                vkMapMemory(device, dst, offset, size, flags, &data);
+                memcpy(data, src, (size_t)size);
+                vkUnmapMemory(device, dst);
+            }
+
+            VkAccessFlags getFromOldLayoutToVkAccessFlags(VkImageLayout format);
+
+            VkAccessFlags getFromNewLayoutToVkAccessFlags(VkImageLayout format);
+
+            // stencilComponent를 가지고 있는지 확인하는 함수
+            cBool hasStencilComponent(VkFormat format);
 
         }
     }
 }
 
-#endif // INCLUDE_HELPER_BUFFER_H_
+#endif // INCLUDE_HELPER_RESOURCE_H_

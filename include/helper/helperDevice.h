@@ -5,11 +5,8 @@
 #include <fstream>
 
 #include "common.h"
-#include "macros.h"
 #include "log.h"
 #include "vkdevice.h"
-
-#include "ktx.h"
 
 namespace vkengine
 {
@@ -30,7 +27,7 @@ namespace vkengine
 
             // 물리 디바이스의 모든 확장기능을 가져오는 함수
             void getDeviceExtensionSupport(VkPhysicalDevice device, std::set<std::string> *temp);
-            
+
             cString getPhysicalDeviceTypeString(VkPhysicalDeviceType type);
 
             // 물리 디바이스의 적합성을 평가하는 함수
@@ -45,10 +42,10 @@ namespace vkengine
             VkFormat findDepthFormat(VkPhysicalDevice physicalDevice);
 
             // Format을 지원하는지 확인하는 함수
-            VkFormat findSupportedFormat(VkPhysicalDevice physicalDevice,const std::vector<VkFormat> &candidates,VkImageTiling tiling,VkFormatFeatureFlags features);
+            VkFormat findSupportedFormat(VkPhysicalDevice physicalDevice, const std::vector<VkFormat> &candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
 
-            cUint32_t findMemoryType(VkPhysicalDevice physicalDevice,cUint32_t typeFilter,VkMemoryPropertyFlags properties);
-            
+            cUint32_t findMemoryType(VkPhysicalDevice physicalDevice, cUint32_t typeFilter, VkMemoryPropertyFlags properties);
+
             // 최대 사용 가능한 샘플링 수를 반환하는 함수
             VkSampleCountFlagBits getMaxUsableSampleCount(VkPhysicalDevice physicalDevice);
 
@@ -59,6 +56,20 @@ namespace vkengine
 
             const QueueFamilyIndices2 findQueueFamiliesWithoutSurface(VkPhysicalDevice &device);
 
+            // pyhsicalDeviceProperties를 가져오는 함수
+            void getPyhsicalDeviceProperties(VkPhysicalDevice device);
+
+            // Fence에 대한 information을 생성하는 함수
+            VkFenceCreateInfo fenceCreateInfo(VkFenceCreateFlags flags = 0);
+
+            // Semaphore에 대한 information을 생성하는 함수
+            VkSemaphoreCreateInfo semaphoreCreateInfo(VkSemaphoreCreateFlags flags = 0);
+
+            // commandPood에 대한 information을 생성하는 함수
+            VkCommandPoolCreateInfo commandPoolCreateInfo(cUint32_t queueFamilyIndex, VkCommandPoolCreateFlags flags = 0);
+
+            // commandBuffer에 대한 information을 생성하는 함수
+            VkCommandBufferAllocateInfo commandBufferAllocateInfo(VkCommandPool pool, cUint32_t count, VkCommandBufferLevel level);
         }
     }
 }

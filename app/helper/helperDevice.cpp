@@ -82,7 +82,7 @@ namespace vkengine
                     temp->insert(extension.extensionName);
                 }
             }
-            
+
             int rateDeviceSuitability(VkPhysicalDevice device)
             {
                 VkPhysicalDeviceProperties deviceProperties;
@@ -155,7 +155,7 @@ namespace vkengine
                 );
             }
 
-            VkFormat findSupportedFormat(VkPhysicalDevice physicalDevice,const std::vector<VkFormat> &candidates,VkImageTiling tiling,VkFormatFeatureFlags features)
+            VkFormat findSupportedFormat(VkPhysicalDevice physicalDevice, const std::vector<VkFormat> &candidates, VkImageTiling tiling, VkFormatFeatureFlags features)
             {
                 VkFormat value{VK_FORMAT_UNDEFINED};
 
@@ -418,6 +418,56 @@ namespace vkengine
                 }
 
                 return target;
+            }
+
+            void getPyhsicalDeviceProperties(VkPhysicalDevice device)
+            {
+                VkPhysicalDeviceProperties deviceProperties;
+                vkGetPhysicalDeviceProperties(device, &deviceProperties);
+                PRINT_TO_LOGGER("Device Name: %s\n", deviceProperties.deviceName);
+                PRINT_TO_LOGGER("DeviceProperties.deviceType: %d\n", deviceProperties.deviceType);
+            }
+
+            VkCommandPoolCreateInfo commandPoolCreateInfo(uint32_t queueFamilyIndex, VkCommandPoolCreateFlags flags)
+            {
+                VkCommandPoolCreateInfo info = {};
+                info.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+                info.pNext = nullptr;
+                info.queueFamilyIndex = queueFamilyIndex;
+                info.flags = flags;
+                return info;
+            }
+
+            VkCommandBufferAllocateInfo commandBufferAllocateInfo(VkCommandPool pool, uint32_t count = 1, VkCommandBufferLevel level = VK_COMMAND_BUFFER_LEVEL_PRIMARY)
+            {
+                VkCommandBufferAllocateInfo info = {};
+                info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+                info.pNext = nullptr;
+                info.commandPool = pool;
+                info.commandBufferCount = count;
+                info.level = level;
+
+                return info;
+            }
+
+            VkFenceCreateInfo fenceCreateInfo(VkFenceCreateFlags flags)
+            {
+                VkFenceCreateInfo info = {};
+                info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+                info.pNext = nullptr;
+
+                info.flags = flags;
+
+                return info;
+            }
+
+            VkSemaphoreCreateInfo semaphoreCreateInfo(VkSemaphoreCreateFlags flags)
+            {
+                VkSemaphoreCreateInfo info = {};
+                info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+                info.pNext = nullptr;
+                info.flags = flags;
+                return info;
             }
 
         } // namespace device

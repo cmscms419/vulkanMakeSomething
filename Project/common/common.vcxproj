@@ -28,10 +28,12 @@
     </ClInclude>
     <ClInclude Include="..\..\include\common\VKmath.h" />
     <ClInclude Include="..\..\include\helper\helper.h" />
-    <ClInclude Include="..\..\include\helper\helperCreate.h" />
+    <ClInclude Include="..\..\include\helper\helperResource.h" />
+    <ClInclude Include="..\..\include\helper\helperDescriptor.h" />
     <ClInclude Include="..\..\include\helper\helperDevice.h" />
     <ClInclude Include="..\..\include\helper\helperFile.h" />
-    <ClInclude Include="..\..\include\helper\helperbuffer.h" />
+    <ClInclude Include="..\..\include\helper\helperPipeLine.h" />
+    <ClInclude Include="..\..\include\helper\helperShader.h" />
     <ClInclude Include="..\..\include\struct\geometry.h" />
     <ClInclude Include="..\..\include\struct\material.h" />
     <ClInclude Include="..\..\include\struct\resource.h" />
@@ -53,15 +55,16 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\..\app\common\VKmath.cpp" />
-    <ClCompile Include="..\..\app\helper\helper.cpp" />
-    <ClCompile Include="..\..\app\helper\helperCreate.cpp" />
-    <ClInclude Include="..\..\include\helper\helperDevice.cpp" />
+    <ClCompile Include="..\..\app\helper\helperResource.cpp" />
+    <ClCompile Include="..\..\app\helper\helperDescriptor.cpp" />
+    <ClCompile Include="..\..\app\helper\helperDevice.cpp" />
     <ClCompile Include="..\..\app\helper\helperFile.cpp" />
-    <ClCompile Include="..\..\app\helper\helperbuffer.cpp" />
+    <ClCompile Include="..\..\app\helper\helperPipeLine.cpp" />
+    <ClCompile Include="..\..\app\helper\helperShader.cpp" />
     <ClCompile Include="..\..\external\include\spirv-reflect\spirv_reflect.c" />
-    <ClInclude Include="..\..\app\struct\geometry.cpp" />
-    <ClInclude Include="..\..\app\struct\type.cpp" />
-    <ClInclude Include="..\..\app\struct\data.cpp" /> 
+    <ClCompile Include="..\..\app\struct\geometry.cpp" />
+    <ClCompile Include="..\..\app\struct\type.cpp" />
+    <ClCompile Include="..\..\app\struct\data.cpp" /> 
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{1950486a-e32d-424d-b403-243f6a452517}</ProjectGuid>
