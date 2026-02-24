@@ -15,7 +15,7 @@
     <ClInclude Include="..\..\include\common\common.h">
       <Filter>common</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\common\Debug.h">
+    <ClInclude Include="..\..\include\common\debug.h">
       <Filter>common</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\common\exception.h">
@@ -59,7 +59,7 @@
     <ClCompile Include="..\..\app\common\common.cpp">
       <Filter>common</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\app\common\Debug.cpp">
+    <ClCompile Include="..\..\app\common\debug.cpp">
       <Filter>common</Filter>
     </ClCompile>
     <ClCompile Include="..\..\app\common\macros.cpp">
