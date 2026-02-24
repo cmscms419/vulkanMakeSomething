@@ -21,6 +21,27 @@
         "reveal": "always",
         "panel": "shared"
       }
+    },
+    {
+      "label": "Build: common (Release)",
+      "type": "shell",
+      "command": "C:/Program Files/Microsoft Visual Studio/2022/Community/MSBuild/Current/Bin/MSBuild.exe",
+      "args": [
+        "${workspaceFolder}/Project/common/common.vcxproj",
+        "/p:Configuration=Release",
+        "/p:Platform=x64",
+        "/p:SolutionDir=${workspaceFolder}/Project/",
+        "/v:minimal"
+      ],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": "$msCompile",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      }
     }
   ]
 }
