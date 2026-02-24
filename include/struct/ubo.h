@@ -56,5 +56,33 @@ struct OptionsUniform
     alignas(4) cFloat ssaoPower = 2.0f;
 };
 
+// Post-processing options uniform buffer structure
+struct PostProcessingOptionsUBO
+{
+    // Tone mapping options
+    cInt toneMappingType = 2; // 0=None, 1=Reinhard, 2=ACES, 3=Uncharted2, 4=GT, 5=Lottes, 6=Exponential, 7=ReinhardExtended, 8=Luminance, 9=Hable
+    cFloat exposure = 1.0f;       // HDR exposure adjustment
+    cFloat gamma = 2.2f;          // Gamma correction value
+    cFloat maxWhite = 11.2f;      // For extended Reinhard tone mapping
+
+    // Color grading
+    cFloat contrast = 1.0f;   // Contrast adjustment
+    cFloat brightness = 0.0f; // Brightness adjustment
+    cFloat saturation = 1.0f; // Color saturation
+    cFloat vibrance = 0.0f;   // Vibrance (smart saturation)
+
+    // Effects
+    cFloat vignetteStrength = 0.0f;    // Vignette effect strength
+    cFloat vignetteRadius = 0.8f;      // Vignette radius
+    cFloat filmGrainStrength = 0.0f;   // Film grain noise strength
+    cFloat chromaticAberration = 0.0f; // Chromatic aberration strength
+
+    // Debug and visualization
+    cInt debugMode =
+        0; // 0=Off, 1=Show tone mapping comparison, 2=Show color channels, 3=Split comparison
+    cFloat debugSplit = 0.5f;     // Split position for comparison (0.0-1.0)
+    cInt showOnlyChannel = 0; // 0=All, 1=Red, 2=Green, 3=Blue, 4=Alpha, 5=Luminance
+    cFloat padding1 = 0.0f;
+};
 
 #endif // !INCLUDE_UBO_H_
