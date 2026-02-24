@@ -11,7 +11,8 @@ namespace vkengine
         VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME         // 동적 랜더링 확장자
     };
 
-    const std::vector<const cChar*> enabledDeviceExtensions = {};
+    // 추후 어떻게 사용할지 고민
+    // const std::vector<const cChar*> enabledDeviceExtensions = {};
 
     const std::vector<VkDynamicState> dynamicStates = {
         VK_DYNAMIC_STATE_VIEWPORT,

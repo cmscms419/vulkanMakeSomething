@@ -23,7 +23,6 @@ namespace vkengine {
         public:
             ~Logger() {
                 if (logFile.is_open()) {
-                    logFile.close();
                     logFile.flush();
                     logFile.close();
                 }
@@ -78,21 +77,6 @@ namespace vkengine {
             // 다른 복사 생성자와 대입 연산자를 삭제하여 싱글톤 패턴을 보장
             Logger(const Logger&) = delete;
             Logger& operator=(const Logger&) = delete;
-
-            template <typename T>
-            void fromatToStream(std::ostringstream oss, T&& arg) {
-                oss << std::forward<T>(arg);
-            }
-            
-            template <typename T, typename... Args>
-            void formatToStream(std::ostringstream& oss, T&& first, Args&&... args)
-            {
-                oss << std::forward<T>(arg);
-
-                if (sizeof...(args) > 0) {
-                    formatToStream(oss, std::forward<Args>(args)...);
-                }
-            }
 
         };
 
