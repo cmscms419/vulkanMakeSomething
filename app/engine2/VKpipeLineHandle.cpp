@@ -15,6 +15,9 @@ namespace vkengine
 
     PipeLineHandle::PipeLineHandle(VKcontext &ctx, VKShaderManager &shaderManager, cString Name, VkFormat outColorFormat, VkFormat depthFormat, VkSampleCountFlagBits msaaSamples) : ctx(ctx), shaderManager(shaderManager), name(Name)
     {
+        pipelineLayout = VK_NULL_HANDLE;
+        pipeline = VK_NULL_HANDLE;
+        
         createByName(name, outColorFormat, depthFormat, msaaSamples);
     }
 
