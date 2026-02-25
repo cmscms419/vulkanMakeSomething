@@ -4,7 +4,6 @@
 #include <vector>
 
 #include "common.h"
-#include "log.h"
 
 namespace vkengine
 {
