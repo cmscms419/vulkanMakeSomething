@@ -1,56 +1,116 @@
-# Vulkan_test
+# vulkanMakeSomething_basic2
 
-### vulkan을 사용해보는 일이 있어서 만져봅니다.
-### 이전에 directx11에서 만든 3d cloth를 구현하는 것이 현재 목표
-### 잘 만들면 이것을 통해서 이것저것을 만들 생각입니다.
-### + 추가로 RenderDoc을 이용해서, shader Debug 가능
+Vulkan 기반의 렌더링 엔진(basicEngine2)을 개발하는 프로젝트입니다.
+DirectX 11에서 구현했던 3D 클로스 시뮬레이션을 Vulkan으로 구현하는 것이 최종 목표입니다.
+RenderDoc을 이용한 셰이더 디버깅도 지원합니다.
 
-## 프로젝트를 실행하는데 필요한 것
-- [visual studio 2022 버전 필요](https://visualstudio.microsoft.com/ko/vs/)
-- [cuda toolkit 설치 12.6 버전](https://developer.nvidia.com/cuda-12-6-0-download-archive?target_os=Windows&target_arch=x86_64&target_version=11&target_type=exe_network)
-- [vulkan SDK](https://www.lunarg.com/vulkan-sdk/)
-- windows 11(windows 11에서만 실행 됨)
+## 실행 환경
+
+- [Visual Studio 2022](https://visualstudio.microsoft.com/ko/vs/)
+- [CUDA Toolkit 12.6](https://developer.nvidia.com/cuda-12-6-0-download-archive?target_os=Windows&target_arch=x86_64&target_version=11&target_type=exe_network)
+- [Vulkan SDK](https://www.lunarg.com/vulkan-sdk/)
+- Windows 11 (Windows 11에서만 실행됨)
 
 ## 정리한 개인자료
+
 https://www.notion.so/Vulkan-Tutorial-18118a41dc6f80c7adc7d7ba3f95542e?pvs=4
 
-## vulkan_test 프로젝트에 computer shader에 대한 예제가 빠진 이유
-https://vulkan-tutorial.com/Introduction 사이트를 참고해서 vulkan_test 프로젝트를
-computer shader를 코드를 참고하기에는 프로젝트의 원형이 많이 손상될 것 같아서
-Multisampling 챕터까지 완성했습니다. 
 
-## Content (basicEngine 바탕으로)
-[엔진 기본형](https://github.com/cmscms419/Vulkan_create_Somthing/tree/master/app/source/engine)
+## 프로젝트 구조
 
-[사각형](https://github.com/cmscms419/Vulkan_create_Somthing/tree/master/app/source/Square)
+```
+vulkanMakeSomething_basic2/
+├── Project/                    # Visual Studio 솔루션 (VKstudio.sln)
+│   ├── basicEngine2/           # 핵심 엔진 정적 라이브러리 프로젝트
+│   ├── component2/             # 컴포넌트 정적 라이브러리 프로젝트
+│   └── common/                 # 공용 유틸리티 라이브러리 프로젝트
+├── app/
+│   ├── engine2/                # 핵심 Vulkan 엔진 구현 소스
+│   ├── component2/             # 렌더러, 윈도우, 카메라, GUI 소스
+│   ├── helper/                 # 헬퍼 유틸리티 소스
+│   ├── common/                 # 공통 유틸리티 (로그, 수학)
+│   └── source/                 # 예제 애플리케이션 소스
+├── include/
+│   ├── engine2/                # 엔진 헤더
+│   ├── component2/             # 컴포넌트 헤더
+│   ├── struct/                 # 데이터 구조 헤더
+│   └── helper/                 # 헬퍼 헤더
+├── external/                   # 외부 라이브러리 (GLFW, Assimp, ImGui 등)
+├── shader/                     # GLSL 셰이더 소스 및 SPIR-V 바이너리
+└── resource/                   # 텍스처, 모델, 폰트 등 리소스
+```
 
-[카메라 -> 엔진 기본에 적용 예정](https://github.com/cmscms419/Vulkan_create_Somthing/tree/master/app/source/camera)
+## 빌드 의존성 구조
 
-[텍스처 입히기](https://github.com/cmscms419/Vulkan_create_Somthing/tree/master/app/source/texture)
+```
+common (정적 라이브러리)
+  └── basicEngine2 (정적 라이브러리)
+        └── component2 (정적 라이브러리)
+              └── 최종 애플리케이션 (예제별 실행 파일)
+```
 
-[텍스처 백열 입히기 -> 육면체 각각면에 서로 다른 텍스처 입히기](https://github.com/cmscms419/Vulkan_create_Somthing/tree/master/app/source/textureArray)
+## 외부 라이브러리
 
-[skymap](https://github.com/cmscms419/Vulkan_create_Somthing/tree/master/app/source/skymap)
+| 라이브러리 | 용도 |
+|-----------|------|
+| Vulkan SDK | GPU 렌더링 API |
+| GLFW | 윈도우 생성, 입력 처리 |
+| Assimp | OBJ, FBX, GLTF 모델 로딩 |
+| ImGui | UI 시스템 |
+| tinygltf | GLTF/GLB 포맷 지원 |
+| KTX | Khronos Texture Format |
+| libpng / zlib | PNG 이미지 처리 |
+| CUDA Toolkit 12.6 | GPU 컴퓨팅 |
+| SPIRV-Reflect | SPIR-V 셰이더 리플렉션 |
+| STB | 이미지 로딩 (stb_image.h) |
 
-[Descriptor 관련된 코드 정리 및 수정](https://github.com/cmscms419/vulkanMakeSomething/tree/master/app/source/DescriptorCodeUpdate)
 
-[PBR Basic](https://github.com/cmscms419/vulkanMakeSomething/tree/master/app/source/PBRbasic)
+## 렌더링 기능
 
-[image base lighting PBR](https://github.com/cmscms419/vulkanMakeSomething/tree/master/app/source/IBLPBR)
+- **Forward PBR** - 물리 기반 렌더링 (Physically Based Rendering)
+- **Image Based Lighting (IBL)** - 환경맵 기반 고품질 조명 (Irradiance, Prefilter, BRDF LUT)
+- **Shadow Mapping** - 실시간 그림자 생성
+- **Skybox** - 큐브맵 기반 스카이박스
+- **Post Processing** - 포스트 프로세싱 파이프라인
+- **Compute Shader** - 병렬 GPU 컴퓨팅 (SSAO 등)
+- **Skeletal Animation** - Assimp 기반 뼈대 애니메이션
+- **ImGui UI** - 실시간 파라미터 조작 UI
+- **View Frustum Culling** - 뷰 프러스텀 기반 렌더링 최적화
+- **SPIRV-Reflect** - 셰이더 리플렉션을 통한 동적 리소스 바인딩
 
-[PBRModel](https://github.com/cmscms419/vulkanMakeSomething/tree/master/app/source/PBRModel)
 
-[computerShader](https://github.com/cmscms419/vulkanMakeSomething/tree/master/app/source/computerShader)
+## Content (basicEngine2 바탕으로)
 
-[3DModelLoad](https://github.com/cmscms419/vulkanMakeSomething/tree/master/app/source/3DModelLoad)
+[basic2 - 기본 렌더링 예제](app/source/basic2/)
 
-## Content2 (basicEngine2 바탕으로)
+[Pipeline - 렌더 파이프라인 구성 예제](app/source/Pipeline/)
 
-[basis2](https://github.com/cmscms419/vulkanMakeSomething/tree/master/app/source/basic2)
+[skybox - 스카이박스 렌더링](app/source/skybox/)
 
-[shade_reflect](https://github.com/cmscms419/vulkanMakeSomething/tree/master/app/source/shadeReflect)
+[postProcessing - 포스트 프로세싱](app/source/postProcessing/)
 
-## 텍스처 소스 출처 및 링크
+[renderGUI - ImGui UI 렌더링](app/source/renderGUI/)
+
+[shadeReflect - SPIR-V 셰이더 리플렉션](app/source/shadeReflect/)
+
+[GLTF - GLTF 모델 로딩 및 렌더링](app/source/GLTF/)
+
+
+
+## 셰이더 컴파일
+
+`shader/` 디렉토리에서 배치 파일 실행:
+
+```bat
+compile.bat          # 전체 셰이더 컴파일
+compile_debug.bat    # 디버그 모드 컴파일
+```
+
+GLSL 소스(`.vert`, `.frag`, `.comp`)를 SPIR-V 바이너리(`.spv`)로 컴파일합니다.
+
+
+
+## 텍스처 소스 출처
 
 [텍스처 소스 출처](https://opengameart.org/content/tiny-texture-pack-2)
 
@@ -60,15 +120,16 @@ Multisampling 챕터까지 완성했습니다.
 
 [GLTF-Sample](https://github.com/KhronosGroup/glTF-Sample-Models/tree/main)
 
-## 출처
-코드는 아래 출처에서 가져 와서 사용했습니다.
+
+
+## 코드 출처
 
 KhronosGroup에서 개발한 [SPIRV-Reflect](https://github.com/KhronosGroup/SPIRV-Reflect) (common 프로젝트에 포함되어서 static lib로 빌드)
 
 [skybox.vert, skybox.frag 출처](https://github.com/SaschaWillems/Vulkan/tree/master/shaders/glsl/texturecubemap)
 
-[PBR basice 출처, 쉐이더 출처](https://github.com/SaschaWillems/Vulkan/tree/master/examples/pbrbasic)
+[PBR basic 출처, 셰이더 출처](https://github.com/SaschaWillems/Vulkan/tree/master/examples/pbrbasic)
 
 [image base lighting PBR 코드 출처](https://github.com/SaschaWillems/Vulkan/tree/master/examples/pbribl)
 
-[HonglabVulkan](https://github.com/HongLabInc/HonglabVulkan)에서 만든 것을 가져왔습니다.
+[HonglabVulkan](https://github.com/HongLabInc/HonglabVulkan)
