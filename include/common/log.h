@@ -6,44 +6,25 @@
 
 #include <fstream>
 #include <iostream>
-#include <memory>
-#include <sstream>
-#include <cassert>
-#include <string>
-#include <chrono>
-#include <iomanip>
-#include <stdio.h>
-
 
 namespace vkengine {
     namespace Log {
-
+        
         class Logger {
         public:
             ~Logger();
-
             static Logger& getInstance();
-
             static void printLog(cString message);
-
-            private:
+        private:
             static std::unique_ptr<Logger> instance;
 
             std::ofstream logFile;
             size_t messagesProcessed;
 
-            Logger() : messagesProcessed(0) {
-                logFile.open("engine_log.txt", std::ios::out | std::ios::app);
-               
-                if (!logFile.is_open()) {
-                    _PRINT_TO_CONSOLE_("Error: Unable to open log file.\n");
-                }
-            }
-
             // 다른 복사 생성자와 대입 연산자를 삭제하여 싱글톤 패턴을 보장
+            Logger();
             Logger(const Logger&) = delete;
             Logger& operator=(const Logger&) = delete;
-
             void cleanup();
         };
 

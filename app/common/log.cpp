@@ -1,10 +1,21 @@
 #include "log.h"
 
+
 namespace vkengine
 {
     namespace Log
     {
         std::unique_ptr<Logger> Logger::instance = nullptr;
+
+        Logger::Logger() : messagesProcessed(0)
+        {
+            logFile.open("engine_log.txt", std::ios::out | std::ios::app);
+
+            if (!logFile.is_open())
+            {
+                _PRINT_TO_CONSOLE_("Error: Unable to open log file.\n");
+            }
+        }
 
         Logger::~Logger()
         {
@@ -39,7 +50,7 @@ namespace vkengine
             }
         }
         
-        Logger& Logger::getInstance()
+        Logger &Logger::getInstance()
         {
             if (!instance)
             {

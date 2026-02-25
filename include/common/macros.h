@@ -19,6 +19,7 @@ namespace vkengine {
     }
 }
 
+#if DEBUG_
 #define _EXIT_WITH_MESSAGE_(mes, ...)          \
 {                                           \
     const std::string localUserName = UserName; \
@@ -29,7 +30,6 @@ namespace vkengine {
     }                                       \
 }                                           \
 
-#if DEBUG_
 #define _PRINT_TO_CONSOLE_(text, ...)              \
 {                                           \
     const std::string localUserName = UserName; \
