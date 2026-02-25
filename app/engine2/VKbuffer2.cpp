@@ -196,7 +196,18 @@ namespace vkengine {
 
     VKBaseBuffer2::VKBaseBuffer2(VKcontext& ctx) : ctx(ctx)
     {
-
+        name = "Default";
+        buffer = VK_NULL_HANDLE; //< Vulkan 버퍼 핸들
+        memory = VK_NULL_HANDLE; ///< Vulkan 장치 메모리 핸들
+        descriptor = {VK_NULL_HANDLE, 0, 0}; ///< Vulkan 디스크립터 버퍼 정보
+        size = 0; ///< 버퍼 크기
+        offset = 0; ///< 버퍼 간격
+        allocatedSize = 0; ///< createBuffer 할 때, 만들어지는 버퍼의 크기
+        alignment = 0; ///< 버퍼 정렬
+        usageFlags = 0; ///< 버퍼 사용 플래그
+        memoryPropertyFlags = 0; ///< 메모리 속성 플래그
+        mapped = nullptr; ///< 매핑된 메모리 포인터
+        resourceBinding = {}; ///< 리소스 바인딩 초기화
     }
 
     VKBaseBuffer2::VKBaseBuffer2(VKBaseBuffer2&& other) noexcept

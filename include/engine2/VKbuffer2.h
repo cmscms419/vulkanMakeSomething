@@ -2,7 +2,6 @@
 #define INCLUDE_VKBUFFER_H_
 
 #include "common.h"
-#include "macros.h"
 
 #include "VKContext.h"
 #include "VKResourceBindingData.h"
@@ -68,20 +67,20 @@ namespace vkengine {
         void create(VkBufferUsageFlags usageFlags, VkMemoryPropertyFlags memoryPropertyFlags,
             VkDeviceSize size, void* data);
 
-        cString name = "Default";
+        cString name;
         VKcontext& ctx;
 
-        VkBuffer buffer = VK_NULL_HANDLE; //< Vulkan 버퍼 핸들
-        VkDeviceMemory memory = VK_NULL_HANDLE; ///< Vulkan 장치 메모리 핸들
+        VkBuffer buffer; //< Vulkan 버퍼 핸들
+        VkDeviceMemory memory; ///< Vulkan 장치 메모리 핸들
         VkDescriptorBufferInfo descriptor{}; ///< Vulkan 디스크립터 버퍼 정보
-        VkDeviceSize size = 0; ///< 버퍼 크기
-        VkDeviceSize offset = 0; ///< 버퍼 간격
-        VkDeviceSize allocatedSize = 0; ///< createBuffer 할 때, 만들어지는 버퍼의 크기
-        VkDeviceSize alignment = 0; ///< 버퍼 정렬
+        VkDeviceSize size; ///< 버퍼 크기
+        VkDeviceSize offset; ///< 버퍼 간격
+        VkDeviceSize allocatedSize; ///< createBuffer 할 때, 만들어지는 버퍼의 크기
+        VkDeviceSize alignment; ///< 버퍼 정렬
 
-        VkBufferUsageFlags usageFlags = 0; ///< 버퍼 사용 플래그
-        VkMemoryPropertyFlags memoryPropertyFlags = 0; ///< 메모리 속성 플래그
-        void* mapped = nullptr; ///< 매핑된 메모리 포인터
+        VkBufferUsageFlags usageFlags; ///< 버퍼 사용 플래그
+        VkMemoryPropertyFlags memoryPropertyFlags; ///< 메모리 속성 플래그
+        void* mapped; ///< 매핑된 메모리 포인터
 
         VKResourceBinding resourceBinding;
     };

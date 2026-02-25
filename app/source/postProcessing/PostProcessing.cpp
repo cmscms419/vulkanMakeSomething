@@ -6,7 +6,8 @@
 #include <stdexcept>
 
 #define IMGUI_DEFINE_MATH_OPERATORS
-using namespace vkengine; 
+using namespace vkengine;
+using namespace vkengine::Log;
 using namespace vkengine::gui;
 
 PostProcessingExample::PostProcessingExample(std::string root_path, cBool useSwapchain)

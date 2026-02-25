@@ -2,7 +2,6 @@
 #define VK_PIPELIN_INCLUDE_H_
 
 #include "common.h"
-#include "log.h"
 #include <optional>
 
 #include "VKContext.h"
@@ -12,41 +11,10 @@ namespace vkengine {
     class PipeLineHandle {
     public:
 
-        PipeLineHandle(VKcontext& context, VKShaderManager& shaderManager) : ctx(context), shaderManager(shaderManager)
-        {
-
-        }
-
-        PipeLineHandle(VKcontext& ctx, VKShaderManager& shaderManager, cString Name,
-            VkFormat outColorFormat, VkFormat depthFormat, VkSampleCountFlagBits msaaSamples)
-            : ctx(ctx), shaderManager(shaderManager), name(Name)
-        {
-            createByName(name, outColorFormat, depthFormat, msaaSamples);
-        }
-
-        PipeLineHandle(PipeLineHandle&& other) noexcept
-            : ctx(other.ctx), shaderManager(other.shaderManager),
-            pipelineLayout(other.pipelineLayout), pipeline(other.pipeline), 
-            name(std::move(other.name))
-        {
-            other.pipelineLayout = VK_NULL_HANDLE;
-            other.pipeline = VK_NULL_HANDLE;
-        }
-
-        PipeLineHandle& operator=(PipeLineHandle&& other) noexcept
-        {
-            if (this != &other)
-            {
-                cleanup();
-
-                pipelineLayout = other.pipelineLayout;
-                pipeline = other.pipeline;
-                name = std::move(other.name);
-                other.pipelineLayout = VK_NULL_HANDLE;
-                other.pipeline = VK_NULL_HANDLE;
-            }
-            return *this;
-        }
+        PipeLineHandle(VKcontext& context, VKShaderManager& shaderManager);
+        PipeLineHandle(VKcontext& ctx, VKShaderManager& shaderManager, cString Name,VkFormat outColorFormat, VkFormat depthFormat, VkSampleCountFlagBits msaaSamples);
+        PipeLineHandle(PipeLineHandle&& other) noexcept;
+        PipeLineHandle& operator=(PipeLineHandle&& other) noexcept;
 
         PipeLineHandle(const PipeLineHandle&) = delete;
         PipeLineHandle& operator=(const PipeLineHandle&) = delete;
@@ -60,7 +28,6 @@ namespace vkengine {
 
         // 공통으로 사용되는 파이프라인 설정을 여기에 추가할 수 있습니다.
         void createCommon();
-
 
         void createByName(cString name,
             std::optional<VkFormat> outColorFormat = VK_FORMAT_UNDEFINED,
@@ -97,10 +64,10 @@ namespace vkengine {
         VKcontext& ctx;
         VKShaderManager& shaderManager;
 
-        VkPipelineLayout pipelineLayout{ VK_NULL_HANDLE };
-        VkPipeline pipeline{ VK_NULL_HANDLE };
+        VkPipelineLayout pipelineLayout;
+        VkPipeline pipeline;
 
-        cString name{};
+        cString name;
 
     };
 }

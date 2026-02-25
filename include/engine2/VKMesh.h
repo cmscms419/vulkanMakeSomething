@@ -3,10 +3,13 @@
 
 #include "common.h"
 #include "type.h"
+
 #include "VKContext.h"
 #include "VKMaterial.h"
 #include "VKViewFrustum.h"
 #include "VKbuffer2.h"
+
+#include <memory>
 
 // 홍정모 vulkan 그래픽스 Mesh 파일 프로젝트 사용
 
@@ -15,26 +18,8 @@ namespace vkengine {
 class Mesh
 {
   public:
-    explicit Mesh(VKcontext& ctx) 
-        : vertex(std::make_unique<VKBaseBuffer2>(ctx))
-        , index(std::make_unique<VKBaseBuffer2>(ctx))
-        , materialIndex(0)
-        , minBounds(cVec3(FLT_MAX))
-        , maxBounds(cVec3(-FLT_MAX))
-        , isCulled(false)
-        , noTextureCoords(false)
-    {}
-
-    Mesh() :
-        vertex(nullptr)
-        , index(nullptr)
-        , materialIndex(0)
-        , minBounds(cVec3(FLT_MAX))
-        , maxBounds(cVec3(-FLT_MAX))
-        , isCulled(false)
-        , noTextureCoords(false)
-    {}
-
+    explicit Mesh(VKcontext& ctx);
+    Mesh();
     Mesh(Mesh&& other) noexcept
         : 
           vertex(std::move(other.vertex)), index(std::move(other.index)),
@@ -113,9 +98,9 @@ class Mesh
     }
 
     cString name = {};
-    std::vector<Vertex2> vertices{};
-    std::vector<cUint32_t> indices{};
-    cUint32_t materialIndex = 0;
+    std::vector<Vertex2> vertices;
+    std::vector<cUint32_t> indices;
+    cUint32_t materialIndex;
 
     // Vulkan buffers
     std::unique_ptr<VKBaseBuffer2> vertex;
@@ -127,8 +112,8 @@ class Mesh
     //VkDeviceMemory indexMemory = VK_NULL_HANDLE;
 
     // Bounding box for culling
-    cVec3 minBounds = cVec3(FLT_MAX);
-    cVec3 maxBounds = cVec3(-FLT_MAX);
+    cVec3 minBounds;
+    cVec3 maxBounds;
 
     void createBuffers(VKcontext& ctx);
     void cleanup(VkDevice device);
@@ -138,7 +123,7 @@ class Mesh
     void updateWorldBounds(const glm::mat4& modelMatrix);
 
     // World-space bounding box (updated when model matrix changes)
-    AABB worldBounds{};
+    AABB worldBounds;
 
     // Check if mesh should be culled
     bool isCulled = false;

@@ -1,5 +1,9 @@
 ﻿#include "VKdeviceHandler2.h"
 
+#include "data.h"
+#include "helper.h"
+#include "log.h"
+
 using namespace vkengine::Log;
 
 namespace vkengine {
@@ -8,6 +12,21 @@ namespace vkengine {
 
     VKdeviceHandler2::VKdeviceHandler2(VkPhysicalDevice physicalDevice, QueueFamilyIndices2 indice)
     {
+        logicaldevice = VK_NULL_HANDLE; 
+        properties = {};
+        features = {};
+        enabledFeatures = {};
+        memoryProperties = {};
+        queueFamilyProperties = {};
+        supportedExtensions = {};
+        enabledDeviceExtensions = {};
+        graphicsCommandPool = VK_NULL_HANDLE;
+        computeCommandPool = VK_NULL_HANDLE;
+        transferCommandPool = VK_NULL_HANDLE;
+        graphicsVKQueue = VK_NULL_HANDLE;
+        computerVKQueue = VK_NULL_HANDLE;
+        transferVKQueue = VK_NULL_HANDLE;
+
         assert(physicalDevice);
         assert(indice.isComplete());
 
@@ -23,7 +42,7 @@ namespace vkengine {
         // queue family properties 가져오기
         cUint32_t queueFamilyCount = 0;
         vkGetPhysicalDeviceQueueFamilyProperties(this->physicalDevice, &queueFamilyCount, nullptr);
-        if (queueFamilyCount > 0)
+        if (queueFamilyCount <= 0)
         {
             EXIT_TO_LOGGER("Failed to get queue family properties\n");
         }

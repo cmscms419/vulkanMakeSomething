@@ -1,8 +1,6 @@
 #ifndef INCLUDE_VK_STOREGE_BUFFER_H_
 #define INCLUDE_VK_STOREGE_BUFFER_H_
 
-#include "common.h"
-#include "macros.h"
 #include "VKContext.h"
 #include "VKCommadBufferHander.h"
 
@@ -11,10 +9,8 @@ namespace vkengine {
     class VKStorgeBuffer {
 
     public:
-        VKStorgeBuffer(VKcontext& ctx) : ctx(ctx) {}
-        
-        ~VKStorgeBuffer() {}
-
+        VKStorgeBuffer(VKcontext& ctx);
+        ~VKStorgeBuffer();
         void cleanup();
         void create(VkDeviceSize size, VkBufferUsageFlags additionalUsage = 0);
         void* map();
@@ -24,12 +20,11 @@ namespace vkengine {
 
     private:
         VKcontext& ctx;
-
-        VkBuffer buffer{ VK_NULL_HANDLE };
-        VkDeviceMemory memory{ VK_NULL_HANDLE };
-        VkDeviceSize size{ 0 };
-        void* mapped{ nullptr };
-        bool hostVisible{ false };
+        VkBuffer buffer;
+        VkDeviceMemory memory;
+        VkDeviceSize size;
+        void* mapped;
+        bool hostVisible;
     };
 
 }

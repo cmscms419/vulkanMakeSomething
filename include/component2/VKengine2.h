@@ -3,8 +3,6 @@
 
 #include <chrono>
 
-#include "log.h"
-
 #include "VKContext.h"
 #include "VKImage2D.h"
 #include "VKShaderManager.h"
@@ -21,12 +19,6 @@
 #include "Camera2.h"
 #include "VKwindow.h"
 
-
-using namespace vkengine;
-using namespace vkengine::Log;
-
-using namespace vkengine;
-
 namespace vkengine {
 
     class VulkanEngineWin2
@@ -37,9 +29,9 @@ namespace vkengine {
         void init();
         void cleanup();
 
-        cBool _isInitialized{ false };
-        cBool stop_rendering{ false };
-        cBool framebufferResized{ false };   // 프레임 버퍼 크기 조정 여부
+        cBool _isInitialized;
+        cBool stop_rendering;
+        cBool framebufferResized;   // 프레임 버퍼 크기 조정 여부
 
     protected:
 
@@ -61,10 +53,10 @@ namespace vkengine {
         platform::WindowCreateInfo createInfo;
         std::shared_ptr<object::Camera2> camera;
 
-        bool shouldClose{ false };
+        bool shouldClose;
 
-        cUint32_t currentFrame = 0;
-        cUint32_t currentSemaphore = 0;
+        cUint32_t currentFrame;
+        cUint32_t currentSemaphore;
     };
 }
 

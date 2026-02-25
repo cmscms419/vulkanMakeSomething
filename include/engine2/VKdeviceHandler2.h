@@ -2,9 +2,10 @@
 #define INCLUDE_VULKAN_DEVICE_2_H_
 
 #include "common.h"
-#include "helper.h"
+#include "vkdevice.h"
 
-#include "log.h"
+#include <set>
+#include <vector>
 
 namespace vkengine {
 
@@ -14,27 +15,27 @@ namespace vkengine {
         VKdeviceHandler2(VkPhysicalDevice physicalDevice, QueueFamilyIndices2 indice);
         ~VKdeviceHandler2();
 
-        VkPhysicalDevice physicalDevice{ VK_NULL_HANDLE };                  // 물리 디바이스 -> GPU Physical Handle
-        VkDevice logicaldevice{ VK_NULL_HANDLE };                                  // 논리 디바이스 -> GPU Logical Handle
+        VkPhysicalDevice physicalDevice;                  // 물리 디바이스 -> GPU Physical Handle
+        VkDevice logicaldevice;                                  // 논리 디바이스 -> GPU Logical Handle
         
-        VkPhysicalDeviceProperties properties{};                              // 물리 디바이스 속성
-        VkPhysicalDeviceFeatures features{};                                  // 물리 디바이스 기능
-        VkPhysicalDeviceFeatures enabledFeatures{};                           // 활성화된 물리 디바이스 기능
-        VkPhysicalDeviceMemoryProperties memoryProperties{};                  // 메모리 속성
+        VkPhysicalDeviceProperties properties;                              // 물리 디바이스 속성
+        VkPhysicalDeviceFeatures features;                                  // 물리 디바이스 기능
+        VkPhysicalDeviceFeatures enabledFeatures;                           // 활성화된 물리 디바이스 기능
+        VkPhysicalDeviceMemoryProperties memoryProperties;                  // 메모리 속성
         
-        QueueFamilyIndices2 queueFamilyIndices{};                              // 큐 패밀리 인덱스
+        QueueFamilyIndices2 queueFamilyIndices;                              // 큐 패밀리 인덱스
         std::vector<VkQueueFamilyProperties> queueFamilyProperties;            // 큐 패밀리 프로퍼티 -> 큐 패밀리의 속성
 
         std::set<std::string> supportedExtensions;                            // 지원되는 Extensions 기능
-        std::vector<const char*> enabledDeviceExtensions{};                     // 활성화된 디바이스 확장 기능
+        std::vector<const char*> enabledDeviceExtensions;                     // 활성화된 디바이스 확장 기능
 
-        VkCommandPool graphicsCommandPool{ VK_NULL_HANDLE };                        // 커맨드 풀 -> 커맨드 버퍼를 생성하는 데 사용
-        VkCommandPool computeCommandPool{ VK_NULL_HANDLE };                        // 커맨드 풀 -> 커맨드 버퍼를 생성하는 데 사용
-        VkCommandPool transferCommandPool{ VK_NULL_HANDLE };                        // 커맨드 풀 -> 커맨드 버퍼를 생성하는 데 사용
+        VkCommandPool graphicsCommandPool;                        // 커맨드 풀 -> 커맨드 버퍼를 생성하는 데 사용
+        VkCommandPool computeCommandPool;                        // 커맨드 풀 -> 커맨드 버퍼를 생성하는 데 사용
+        VkCommandPool transferCommandPool;                        // 커맨드 풀 -> 커맨드 버퍼를 생성하는 데 사용
 
-        VkQueue graphicsVKQueue{ VK_NULL_HANDLE };                            // 그래픽스 큐 -> 그래픽스 명령을 처리하는 큐
-        VkQueue computerVKQueue{ VK_NULL_HANDLE };                            // 컴퓨트 큐 -> 컴퓨트 명령을 처리하는 큐
-        VkQueue transferVKQueue{ VK_NULL_HANDLE };                             // 프레젠트 큐 -> 윈도우 시스템과 Vulkan을 연결하는 인터페이스
+        VkQueue graphicsVKQueue;                            // 그래픽스 큐 -> 그래픽스 명령을 처리하는 큐
+        VkQueue computerVKQueue;                            // 컴퓨트 큐 -> 컴퓨트 명령을 처리하는 큐
+        VkQueue transferVKQueue;                             // 프레젠트 큐 -> 윈도우 시스템과 Vulkan을 연결하는 인터페이스
 
         //VkResult createPysicalDevice
         void printPysicaldeviceProperties() const;

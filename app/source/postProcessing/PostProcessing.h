@@ -4,9 +4,11 @@
 // 홍정모 vulkan 그래픽스 예제 Ex11_PostProcessing 프로젝트 사용
 
 #include "ubo.h"
+#include "data.h"
+
 #include "VKengine2.h"
 #include "VKgui.h"
-#include "VKsampler.h"
+#include "VKSamplerHandler.h"
 #include "VKUniformBuffer2.h"
 #include "VKDescriptorSet.h"
 
@@ -37,8 +39,8 @@ class PostProcessingExample : public vkengine::VulkanEngineWin2
     VKskyTexture skyTextures;
     VKImage2D hdrColorBuffer; // HDR color buffer for post-processing input
 
-    VKSampler samplerLinearRepeat;
-    VKSampler samplerLinearClamp;
+    VKSamplerHandler samplerLinearRepeat;
+    VKSamplerHandler samplerLinearClamp;
 
     // Uniform buffer objects
     SceneDataUBO sceneDataUBO;

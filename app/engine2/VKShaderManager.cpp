@@ -1,8 +1,13 @@
 #include "VKShaderManager.h"
+
+#include "log.h"
+#include "type.h"
+
 using namespace vkengine::Log;
 
-namespace vkengine {
-    VKShaderManager::VKShaderManager(VKcontext& ctx, cString shaderPathPrefix, const std::initializer_list<std::pair<cString, std::vector<cString>>>& pipelineShaders)
+namespace vkengine
+{
+    VKShaderManager::VKShaderManager(VKcontext &ctx, cString shaderPathPrefix, const std::initializer_list<std::pair<cString, std::vector<cString>>> &pipelineShaders)
         : ctx(ctx)
     {
         // shahder 정보를 읽어서 저장
@@ -15,20 +20,21 @@ namespace vkengine {
 
     void VKShaderManager::createFromShaders(cString path, std::initializer_list<std::pair<cString, std::vector<cString>>> pipelineShaders)
     {
-        for (const auto& [pipelineName, shaderFiles] : pipelineShaders) {
-            std::vector<VKshader>& shaders = this->pipelineShaders[pipelineName];
+        for (const auto &[pipelineName, shaderFiles] : pipelineShaders)
+        {
+            std::vector<VKshader> &shaders = this->pipelineShaders[pipelineName];
             shaders.reserve(shaderFiles.size());
 
             for (cString shaderFile : shaderFiles)
             {
                 shaderFile = path + shaderFile;
 
-                if (shaderFile.substr(shaderFile.length() - 4) != ".spv") {
+                if (shaderFile.substr(shaderFile.length() - 4) != ".spv")
+                {
                     shaderFile += ".spv";
                 }
 
                 shaders.emplace_back(VKshader(this->ctx, shaderFile));
-
             }
         }
     }
@@ -40,16 +46,17 @@ namespace vkengine {
             std::vector<VkDescriptorSetLayoutBinding>,
             std::vector<std::tuple<cString, cUint32_t>>,
             BindingHash,
-            BindingEqual> bindingCollector;
+            BindingEqual>
+            bindingCollector;
 
-        for (const auto& [pipelineName, shaders] : this->pipelineShaders)
+        for (const auto &[pipelineName, shaders] : this->pipelineShaders)
         {
             // 파이프라인별 바인딩 수집기: setIndex -> bindingIndex -> VkDescriptorSetLayoutBinding
             std::map<cUint32_t, std::map<cUint32_t, VkDescriptorSetLayoutBinding>> pipelineBindingCollector;
             collectPerPipelineBindings(pipelineName, pipelineBindingCollector);
 
             // setIndex별로 LayoutInfo 생성
-            for (const auto& [setIndex, bindingsMap] : pipelineBindingCollector)
+            for (const auto &[setIndex, bindingsMap] : pipelineBindingCollector)
             {
                 if (bindingsMap.empty())
                 {
@@ -57,11 +64,11 @@ namespace vkengine {
                 }
 
                 // 레이아웃 정보 생성
-                std::vector< VkDescriptorSetLayoutBinding> bindings;
+                std::vector<VkDescriptorSetLayoutBinding> bindings;
 
                 bindings.reserve(bindingsMap.size());
                 // map을 vector로 변환
-                for (const auto& [bindingIndex, layoutBinding] : bindingsMap)
+                for (const auto &[bindingIndex, layoutBinding] : bindingsMap)
                 {
                     bindings.push_back(layoutBinding);
                 }
@@ -71,22 +78,25 @@ namespace vkengine {
                 VkShaderStageFlags accumulatedStageFlags = 0;
 
                 // 모든 바인딩의 stageFlags를 누적
-                for (const auto& binding : bindings) {
+                for (const auto &binding : bindings)
+                {
                     accumulatedStageFlags |= binding.stageFlags;
                 }
 
                 // 모든 바인딩의 stageFlags를 0으로 설정하여 비교
-                for (auto& binding : normalizedBindings) {
+                for (auto &binding : normalizedBindings)
+                {
                     binding.stageFlags = 0;
                 }
 
                 // try_emplace는 C++17부터 지원되는 함수로, 맵에 키가 없을 때만 새로 삽입
                 auto [it, inserted] = bindingCollector.try_emplace(
                     normalizedBindings,
-                    std::vector<std::tuple<cString, cUint32_t>>{ std::make_tuple(pipelineName, setIndex) });
+                    std::vector<std::tuple<cString, cUint32_t>>{std::make_tuple(pipelineName, setIndex)});
 
                 // 새로운 레이아웃이 추가된 경우
-                if (!inserted) {
+                if (!inserted)
+                {
                     for (size_t i = 0; i < it->first.size(); i++)
                     {
                         accumulatedStageFlags |= it->first[i].stageFlags;
@@ -96,8 +106,9 @@ namespace vkengine {
                 }
 
                 // 원본 바인딩 벡터의 stageFlags를 누적된 값으로 업데이트
-                auto& keyBindings = const_cast<std::vector<VkDescriptorSetLayoutBinding>&>(it->first);
-                for (auto& binding : keyBindings) {
+                auto &keyBindings = const_cast<std::vector<VkDescriptorSetLayoutBinding> &>(it->first);
+                for (auto &binding : keyBindings)
+                {
                     binding.stageFlags = accumulatedStageFlags;
                 }
             }
@@ -107,30 +118,32 @@ namespace vkengine {
         this->layoutInfos.reserve(bindingCollector.size());
 
         // 수집된 레이아웃 정보를 LayoutInfo 구조체로 변환하여 저장
-        for (const auto& [bindings, pipelineinfo] : bindingCollector) {
-            this->layoutInfos.emplace_back(LayoutInfo{ bindings, std::move(pipelineinfo) });
+        for (const auto &[bindings, pipelineinfo] : bindingCollector)
+        {
+            this->layoutInfos.emplace_back(LayoutInfo{bindings, std::move(pipelineinfo)});
         }
-
     }
-    
+
     void VKShaderManager::collectPerPipelineBindings(
-        const cString& pipelineName,
-        std::map<cUint32_t, std::map<cUint32_t, VkDescriptorSetLayoutBinding>>& bindingCollector) const
+        const cString &pipelineName,
+        std::map<cUint32_t, std::map<cUint32_t, VkDescriptorSetLayoutBinding>> &bindingCollector) const
     {
         // 파이프라인에 속한 모든 쉐이더의 바인딩 정보를 수집
-        const auto& shaders = this->pipelineShaders.at(pipelineName);
+        const auto &shaders = this->pipelineShaders.at(pipelineName);
 
         // 각 쉐이더의 바인딩 정보를 순회하며 수집
-        for (const auto& shader : shaders) {
+        for (const auto &shader : shaders)
+        {
 
             // Reflect 모듈에서 바인딩 정보 추출
-            const auto& reflectModule = shader.reflectModule;
+            const auto &reflectModule = shader.reflectModule;
 
             // 각 바인딩 정보를 순회하며 수집
-            for (cUint32_t i = 0; i < reflectModule.descriptor_binding_count; ++i) {
+            for (cUint32_t i = 0; i < reflectModule.descriptor_binding_count; ++i)
+            {
 
                 // 바인딩 정보 추출
-                const SpvReflectDescriptorBinding* binding = &reflectModule.descriptor_bindings[i];
+                const SpvReflectDescriptorBinding *binding = &reflectModule.descriptor_bindings[i];
 
                 if (!binding->name)
                 {
@@ -147,21 +160,21 @@ namespace vkengine {
                 // 반환값은 삽입된 요소의 반복자와 삽입 여부를 나타내는 불리언 값
                 auto [bindingIt, inserted] = bindingCollector[setIndex].try_emplace(bindingIndex);
 
-                if (inserted) {
+                if (inserted)
+                {
                     // 새로운 바인딩이 추가된 경우
                     bindingIt->second = createLayoutBindingFromReflect(binding, static_cast<VkShaderStageFlagBits>(shader.stage));
                 }
-                else {
+                else
+                {
                     // 이미 존재하는 바인딩인 경우, stageFlags 업데이트
                     bindingIt->second.stageFlags |= static_cast<VkShaderStageFlagBits>(shader.stage);
                 }
-
             }
         }
-
     }
 
-    VkDescriptorSetLayoutBinding VKShaderManager::createLayoutBindingFromReflect(const SpvReflectDescriptorBinding* binding, VkShaderStageFlagBits shaderStage) const
+    VkDescriptorSetLayoutBinding VKShaderManager::createLayoutBindingFromReflect(const SpvReflectDescriptorBinding *binding, VkShaderStageFlagBits shaderStage) const
     {
         VkDescriptorSetLayoutBinding layoutBinding = {};
         layoutBinding.binding = binding->binding;
@@ -183,8 +196,10 @@ namespace vkengine {
 
     void VKShaderManager::cleanup()
     {
-        for (auto& [pipelineName, shaders] : this->pipelineShaders) {
-            for (auto& shader : shaders) {
+        for (auto &[pipelineName, shaders] : this->pipelineShaders)
+        {
+            for (auto &shader : shaders)
+            {
                 shader.cleanup();
             }
         }
@@ -193,17 +208,18 @@ namespace vkengine {
     }
     std::vector<VkPipelineShaderStageCreateInfo> VKShaderManager::createPipelineShaderStageCIs(cString pipelineName) const
     {
-        const auto& shaders = pipelineShaders.at(pipelineName);
+        const auto &shaders = pipelineShaders.at(pipelineName);
         std::vector<VkPipelineShaderStageCreateInfo> shaderStages;
 
-        for (const auto& shader : shaders) {
+        for (const auto &shader : shaders)
+        {
 
             VkPipelineShaderStageCreateInfo shaderStageCI{};
             shaderStageCI.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
             shaderStageCI.stage = shader.stage; // ex: VK_SHADER_STAGE_VERTEX_BIT
             shaderStageCI.module = shader.module;
             shaderStageCI.pName = shader.reflectModule.entry_point_name; // ex: "main"
-            shaderStageCI.pSpecializationInfo = nullptr;                  // 필요하면 추가
+            shaderStageCI.pSpecializationInfo = nullptr;                 // 필요하면 추가
 
             shaderStages.push_back(shaderStageCI);
         }
@@ -214,8 +230,10 @@ namespace vkengine {
 
         std::vector<VkVertexInputAttributeDescription> attributeDescriptions;
 
-        for (const auto& shader : pipelineShaders.at(pipelineName)) {
-            if (shader.stage == VK_SHADER_STAGE_VERTEX_BIT) {
+        for (const auto &shader : pipelineShaders.at(pipelineName))
+        {
+            if (shader.stage == VK_SHADER_STAGE_VERTEX_BIT)
+            {
                 attributeDescriptions = shader.makeVertexInputAttributeDescriptions();
             }
         }
@@ -227,5 +245,56 @@ namespace vkengine {
 
         return attributeDescriptions;
     }
-    
+
+    VkPushConstantRange VKShaderManager::pushConstantsRange(cString pipelineName)
+    {
+        const std::vector<VKshader> &shaders = this->pipelineShaders.at(pipelineName);
+
+        // Search through all shaders in the pipeline for push constants
+        for (const auto &shader : shaders)
+        {
+            const auto &reflectModule = shader.reflectModule;
+
+            // Check if this shader has push constants
+            if (reflectModule.push_constant_block_count > 0)
+            {
+                const SpvReflectBlockVariable *pushBlock = &reflectModule.push_constant_blocks[0];
+
+                VkPushConstantRange pushConstantRange{};
+                pushConstantRange.stageFlags = static_cast<VkShaderStageFlags>(shader.stage);
+                pushConstantRange.offset = 0;
+                pushConstantRange.size = pushBlock->size;
+
+                // Accumulate stage flags from other shaders that also use push constants
+                for (const auto &otherShader : shaders)
+                {
+                    if (otherShader.reflectModule.push_constant_block_count > 0)
+                    {
+                        pushConstantRange.stageFlags |=
+                            static_cast<VkShaderStageFlags>(otherShader.stage);
+                    }
+                }
+
+                return pushConstantRange;
+            }
+        }
+
+        // Return empty range if no push constants found
+        VkPushConstantRange emptyRange{};
+        emptyRange.stageFlags = 0;
+        emptyRange.offset = 0;
+        emptyRange.size = 0;
+        return emptyRange;
+    }
+
+    const std::unordered_map<cString, std::vector<VKshader>> &VKShaderManager::getPipelineShaders() const
+    {
+        return pipelineShaders;
+    }
+
+    const std::vector<LayoutInfo> &VKShaderManager::getLayoutInfos() const
+    {
+        return layoutInfos;
+    }
+
 }

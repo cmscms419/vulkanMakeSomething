@@ -3,7 +3,7 @@
 
 #include "VKContext.h"
 #include "VKImage2D.h"
-#include "VKsampler.h"
+#include "VKSamplerHandler.h"
 #include "VKResourceBindingData.h"
 
 namespace vkengine {
@@ -41,8 +41,8 @@ namespace vkengine {
         VKImage2D irradiance;  // Convolved irradiance cubemap for diffuse
         VKImage2D brdfLUT;     // BRDF integration lookup texture
 
-        VKSampler samplerLinearRepeat;
-        VKSampler samplerLinearClamp;
+        VKSamplerHandler samplerLinearRepeat;
+        VKSamplerHandler samplerLinearClamp;
 
         VkDescriptorSetLayout descriptorSetLayout_{ VK_NULL_HANDLE };
         VkDescriptorSet descriptorSet_{ VK_NULL_HANDLE };
@@ -51,4 +51,4 @@ namespace vkengine {
 
 }
 
-#endif INCLUDE_VK_SKY_TEXTURE_H_
+#endif // INCLUDE_VK_SKY_TEXTURE_H_

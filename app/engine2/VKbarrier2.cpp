@@ -1,8 +1,18 @@
 ﻿#include "VKbarrier2.h"
-
+#include "helper.h"
+#include "log.h"
 using namespace vkengine::Log;
 
 namespace vkengine {
+    VKBarrierHelper::VKBarrierHelper()
+    {
+        currentLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        currentAccess = VK_ACCESS_2_NONE;
+        currentStage = VK_PIPELINE_STAGE_2_NONE;
+        format = VK_FORMAT_UNDEFINED;
+        mipLevels = 1;
+        arrayLayers = 1;
+    }
 
     VkCommandBuffer VKBarrierHelper::beginSingleTimeCommands2(VkDevice device, VkCommandPool commandPool, VkCommandBufferLevel level, cBool oneTime)
     {

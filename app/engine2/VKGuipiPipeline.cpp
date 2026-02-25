@@ -1,5 +1,9 @@
 #include "pipeLineHandle.h"
 #include <imgui.h>
+#include <array>
+
+#include "log.h"
+#include "macros.h"
 
 using namespace vkengine::Log;
 

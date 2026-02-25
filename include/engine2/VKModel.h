@@ -3,14 +3,14 @@
 
 #include "common.h"
 #include "material.h"
-#include "log.h"
+
 #include <memory>
 
 #include "VKContext.h"
 #include "VKMaterial.h"
 #include "VKMesh.h"
 #include "VKModelNode.h"
-#include "VKSampler.h"
+#include "VKSamplerHandler.h"
 #include "VKImage2D.h"
 #include "VKUniformBuffer2.h"
 #include "VKAnimation.h"
@@ -32,7 +32,7 @@ class VKModel
     void cleanup();
     void createVulkanResources();
 
-    void createDescriptorManager2(VKSampler& sampler, VKImage2D& dummyTexture);
+    void createDescriptorManager2(VKSamplerHandler& sampler, VKImage2D& dummyTexture);
 
     // VKAnimation methods - ADD THESE
     void updateAnimation(float deltaTime);
@@ -187,19 +187,19 @@ class VKModel
     std::unique_ptr<VKModelNode> rootNode;
     std::unique_ptr<VKAnimation> animation;
 
-    cMat4 globalInverseTransform = cMat4(1.0f);
+    cMat4 globalInverseTransform;
 
     // Bounding box
-    cVec3 boundingBoxMin = cVec3(FLT_MAX);
-    cVec3 boundingBoxMax = cVec3(-FLT_MAX);
+    cVec3 boundingBoxMin;
+    cVec3 boundingBoxMax;
 
-    std::vector<VKUniformBuffer2<cMaterial2>> materialUBO{};
-    std::vector<DescriptorSetHander> materialDescriptorSetHander{};
+    std::vector<VKUniformBuffer2<cMaterial2>> materialUBO;
+    std::vector<DescriptorSetHander> materialDescriptorSetHander;
 
-    cString name{};
-    cBool visible = true;
-    cMat4 modelMatrix = cMat4(1.0f);
-    cFloat coeffs[16] = {0.0f}; // 여러가지 옵션에 사용
+    cString name;
+    cBool visible;
+    cMat4 modelMatrix;
+    cFloat coeffs[16]; // 여러가지 옵션에 사용
 
     void calculateBoundingBox();
 };

@@ -14,7 +14,8 @@ namespace vkengine {
     public:
         VKPushConstants(VKcontext& context) : context(context)
         {
-
+            VkShaderStageFlags stageFlags = VK_SHADER_STAGE_ALL;
+            T data = {};
         }
 
         T& getData() {
@@ -45,9 +46,8 @@ namespace vkengine {
 
     private:
         VKcontext& context;
-        
-        VkShaderStageFlags stageFlags{ VK_SHADER_STAGE_ALL };
-        T data{};
+        VkShaderStageFlags stageFlags;
+        T data;
     };
 
 }

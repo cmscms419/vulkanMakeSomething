@@ -1,7 +1,6 @@
 ﻿#pragma once
 
 #include "common.h"
-#include "log.h"
 
 #include <assimp/Importer.hpp>
 #include <assimp/postprocess.h>

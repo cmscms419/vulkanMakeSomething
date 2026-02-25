@@ -7,6 +7,7 @@
 #include <cstring>
 #include <filesystem>
 #include <glm/gtx/string_cast.hpp>
+#include "log.h"
 
 namespace vkengine {
 
@@ -18,6 +19,14 @@ VKModel::VKModel(VKcontext& ctx) : ctx(ctx)
     // Initialize animation system - ADD THIS
     animation = std::make_unique<VKAnimation>();
     meshes.emplace_back(this->createMesh());
+    globalInverseTransform = cMat4(1.0f);
+    boundingBoxMin = cVec3(FLT_MAX);
+    boundingBoxMax = cVec3(-FLT_MAX);
+    materialDescriptorSetHander = {};
+    name = "";
+    visible = true;
+    modelMatrix = cMat4(1.0f);
+    std::fill(std::begin(coeffs), std::end(coeffs), 0.0f);
 }
 
 VKModel::VKModel(VKModel&& other) noexcept
@@ -44,7 +53,7 @@ VKModel::~VKModel()
     cleanup();
 }
 
-void VKModel::createDescriptorManager2(VKSampler& sampler, VKImage2D& dummyTexture)
+void VKModel::createDescriptorManager2(VKSamplerHandler& sampler, VKImage2D& dummyTexture)
 {
     for (size_t i = 0; i < materials.size(); i++) {
         auto& mat = materials[i];

@@ -5,7 +5,7 @@
 #include "material.h"
 
 #include "VKContext.h"
-#include "VKSampler.h"
+#include "VKSamplerHandler.h"
 #include "VKImage2D.h"
 #include "VKResourceBindingData.h"
 #include "VKDescriptorManager2.h"
@@ -16,26 +16,7 @@ namespace vkengine {
 class VKMaterial
 {
   public:
-    VKMaterial()
-    {
-        ubo.emissiveFactor = cVec4(0.0f, 0.0f, 0.0f, 0.0f);
-        ubo.baseColorFactor = cVec4(1.0f, 1.0f, 1.0f, 1.0f);
-        ubo.roughness = 1.0f;
-        ubo.transparencyFactor = 1.0f;
-        ubo.discardAlpha = 0.0f;
-        ubo.metallicFactor = 0.0f;
-        // TODO: maybe add occlusionStrength and normalScale
-
-        // 텍스쳐 배열에 대한 인덱스
-        ubo.baseColorTextureIndex = -1;
-        ubo.emissiveTextureIndex = -1;
-        ubo.normalTextureIndex = -1;
-        ubo.opacityTextureIndex = -1;
-        ubo.metallicRoughnessTextureIndex = -1;
-        ubo.occlusionTextureIndex = -1;
-        // ubo.flags = sCastShadow | sReceiveShadow;
-    }
-
+  VKMaterial();
     enum Flags {
         sCastShadow = 0x1,
         sReceiveShadow = 0x2,

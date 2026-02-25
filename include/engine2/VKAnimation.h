@@ -3,9 +3,10 @@
 
 #include "common.h"
 
+#include <vector>
+#include <unordered_map>
 #include <cString>
 #include <memory>
-#include <glm/gtc/type_ptr.hpp>
 #include <assimp/scene.h>
 #include <assimp/anim.h>
 

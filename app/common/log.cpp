@@ -1,6 +1,5 @@
 #include "log.h"
 
-
 namespace vkengine
 {
     namespace Log

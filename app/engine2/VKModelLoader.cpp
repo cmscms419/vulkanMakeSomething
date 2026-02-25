@@ -3,6 +3,9 @@
 #include "VKModelLoader.h"
 #include "VKModel.h"
 #include "VKContext.h"
+#include "VKMaterial.h"
+
+#include "log.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #define STB_IMAGE_WRITE_IMPLEMENTATION
@@ -20,6 +23,7 @@ namespace vkengine {
 
     ModelLoader::ModelLoader(VKModel& model) : model(model)
     {
+        directory = "";
     }
 
     void ModelLoader::loadFromModelFile(const string& modelFilename, bool readBistroObj)

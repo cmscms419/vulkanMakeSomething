@@ -1,5 +1,7 @@
 #include "VKwindow.h"
 
+#include "log.h"
+
 using namespace vkengine::Log;
 
 namespace vkengine {

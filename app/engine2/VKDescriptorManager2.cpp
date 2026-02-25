@@ -1,8 +1,26 @@
 ﻿#include "VKDescriptorManager2.h"
 
+#include <fstream>
+#include <sstream>
+
+#include "type.h"
+#include "helper.h"
+#include "log.h"
+
 using namespace vkengine::Log;
+        
+static VkDescriptorSetLayout NULL_P = VK_NULL_HANDLE;
 
 namespace vkengine {
+
+    DescriptorManager2::DescriptorManager2(VkDevice& device) : logicaldevice(device) {
+        descriptorPools = {};
+        layoutsAndInfos = {};
+        allocatedTypeCounts_ = {};
+        remainingTypeCounts_ = {};
+        allocatedSets_ = 0;
+        remainingSets_ = 0;
+    }
 
     const std::vector<VkDescriptorSetLayoutBinding>& DescriptorManager2::layoutToBindings(const VkDescriptorSetLayout& layout)
     {
@@ -71,8 +89,7 @@ namespace vkengine {
         }
     }
 
-    cBool DescriptorManager2::canAllocateFromRemaining(const std::unordered_map
-        <VkDescriptorType, cUint32_t>& requiredTypeCounts, cUint32_t requiredNumSets) const
+    cBool DescriptorManager2::canAllocateFromRemaining(const std::unordered_map<VkDescriptorType, cUint32_t>& requiredTypeCounts, cUint32_t requiredNumSets) const
     {
         if (this->descriptorPools.empty()) return false;
 
@@ -259,8 +276,8 @@ namespace vkengine {
                 return storedLayout;  // 값 반환
             }
         }
-        EXIT_TO_LOGGER("Error: Descriptor set layout with the specified bindings not found.\n");
-        return VK_NULL_HANDLE;  // 예외 처리 (실제로는 실행되지 않음)
+
+        return NULL_P;  // 예외 처리 (실제로는 실행되지 않음)
     }
 
     void DescriptorManager2::cleanup()

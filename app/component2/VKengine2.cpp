@@ -1,5 +1,8 @@
 ﻿#include "VKengine2.h"
 
+#include "log.h"
+#include "helper.h"
+
 namespace vkengine
 {
     VulkanEngineWin2* loadedEngine = nullptr;
@@ -11,6 +14,13 @@ namespace vkengine
     
     VulkanEngineWin2::VulkanEngineWin2(cBool useSwapchain)
     {
+        _isInitialized = false;
+        stop_rendering = false;
+        framebufferResized = false;
+        shouldClose = false;
+        currentFrame = 0;
+        currentSemaphore = 0;
+
         this->window = platform::WindowFactory::create(
             platform::WindowFactory::Backend::GLFW,
             this->createInfo);

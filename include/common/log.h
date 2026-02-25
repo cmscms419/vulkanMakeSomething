@@ -6,6 +6,7 @@
 
 #include <fstream>
 #include <iostream>
+#include <cassert>
 
 namespace vkengine {
     namespace Log {

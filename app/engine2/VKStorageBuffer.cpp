@@ -1,15 +1,31 @@
 #include "VKStorageBuffer.h"
 
-namespace vkengine {
+#include "macros.h"
 
-    void VKStorgeBuffer::create(VkDeviceSize size, VkBufferUsageFlags additionalUsage) {
-
+namespace vkengine
+{
+    VKStorgeBuffer::VKStorgeBuffer(VKcontext &ctx) : ctx(ctx)
+    {
+        VkBuffer buffer = VK_NULL_HANDLE;
+        VkDeviceMemory memory = VK_NULL_HANDLE;
+        VkDeviceSize size = 0;
+        void *mapped = nullptr;
+        bool hostVisible = false;
     }
 
-
-    void* VKStorgeBuffer::map()
+    VKStorgeBuffer::~VKStorgeBuffer()
     {
-        if (!hostVisible || mapped != nullptr || buffer == VK_NULL_HANDLE) {
+        this->cleanup();
+    }
+
+    void VKStorgeBuffer::create(VkDeviceSize size, VkBufferUsageFlags additionalUsage)
+    {
+    }
+
+    void *VKStorgeBuffer::map()
+    {
+        if (!hostVisible || mapped != nullptr || buffer == VK_NULL_HANDLE)
+        {
             return mapped;
         }
 
@@ -20,25 +36,29 @@ namespace vkengine {
 
     void VKStorgeBuffer::unmap()
     {
-        if (mapped != nullptr && buffer != VK_NULL_HANDLE) {
+        if (mapped != nullptr && buffer != VK_NULL_HANDLE)
+        {
             const VkDevice device = this->ctx.getDevice()->logicaldevice;
             vkUnmapMemory(device, memory);
             mapped = nullptr;
         }
     }
 
-    void VKStorgeBuffer::copyData(const void* data, VkDeviceSize size, VkDeviceSize offset)
+    void VKStorgeBuffer::copyData(const void *data, VkDeviceSize size, VkDeviceSize offset)
     {
         if (buffer == VK_NULL_HANDLE)
             return;
 
-        if (hostVisible) {
-            void* mappedData = map();
-            if (mappedData) {
-                memcpy(static_cast<char*>(mappedData) + offset, data, size);
+        if (hostVisible)
+        {
+            void *mappedData = map();
+            if (mappedData)
+            {
+                memcpy(static_cast<char *>(mappedData) + offset, data, size);
             }
         }
-        else {
+        else
+        {
             // Use staging buffer for device-local memory
             const VkDevice device = this->ctx.getDevice()->logicaldevice;
 
@@ -46,7 +66,7 @@ namespace vkengine {
             VkBuffer stagingBuffer;
             VkDeviceMemory stagingMemory;
 
-            VkBufferCreateInfo stagingBufferInfo{ VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO };
+            VkBufferCreateInfo stagingBufferInfo{VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO};
             stagingBufferInfo.size = size;
             stagingBufferInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
             _VK_CHECK_RESULT_(vkCreateBuffer(device, &stagingBufferInfo, nullptr, &stagingBuffer));
@@ -54,7 +74,7 @@ namespace vkengine {
             VkMemoryRequirements memRequirements;
             vkGetBufferMemoryRequirements(device, stagingBuffer, &memRequirements);
 
-            VkMemoryAllocateInfo allocInfo{ VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO };
+            VkMemoryAllocateInfo allocInfo{VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO};
             allocInfo.allocationSize = memRequirements.size;
             allocInfo.memoryTypeIndex = ctx.getMemoryTypeIndex(
                 memRequirements.memoryTypeBits,
@@ -64,7 +84,7 @@ namespace vkengine {
             _VK_CHECK_RESULT_(vkBindBufferMemory(device, stagingBuffer, stagingMemory, 0));
 
             // Copy data to staging buffer
-            void* stagingMapped;
+            void *stagingMapped;
             _VK_CHECK_RESULT_(vkMapMemory(device, stagingMemory, 0, size, 0, &stagingMapped));
             memcpy(stagingMapped, data, size);
             vkUnmapMemory(device, stagingMemory);
@@ -101,12 +121,14 @@ namespace vkengine {
 
         unmap();
 
-        if (buffer != VK_NULL_HANDLE) {
+        if (buffer != VK_NULL_HANDLE)
+        {
             vkDestroyBuffer(device, buffer, nullptr);
             buffer = VK_NULL_HANDLE;
         }
 
-        if (memory != VK_NULL_HANDLE) {
+        if (memory != VK_NULL_HANDLE)
+        {
             vkFreeMemory(device, memory, nullptr);
             memory = VK_NULL_HANDLE;
         }

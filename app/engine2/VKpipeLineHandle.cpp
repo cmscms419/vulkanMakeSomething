@@ -1,16 +1,53 @@
 ﻿#include "pipeLineHandle.h"
 
+#include "log.h"
+#include "helper.h"
+
 using namespace vkengine::Log;
 
-namespace vkengine {
+namespace vkengine
+{
+    PipeLineHandle::PipeLineHandle(VKcontext &context, VKShaderManager &shaderManager) : ctx(context), shaderManager(shaderManager)
+    {
+        pipelineLayout = VK_NULL_HANDLE;
+        pipeline = VK_NULL_HANDLE;
+    }
+
+    PipeLineHandle::PipeLineHandle(VKcontext &ctx, VKShaderManager &shaderManager, cString Name, VkFormat outColorFormat, VkFormat depthFormat, VkSampleCountFlagBits msaaSamples) : ctx(ctx), shaderManager(shaderManager), name(Name)
+    {
+        createByName(name, outColorFormat, depthFormat, msaaSamples);
+    }
+
+    PipeLineHandle::PipeLineHandle(PipeLineHandle &&other) noexcept : ctx(other.ctx), shaderManager(other.shaderManager), pipelineLayout(other.pipelineLayout), pipeline(other.pipeline), name(std::move(other.name))
+    {
+        other.pipelineLayout = VK_NULL_HANDLE;
+        other.pipeline = VK_NULL_HANDLE;
+    }
+
+    PipeLineHandle &PipeLineHandle::operator=(PipeLineHandle &&other) noexcept
+    {
+        if (this != &other)
+        {
+            cleanup();
+
+            pipelineLayout = other.pipelineLayout;
+            pipeline = other.pipeline;
+            name = std::move(other.name);
+            other.pipelineLayout = VK_NULL_HANDLE;
+            other.pipeline = VK_NULL_HANDLE;
+        }
+        return *this;
+    }
 
     void PipeLineHandle::cleanup()
     {
-        if (pipeline != VK_NULL_HANDLE) {
+        if (pipeline != VK_NULL_HANDLE)
+        {
             vkDestroyPipeline(ctx.getDevice()->logicaldevice, pipeline, nullptr);
             pipeline = VK_NULL_HANDLE;
         }
-        if (pipelineLayout != VK_NULL_HANDLE) {
+        if (pipelineLayout != VK_NULL_HANDLE)
+        {
             vkDestroyPipelineLayout(ctx.getDevice()->logicaldevice, pipelineLayout, nullptr);
             pipelineLayout = VK_NULL_HANDLE;
         }
@@ -25,11 +62,13 @@ namespace vkengine {
 
         VkPipelineLayoutCreateInfo pipelineLayoutCI = helper::pipeline::pipelineLayoutCreateInfo(layouts.data(), static_cast<cUint32_t>(layouts.size()));
 
-        if (pushConstantRange.size > 0) {
+        if (pushConstantRange.size > 0)
+        {
             pipelineLayoutCI.pushConstantRangeCount = 1;
             pipelineLayoutCI.pPushConstantRanges = &pushConstantRange;
         }
-        else {
+        else
+        {
             pipelineLayoutCI.pushConstantRangeCount = 0;
             pipelineLayoutCI.pPushConstantRanges = nullptr;
         }
@@ -46,12 +85,12 @@ namespace vkengine {
 
         createCommon();
 
-        if (name == "sample_pipeline") {
+        if (name == "sample_pipeline")
+        {
             createSquarePipeline(
                 outColorFormat.value(),
                 depthFormat.value(),
-                msaaSamples.value()
-            );
+                msaaSamples.value());
         }
         else if (name == "gui")
         {
@@ -64,8 +103,7 @@ namespace vkengine {
                 this->createSkyboxPipeline(
                     outColorFormat.value(),
                     depthFormat.value(),
-                    msaaSamples.value()
-                );
+                    msaaSamples.value());
             }
             else
             {
@@ -74,12 +112,10 @@ namespace vkengine {
         }
         else if (name == "post")
         {
-            this->createPostProcessingPipeLine
-            (
+            this->createPostProcessingPipeLine(
                 outColorFormat.value(),
                 depthFormat.value(),
-                msaaSamples.value()
-            );
+                msaaSamples.value());
         }
         else if (name == "ssao")
         {
@@ -88,21 +124,19 @@ namespace vkengine {
         else if (name == "shadowMap")
         {
             this->createShadowMapPipeline(
-                depthFormat.value()
-            );
+                depthFormat.value());
         }
         else if (name == "pbrForward")
         {
             this->createForwardPBRPipeline(
                 outColorFormat.value(),
                 depthFormat.value(),
-                msaaSamples.value()
-            );
+                msaaSamples.value());
         }
-        else {
+        else
+        {
             PRINT_TO_LOGGER("Error: Unknown pipeline name: " + name);
         }
-
     }
 
 }

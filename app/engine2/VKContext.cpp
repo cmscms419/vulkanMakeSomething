@@ -1,11 +1,25 @@
 ﻿#include "VKContext.h"
 
+#include <map>
+
+#include "data.h"
+#include "log.h"
+#include "debug.h"
+
+#include "helper.h"
+
 using namespace vkengine::Log;
 
 namespace vkengine {
     VKcontext::VKcontext(const std::vector<const char*>& requiredInstanceExtensions, cBool useSwapchain)
         : descriptorManager2(VKdevice.logicaldevice)
     {
+        VKinstance = VK_NULL_HANDLE;
+        VKpipelineCache = VK_NULL_HANDLE;
+        VKdepthStencill = {};
+        VKdebugUtilsMessenger = VK_NULL_HANDLE;  // 디버그 메신저 -> 디버깅을 위한 메신저
+        useDepthStencil = false;
+
         this->createInstance(requiredInstanceExtensions);
 
         if (enableValidationLayers)

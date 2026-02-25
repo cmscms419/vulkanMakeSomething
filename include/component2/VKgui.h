@@ -7,7 +7,7 @@
 #include "VKContext.h"
 #include "VKbuffer2.h"
 #include "VKImage2D.h"
-#include "VKsampler.h"
+#include "VKSamplerHandler.h"
 #include "VKShaderManager.h"
 #include "VKDescriptorManager2.h"
 #include "VKDescriptorSet.h"
@@ -47,7 +47,7 @@ namespace vkengine {
             cUint32_t indexCount = 0;
 
             VKImage2D fontImage;
-            VKSampler fontSampler;
+            VKSamplerHandler fontSampler;
             PipeLineHandle pipelineHandle;
 
             DescriptorSetHander fontSet;

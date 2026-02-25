@@ -1,7 +1,9 @@
 ﻿#include "VKAnimation.h"
+
 #include "log.h"
 #include <algorithm>
 #include <functional>
+
 #include <glm/gtx/matrix_interpolation.hpp>
 #include <glm/gtc/type_ptr.hpp> 
 // glm::make_mat4를 사용하기 위해서 다시 선언한다.

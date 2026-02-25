@@ -4,13 +4,17 @@
 #include "VKcontext.h"
 #include "VKShader.h"
 
+#include <map>
+#include <unordered_map>
+#include <vector>
+
 namespace vkengine {
 
     class VKShaderManager
     {
     public:
-        VKShaderManager(VKcontext& ctx, cString path,
-            const std::initializer_list<std::pair<cString, std::vector<cString>>>& pipelineShaders);
+        VKShaderManager(VKcontext& ctx, cString path, const std::initializer_list<std::pair<cString, std::vector<cString>>>& pipelineShaders);
+        
         VKShaderManager(const VKShaderManager&) = delete;
 
         VKShaderManager& operator=(const VKShaderManager&) = delete;
@@ -19,42 +23,7 @@ namespace vkengine {
 
         void cleanup();
 
-        VkPushConstantRange pushConstantsRange(cString pipelineName)
-        {
-            const std::vector<VKshader>& shaders = this->pipelineShaders.at(pipelineName);
-
-            // Search through all shaders in the pipeline for push constants
-            for (const auto& shader : shaders) {
-                const auto& reflectModule = shader.reflectModule;
-
-                // Check if this shader has push constants
-                if (reflectModule.push_constant_block_count > 0) {
-                    const SpvReflectBlockVariable* pushBlock = &reflectModule.push_constant_blocks[0];
-
-                    VkPushConstantRange pushConstantRange{};
-                    pushConstantRange.stageFlags = static_cast<VkShaderStageFlags>(shader.stage);
-                    pushConstantRange.offset = 0;
-                    pushConstantRange.size = pushBlock->size;
-
-                    // Accumulate stage flags from other shaders that also use push constants
-                    for (const auto& otherShader : shaders) {
-                        if (otherShader.reflectModule.push_constant_block_count > 0) {
-                            pushConstantRange.stageFlags |=
-                                static_cast<VkShaderStageFlags>(otherShader.stage);
-                        }
-                    }
-
-                    return pushConstantRange;
-                }
-            }
-            
-            // Return empty range if no push constants found
-            VkPushConstantRange emptyRange{};
-            emptyRange.stageFlags = 0;
-            emptyRange.offset = 0;
-            emptyRange.size = 0;
-            return emptyRange;
-        }
+        VkPushConstantRange pushConstantsRange(cString pipelineName);
 
         std::vector<VkPipelineShaderStageCreateInfo> createPipelineShaderStageCIs(cString pipelineName) const;
 
@@ -62,15 +31,9 @@ namespace vkengine {
 
         /*std::vector<VkDescriptorSetLayoutBinding> collectPerPipelineBindings() const;*/
 
-        const std::unordered_map<cString, std::vector<VKshader>>& getPipelineShaders() const
-        {
-            return pipelineShaders;
-        }
+        const std::unordered_map<cString, std::vector<VKshader>>& getPipelineShaders() const;
 
-        const std::vector<LayoutInfo>& getLayoutInfos() const
-        {
-            return layoutInfos;
-        }
+        const std::vector<LayoutInfo>& getLayoutInfos() const;
 
     private:
         VKcontext& ctx;

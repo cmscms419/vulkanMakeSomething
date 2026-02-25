@@ -2,6 +2,42 @@
   "version": "2.0.0",
   "tasks": [
     {
+      "label": "Build: common (Debug)",
+      "type": "shell",
+      "command": "C:/Program Files/Microsoft Visual Studio/2022/Community/MSBuild/Current/Bin/MSBuild.exe",
+      "args": [
+        "${workspaceFolder}/Project/common/common.vcxproj",
+        "/p:Configuration=Debug",
+        "/p:Platform=x64",
+        "/p:SolutionDir=${workspaceFolder}/Project/",
+        "/v:minimal"
+      ],
+      "group": "build",
+      "problemMatcher": "$msCompile",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "Build: common (Release)",
+      "type": "shell",
+      "command": "C:/Program Files/Microsoft Visual Studio/2022/Community/MSBuild/Current/Bin/MSBuild.exe",
+      "args": [
+        "${workspaceFolder}/Project/common/common.vcxproj",
+        "/p:Configuration=Release",
+        "/p:Platform=x64",
+        "/p:SolutionDir=${workspaceFolder}/Project/",
+        "/v:minimal"
+      ],
+      "group": "build",
+      "problemMatcher": "$msCompile",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      }
+    },
+    {
       "label": "Build: basicEngine2 (Debug)",
       "type": "shell",
       "command": "C:/Program Files/Microsoft Visual Studio/2022/Community/MSBuild/Current/Bin/MSBuild.exe",
@@ -39,6 +75,30 @@
       ],
       "dependsOn": [
         "Build: common (Debug)"
+      ],
+      "dependsOrder": "sequence",
+      "group": "build",
+      "problemMatcher": "$msCompile",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "Build: 05_postprocessing (Debug)",
+      "type": "shell",
+      "command": "C:/Program Files/Microsoft Visual Studio/2022/Community/MSBuild/Current/Bin/MSBuild.exe",
+      "args": [
+        "${workspaceFolder}/Project/05.postprocessing/05.postprocessing.vcxproj",
+        "/p:Configuration=Debug",
+        "/p:Platform=x64",
+        "/p:SolutionDir=${workspaceFolder}/Project/",
+        "/v:minimal"
+      ],
+      "dependsOn": [
+        "Build: common (Debug)",
+        "Build: basicEngine2 (Debug)",
+        "Build: component2 (Debug)"
       ],
       "dependsOrder": "sequence",
       "group": "build",

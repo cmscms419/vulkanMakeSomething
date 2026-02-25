@@ -1,5 +1,8 @@
 ﻿#include "pipeLineHandle.h"
 
+#include "data.h"
+#include "helper.h"
+
 using namespace vkengine::Log;
 
 namespace vkengine {

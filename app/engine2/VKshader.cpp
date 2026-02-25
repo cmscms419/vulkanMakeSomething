@@ -1,5 +1,10 @@
 ﻿#include "VKshader.h"
 
+#include <algorithm>
+
+#include "log.h"
+#include "helper.h"
+
 using namespace vkengine::Log;
 
 namespace vkengine {
@@ -7,13 +12,11 @@ namespace vkengine {
     VKshader::VKshader(VKcontext& ctx, cString filepath)
         : ctx(ctx)
     {
-        this->name = helper::file::extractFilename(filepath);
-
         std::vector<cChar> shaderCode = helper::file::readSPVFile(filepath);
-        
         this->module = helper::shader::createShaderModule(this->ctx.getDevice()->logicaldevice, shaderCode);
         this->reflectModule = helper::shader::createSpvReflectModule(shaderCode);
         this->stage = static_cast<VkShaderStageFlagBits>(this->reflectModule.shader_stage);
+        this->name = helper::file::extractFilename(filepath);
     }
 
     VKshader::VKshader(VKshader&& other) noexcept

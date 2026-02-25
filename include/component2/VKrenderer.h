@@ -3,6 +3,7 @@
 
 #include "log.h"
 #include "resourseload.h"
+#include "data.h"
 #include "ubo.h"
 #include "config.h"
 
@@ -11,7 +12,7 @@
 #include "VKContext.h"
 #include "VKImage2D.h"
 #include "VKStorageBuffer.h"
-#include "VKSampler.h"
+#include "VKSamplerHandler.h"
 #include "VKSkyTexture.h"
 #include "pipeLineHandle.h"
 #include "VKDepthStencil.h"
@@ -138,10 +139,10 @@ namespace vkengine {
         VKImage2D dummyTexture;
         VKskyTexture skyTextures;
 
-        VKSampler samplerLinearRepeat;
-        VKSampler samplerLinearClamp;
-        VKSampler samplerAnisoRepeat;
-        VKSampler samplerAnisoClamp;
+        VKSamplerHandler samplerLinearRepeat;
+        VKSamplerHandler samplerLinearClamp;
+        VKSamplerHandler samplerAnisoRepeat;
+        VKSamplerHandler samplerAnisoClamp;
 
         VKShadowMap shadowMap;
 
@@ -158,20 +159,20 @@ namespace vkengine {
         CullingStats cullingStats;
 
         // Control parameters
-        cFloat directionalLightAngle1 = 27.0f;
-        cFloat directionalLightAngle2 = 3.0f;
-        cFloat directionalLightIntensity = 27.66f;
+        cFloat directionalLightAngle1;
+        cFloat directionalLightAngle2;
+        cFloat directionalLightIntensity;
 
         // Shadow mapping bias parameters for real-time adjustment
-        cFloat shadowBiasConstant = 0.5f; // Constant bias factor
-        cFloat shadowBiasSlope = 1.0f;    // Slope-scaled bias factor
-        cFloat shadowBiasClamp = 0.0f;    // Bias clamp value
+        cFloat shadowBiasConstant;
+        cFloat shadowBiasSlope;
+        cFloat shadowBiasClamp;
 
         // SSAO parameters
-        cFloat ssaoRadius = 0.5f;
-        cFloat ssaoBias = 0.025f;
-        cInt ssaoSampleCount = 16;
-        cFloat ssaoPower = 2.0f;
+        cFloat ssaoRadius;
+        cFloat ssaoBias;
+        cInt ssaoSampleCount;
+        cFloat ssaoPower;
 
         // Helper functions for creating rendering structures
         // 컬러 어태치먼트 정보 생성 - MSAA resolve 지원

@@ -1,25 +1,41 @@
-#include "VKsampler.h"
+#include "VKSamplerHandler.h"
+#include "log.h"
 
 using namespace vkengine::Log;
 
 namespace vkengine
 {
-    void VKSampler::createAnisoRepeat()
+
+    VKSamplerHandler::VKSamplerHandler(VKcontext &context) : ctx(context)
+    {
+        Log::PRINT_TO_LOGGER("VK Sampler created.\n");
+        sampler = VK_NULL_HANDLE;
+    }
+
+    VKSamplerHandler::~VKSamplerHandler()
+    {
+        this->cleanup();
+        Log::PRINT_TO_LOGGER("VK Sampler destroyed.\n");
+    }
+    
+    VkSampler VKSamplerHandler::getSampler() const { return sampler; }
+
+    void VKSamplerHandler::createAnisoRepeat()
     {
         cleanup();
 
-        VkSamplerCreateInfo samplerInfo{ VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO };
+        VkSamplerCreateInfo samplerInfo{VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO};
         samplerInfo.pNext = nullptr;
         samplerInfo.flags = 0;
 
         samplerInfo.magFilter = VK_FILTER_LINEAR;
         samplerInfo.minFilter = VK_FILTER_LINEAR;
         samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
-        
+
         samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
         samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
         samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-        
+
         VkPhysicalDeviceFeatures deviceFeatures{};
         vkGetPhysicalDeviceFeatures(this->ctx.getDevice()->physicalDevice, &deviceFeatures);
 
@@ -38,23 +54,20 @@ namespace vkengine
             PRINT_TO_LOGGER("Warning: Anisotropic filtering is not supported on this device.\n");
         }
 
-        
-        
         samplerInfo.compareEnable = VK_FALSE;
         samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
 
         samplerInfo.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK;
         samplerInfo.unnormalizedCoordinates = VK_FALSE;
-        
+
         samplerInfo.mipLodBias = 0.0f;
         samplerInfo.minLod = 0.0f;
         samplerInfo.maxLod = VK_LOD_CLAMP_NONE;
 
         _VK_CHECK_RESULT_(vkCreateSampler(ctx.getDevice()->logicaldevice, &samplerInfo, nullptr, &sampler));
-
     }
-    
-    void VKSampler::createAnisoClamp()
+
+    void VKSamplerHandler::createAnisoClamp()
     {
         cleanup();
 
@@ -104,8 +117,8 @@ namespace vkengine
 
         _VK_CHECK_RESULT_(vkCreateSampler(ctx.getDevice()->logicaldevice, &samplerInfo, nullptr, &sampler));
     }
-    
-    void VKSampler::createLinearRepeat()
+
+    void VKSamplerHandler::createLinearRepeat()
     {
         cleanup();
 
@@ -151,8 +164,8 @@ namespace vkengine
 
         _VK_CHECK_RESULT_(vkCreateSampler(ctx.getDevice()->logicaldevice, &samplerInfo, nullptr, &sampler));
     }
-    
-    void VKSampler::createLinearClamp()
+
+    void VKSamplerHandler::createLinearClamp()
     {
         cleanup();
 
@@ -198,8 +211,8 @@ namespace vkengine
 
         _VK_CHECK_RESULT_(vkCreateSampler(ctx.getDevice()->logicaldevice, &samplerInfo, nullptr, &sampler));
     }
-    
-    void VKSampler::cleanup()
+
+    void VKSamplerHandler::cleanup()
     {
         if (sampler != VK_NULL_HANDLE)
         {
@@ -208,4 +221,3 @@ namespace vkengine
         }
     }
 }
-

@@ -7,8 +7,6 @@
 #include "VKCommadBufferHander.h"
 #include "VKdeviceHandler2.h"
 #include "VKDescriptorManager2.h"
-#include "Debug.h"
-#include "log.h"
 
 namespace vkengine {
     class VKcontext
@@ -57,13 +55,13 @@ namespace vkengine {
         void waitGraphicsQueueIdle();
 
     private:
-        VkInstance VKinstance{};                              // Vulkan 인스턴스 -> Vulkan API를 사용하기 위한 인스턴스
+        VkInstance VKinstance;                              // Vulkan 인스턴스 -> Vulkan API를 사용하기 위한 인스턴스
         VKdeviceHandler2 VKdevice;                            // 디바이스 -> GPU Logical,Physical struct Handle
-        VkPipelineCache VKpipelineCache{ VK_NULL_HANDLE };    // 파이프라인 캐시 -> 파이프라인 캐시를 생성
-        depthStencil VKdepthStencill{};                      // 깊이 스텐실 -> 깊이 스텐실 이미지와 메모리
+        VkPipelineCache VKpipelineCache;    // 파이프라인 캐시 -> 파이프라인 캐시를 생성
+        depthStencil VKdepthStencill;                      // 깊이 스텐실 -> 깊이 스텐실 이미지와 메모리
         DescriptorManager2 descriptorManager2;               // 디스크립터 매니저 -> 디스크립터 세트 레이아웃과 디스크립터 풀 관리
-        VkDebugUtilsMessengerEXT VKdebugUtilsMessenger{};  // 디버그 메신저 -> 디버깅을 위한 메신저
-        cBool useDepthStencil = false;
+        VkDebugUtilsMessengerEXT VKdebugUtilsMessenger;  // 디버그 메신저 -> 디버깅을 위한 메신저
+        cBool useDepthStencil;
     };
 }
 

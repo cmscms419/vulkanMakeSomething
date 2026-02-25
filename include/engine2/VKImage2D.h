@@ -121,16 +121,16 @@ namespace vkengine {
     private:
         VKcontext& ctx;
 
-        VkImage image{ VK_NULL_HANDLE };
-        VkDeviceMemory imageMemory{ VK_NULL_HANDLE };
-        VkImageView imageView{ VK_NULL_HANDLE };
-        VkFormat imageFormat{ VK_FORMAT_UNDEFINED };
+        VkImage image;
+        VkDeviceMemory imageMemory;
+        VkImageView imageView;
+        VkFormat imageFormat;
 
-        cUint32_t width{ 0 };
-        cUint32_t height{ 0 };
+        cUint32_t width;
+        cUint32_t height;
 
-        VkImageUsageFlags usageFlags{ 0 };
-        VkImageAspectFlags aspectFlags{ 0 };
+        VkImageUsageFlags usageFlags;
+        VkImageAspectFlags aspectFlags;
 
         VKResourceBinding resourceBinding;
     };

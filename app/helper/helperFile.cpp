@@ -1,4 +1,5 @@
 #include "helperFile.h"
+#include "log.h"
 #include <fstream>
 
 using namespace vkengine::Log;

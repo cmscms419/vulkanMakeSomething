@@ -2,8 +2,6 @@
 #define _VK_BARRIER_H_
 
 #include "common.h"
-#include "helper.h"
-#include "log.h"
 
 namespace vkengine {
 
@@ -11,7 +9,7 @@ namespace vkengine {
     {
     public:
 
-        VKBarrierHelper() = default;
+        VKBarrierHelper();
         // Move constructor
         VKBarrierHelper(VKBarrierHelper&& other) noexcept
             : mipLevels(other.mipLevels),
@@ -155,13 +153,13 @@ namespace vkengine {
             return true;
         }
 
-        VkImageLayout currentLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-        VkAccessFlags2 currentAccess = VK_ACCESS_2_NONE;
-        VkPipelineStageFlags2 currentStage = VK_PIPELINE_STAGE_2_NONE;
+        VkImageLayout currentLayout;
+        VkAccessFlags2 currentAccess;
+        VkPipelineStageFlags2 currentStage;
 
-        VkFormat format{ VK_FORMAT_UNDEFINED };
-        cUint32_t mipLevels{ 1 };
-        cUint32_t arrayLayers{ 1 };
+        VkFormat format;
+        cUint32_t mipLevels;
+        cUint32_t arrayLayers;
 
     };
 

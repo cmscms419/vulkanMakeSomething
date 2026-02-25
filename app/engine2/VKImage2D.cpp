@@ -1,5 +1,13 @@
 ﻿#include "VKImage2D.h"
 
+#include <algorithm>
+
+#include <ktx.h>
+#include <ktxvulkan.h>
+
+#include "log.h"
+#include "helper.h"
+
 using namespace vkengine::Log;
 
 namespace vkengine
@@ -14,6 +22,15 @@ namespace vkengine
 
     VKImage2D::VKImage2D(VKcontext& context) : ctx(context)
     {
+        image = VK_NULL_HANDLE;
+        imageMemory = VK_NULL_HANDLE;
+        imageView = VK_NULL_HANDLE;
+        imageFormat = VK_FORMAT_UNDEFINED;
+        width = 0;
+        height = 0;
+        usageFlags = 0;
+        aspectFlags = 0;
+        resourceBinding = {};
     }
 
     VKImage2D::VKImage2D(VKImage2D&& other) noexcept : ctx(other.ctx),

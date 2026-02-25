@@ -3,7 +3,8 @@
 
 #include "common.h"
 #include "geometry.h"
-#include "log.h"
+
+#include <array>
 
 namespace vkengine
 {

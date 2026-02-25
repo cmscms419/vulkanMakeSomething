@@ -2,9 +2,12 @@
 #define  INCLUDE_VK_WINDOWS_H_
 
 #include "common.h"
-#include "log.h"
+#include "data.h"
 
 #include "Camera2.h"
+
+#include <functional>
+#include <vector>
 
 #include <GLFW/glfw3.h>
 

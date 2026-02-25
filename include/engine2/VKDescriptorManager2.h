@@ -5,11 +5,9 @@
 // 해당 강의 주소 : https://www.honglab.ai/courses/real-time-vulkan
 
 #include "common.h"
-#include "log.h"
-#include "helper.h"
 
-#include <fstream>
-#include <sstream>
+#include <vector>
+#include <unordered_map>
 
 namespace vkengine {
 
@@ -24,7 +22,7 @@ namespace vkengine {
         const std::vector<VkDescriptorSetLayoutBinding>&
             layoutToBindings(const VkDescriptorSetLayout& layout);
 
-        DescriptorManager2(VkDevice& device) : logicaldevice(device) {};
+        DescriptorManager2(VkDevice& device);
         ~DescriptorManager2();
 
         // 스크립트로부터 descriptor pool을 생성한다.
@@ -60,16 +58,16 @@ namespace vkengine {
         VkDevice& logicaldevice;
 
         // Descriptor Pools
-        std::vector<VkDescriptorPool> descriptorPools{};
+        std::vector<VkDescriptorPool> descriptorPools;
 
         // Layouts and their bindings
-        std::vector<std::tuple<VkDescriptorSetLayout, LayoutInfo>> layoutsAndInfos{};
+        std::vector<std::tuple<VkDescriptorSetLayout, LayoutInfo>> layoutsAndInfos;
 
         // Usage tracking
-        std::unordered_map<VkDescriptorType, uint32_t> allocatedTypeCounts_{};
-        std::unordered_map<VkDescriptorType, uint32_t> remainingTypeCounts_{};
-        uint32_t allocatedSets_ = 0;
-        uint32_t remainingSets_ = 0;
+        std::unordered_map<VkDescriptorType, uint32_t> allocatedTypeCounts_;
+        std::unordered_map<VkDescriptorType, uint32_t> remainingTypeCounts_;
+        uint32_t allocatedSets_;
+        uint32_t remainingSets_;
 
         const cString kScriptFilename_ = "DescriptorPoolSize.txt";
     };

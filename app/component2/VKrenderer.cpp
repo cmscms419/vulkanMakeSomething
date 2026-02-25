@@ -13,6 +13,16 @@ namespace vkengine {
         skyTextures(ctx), shadowMap(ctx), samplerLinearRepeat(ctx), samplerLinearClamp(ctx),
         samplerAnisoRepeat(ctx), samplerAnisoClamp(ctx), forwardToCompute(ctx), computeToPost(ctx)
     {
+        directionalLightAngle1 = 27.0f;
+        directionalLightAngle2 = 3.0f;
+        directionalLightIntensity = 27.66f;
+        shadowBiasConstant = 0.5f;
+        shadowBiasSlope = 1.0f;
+        shadowBiasClamp = 0.0f;
+        ssaoRadius = 0.5f;
+        ssaoBias = 0.025f;
+        ssaoSampleCount = 16;
+        ssaoPower = 2.0f;
     }
     
     VKforwardRenderer::~VKforwardRenderer()

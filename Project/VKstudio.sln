@@ -75,6 +75,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "shader", "shader", "{139851
 		..\shader\triangle.vert = ..\shader\triangle.vert
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "common", "common\common.vcxproj", "{1950486A-E32D-424D-B403-243F6A452517}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -117,6 +119,10 @@ Global
 		{BCBE19C8-8A27-4AFB-AD3B-9276C2BA0F36}.Debug|x64.Build.0 = Debug|x64
 		{BCBE19C8-8A27-4AFB-AD3B-9276C2BA0F36}.Release|x64.ActiveCfg = Release|x64
 		{BCBE19C8-8A27-4AFB-AD3B-9276C2BA0F36}.Release|x64.Build.0 = Release|x64
+		{1950486A-E32D-424D-B403-243F6A452517}.Debug|x64.ActiveCfg = Debug|x64
+		{1950486A-E32D-424D-B403-243F6A452517}.Debug|x64.Build.0 = Debug|x64
+		{1950486A-E32D-424D-B403-243F6A452517}.Release|x64.ActiveCfg = Release|x64
+		{1950486A-E32D-424D-B403-243F6A452517}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

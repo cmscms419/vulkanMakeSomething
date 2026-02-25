@@ -1,4 +1,5 @@
 #include "VKViewFrustum.h"
+#include "log.h"
 
 namespace vkengine
 {
