@@ -116,10 +116,10 @@ namespace vkengine {
             find(supportedInstanceExtensions.begin(), supportedInstanceExtensions.end(),
                 portabilityExtension) != supportedInstanceExtensions.end();
 
-        if (!portabilityAlreadyAdded && portabilitySupported) {
-            requiredInstanceExtensions.push_back(portabilityExtension);
-            portabilityAlreadyAdded = true;
-        }
+        // if (!portabilityAlreadyAdded && portabilitySupported) {
+        //     requiredInstanceExtensions.push_back(portabilityExtension);
+        //     portabilityAlreadyAdded = true;
+        // }
 
         // Validate all required extensions are supported
         for (const char* requiredExtension : requiredInstanceExtensions) {

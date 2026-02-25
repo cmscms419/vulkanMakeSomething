@@ -219,7 +219,7 @@ namespace vkengine {
                     }
                 }
 
-                instanceExtensions.push_back(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME);
+                // instanceExtensions.push_back(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME);
 
                 PRINT_TO_LOGGER("GLFW Required Instance Extensions:\n");
                 PRINT_TO_LOGGER("GlfwRequiredInstanceExtensions : \n", glfwExtensionCount);
