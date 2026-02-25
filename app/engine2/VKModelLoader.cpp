@@ -172,10 +172,10 @@ namespace vkengine {
                         data = static_cast<unsigned char*>(malloc(dataSize));
 
                         for (int i = 0; i < width * height; ++i) {
-                            data[i * 4 + 0] = static_cast<unsigned char>(aiTex->pcData[i].r * 255);
-                            data[i * 4 + 1] = static_cast<unsigned char>(aiTex->pcData[i].g * 255);
-                            data[i * 4 + 2] = static_cast<unsigned char>(aiTex->pcData[i].b * 255);
-                            data[i * 4 + 3] = static_cast<unsigned char>(aiTex->pcData[i].a * 255);
+                            data[i * 4 + 0] = (aiTex->pcData[i].r);
+                            data[i * 4 + 1] = (aiTex->pcData[i].g);
+                            data[i * 4 + 2] = (aiTex->pcData[i].b);
+                            data[i * 4 + 3] = (aiTex->pcData[i].a);
                         }
                     }
 

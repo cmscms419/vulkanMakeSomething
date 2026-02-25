@@ -15,6 +15,18 @@
             "environment": [],
             "console": "externalTerminal",
             "preLaunchTask": "Build: 05_postprocessing (Debug)"
+        },
+        {
+            "name": "Debug: 06.GLTF",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/exe/06.GLTF/x64/Debug/06.GLTF.exe",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}/exe/06.GLTF/x64/Debug",
+            "environment": [],
+            "console": "externalTerminal",
+            "preLaunchTask": "Build: 06.GLTF (Debug)"
         }
     ]
 }

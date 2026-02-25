@@ -72,31 +72,6 @@ namespace vkengine
         this->vertex->createModelVertexBuffer(vertexBufferSize, nullptr);
         this->index->createModeIndexBuffer(indexBufferSize, nullptr);
 
-        /*bufferInfo.size = vertexBufferSize;
-        bufferInfo.usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
-        check(vkCreateBuffer(ctx.device(), &bufferInfo, nullptr, &vertexBuffer));
-
-        vkGetBufferMemoryRequirements(ctx.device(), vertexBuffer, &memRequirements);
-        allocInfo.allocationSize = memRequirements.size;
-        allocInfo.memoryTypeIndex =
-            ctx.getMemoryTypeIndex(memRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-
-        check(vkAllocateMemory(ctx.device(), &allocInfo, nullptr, &vertexMemory));
-        check(vkBindBufferMemory(ctx.device(), vertexBuffer, vertexMemory, 0));
-
-        bufferInfo.size = indexBufferSize;
-        bufferInfo.usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
-        check(vkCreateBuffer(ctx.device(), &bufferInfo, nullptr, &indexBuffer));
-
-        vkGetBufferMemoryRequirements(ctx.device(), indexBuffer, &memRequirements);
-        allocInfo.allocationSize = memRequirements.size;
-        allocInfo.memoryTypeIndex =
-            ctx.getMemoryTypeIndex(memRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-
-        check(vkAllocateMemory(ctx.device(), &allocInfo, nullptr, &indexMemory));
-        check(vkBindBufferMemory(ctx.device(), indexBuffer, indexMemory, 0));
-        */
-
         VKCommandBufferHander cmd = ctx.createGrapicsCommandBufferHander(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
 
         VkBufferCopy copyRegion{};

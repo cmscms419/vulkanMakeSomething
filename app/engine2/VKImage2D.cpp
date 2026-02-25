@@ -414,6 +414,80 @@ namespace vkengine
             VK_IMAGE_ASPECT_COLOR_BIT, 1, 1, static_cast<VkImageCreateFlagBits>(0));
     }
 
+    void VKImage2D::updateResourceBindingAfterTransition()
+    {
+        VkImageLayout currentLayout = resourceBinding.barrierHelper.Currentlayout();
+
+        if (currentLayout == VK_IMAGE_LAYOUT_GENERAL)
+        {
+            // General layout is used for storage images
+            resourceBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+            resourceBinding.imageInfo.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
+        }
+        else if (currentLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
+        {
+            // Shader read-only layout is used for sampled images
+            if (resourceBinding.sampler != VK_NULL_HANDLE)
+            {
+                resourceBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+            }
+            else
+            {
+                resourceBinding.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
+            }
+            resourceBinding.imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        }
+        else if (currentLayout == VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL ||
+                 currentLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
+        {
+            // Attachment layouts are typically used for input attachments when used in descriptors
+            resourceBinding.descriptorType = VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
+            resourceBinding.imageInfo.imageLayout = currentLayout;
+        }
+        else
+        {
+            // For other layouts, default to storage image with general layout capability
+            resourceBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+            resourceBinding.imageInfo.imageLayout = currentLayout;
+        }
+
+        // Update the image info
+        resourceBinding.imageInfo.imageView = imageView;
+        resourceBinding.imageInfo.sampler = resourceBinding.sampler;
+    }
+
+    void VKImage2D::transitionTo(VkCommandBuffer commandBuffer, VkImageLayout newLayout, VkAccessFlags2 newAccess, VkPipelineStageFlags2 newStage)
+    {
+        resourceBinding.getBarrierHelper().transitionImageLayout2(
+            commandBuffer,
+            this->image,
+            newLayout,
+            newAccess,
+            newStage);
+        updateResourceBindingAfterTransition();
+    }
+
+    // 이미지 ColorAttachment 변환
+    void VKImage2D::transitionToColorAttachment(VkCommandBuffer commandBuffer)
+    {
+        transitionTo(
+            commandBuffer,
+            VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+            VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT,
+            VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT);
+        updateResourceBindingAfterTransition();
+    }
+
+    void VKImage2D::transitionToTransferSrc(VkCommandBuffer commandBuffer)
+    {
+        transitionTo(
+            commandBuffer,
+            VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+            VK_ACCESS_2_TRANSFER_READ_BIT,
+            VK_PIPELINE_STAGE_2_TRANSFER_BIT);
+        updateResourceBindingAfterTransition();
+    }
+
     void VKImage2D::cleanup()
     {
         // Cleanup code for VKImage2D
@@ -435,7 +509,6 @@ namespace vkengine
         this->resourceBinding.getBarrierHelper().Currentlayout() = VK_IMAGE_LAYOUT_UNDEFINED;
         this->resourceBinding.getBarrierHelper().Currentaccess() = VK_ACCESS_2_NONE;
         this->resourceBinding.getBarrierHelper().Currentstage() = VK_PIPELINE_STAGE_2_NONE;
-
     }
 
 }

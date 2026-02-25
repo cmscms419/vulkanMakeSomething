@@ -12,7 +12,6 @@ namespace vkengine {
 
     public:
         VKshader(VKcontext& ctx, cString filepath);
-        
         VKshader(VKshader&& other) noexcept;
         
         VKshader(const VKshader&) = delete;

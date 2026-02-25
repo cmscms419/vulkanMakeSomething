@@ -107,6 +107,30 @@
         "reveal": "always",
         "panel": "shared"
       }
+    },
+    {
+      "label": "Build: 06.GLTF (Debug)",
+      "type": "shell",
+      "command": "C:/Program Files/Microsoft Visual Studio/2022/Community/MSBuild/Current/Bin/MSBuild.exe",
+      "args": [
+        "${workspaceFolder}/Project/06.GLTF/06.GLTF.vcxproj",
+        "/p:Configuration=Debug",
+        "/p:Platform=x64",
+        "/p:SolutionDir=${workspaceFolder}/Project/",
+        "/v:minimal"
+      ],
+      "dependsOrder": "sequence",
+      "dependsOn": [
+        "Build: common (Debug)",
+        "Build: basicEngine2 (Debug)",
+        "Build: component2 (Debug)"
+      ],
+      "group": "build",
+      "problemMatcher": "$msCompile",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      }
     }
   ]
 }
