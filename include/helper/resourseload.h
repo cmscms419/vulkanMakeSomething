@@ -3,16 +3,9 @@
 
 #define _CRT_SECURE_NO_WARNINGS_
 
-#include <png.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdint.h>
-
 #include "common.h"
-#include "macros.h"
 
 #include <ktx.h>
-#include <ktxvulkan.h>
 
 enum TextureType
 {

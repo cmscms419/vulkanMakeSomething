@@ -1,5 +1,10 @@
 #include "resourseload.h"
 
+#include "macros.h"
+
+#include <ktxvulkan.h>
+#include <png.h>
+
 cUChar* load_png_rgba(const cChar* filename, cUint32_t* width, cUint32_t* height, cInt type)
 {
     FILE* fp = NULL;
