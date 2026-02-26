@@ -1,10 +1,7 @@
 ﻿#include "gltf_example.h"
 #include "log.h"
 
-
-using namespace vkengine;
 using namespace vkengine::Log;
-
 using namespace vkengine;
 
 int main(int argc, char* argv[]) {
@@ -24,7 +21,7 @@ int main(int argc, char* argv[]) {
                 glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f))
         ));
     
-    std::unique_ptr<Application2> app2 = std::make_unique<Application2>(config, root_path);
+    std::unique_ptr<Application2> app2 = std::make_unique<Application2>(root_path);
 
     app2->update();
     

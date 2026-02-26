@@ -69,26 +69,17 @@ void VKModel::createDescriptorManager2(VKSamplerHandler& sampler, VKImage2D& dum
 
     for (size_t i = 0; i < materials.size(); i++) {
         auto& mat = materials[i];
-        auto& b1 = mat.ubo.baseColorTextureIndex < 0
-                       ? dummyTexture
-                       : this->GetTexture(mat.ubo.baseColorTextureIndex);
-        auto& b2 = mat.ubo.emissiveTextureIndex < 0 ? dummyTexture
-                                                      : this->GetTexture(mat.ubo.emissiveTextureIndex);
-        auto& b3 = mat.ubo.normalTextureIndex < 0 ? dummyTexture
-                                                    : this->GetTexture(mat.ubo.normalTextureIndex);
-        auto& b4 = mat.ubo.opacityTextureIndex < 0 ? dummyTexture
-                                                     : this->GetTexture(mat.ubo.opacityTextureIndex);
-        auto& b5 = mat.ubo.metallicRoughnessTextureIndex < 0
-                       ? dummyTexture
-                       : this->GetTexture(mat.ubo.metallicRoughnessTextureIndex);
-        auto& b6 = mat.ubo.occlusionTextureIndex < 0
-                       ? dummyTexture
-                       : this->GetTexture(mat.ubo.occlusionTextureIndex);
-        materialDescriptorSetHander[i].create(ctx, 
-                                                 {materialUBO[i].ResourceBinding(),
-                                                 b1.ResourceBinding(), b2.ResourceBinding(),
-                                                 b3.ResourceBinding(), b4.ResourceBinding(),
-                                                 b5.ResourceBinding(), b6.ResourceBinding()});
+        auto& b1 = mat.ubo.baseColorTextureIndex < 0 ? dummyTexture : this->GetTexture(mat.ubo.baseColorTextureIndex);
+        auto& b2 = mat.ubo.emissiveTextureIndex < 0 ? dummyTexture : this->GetTexture(mat.ubo.emissiveTextureIndex);
+        auto& b3 = mat.ubo.normalTextureIndex < 0 ? dummyTexture : this->GetTexture(mat.ubo.normalTextureIndex);
+        auto& b4 = mat.ubo.opacityTextureIndex < 0 ? dummyTexture : this->GetTexture(mat.ubo.opacityTextureIndex);
+        auto& b5 = mat.ubo.metallicRoughnessTextureIndex < 0 ? dummyTexture : this->GetTexture(mat.ubo.metallicRoughnessTextureIndex);
+        auto& b6 = mat.ubo.occlusionTextureIndex < 0 ? dummyTexture : this->GetTexture(mat.ubo.occlusionTextureIndex);
+        
+        materialDescriptorSetHander[i].create(ctx, {materialUBO[i].ResourceBinding(),
+                                                b1.ResourceBinding(), b2.ResourceBinding(),
+                                                b3.ResourceBinding(), b4.ResourceBinding(),
+                                                b5.ResourceBinding(), b6.ResourceBinding()});
     }
 }
 

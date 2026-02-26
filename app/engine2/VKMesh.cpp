@@ -37,6 +37,10 @@ namespace vkengine
 
     void Mesh::createBuffers(VKcontext &ctx)
     {
+        if (this->vertex == nullptr || this->index == nullptr) {
+            this->initializeBuffers(ctx);
+        }
+
         VkDeviceSize vertexBufferSize = sizeof(vertices[0]) * vertices.size();
         VkDeviceSize indexBufferSize = sizeof(indices[0]) * indices.size();
 
@@ -121,35 +125,35 @@ namespace vkengine
     {
         // File format version for future compatibility
         const uint32_t fileVersion = 1;
-        if (!writeValue(stream, fileVersion))
+        if (!helper::file::writeValue(stream, fileVersion))
             return false;
 
         // Write mesh name
-        if (!writeString(stream, name))
+        if (!helper::file::writeString(stream, name))
             return false;
 
         // Write material index
-        if (!writeValue(stream, materialIndex))
+        if (!helper::file::writeValue(stream, materialIndex))
             return false;
 
         // Write vertex data
-        if (!writeVector(stream, vertices))
+        if (!helper::file::writeVector(stream, vertices))
             return false;
 
         // Write index data
-        if (!writeVector(stream, indices))
+        if (!helper::file::writeVector(stream, indices))
             return false;
 
         // Write bounding box
-        if (!writeValue(stream, minBounds))
+        if (!helper::file::writeValue(stream, minBounds))
             return false;
-        if (!writeValue(stream, maxBounds))
+        if (!helper::file::writeValue(stream, maxBounds))
             return false;
 
         // Write flags
-        if (!writeValue(stream, isCulled))
+        if (!helper::file::writeValue(stream, isCulled))
             return false;
-        if (!writeValue(stream, noTextureCoords))
+        if (!helper::file::writeValue(stream, noTextureCoords))
             return false;
 
         return stream.good();
@@ -159,7 +163,7 @@ namespace vkengine
     {
         // Read and verify file format version
         uint32_t fileVersion;
-        if (!readValue(stream, fileVersion))
+        if (!helper::file::readValue(stream, fileVersion))
             return false;
 
         if (fileVersion != 1)
@@ -169,31 +173,31 @@ namespace vkengine
         }
 
         // Read mesh name
-        if (!readString(stream, name))
+        if (!helper::file::readString(stream, name))
             return false;
 
         // Read material index
-        if (!readValue(stream, materialIndex))
+        if (!helper::file::readValue(stream, materialIndex))
             return false;
 
         // Read vertex data
-        if (!readVector(stream, vertices))
+        if (!helper::file::readVector(stream, vertices))
             return false;
 
         // Read index data
-        if (!readVector(stream, indices))
+        if (!helper::file::readVector(stream, indices))
             return false;
 
         // Read bounding box
-        if (!readValue(stream, minBounds))
+        if (!helper::file::readValue(stream, minBounds))
             return false;
-        if (!readValue(stream, maxBounds))
+        if (!helper::file::readValue(stream, maxBounds))
             return false;
 
         // Read flags
-        if (!readValue(stream, isCulled))
+        if (!helper::file::readValue(stream, isCulled))
             return false;
-        if (!readValue(stream, noTextureCoords))
+        if (!helper::file::readValue(stream, noTextureCoords))
             return false;
 
         // Reset Vulkan handles (they need to be recreated)
@@ -204,40 +208,6 @@ namespace vkengine
         worldBounds = AABB(minBounds, maxBounds);
 
         return stream.good();
-    }
-
-    // Helper method implementations
-    bool Mesh::writeString(std::ofstream &stream, const cString &str) const
-    {
-        uint32_t length = static_cast<uint32_t>(str.length());
-        if (!writeValue(stream, length))
-            return false;
-
-        if (length > 0)
-        {
-            stream.write(str.c_str(), length);
-            return stream.good();
-        }
-        return true;
-    }
-
-    bool Mesh::readString(std::ifstream &stream, cString &str)
-    {
-        uint32_t length;
-        if (!readValue(stream, length))
-            return false;
-
-        if (length > 0)
-        {
-            str.resize(length);
-            stream.read(&str[0], length);
-            return stream.good();
-        }
-        else
-        {
-            str.clear();
-            return true;
-        }
     }
 
 } // namespace vkengine
