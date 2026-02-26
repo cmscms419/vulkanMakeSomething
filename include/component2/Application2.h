@@ -3,13 +3,14 @@
 
 #include "common.h"
 #include "helper.h"
+#include "config.h"
 #include "log.h"
 
 #include "VKengine2.h"
 #include "Camera2.h"
 #include "VKgui.h"
 #include "VKModel.h"
-#include "VKCommadBufferHander.h"
+#include "VKCommandBufferHander.h"
 #include "VKrenderer.h"
 
 namespace vkengine {

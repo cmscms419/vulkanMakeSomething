@@ -20,7 +20,7 @@
     <ClCompile Include="..\..\app\engine2\VKPushConstants.cpp" />
     <ClCompile Include="..\..\app\engine2\VKbarrier2.cpp" />
     <ClCompile Include="..\..\app\engine2\VKbuffer2.cpp" />
-    <ClCompile Include="..\..\app\engine2\VKCommadBufferHander.cpp" />
+    <ClCompile Include="..\..\app\engine2\VKCommandBufferHander.cpp" />
     <ClCompile Include="..\..\app\engine2\VKContext.cpp" />
     <ClCompile Include="..\..\app\engine2\VKDescriptorManager2.cpp" />
     <ClCompile Include="..\..\app\engine2\VKdescriptorPool.cpp" />
@@ -43,6 +43,7 @@
     <ClCompile Include="..\..\app\engine2\VKStorageBuffer.cpp" />
     <ClCompile Include="..\..\app\engine2\VKswapchain.cpp" />
     <ClCompile Include="..\..\app\engine2\VKViewFrustum.cpp" />
+    <ClCompile Include="..\..\app\engine2\VKshadowMap.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\include\engine2\VKshadowMap.h" />
@@ -52,7 +53,7 @@
     <ClInclude Include="..\..\include\engine2\VKAnimation.h" />
     <ClInclude Include="..\..\include\engine2\VKbarrier2.h" />
     <ClInclude Include="..\..\include\engine2\VKbuffer2.h" />
-    <ClInclude Include="..\..\include\engine2\VKCommadBufferHander.h" />
+    <ClInclude Include="..\..\include\engine2\VKCommandBufferHander.h" />
     <ClInclude Include="..\..\include\engine2\VKContext.h" />
     <ClInclude Include="..\..\include\engine2\VKDescriptorManager2.h" />
     <ClInclude Include="..\..\include\engine2\VKdescriptorPool.h" />

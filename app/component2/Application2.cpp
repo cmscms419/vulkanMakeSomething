@@ -412,10 +412,10 @@ namespace vkengine {
                 snprintf(labelBuffer, sizeof(labelBuffer), "Shadow Offset##%u", i);
                 ImGui::SliderFloat(labelBuffer, &coeffs[3], 0.0f, 1.0f);
 
-                snprintf(labelBuffer, sizeof(labelBuffer), "Roughness##%u", i);
+                snprintf(labelBuffer, sizeof(labelBuffer), "Metallic##%u", i);
                 ImGui::SliderFloat(labelBuffer, &coeffs[4], 0.0f, 1.0f);
 
-                snprintf(labelBuffer, sizeof(labelBuffer), "Metallic##%u", i);
+                snprintf(labelBuffer, sizeof(labelBuffer), "Roughness##%u", i);
                 ImGui::SliderFloat(labelBuffer, &coeffs[5], 0.0f, 1.0f);
 
                 ImGui::TreePop();

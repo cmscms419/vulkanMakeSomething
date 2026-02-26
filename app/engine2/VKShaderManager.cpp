@@ -7,8 +7,7 @@ using namespace vkengine::Log;
 
 namespace vkengine
 {
-    VKShaderManager::VKShaderManager(VKcontext &ctx, cString shaderPathPrefix, const std::initializer_list<std::pair<cString, std::vector<cString>>> &pipelineShaders)
-        : ctx(ctx)
+    VKShaderManager::VKShaderManager(VKcontext &ctx, cString shaderPathPrefix, const std::initializer_list<std::pair<cString, std::vector<cString>>> &pipelineShaders) : ctx(ctx)
     {
         // shahder 정보를 읽어서 저장
         createFromShaders(shaderPathPrefix, pipelineShaders);
