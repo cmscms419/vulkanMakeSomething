@@ -64,7 +64,7 @@
     <ClCompile Include="..\..\external\include\spirv-reflect\spirv_reflect.c" />
     <ClCompile Include="..\..\app\struct\geometry.cpp" />
     <ClCompile Include="..\..\app\struct\type.cpp" />
-    <ClCompile Include="..\..\app\struct\data.cpp" /> 
+    <ClCompile Include="..\..\app\struct\data.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{1950486a-e32d-424d-b403-243f6a452517}</ProjectGuid>
@@ -114,7 +114,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>DEBUG_;WIN32;WIN64;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <LanguageStandard_C>stdc11</LanguageStandard_C>
-      <AdditionalIncludeDirectories>./;$(CudaToolkitDir)/include;$(VULKAN_SDK)/include;../../include/struct;../../include/common;../../include/helper/;../../external/include;../../external/ktx/include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>./;$(CudaToolkitDir)/include/;$(VULKAN_SDK)/include/;../../include/struct/;../../include/common/;../../include/engine2/;../../include/helper/;../../external/include/;../../external/ktx/include/</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
@@ -135,7 +135,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;WIN64;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <LanguageStandard_C>stdc11</LanguageStandard_C>
-      <AdditionalIncludeDirectories>./;$(CudaToolkitDir)/include;$(VULKAN_SDK)/include;../../include/struct;../../include/common;../../include/helper/;../../external/include;../../external/ktx/include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>./;$(CudaToolkitDir)/include/;$(VULKAN_SDK)/include/;../../include/struct/;../../include/common/;../../include/engine2/;../../include/helper/;../../external/include/;../../external/ktx/include/</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>

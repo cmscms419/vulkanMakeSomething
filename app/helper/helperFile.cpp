@@ -1,6 +1,7 @@
 #include "helperFile.h"
 #include "log.h"
 #include <fstream>
+#include <filesystem>
 
 using namespace vkengine::Log;
 
@@ -10,6 +11,62 @@ namespace vkengine
     {
         namespace file
         {
+            // --- filesystem 유틸리티 구현 ---
+
+            // "model.glb" → "model_cache.bin" 경로 반환
+            cString getCachePath(const cString &modelFilename)
+            {
+                std::filesystem::path modelPath(modelFilename);
+                cString cacheFilename = modelPath.stem().string() + "_cache.bin";
+                return (modelPath.parent_path() / cacheFilename).string();
+            }
+
+            // "/a/b/model.glb" → "/a/b"
+            cString getParentDirectory(const cString &filePath)
+            {
+                return std::filesystem::path(filePath).parent_path().string();
+            }
+
+            // "/a/b/model.glb" → "model"  (확장자 제외)
+            cString getStem(const cString &filePath)
+            {
+                return std::filesystem::path(filePath).stem().string();
+            }
+
+            // "/a/b/model.glb" → "model.glb"  (파일명만)
+            cString getFilenameOnly(const cString &filePath)
+            {
+                return std::filesystem::path(filePath).filename().string();
+            }
+
+            // "dummy/../textures/foo.png" → "textures/foo.png"
+            // "..\textures\foo.png" 같은 상대경로를 정규화하는 데 사용
+            cString normalizePath(const cString &filePath)
+            {
+                std::filesystem::path fullPath("dummy/" + filePath);
+                return fullPath.lexically_normal().string();
+            }
+
+            // 디렉토리 재귀 생성 (없으면 생성)
+            cBool createDirectories(const cString &dirPath)
+            {
+                std::error_code ec;
+                std::filesystem::create_directories(dirPath, ec);
+                return !ec;
+            }
+
+            // 캐시가 원본보다 최신인지 확인
+            cBool isCacheNewer(const cString &modelPath, const cString &cachePath)
+            {
+                std::error_code ec;
+                if (!std::filesystem::exists(cachePath, ec) || ec)
+                    return false;
+                auto modelTime = std::filesystem::last_write_time(modelPath, ec);
+                if (ec) return false;
+                auto cacheTime = std::filesystem::last_write_time(cachePath, ec);
+                if (ec) return false;
+                return cacheTime > modelTime;
+            }
 
             cString extractFilename(const cString &spvFilename)
             {
@@ -85,6 +142,36 @@ namespace vkengine
             {
                 std::ifstream f(filename.c_str());
                 return !f.fail();
+            }
+
+            cBool writeString(std::ofstream &stream, const cString &str)
+            {
+                uint32_t length = static_cast<uint32_t>(str.length());
+                if (!writeValue(stream, length))
+                    return false;
+
+                if (length > 0)
+                {
+                    stream.write(str.c_str(), length);
+                    return stream.good();
+                }
+                return true;
+            }
+
+            cBool readString(std::ifstream &stream, cString &str)
+            {
+                uint32_t length = 0;
+                if (!readValue(stream, length))
+                    return false;
+
+                if (length > 0)
+                {
+                    str.resize(length);
+                    stream.read(&str[0], length);
+                    return stream.good();
+                }
+                str.clear();
+                return true;
             }
         }
     }

@@ -67,7 +67,7 @@ struct ApplicationConfig
         ApplicationConfig config;
 
         // Character model
-        ModelConfig character("characters/Leonard/Bboy Hip Hop Move.fbx", "캐릭터");
+        ModelConfig character("characters/Leonard/Bboy Hip Hop Move.fbx", "character");
         character.transform = glm::rotate(
             glm::scale(
             glm::translate(
@@ -78,7 +78,7 @@ struct ApplicationConfig
         character.autoPlayAnimation = true;
 
         // Bistro scene
-        ModelConfig bistro("models/AmazonLumberyardBistroMorganMcGuire/exterior.obj", "거리",
+        ModelConfig bistro("AmazonLumberyardBistroMorganMcGuire/exterior.obj", "world",
             glm::scale(glm::mat4(1.0f), glm::vec3(0.01f)),
             true // isBistroObj
         );

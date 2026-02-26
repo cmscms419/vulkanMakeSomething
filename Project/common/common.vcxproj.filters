@@ -15,19 +15,7 @@
     <ClInclude Include="..\..\include\common\common.h">
       <Filter>common</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\common\debug.h">
-      <Filter>common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\common\exception.h">
-      <Filter>common</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\include\common\macros.h">
-      <Filter>common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\common\resourseload.h">
-      <Filter>common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\common\struct.h">
       <Filter>common</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\common\VectorCMS.h">
@@ -51,24 +39,37 @@
     <ClInclude Include="..\..\include\helper\helperFile.h">
       <Filter>helper</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\helper\helperCreate.h">
+    <ClInclude Include="..\..\include\common\math_types.h" />
+    <ClInclude Include="..\..\include\helper\debug.h" />
+    <ClInclude Include="..\..\include\helper\resourseload.h" />
+    <ClInclude Include="..\..\include\struct\geometry.h" />
+    <ClInclude Include="..\..\include\struct\material.h" />
+    <ClInclude Include="..\..\include\struct\resource.h" />
+    <ClInclude Include="..\..\include\struct\type.h" />
+    <ClInclude Include="..\..\include\struct\ubo.h" />
+    <ClInclude Include="..\..\include\struct\vkdevice.h" />
+    <ClInclude Include="..\..\include\struct\object.h" />
+    <ClInclude Include="..\..\include\struct\data.h" />
+    <ClInclude Include="..\..\include\helper\helperDescriptor.h">
       <Filter>helper</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\include\helper\helperDevice.h">
+      <Filter>helper</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\helper\helperPipeLine.h">
+      <Filter>helper</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\helper\helperResource.h">
+      <Filter>helper</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\helper\helperShader.h">
+      <Filter>helper</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\common\base_types.h" />
+    <ClInclude Include="..\..\include\struct\configtype.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\app\common\common.cpp">
-      <Filter>common</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\app\common\debug.cpp">
-      <Filter>common</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\app\common\macros.cpp">
-      <Filter>common</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\app\common\resourseload.cpp">
-      <Filter>common</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\app\common\struct.cpp">
       <Filter>common</Filter>
     </ClCompile>
     <ClCompile Include="..\..\app\common\VectorCMS.cpp">
@@ -83,13 +84,27 @@
     <ClCompile Include="..\..\external\include\spirv-reflect\spirv_reflect.c">
       <Filter>external</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\app\helper\helper.cpp">
-      <Filter>helper</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\app\helper\helperFile.cpp">
       <Filter>helper</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\app\helper\helperCreate.cpp">
+    <ClCompile Include="..\..\app\helper\debug.cpp" />
+    <ClCompile Include="..\..\app\helper\resourseload.cpp" />
+    <ClCompile Include="..\..\app\struct\geometry.cpp" />
+    <ClCompile Include="..\..\app\struct\type.cpp" />
+    <ClCompile Include="..\..\app\struct\data.cpp" />
+    <ClCompile Include="..\..\app\helper\helperDescriptor.cpp">
+      <Filter>helper</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\helper\helperDevice.cpp">
+      <Filter>helper</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\helper\helperPipeLine.cpp">
+      <Filter>helper</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\helper\helperResource.cpp">
+      <Filter>helper</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\helper\helperShader.cpp">
       <Filter>helper</Filter>
     </ClCompile>
   </ItemGroup>

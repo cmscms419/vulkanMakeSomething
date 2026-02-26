@@ -1,9 +1,6 @@
 #ifndef INCLUDE_HELPER_DEVICE_H_
 #define INCLUDE_HELPER_DEVICE_H_
 
-// #include <set>
-// #include <fstream>
-
 #include "common.h"
 #include "vkdevice.h"
 

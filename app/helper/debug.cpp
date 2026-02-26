@@ -57,5 +57,19 @@ namespace vkengine {
                 func(instance, debugMessenger, pAllocator);
             }
         }
+
+        void SetObjectName(VkDevice device, uint64_t objectHandle, VkObjectType objectType, const char* name) {
+            VkDebugUtilsObjectNameInfoEXT nameInfo = {};
+            nameInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
+            nameInfo.objectType = objectType;
+            nameInfo.objectHandle = objectHandle;
+            nameInfo.pObjectName = name;
+
+            PFN_vkSetDebugUtilsObjectNameEXT vkSetDebugUtilsObjectNameEXT = (PFN_vkSetDebugUtilsObjectNameEXT) vkGetDeviceProcAddr(device, "vkSetDebugUtilsObjectNameEXT");
+            
+            if (vkSetDebugUtilsObjectNameEXT != nullptr) {
+                vkSetDebugUtilsObjectNameEXT(device, &nameInfo);
+            }
+        }
     }
 }
