@@ -130,7 +130,7 @@
     <ClInclude Include="..\..\include\engine2\VKbuffer2.h">
       <Filter>source2</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\engine2\VKCommadBufferHander.h">
+    <ClInclude Include="..\..\include\engine2\VKCommandBufferHander.h">
       <Filter>source2</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\engine2\VKContext.h">

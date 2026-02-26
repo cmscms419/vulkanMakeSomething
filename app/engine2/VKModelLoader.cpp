@@ -6,12 +6,12 @@
 #include "VKMaterial.h"
 
 #include "log.h"
+#include "helper.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 
 #include <chrono>
-#include <filesystem>
 #include <stb_image.h>
 #include <stb_image_write.h>
 #include <glm/gtc/type_ptr.hpp> // For glm::make_mat4
@@ -32,13 +32,11 @@ namespace vkengine {
         auto startTime = std::chrono::high_resolution_clock::now();
 
         // Generate cache file path based on model filename
-        filesystem::path modelPath(modelFilename);
-        string cacheFilename = modelPath.stem().string() + "_cache.bin";
-        filesystem::path cachePath = modelPath.parent_path() / cacheFilename;
+        string cachePath = helper::file::getCachePath(modelFilename);
 
         // Check if cache file exists and is newer than the model file
         bool useCache = false;
-        if (readBistroObj && filesystem::exists(cachePath)) {
+        if (readBistroObj && helper::file::fileExists(cachePath)) {
             useCache = true;
         }
 
@@ -46,7 +44,7 @@ namespace vkengine {
 
         // Try to load from cache first
         if (useCache) {
-            loadFromCache(cachePath.string());
+            loadFromCache(cachePath);
 
             // Check if cache loading was successful (non-empty model)
             if (!model.meshes.empty() && !model.materials.empty()) {
@@ -64,7 +62,7 @@ namespace vkengine {
                 auto duration =
                     std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime);
 
-                PRINT_TO_LOGGER("Successfully loaded model from cache: %s", cachePath.string());
+                PRINT_TO_LOGGER("Successfully loaded model from cache: %s", cachePath.c_str());
                 PRINT_TO_LOGGER("  Meshes: %u", model.meshes.size());
                 PRINT_TO_LOGGER("  Materials: %u", model.materials.size());
                 PRINT_TO_LOGGER("  Loading time: %u ms", duration.count());
@@ -88,16 +86,15 @@ namespace vkengine {
                 aiProcess_FindInvalidData | aiProcess_GenUVCoords;
         }
 
-        const aiScene* scene = importer.ReadFile(modelFilename, importFlags);
+        const aiScene* rootScene = importer.ReadFile(modelFilename, importFlags);
 
-        if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
+        if (!rootScene || rootScene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !rootScene->mRootNode) {
             EXIT_TO_LOGGER("ERROR::ASSIMP: %s\n", importer.GetErrorString());
             return;
         }
 
-        // Improved directory extraction using filesystem::path for cross-platform compatibility
-        filesystem::path modelPath2(modelFilename);
-        directory = modelPath2.parent_path().string();
+        // Improved directory extraction using helper::file for cross-platform compatibility
+        directory = helper::file::getParentDirectory(modelFilename);
         if (directory.empty()) {
             directory = "."; // Current directory if no path specified
         }
@@ -105,18 +102,17 @@ namespace vkengine {
         PRINT_TO_LOGGER("VKModel directory: %s\n", directory.c_str());
 
         // Store global inverse transform for the VKModel class
-        mat4 globalInverseTransform =
-            glm::inverse(glm::make_mat4(&scene->mRootNode->mTransformation.a1));
+        mat4 globalInverseTransform = glm::inverse(glm::make_mat4(&rootScene->mRootNode->mTransformation.a1));
         model.globalInverseTransform = globalInverseTransform;
 
         // Process materials first
-        model.materials.resize(scene->mNumMaterials);
-        for (uint32_t i = 0; i < scene->mNumMaterials; i++) {
+        model.materials.resize(rootScene->mNumMaterials);
+        for (uint32_t i = 0; i < rootScene->mNumMaterials; i++) {
             if (readBistroObj) {
-                processMaterialBistro(scene->mMaterials[i], scene, i);
+                processMaterialBistro(rootScene->mMaterials[i], rootScene, i);
             }
             else {
-                processMaterial(scene->mMaterials[i], scene, i);
+                processMaterial(rootScene->mMaterials[i], rootScene, i);
             }
         }
 
@@ -124,8 +120,8 @@ namespace vkengine {
         // This ensures the VKAnimation system has the global bone mapping ready
         // when processMesh needs to assign global bone indices to vertices
         PRINT_TO_LOGGER("Processing animations and bones before mesh processing...\n");
-        processAnimations(scene);
-        processBones(scene);
+        processAnimations(rootScene);
+        processBones(rootScene);
 
         // AFTER animation processing, synchronize the global inverse transform
         if (model.animation) {
@@ -134,7 +130,7 @@ namespace vkengine {
         }
 
         // Now process nodes and meshes - they can use the global bone indices
-        processNode(scene->mRootNode, scene);
+        processNode(rootScene->mRootNode, rootScene);
         model.calculateBoundingBox();
 
         // 안내: Bistro 모델은 파이썬 스크립트로 전처리한 저해상도 텍스쳐를 읽어들입니다.
@@ -218,13 +214,13 @@ namespace vkengine {
                 // 안내:
                 // - 캐릭터 fbx는 미리 추출한 텍스쳐 사용
                 // - 같은 폴더에 있기 때문에 파일이름에서 폴더명 제거
-                string shortFilename =
-                    readBistroObj ? filename : filesystem::path(filename).filename().string();
+                string shortFilename = readBistroObj ? filename : helper::file::getFilenameOnly(filename);
+                string resourcePath = prefix + shortFilename;
 
-                PRINT_TO_LOGGER("Texture filename: %s\n", prefix + shortFilename);
+                PRINT_TO_LOGGER("Texture filename: %s\n", resourcePath.c_str());
 
                 model.textures.back().createTextureFromImage(
-                    prefix + shortFilename, false, model.textureSRgb[model.textures.size() - 1]);
+                    resourcePath, false, model.textureSRgb[model.textures.size() - 1]);
             }
         }
 
@@ -239,8 +235,8 @@ namespace vkengine {
 
         if (readBistroObj && !useCache) {
             optimizeMeshesBistro();
-            writeToCache(cachePath.string());
-            PRINT_TO_LOGGER("VKModel cached to: %s\n", cachePath.string());
+            writeToCache(cachePath);
+            PRINT_TO_LOGGER("VKModel cached to: %s\n", cachePath.c_str());
         }
 
         return;
@@ -254,12 +250,11 @@ namespace vkengine {
             return;
         }
 
-        try {
             // Read file format version for future compatibility
             uint32_t fileVersion;
             stream.read(reinterpret_cast<char*>(&fileVersion), sizeof(fileVersion));
             if (!stream.good() || fileVersion != 1) {
-                return; // Unsupported version or read error
+                EXIT_TO_LOGGER("Unsupported cache file version: %u", fileVersion);
             }
 
             // Read directory
@@ -414,22 +409,19 @@ namespace vkengine {
             // device-specific Vulkan resources that can't be serialized
             model.textures.clear();
 
-        }
-        catch (...) {
             // If any error occurs, clear data and continue with empty model
-            model.meshes.clear();
-            model.materials.clear();
-            model.textureFilenames.clear();
-            model.textureSRgb.clear();
-            model.textures.clear();
-        }
+            // model.meshes.clear();
+            // model.materials.clear();
+            // model.textureFilenames.clear();
+            // model.textureSRgb.clear();
+            // model.textures.clear();
     }
 
     void ModelLoader::writeToCache(const string& cacheFilename)
     {
         std::ofstream stream(cacheFilename, std::ios::binary);
         if (!stream.is_open()) {
-            return; // Cannot create cache file
+            EXIT_TO_LOGGER("Failed to open cache file for writing: %s", cacheFilename.c_str());
         }
 
         try {
@@ -660,7 +652,7 @@ namespace vkengine {
 
         // Process bone weights and indices for skeletal animation
         if (mesh->HasBones()) {
-            PRINT_TO_LOGGER("Processing {} bones for mesh '{}'", mesh->mNumBones, mesh->mName.C_Str());
+            PRINT_TO_LOGGER("Processing %u bones for mesh %s", mesh->mNumBones, mesh->mName.C_Str());
 
             // First pass: collect bone weights for each vertex using GLOBAL bone indices
             for (uint32_t boneIndex = 0; boneIndex < mesh->mNumBones; ++boneIndex) {
@@ -675,9 +667,7 @@ namespace vkengine {
                 }
 
                 if (globalBoneIndex == -1) {
-                    PRINT_TO_LOGGER(
-                        "WARNING: Bone '%s' not found in global bone mapping, using local index %u",
-                        boneName, boneIndex);
+                    PRINT_TO_LOGGER("WARNING: Bone %s not found in global bone mapping, using local index %u", boneName.c_str(), boneIndex);
                     globalBoneIndex = static_cast<int>(boneIndex); // Fallback to local index
                 }
 
@@ -839,8 +829,7 @@ namespace vkengine {
         {
             // 안내: Bistro 모델의 텍스쳐 경로에는 앞에 "..\\"가 덧붙어 있어서 나중에 제거합니다.
             auto getTextureIndex = [this](string textureName, bool sRGB) -> int {
-                filesystem::path fullPath("dummy/" + string(textureName));
-                textureName = fullPath.lexically_normal().string();
+                textureName = helper::file::normalizePath(textureName);
                 // PRINT_TO_LOGGER("Texture filename: {}", textureName);
                 auto it = std::find(model.textureFilenames.begin(), model.textureFilenames.end(),
                     textureName);
@@ -959,77 +948,19 @@ namespace vkengine {
         PRINT_TO_LOGGER("  File: %s", directory);
         PRINT_TO_LOGGER("  Total meshes: %u", model.meshes.size());
         PRINT_TO_LOGGER("  Total materials: %u", model.materials.size());
-        PRINT_TO_LOGGER("  VKModel bounding box: min(%u, %u, %u), max(%u, %u, %u)", model.boundingBoxMin.x,
-            model.boundingBoxMin.y, model.boundingBoxMin.z, model.boundingBoxMax.x,
-            model.boundingBoxMax.y, model.boundingBoxMax.z);
-
-        return;
-
+        
         for (size_t meshIdx = 0; meshIdx < model.meshes.size(); ++meshIdx) {
             const Mesh& mesh = model.meshes[meshIdx];
 
             PRINT_TO_LOGGER("  Mesh %u: vertices = %u, indices = %u, material = %u", meshIdx,
                 mesh.vertices.size(), mesh.materialIndex, mesh.indices.size(),
                 mesh.materialIndex);
-            PRINT_TO_LOGGER("  Mesh bounding box: min(%u, %u, %u), max(%u, %u, %u)", mesh.minBounds.x,
+            PRINT_TO_LOGGER("  Mesh bounding box: min(%f, %f, %f), max(%f, %f, %f)", mesh.minBounds.x,
                 mesh.minBounds.y, mesh.minBounds.z, mesh.maxBounds.x, mesh.maxBounds.y,
                 mesh.maxBounds.z);
-
-            // Print vertices (limit to first 10 to avoid spam)
-            // size_t maxVertices = std::min(mesh.vertices.size(), static_cast<size_t>(10));
-            // print("Vertices (first %u):\n", maxVertices);
-            // for (size_t i = 0; i < maxVertices; ++i) {
-            //    const Vertex &v = mesh.vertices[i];
-            //    print("  [%u] pos: (%u, {}, {})\n", i, v.position.x, v.position.y, v.position.z);
-            //    print("       normal: ({}, {}, {})\n", v.normal.x, v.normal.y, v.normal.z);
-            //    print("       texCoord: ({}, {})\n", v.texCoord.x, v.texCoord.y);
-            //    print("       tangent: ({}, {}, {})\n", v.tangent.x, v.tangent.y, v.tangent.z);
-            //    print("       bitangent: ({}, {}, {})\n", v.bitangent.x, v.bitangent.y,
-            //    v.bitangent.z);
-            //}
-
-            // if (mesh.vertices.size() > maxVertices) {
-            //     print("  ... and {} more vertices\n", mesh.vertices.size() - maxVertices);
-            // }
-
-            //// Print indices (limit to first 30 to avoid spam)
-            // size_t maxIndices = std::min(mesh.indices.size(), static_cast<size_t>(30));
-            // print("Indices (first {}):\n  ", maxIndices);
-            // for (size_t i = 0; i < maxIndices; ++i) {
-            //     print("{}", mesh.indices[i]);
-            //     if (i < maxIndices - 1)
-            //         print(", ");
-            //     if ((i + 1) % 10 == 0)
-            //         print("\n  "); // New line every 10 indices
-            // }
-            // print("\n");
-
-            // if (mesh.indices.size() > maxIndices) {
-            //     print("  ... and {} more indices\n", mesh.indices.size() - maxIndices);
-            // }
-
-            //// Print triangles formed by first few indices
-            // print("First few triangles:\n");
-            // size_t maxTriangles = std::min(mesh.indices.size() / 3, static_cast<size_t>(3));
-            // for (size_t i = 0; i < maxTriangles; ++i) {
-            //     size_t idx0 = mesh.indices[i * 3 + 0];
-            //     size_t idx1 = mesh.indices[i * 3 + 1];
-            //     size_t idx2 = mesh.indices[i * 3 + 2];
-
-            //    print("  Triangle {}: indices [{}, {}, {}]\n", i, idx0, idx1, idx2);
-
-            //    if (idx0 < mesh.vertices.size() && idx1 < mesh.vertices.size() &&
-            //        idx2 < mesh.vertices.size()) {
-            //        const Vertex &v0 = mesh.vertices[idx0];
-            //        const Vertex &v1 = mesh.vertices[idx1];
-            //        const Vertex &v2 = mesh.vertices[idx2];
-
-            //        print("    v0: ({}, {}, {})\n", v0.position.x, v0.position.y, v0.position.z);
-            //        print("    v1: ({}, {}, {})\n", v1.position.x, v1.position.y, v1.position.z);
-            //        print("    v2: ({}, {}, {})\n", v2.position.x, v2.position.y, v2.position.z);
-            //    }
-            //}
         }
+
+        return;
     }
 
     void ModelLoader::debugWriteEmbeddedTextures() const
@@ -1044,7 +975,7 @@ namespace vkengine {
 
         // Create debug directory if it doesn't exist
         string debugDir = "debug_textures";
-        filesystem::create_directories(debugDir);
+        helper::file::createDirectories(debugDir);
 
         for (uint32_t i = 0; i < scene->mNumTextures; ++i) {
             const aiTexture* aiTex = scene->mTextures[i];
@@ -1075,10 +1006,10 @@ namespace vkengine {
                 if (file) {
                     std::fwrite(aiTex->pcData, 1, aiTex->mWidth, file);
                     std::fclose(file);
-                    PRINT_TO_LOGGER("Wrote compressed texture %s: %u (%u bytes)", i, filename, aiTex->mWidth);
+                    PRINT_TO_LOGGER("Wrote compressed texture %s: %u (%u bytes)",filename.c_str(), i, aiTex->mWidth);
                 }
                 else {
-                    PRINT_TO_LOGGER("Failed to write compressed texture %u: %s", i, filename);
+                    PRINT_TO_LOGGER("Failed to write compressed texture %u: %s", i, filename.c_str());
                 }
             }
             else {

@@ -90,10 +90,7 @@ namespace vkengine
 
         if (name == "sample_pipeline")
         {
-            createSquarePipeline(
-                outColorFormat.value(),
-                depthFormat.value(),
-                msaaSamples.value());
+            createSquarePipeline(outColorFormat.value(),depthFormat.value(),msaaSamples.value());
         }
         else if (name == "gui")
         {
@@ -103,10 +100,7 @@ namespace vkengine
         {
             if (outColorFormat.has_value() && depthFormat.has_value() && msaaSamples.has_value())
             {
-                this->createSkyboxPipeline(
-                    outColorFormat.value(),
-                    depthFormat.value(),
-                    msaaSamples.value());
+                this->createSkyboxPipeline(outColorFormat.value(),depthFormat.value(),msaaSamples.value());
             }
             else
             {
@@ -115,10 +109,7 @@ namespace vkengine
         }
         else if (name == "post")
         {
-            this->createPostProcessingPipeLine(
-                outColorFormat.value(),
-                depthFormat.value(),
-                msaaSamples.value());
+            this->createPostProcessingPipeLine(outColorFormat.value(),depthFormat.value(),msaaSamples.value());
         }
         else if (name == "ssao")
         {
@@ -126,15 +117,11 @@ namespace vkengine
         }
         else if (name == "shadowMap")
         {
-            this->createShadowMapPipeline(
-                depthFormat.value());
+            this->createShadowMapPipeline(depthFormat.value());
         }
         else if (name == "pbrForward")
         {
-            this->createForwardPBRPipeline(
-                outColorFormat.value(),
-                depthFormat.value(),
-                msaaSamples.value());
+            this->createForwardPBRPipeline(outColorFormat.value(),depthFormat.value(),msaaSamples.value());
         }
         else
         {

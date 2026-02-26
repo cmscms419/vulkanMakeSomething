@@ -1,5 +1,6 @@
 #include "VKrenderer.h"
-
+#include "log.h"
+#include "resourseload.h"
 
 using namespace vkengine::Log;
 
@@ -28,6 +29,11 @@ namespace vkengine {
     VKforwardRenderer::~VKforwardRenderer()
     {
         this->cleanup();
+    }
+
+    void VKforwardRenderer::cleanup()
+    {
+        
     }
     
     void VKforwardRenderer::prepareForModels(std::vector<VKModel>& models, VkFormat outColorFormat, VkFormat depthFormat, VkSampleCountFlagBits msaaSamples, uint32_t swapChainWidth, uint32_t swapChainHeight)

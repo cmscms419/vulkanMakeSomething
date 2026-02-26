@@ -1,11 +1,8 @@
 ﻿#ifndef VK_RENDERER_INCLUDE_H_
 #define VK_RENDERER_INCLUDE_H_
 
-#include "log.h"
-#include "resourseload.h"
 #include "data.h"
 #include "ubo.h"
-#include "config.h"
 
 #include "Camera2.h"
 #include "VKDescriptorSet.h"
@@ -56,10 +53,7 @@ namespace vkengine {
         // Scene, Sky, Options, BoneData, PostProcessing 유니폼 버퍼 및 디스크립터 셋 생성
         void createUniformBuffers();
 
-        void cleanup()
-        {
-            // Manual cleanup is not necessary
-        }
+        void cleanup();
 
         // 현재 프레임의 유니폼 버퍼 데이터 업데이트 (Scene, Options, Sky, PostProcessing)
         void update(object::Camera2& camera, uint32_t currentFrame, double time);
