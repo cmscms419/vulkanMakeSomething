@@ -50,6 +50,10 @@ struct OptionsUniform
     alignas(4) cInt shadowOn = 1;    // Use int instead of bool, 1 = true, 0 = false
     alignas(4) cInt discardOn = 1;   // Use int instead of bool, 1 = true, 0 = false
     alignas(4) cInt animationOn = 1; // Use int instead of bool, 1 = true, 0 = false
+};
+
+struct SSAOParamsUBO
+{
     alignas(4) cFloat ssaoRadius = 0.5f;
     alignas(4) cFloat ssaoBias = 0.025f;
     alignas(4) cInt ssaoSampleCount = 16;
