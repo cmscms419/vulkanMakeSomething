@@ -11,7 +11,7 @@
 #include "VKShaderManager.h"
 #include "VKDescriptorManager2.h"
 #include "VKDescriptorSet.h"
-#include "pipeLineHandle.h"
+#include "VKpipeLineHandle.h"
 #include "VKPushConstants.h"
 
 #include <imgui.h>
@@ -35,7 +35,7 @@ namespace vkengine {
             void resize(cUint32_t width, cUint32_t height);
 
             bool update();
-            PipeLineHandle& imguiPipeLine();
+            VKPipeLineHandle& imguiPipeLine();
 
         private:
             VKcontext& ctx;
@@ -48,7 +48,7 @@ namespace vkengine {
 
             VKImage2D fontImage;
             VKSamplerHandler fontSampler;
-            PipeLineHandle pipelineHandle;
+            VKPipeLineHandle pipelineHandle;
 
             DescriptorSetHander fontSet;
             VKPushConstants<PushConstBlock> pushConsts;

@@ -1,10 +1,10 @@
-#include "pipeLineHandle.h"
+#include "VKpipeLineHandle.h"
 #include "log.h"
 
 using namespace vkengine::Log;
 
 namespace vkengine {
-    void PipeLineHandle::createPostProcessingPipeLine(
+    void VKPipeLineHandle::createPostProcessingPipeLine(
         VkFormat outColorFormat,
         VkFormat depthFormat,
         VkSampleCountFlagBits msaaSamples

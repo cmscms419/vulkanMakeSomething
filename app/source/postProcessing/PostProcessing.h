@@ -32,8 +32,8 @@ class PostProcessingExample : public vkengine::VulkanEngineWin2
     std::shared_ptr<vkengine::object::Camera2> camera;
 
     // Rendering pipelines
-    PipeLineHandle skyPipeline;
-    PipeLineHandle postPipeline;
+    VKPipeLineHandle skyPipeline;
+    VKPipeLineHandle postPipeline;
 
     // Render targets and textures
     VKskyTexture skyTextures;

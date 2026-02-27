@@ -2,7 +2,7 @@
 #include "VKImage2D.h"
 #include "VKShaderManager.h"
 #include "VKshader.h"
-#include "pipeLineHandle.h"
+#include "VKpipeLineHandle.h"
 #include "VKbarrier2.h"
 #include "VKCommandBufferHander.h"
 #include "VKbuffer2.h"
@@ -58,7 +58,7 @@ int main(int argc, char* argv[]) {
         }
     );
 
-    PipeLineHandle samplePipeline(ctx, shaderManager, "sample_pipeline",
+    VKPipeLineHandle samplePipeline(ctx, shaderManager, "sample_pipeline",
         VK_FORMAT_R8G8B8A8_UNORM, VK_FORMAT_UNDEFINED, VK_SAMPLE_COUNT_1_BIT);
 
     VKCommandBufferHander commandGrapicsHander = ctx.createGrapicsCommandBufferHander(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);

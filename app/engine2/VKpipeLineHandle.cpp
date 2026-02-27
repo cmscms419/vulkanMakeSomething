@@ -1,4 +1,4 @@
-﻿#include "pipeLineHandle.h"
+﻿#include "VKpipeLineHandle.h"
 
 #include "log.h"
 #include "helper.h"
@@ -7,27 +7,19 @@ using namespace vkengine::Log;
 
 namespace vkengine
 {
-    PipeLineHandle::PipeLineHandle(VKcontext &context, VKShaderManager &shaderManager) : ctx(context), shaderManager(shaderManager)
+    VKPipeLineHandle::VKPipeLineHandle(VKcontext &context, VKShaderManager &shaderManager) : ctx(context), shaderManager(shaderManager)
     {
         pipelineLayout = VK_NULL_HANDLE;
         pipeline = VK_NULL_HANDLE;
     }
 
-    PipeLineHandle::PipeLineHandle(VKcontext &ctx, VKShaderManager &shaderManager, cString Name, VkFormat outColorFormat, VkFormat depthFormat, VkSampleCountFlagBits msaaSamples) : ctx(ctx), shaderManager(shaderManager), name(Name)
-    {
-        pipelineLayout = VK_NULL_HANDLE;
-        pipeline = VK_NULL_HANDLE;
-        
-        createByName(name, outColorFormat, depthFormat, msaaSamples);
-    }
-
-    PipeLineHandle::PipeLineHandle(PipeLineHandle &&other) noexcept : ctx(other.ctx), shaderManager(other.shaderManager), pipelineLayout(other.pipelineLayout), pipeline(other.pipeline), name(std::move(other.name))
+    VKPipeLineHandle::VKPipeLineHandle(VKPipeLineHandle &&other) noexcept : ctx(other.ctx), shaderManager(other.shaderManager), pipelineLayout(other.pipelineLayout), pipeline(other.pipeline), name(std::move(other.name))
     {
         other.pipelineLayout = VK_NULL_HANDLE;
         other.pipeline = VK_NULL_HANDLE;
     }
 
-    PipeLineHandle &PipeLineHandle::operator=(PipeLineHandle &&other) noexcept
+    VKPipeLineHandle &VKPipeLineHandle::operator=(VKPipeLineHandle &&other) noexcept
     {
         if (this != &other)
         {
@@ -42,7 +34,12 @@ namespace vkengine
         return *this;
     }
 
-    void PipeLineHandle::cleanup()
+    VKPipeLineHandle::~VKPipeLineHandle()
+    {
+        cleanup();
+    }
+
+    void VKPipeLineHandle::cleanup()
     {
         if (pipeline != VK_NULL_HANDLE)
         {
@@ -56,7 +53,7 @@ namespace vkengine
         }
     }
 
-    void PipeLineHandle::createCommon()
+    void VKPipeLineHandle::createCommon()
     {
         cleanup();
 
@@ -78,55 +75,71 @@ namespace vkengine
         _VK_CHECK_RESULT_(vkCreatePipelineLayout(ctx.getDevice()->logicaldevice, &pipelineLayoutCI, nullptr, &pipelineLayout));
     }
 
-    void PipeLineHandle::createByName(
-        cString name,
-        std::optional<VkFormat> outColorFormat,
-        std::optional<VkFormat> depthFormat,
-        std::optional<VkSampleCountFlagBits> msaaSamples)
-    {
-        this->name = name;
+    // void VKPipeLineHandle::createByName(
+    //     cString name,
+    //     std::optional<VkFormat> outColorFormat,
+    //     std::optional<VkFormat> depthFormat,
+    //     std::optional<VkSampleCountFlagBits> msaaSamples)
+    // {
+    //     this->name = name;
 
-        createCommon();
+    //     createCommon();
 
-        if (name == "sample_pipeline")
-        {
-            createSquarePipeline(outColorFormat.value(),depthFormat.value(),msaaSamples.value());
-        }
-        else if (name == "gui")
-        {
-            createGuiPipeline(outColorFormat.value());
-        }
-        else if (name == "sky")
-        {
-            if (outColorFormat.has_value() && depthFormat.has_value() && msaaSamples.has_value())
-            {
-                this->createSkyboxPipeline(outColorFormat.value(),depthFormat.value(),msaaSamples.value());
-            }
-            else
-            {
-                Log::EXIT_TO_LOGGER("outColorFormat, depthFormat, and msaaSamples required for %s", this->name);
-            }
-        }
-        else if (name == "post")
-        {
-            this->createPostProcessingPipeLine(outColorFormat.value(),depthFormat.value(),msaaSamples.value());
-        }
-        else if (name == "ssao")
-        {
-            this->createSSAOPipeline();
-        }
-        else if (name == "shadowMap")
-        {
-            this->createShadowMapPipeline(depthFormat.value());
-        }
-        else if (name == "pbrForward")
-        {
-            this->createForwardPBRPipeline(outColorFormat.value(),depthFormat.value(),msaaSamples.value());
-        }
-        else
-        {
-            PRINT_TO_LOGGER("Error: Unknown pipeline name: " + name);
-        }
-    }
+    //     if (name == "sample_pipeline")
+    //     {
+    //         createSquarePipeline(outColorFormat.value(), depthFormat.value(), msaaSamples.value());
+    //     }
+    //     else if (name == "gui")
+    //     {
+    //         createGuiPipeline(outColorFormat.value());
+    //     }
+    //     else if (name == "sky")
+    //     {
+    //         if (outColorFormat.has_value() && depthFormat.has_value() && msaaSamples.has_value())
+    //         {
+    //             this->createSkyboxPipeline(outColorFormat.value(), depthFormat.value(), msaaSamples.value());
+    //         }
+    //         else
+    //         {
+    //             Log::EXIT_TO_LOGGER("outColorFormat, depthFormat, and msaaSamples required for %s", this->name);
+    //         }
+    //     }
+    //     else if (name == "post")
+    //     {
+    //         this->createPostProcessingPipeLine(outColorFormat.value(), depthFormat.value(), msaaSamples.value());
+    //     }
+    //     else if (name == "ssao")
+    //     {
+    //         this->createComputePipeline();
+    //     }
+    //     else if (name == "shadowMap")
+    //     {
+    //         this->createShadowMapPipeline(depthFormat.value());
+    //     }
+    //     else if (name == "pbrForward")
+    //     {
+    //         this->createForwardPBRPipeline(outColorFormat.value(), depthFormat.value(), msaaSamples.value());
+    //     }
+    //     else
+    //     {
+    //         PRINT_TO_LOGGER("Error: Unknown pipeline name: " + name);
+    //     }
+    // }
+
+    // void VKPipeLineHandle::dispatch(const VkCommandBuffer &cmd, uint32_t frameIndex)
+    // {
+    //     assert(bindPoint_ == VK_PIPELINE_BIND_POINT_COMPUTE);
+
+    //     submitBarriers(cmd, frameIndex);
+
+    //     vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_COMPUTE, pipeline_);
+
+    //     bindDescriptorSets(cmd, frameIndex);
+
+    //     // Use actual local workgroup size from shader reflection instead of hardcoded values
+    //     uint32_t groupCountX = (width_ + local_size_[0] - 1) / local_size_[0];
+    //     uint32_t groupCountY = (height_ + local_size_[1] - 1) / local_size_[1];
+    //     vkCmdDispatch(cmd, groupCountX, groupCountY, 1);
+    // }
 
 }

@@ -52,13 +52,13 @@ namespace vkengine {
     void VKforwardRenderer::createPipelines(const VkFormat colorFormat, const VkFormat depthFormat, VkSampleCountFlagBits msaaSamples)
     {
         pipelines.emplace("pbrForward",
-            PipeLineHandle(ctx, shaderManager, "pbrForward", VK_FORMAT_R16G16B16A16_SFLOAT,
+            VKPipeLineHandle(ctx, shaderManager, "pbrForward", VK_FORMAT_R16G16B16A16_SFLOAT,
                 depthFormat, msaaSamples));
-        pipelines.emplace("sky", PipeLineHandle(ctx, shaderManager, "sky", VK_FORMAT_R16G16B16A16_SFLOAT,
+        pipelines.emplace("sky", VKPipeLineHandle(ctx, shaderManager, "sky", VK_FORMAT_R16G16B16A16_SFLOAT,
             depthFormat, msaaSamples));
-        pipelines.emplace("post", PipeLineHandle(ctx, shaderManager, "post", colorFormat,
+        pipelines.emplace("post", VKPipeLineHandle(ctx, shaderManager, "post", colorFormat,
             depthFormat, VK_SAMPLE_COUNT_1_BIT));
-        pipelines.emplace("shadowMap", PipeLineHandle(ctx, shaderManager, "shadowMap", VK_FORMAT_D16_UNORM,
+        pipelines.emplace("shadowMap", VKPipeLineHandle(ctx, shaderManager, "shadowMap", VK_FORMAT_D16_UNORM,
             VK_FORMAT_D16_UNORM, VK_SAMPLE_COUNT_1_BIT));
     }
     

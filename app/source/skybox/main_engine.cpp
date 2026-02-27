@@ -2,7 +2,7 @@
 #include "VKImage2D.h"
 #include "VKShaderManager.h"
 #include "VKshader.h"
-#include "pipeLineHandle.h"
+#include "VKpipeLineHandle.h"
 #include "VKbarrier2.h"
 #include "VKCommandBufferHander.h"
 #include "VKbuffer2.h"
@@ -164,7 +164,7 @@ void renderColorControlWindow()
 
 void recordCommandBuffer(
     VKCommandBufferHander& cmd, VKSwapChain& swapchain, cUint32_t imageIndex,
-    VkExtent2D windowSize, gui::VKimguiRenderer& guiRenderer, PipeLineHandle& skypipeline)
+    VkExtent2D windowSize, gui::VKimguiRenderer& guiRenderer, VKPipeLineHandle& skypipeline)
 {
     vkResetCommandBuffer(cmd.getCommandBuffer(), 0);
     VkCommandBufferBeginInfo cmdBufferBeginInfo{ VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO };
@@ -308,7 +308,7 @@ int main(int argc, char* argv[]) {
     std::vector<VkSemaphore> renderSemaphores;
     std::vector<VkFence> inFlightFences;
 
-    PipeLineHandle skyboxpipeline(vkContext, shaderManager);
+    VKPipeLineHandle skyboxpipeline(vkContext, shaderManager);
     skyboxpipeline.createByName(
         "sky", 
         swapChain.getSwapChainImageFormat(), 

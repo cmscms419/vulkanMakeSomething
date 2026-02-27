@@ -1,4 +1,4 @@
-﻿#include "pipeLineHandle.h"
+﻿#include "VKpipeLineHandle.h"
 
 #include "log.h"
 #include "type.h"
@@ -6,7 +6,7 @@
 using namespace vkengine::Log;
 
 namespace vkengine {
-    void PipeLineHandle::createForwardPBRPipeline(VkFormat outColorFormat, VkFormat depthFormat, VkSampleCountFlagBits msaaSamples)
+    void VKPipeLineHandle::createForwardPBRPipeline(VkFormat outColorFormat, VkFormat depthFormat, VkSampleCountFlagBits msaaSamples)
     {
         this->name = "pbrForward";
 

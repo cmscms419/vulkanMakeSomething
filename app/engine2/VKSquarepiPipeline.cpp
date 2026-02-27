@@ -1,4 +1,4 @@
-﻿#include "pipeLineHandle.h"
+﻿#include "VKpipeLineHandle.h"
 
 #include "data.h"
 #include "helper.h"
@@ -6,7 +6,7 @@
 using namespace vkengine::Log;
 
 namespace vkengine {
-    void PipeLineHandle::createSquarePipeline(
+    void VKPipeLineHandle::createSquarePipeline(
         VkFormat outColorFormat, 
         VkFormat depthFormat, 
         VkSampleCountFlagBits msaaSamples)

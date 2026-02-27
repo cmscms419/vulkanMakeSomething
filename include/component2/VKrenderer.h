@@ -11,7 +11,7 @@
 #include "VKStorageBuffer.h"
 #include "VKSamplerHandler.h"
 #include "VKSkyTexture.h"
-#include "pipeLineHandle.h"
+#include "VKpipeLineHandle.h"
 #include "VKDepthStencil.h"
 #include "VKViewFrustum.h"
 #include "VKModel.h"
@@ -144,7 +144,7 @@ namespace vkengine {
         DescriptorSetHander postDescriptorSet;
         DescriptorSetHander shadowMapSet;
 
-        std::unordered_map<cString, PipeLineHandle> pipelines;
+        std::unordered_map<cString, VKPipeLineHandle> pipelines;
 
         ViewFrustum viewFrustum{};
         cBool frustumCullingEnabled{ true };

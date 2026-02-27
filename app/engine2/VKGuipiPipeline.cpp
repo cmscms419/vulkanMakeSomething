@@ -1,4 +1,4 @@
-#include "pipeLineHandle.h"
+#include "VKpipeLineHandle.h"
 #include <imgui.h>
 #include <array>
 
@@ -13,7 +13,7 @@ namespace vkengine {
     // Reflection으로는 자료형이 애매하기 때문
     // (셰이더에서 vertex/index 자료형을 지정하지 않음)
     // 개수 확인 정도는 가능
-    void PipeLineHandle::createGuiPipeline(VkFormat outColorFormat)
+    void VKPipeLineHandle::createGuiPipeline(VkFormat outColorFormat)
     {
 #if 0
         // vertex attribute description

@@ -11,7 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\app\engine2\VKComputepiPipeline.cpp" />
+    <ClCompile Include="..\..\app\engine2\VKComputePipeline.cpp" />
     <ClCompile Include="..\..\app\engine2\VKDescriptorSet.cpp" />
     <ClCompile Include="..\..\app\engine2\VKAnimation.cpp" />
     <ClCompile Include="..\..\app\engine2\VKForwardPbrPipeline.cpp" />
@@ -44,6 +44,7 @@
     <ClCompile Include="..\..\app\engine2\VKswapchain.cpp" />
     <ClCompile Include="..\..\app\engine2\VKViewFrustum.cpp" />
     <ClCompile Include="..\..\app\engine2\VKshadowMap.cpp" />
+    <ClCompile Include="..\..\app\engine2\VKDepthStencil.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\include\engine2\VKshadowMap.h" />
@@ -59,7 +60,7 @@
     <ClInclude Include="..\..\include\engine2\VKdescriptorPool.h" />
     <ClInclude Include="..\..\include\engine2\VKdeviceHandler2.h" />
     <ClInclude Include="..\..\include\engine2\VKImage2D.h" />
-    <ClInclude Include="..\..\include\engine2\pipeLineHandle.h" />
+    <ClInclude Include="..\..\include\engine2\VKpipeLineHandle.h" />
     <ClInclude Include="..\..\include\engine2\VKMaterial.h" />
     <ClInclude Include="..\..\include\engine2\VKMesh.h" />
     <ClInclude Include="..\..\include\engine2\VKModel.h" />

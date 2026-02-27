@@ -203,7 +203,7 @@ namespace vkengine {
             return updateCmdBuffers;
         }
         
-        PipeLineHandle& VKimguiRenderer::imguiPipeLine()
+        VKPipeLineHandle& VKimguiRenderer::imguiPipeLine()
         {
             return this->pipelineHandle;
         }
