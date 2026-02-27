@@ -46,6 +46,8 @@ VKModel::VKModel(VKModel&& other) noexcept
     other.boundingBoxMax = cVec3(-FLT_MAX);
     other.visible = true;
     other.modelMatrix = cMat4(1.0f);
+    other.name = "";
+    std::fill(std::begin(other.coeffs), std::end(other.coeffs), 0.0f);
 }
 
 VKModel::~VKModel()

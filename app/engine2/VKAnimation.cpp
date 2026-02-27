@@ -72,7 +72,7 @@ void VKAnimation::processBones(const aiScene* scene)
         if (!mesh->HasBones())
             continue;
 
-        // PRINT_TO_LOGGER("  Processing {} bones from mesh '{}'", mesh->mNumBones, mesh->mName.C_Str());
+        PRINT_TO_LOGGER("  Processing %d bones from mesh '%s'", mesh->mNumBones, mesh->mName.C_Str());
 
         totalMeshBones += mesh->mNumBones;
 
