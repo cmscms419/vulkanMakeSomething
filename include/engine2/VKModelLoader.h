@@ -1,17 +1,14 @@
-﻿#pragma once
+﻿#ifndef VK_MODELLOADER_INCLUDE_H_
+#define VK_MODELLOADER_INCLUDE_H_
 
 #include "common.h"
 
 #include <assimp/Importer.hpp>
 #include <assimp/postprocess.h>
 #include <assimp/scene.h>
-#include <glm/gtc/type_ptr.hpp> // For glm::make_mat4
-
 
 namespace vkengine {
 
-using namespace std;
-using namespace glm;
 
 class VKModel;
 class VKModelNode;
@@ -44,3 +41,5 @@ class ModelLoader
 };
 
 } // namespace vkengine
+
+#endif // VK_MODELLOADER_INCLUDE_H_
