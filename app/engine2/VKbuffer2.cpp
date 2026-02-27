@@ -1,7 +1,6 @@
-﻿#include "helper.h"
-#include "VKbuffer2.h"
+﻿#include "VKbuffer2.h"
+#include "helper.h"
 
-using namespace vkengine::helper;
 namespace vkengine {
 
     void VKBaseBuffer2::cleanup()
@@ -31,7 +30,7 @@ namespace vkengine {
         this->size = size;
         this->offset = 0;
 
-        vkengine::helper::resource::createBuffer2(
+        helper::resource::createBuffer2(
             this->ctx.getDevice()->logicaldevice,
             this->ctx.getDevice()->physicalDevice,
             this->size,
@@ -121,7 +120,7 @@ namespace vkengine {
         this->size = size;
         this->offset = 0;
 
-        vkengine::helper::resource::createBuffer2(
+        helper::resource::createBuffer2(
             this->ctx.getDevice()->logicaldevice,
             this->ctx.getDevice()->physicalDevice,
             this->size,
@@ -143,7 +142,7 @@ namespace vkengine {
         this->size = size;
         this->offset = 0;
 
-        vkengine::helper::resource::createBuffer2(
+        helper::resource::createBuffer2(
             this->ctx.getDevice()->logicaldevice,
             this->ctx.getDevice()->physicalDevice,
             this->size,

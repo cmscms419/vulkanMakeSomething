@@ -2,6 +2,8 @@
 
 #include "macros.h"
 
+#include "helper.h"
+
 namespace vkengine
 {
     VKStorgeBuffer::VKStorgeBuffer(VKcontext &ctx) : ctx(ctx)
@@ -59,6 +61,7 @@ namespace vkengine
         }
         else
         {
+#if 0
             // Use staging buffer for device-local memory
             const VkDevice device = this->ctx.getDevice()->logicaldevice;
 
@@ -103,6 +106,47 @@ namespace vkengine
             // Cleanup staging resources
             vkDestroyBuffer(device, stagingBuffer, nullptr);
             vkFreeMemory(device, stagingMemory, nullptr);
+#else
+            cleanup();
+
+            // Create staging buffer
+            VkBuffer stagingBuffer;
+            VkDeviceMemory stagingMemory;
+
+            VkDevice logicaldevice = this->ctx.getDevice()->logicaldevice;
+            VkPhysicalDevice physicaldevice = this->ctx.getDevice()->physicalDevice;
+            VkDeviceSize *allocatedSize;
+            VkDeviceSize *alignment;
+
+            helper::resource::createBuffer2(
+                logicaldevice,
+                physicaldevice,
+                size,
+                VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+                stagingBuffer,
+                stagingMemory,
+                allocatedSize,
+                alignment);
+
+            helper::resource::copyToDeviceMemory(logicaldevice, data, stagingMemory, size);
+
+            // Copy from staging buffer to storage buffer
+            VKCommandBufferHander commandBuffer = ctx.createTransferCommandBufferHander(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
+
+            VkBufferCopy copyRegion{};
+            copyRegion.srcOffset = 0;
+            copyRegion.dstOffset = offset;
+            copyRegion.size = size;
+            vkCmdCopyBuffer(commandBuffer.getCommandBuffer(), stagingBuffer, buffer, 1, &copyRegion);
+
+            commandBuffer.submitAndWait();
+
+            // Cleanup staging resources
+            vkDestroyBuffer(logicaldevice, stagingBuffer, nullptr);
+            vkFreeMemory(logicaldevice, stagingMemory, nullptr);
+
+#endif
         }
     }
 
