@@ -193,7 +193,7 @@ class VKModel
     cVec3 boundingBoxMin;
     cVec3 boundingBoxMax;
 
-    std::vector<VKUniformBuffer2<cMaterial2>> materialUBO;
+    std::vector<VKUniformBuffer2<cMaterial>> materialUBO;
     std::vector<DescriptorSetHander> materialDescriptorSetHander;
 
     cString name;

@@ -39,8 +39,35 @@ namespace vkengine
             const PipelineConfig &config,
             std::vector<VkFormat> outColorFormats = {},
             std::optional<VkFormat> depthFormat = std::nullopt,
-            std::optional<VkSampleCountFlagBits> msaaSamples = std::nullopt
-        );
+            std::optional<VkSampleCountFlagBits> msaaSamples = std::nullopt);
+
+        void createByName(cString name,
+                          std::optional<VkFormat> outColorFormat = VK_FORMAT_UNDEFINED,
+                          std::optional<VkFormat> depthFormat = VK_FORMAT_UNDEFINED,
+                          std::optional<VkSampleCountFlagBits> msaaSamples = VK_SAMPLE_COUNT_FLAG_BITS_MAX_ENUM);
+
+        void createSquarePipeline(
+            VkFormat outColorFormat = VK_FORMAT_UNDEFINED,
+            VkFormat depthFormat = VK_FORMAT_UNDEFINED,
+            VkSampleCountFlagBits msaaSamples = VK_SAMPLE_COUNT_FLAG_BITS_MAX_ENUM);
+
+        void createSkyboxPipeline(
+            VkFormat outColorFormat,
+            VkFormat depthFormat,
+            VkSampleCountFlagBits msaaSamples);
+
+        void createGuiPipeline(VkFormat outColorFormat = VK_FORMAT_UNDEFINED);
+        void createPostProcessingPipeLine(
+            VkFormat outColorFormat = VK_FORMAT_UNDEFINED,
+            VkFormat depthFormat = VK_FORMAT_UNDEFINED,
+            VkSampleCountFlagBits msaaSamples = VK_SAMPLE_COUNT_FLAG_BITS_MAX_ENUM);
+        void createSSAOPipeline();
+        void createShadowMapPipeline(
+            VkFormat depthFormat = VK_FORMAT_UNDEFINED);
+        void createForwardPBRPipeline(
+            VkFormat outColorFormat,
+            VkFormat depthFormat,
+            VkSampleCountFlagBits msaaSamples);
 
         void dispatch(const VkCommandBuffer &cmd, uint32_t frameIndex);
 

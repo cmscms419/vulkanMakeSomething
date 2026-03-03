@@ -5,18 +5,13 @@
 // 해당 강의 주소 : https://www.honglab.ai/courses/real-time-vulkan
 
 #include "common.h"
+#include "descriptor.h"
 
 #include <vector>
 #include <unordered_map>
 
 namespace vkengine {
 
-    struct LayoutInfo
-    {
-        std::vector<VkDescriptorSetLayoutBinding> bindings{};
-        std::vector<std::tuple<cString, cUint32_t>> pipelineNamesAndSetNumbers;
-    };
-    
     struct DescriptorManager2 {
 
         const std::vector<VkDescriptorSetLayoutBinding>&

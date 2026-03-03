@@ -13,7 +13,7 @@ namespace vkengine
         VkPhysicalDevice physicalDevice = ctx.getDevice()->physicalDevice;
         VkFormat depthFormat = ctx.getDepthStencil()->depthFormat;
 
-        #if 0
+        #if 1
         VkImageCreateInfo imageCI{VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO};
         imageCI.imageType = VK_IMAGE_TYPE_2D;
         imageCI.format = ctx.getDepthStencil()->depthFormat;

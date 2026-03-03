@@ -3,6 +3,7 @@
 
 #include "VKcontext.h"
 #include "VKShader.h"
+#include "descriptor.h"
 
 #include <map>
 #include <unordered_map>
@@ -35,9 +36,12 @@ namespace vkengine {
 
         const std::vector<LayoutInfo>& getLayoutInfos() const;
 
+        const ShaderResourceLayout& getShaderResourceLayout(cString pipelineName) const;
+
     private:
         VKcontext& ctx;
         std::unordered_map<cString, std::vector<VKshader>> pipelineShaders;
+        std::unordered_map<cString, std::vector<ShaderResourceLayout>> pipelineLayouts;
         std::vector<LayoutInfo> layoutInfos;
 
         // 쉐이더 생성 및 파이프라인별 쉐이더 관리
@@ -50,7 +54,7 @@ namespace vkengine {
         // 리플렉션된 데이터를 활용하여 Vulkan 디스크립터 레이아웃 정보를 만드는 함수
         void collectPerPipelineBindings(
             const cString& pipelineName,
-            std::map<cUint32_t, std::map<cUint32_t, VkDescriptorSetLayoutBinding>>& bindingCollector) const;
+            std::map<cUint32_t, std::map<cUint32_t, Bindinginfo>>& bindingCollector) const;
 
         VkDescriptorSetLayoutBinding createLayoutBindingFromReflect(const SpvReflectDescriptorBinding* binding,
             VkShaderStageFlagBits shaderStage) const;

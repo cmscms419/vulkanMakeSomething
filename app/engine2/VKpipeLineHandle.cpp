@@ -13,6 +13,14 @@ namespace vkengine
         pipeline = VK_NULL_HANDLE;
     }
 
+    VKPipeLineHandle::VKPipeLineHandle(VKcontext &ctx, VKShaderManager &shaderManager, cString Name, VkFormat outColorFormat, VkFormat depthFormat, VkSampleCountFlagBits msaaSamples) : ctx(ctx), shaderManager(shaderManager), name(Name)
+    {
+        pipelineLayout = VK_NULL_HANDLE;
+        pipeline = VK_NULL_HANDLE;
+        
+        createByName(name, outColorFormat, depthFormat, msaaSamples);
+    }
+
     VKPipeLineHandle::VKPipeLineHandle(VKPipeLineHandle &&other) noexcept : ctx(other.ctx), shaderManager(other.shaderManager), pipelineLayout(other.pipelineLayout), pipeline(other.pipeline), name(std::move(other.name))
     {
         other.pipelineLayout = VK_NULL_HANDLE;
@@ -75,56 +83,56 @@ namespace vkengine
         _VK_CHECK_RESULT_(vkCreatePipelineLayout(ctx.getDevice()->logicaldevice, &pipelineLayoutCI, nullptr, &pipelineLayout));
     }
 
-    // void VKPipeLineHandle::createByName(
-    //     cString name,
-    //     std::optional<VkFormat> outColorFormat,
-    //     std::optional<VkFormat> depthFormat,
-    //     std::optional<VkSampleCountFlagBits> msaaSamples)
-    // {
-    //     this->name = name;
+    void VKPipeLineHandle::createByName(
+        cString name,
+        std::optional<VkFormat> outColorFormat,
+        std::optional<VkFormat> depthFormat,
+        std::optional<VkSampleCountFlagBits> msaaSamples)
+    {
+        this->name = name;
 
-    //     createCommon();
+        createCommon();
 
-    //     if (name == "sample_pipeline")
-    //     {
-    //         createSquarePipeline(outColorFormat.value(), depthFormat.value(), msaaSamples.value());
-    //     }
-    //     else if (name == "gui")
-    //     {
-    //         createGuiPipeline(outColorFormat.value());
-    //     }
-    //     else if (name == "sky")
-    //     {
-    //         if (outColorFormat.has_value() && depthFormat.has_value() && msaaSamples.has_value())
-    //         {
-    //             this->createSkyboxPipeline(outColorFormat.value(), depthFormat.value(), msaaSamples.value());
-    //         }
-    //         else
-    //         {
-    //             Log::EXIT_TO_LOGGER("outColorFormat, depthFormat, and msaaSamples required for %s", this->name);
-    //         }
-    //     }
-    //     else if (name == "post")
-    //     {
-    //         this->createPostProcessingPipeLine(outColorFormat.value(), depthFormat.value(), msaaSamples.value());
-    //     }
-    //     else if (name == "ssao")
-    //     {
-    //         this->createComputePipeline();
-    //     }
-    //     else if (name == "shadowMap")
-    //     {
-    //         this->createShadowMapPipeline(depthFormat.value());
-    //     }
-    //     else if (name == "pbrForward")
-    //     {
-    //         this->createForwardPBRPipeline(outColorFormat.value(), depthFormat.value(), msaaSamples.value());
-    //     }
-    //     else
-    //     {
-    //         PRINT_TO_LOGGER("Error: Unknown pipeline name: " + name);
-    //     }
-    // }
+        if (name == "sample_pipeline")
+        {
+            createSquarePipeline(outColorFormat.value(), depthFormat.value(), msaaSamples.value());
+        }
+        else if (name == "gui")
+        {
+            createGuiPipeline(outColorFormat.value());
+        }
+        else if (name == "sky")
+        {
+            if (outColorFormat.has_value() && depthFormat.has_value() && msaaSamples.has_value())
+            {
+                this->createSkyboxPipeline(outColorFormat.value(), depthFormat.value(), msaaSamples.value());
+            }
+            else
+            {
+                Log::EXIT_TO_LOGGER("outColorFormat, depthFormat, and msaaSamples required for %s", this->name);
+            }
+        }
+        else if (name == "post")
+        {
+            this->createPostProcessingPipeLine(outColorFormat.value(), depthFormat.value(), msaaSamples.value());
+        }
+        else if (name == "ssao")
+        {
+            this->createComputePipeline();
+        }
+        else if (name == "shadowMap")
+        {
+            this->createShadowMapPipeline(depthFormat.value());
+        }
+        else if (name == "pbrForward")
+        {
+            this->createForwardPBRPipeline(outColorFormat.value(), depthFormat.value(), msaaSamples.value());
+        }
+        else
+        {
+            PRINT_TO_LOGGER("Error: Unknown pipeline name: " + name);
+        }
+    }
 
     // void VKPipeLineHandle::dispatch(const VkCommandBuffer &cmd, uint32_t frameIndex)
     // {

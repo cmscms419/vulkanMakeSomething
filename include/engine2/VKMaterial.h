@@ -23,7 +23,7 @@ class VKMaterial
         sTransparent = 0x4,
     };
 
-    cMaterial2 ubo;
+    cMaterial ubo;
     uint32_t flags = sCastShadow | sReceiveShadow;
 
     cString name;

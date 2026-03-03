@@ -2,6 +2,7 @@
 
 #include "log.h"
 #include "type.h"
+#include "helper.h"
 
 using namespace vkengine::Log;
 
@@ -48,10 +49,13 @@ namespace vkengine
             BindingEqual>
             bindingCollector;
 
+        // reflect된 바인딩 정보를 기반으로 ShaderResourceLayout 생성
+        ShaderResourceLayout layout{};
+
         for (const auto &[pipelineName, shaders] : this->pipelineShaders)
         {
-            // 파이프라인별 바인딩 수집기: setIndex -> bindingIndex -> VkDescriptorSetLayoutBinding
-            std::map<cUint32_t, std::map<cUint32_t, VkDescriptorSetLayoutBinding>> pipelineBindingCollector;
+            // 파이프라인별 바인딩 수집기: setIndex -> bindingIndex -> Bindinginfo
+            std::map<cUint32_t, std::map<cUint32_t, Bindinginfo>> pipelineBindingCollector;
             collectPerPipelineBindings(pipelineName, pipelineBindingCollector);
 
             // setIndex별로 LayoutInfo 생성
@@ -69,7 +73,7 @@ namespace vkengine
                 // map을 vector로 변환
                 for (const auto &[bindingIndex, layoutBinding] : bindingsMap)
                 {
-                    bindings.push_back(layoutBinding);
+                    bindings.push_back(layoutBinding.binding);
                 }
 
                 // stageFlags를 제외한 나머지 속성이 동일하면 같은 레이아웃으로 간주
@@ -111,6 +115,7 @@ namespace vkengine
                     binding.stageFlags = accumulatedStageFlags;
                 }
             }
+        
         }
 
         this->layoutInfos.clear();
@@ -125,7 +130,7 @@ namespace vkengine
 
     void VKShaderManager::collectPerPipelineBindings(
         const cString &pipelineName,
-        std::map<cUint32_t, std::map<cUint32_t, VkDescriptorSetLayoutBinding>> &bindingCollector) const
+        std::map<cUint32_t, std::map<cUint32_t, Bindinginfo>> &bindingCollector) const
     {
         // 파이프라인에 속한 모든 쉐이더의 바인딩 정보를 수집
         const auto &shaders = this->pipelineShaders.at(pipelineName);
@@ -133,14 +138,12 @@ namespace vkengine
         // 각 쉐이더의 바인딩 정보를 순회하며 수집
         for (const auto &shader : shaders)
         {
-
             // Reflect 모듈에서 바인딩 정보 추출
             const auto &reflectModule = shader.reflectModule;
 
             // 각 바인딩 정보를 순회하며 수집
             for (cUint32_t i = 0; i < reflectModule.descriptor_binding_count; ++i)
             {
-
                 // 바인딩 정보 추출
                 const SpvReflectDescriptorBinding *binding = &reflectModule.descriptor_bindings[i];
 
@@ -152,6 +155,7 @@ namespace vkengine
 
                 cUint32_t setIndex = binding->set;
                 cUint32_t bindingIndex = binding->binding;
+                cString bindingName = binding->name;
 
                 // 레이아웃 바인딩 생성
                 // 만약, 이미 해당 set과 binding이 존재한다면 stageFlags만 업데이트
@@ -162,12 +166,14 @@ namespace vkengine
                 if (inserted)
                 {
                     // 새로운 바인딩이 추가된 경우
-                    bindingIt->second = createLayoutBindingFromReflect(binding, static_cast<VkShaderStageFlagBits>(shader.stage));
+                    bindingIt->second.binding = createLayoutBindingFromReflect(binding, static_cast<VkShaderStageFlagBits>(shader.stage));
+                    bindingIt->second.name = bindingName;
+                    bindingIt->second.set = setIndex;
                 }
                 else
                 {
                     // 이미 존재하는 바인딩인 경우, stageFlags 업데이트
-                    bindingIt->second.stageFlags |= static_cast<VkShaderStageFlagBits>(shader.stage);
+                    bindingIt->second.binding.stageFlags |= static_cast<VkShaderStageFlagBits>(shader.stage);
                 }
             }
         }
@@ -296,4 +302,15 @@ namespace vkengine
         return layoutInfos;
     }
 
+    // const ShaderResourceLayout &VKShaderManager::getShaderResourceLayout(cString pipelineName) const
+    // {
+    //     // const auto &layouts = pipelineLayouts.at(pipelineName);
+
+    //     // if (layouts.empty())
+    //     // {
+    //     //     EXIT_TO_LOGGER("No shader resource layout found for pipeline: %s", pipelineName.c_str());
+    //     // }
+
+    //     // return layouts[0]; // 현재는 파이프라인당 하나의 레이아웃만 지원
+    // }
 }
