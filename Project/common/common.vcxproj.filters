@@ -1,0 +1,111 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="external">
+      <UniqueIdentifier>{6d4bdeae-2764-436e-ba73-fb09cc907caf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="common">
+      <UniqueIdentifier>{8a29e1c6-cf6c-4ba7-a57f-e59595af4897}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="helper">
+      <UniqueIdentifier>{478740ee-48aa-4613-bb2f-e42c7d3dc6fc}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\include\common\common.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\common\macros.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\common\VectorCMS.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\common\Vkbase.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\common\VKmath.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\common\log.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\external\include\spirv-reflect\spirv_reflect.h">
+      <Filter>external</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\helper\helper.h">
+      <Filter>helper</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\helper\helperFile.h">
+      <Filter>helper</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\common\math_types.h" />
+    <ClInclude Include="..\..\include\helper\debug.h" />
+    <ClInclude Include="..\..\include\helper\resourseload.h" />
+    <ClInclude Include="..\..\include\struct\geometry.h" />
+    <ClInclude Include="..\..\include\struct\material.h" />
+    <ClInclude Include="..\..\include\struct\resource.h" />
+    <ClInclude Include="..\..\include\struct\type.h" />
+    <ClInclude Include="..\..\include\struct\ubo.h" />
+    <ClInclude Include="..\..\include\struct\vkdevice.h" />
+    <ClInclude Include="..\..\include\struct\object.h" />
+    <ClInclude Include="..\..\include\struct\data.h" />
+    <ClInclude Include="..\..\include\helper\helperDescriptor.h">
+      <Filter>helper</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\helper\helperDevice.h">
+      <Filter>helper</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\helper\helperPipeLine.h">
+      <Filter>helper</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\helper\helperResource.h">
+      <Filter>helper</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\helper\helperShader.h">
+      <Filter>helper</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\common\base_types.h" />
+    <ClInclude Include="..\..\include\struct\configtype.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\app\common\macros.cpp">
+      <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\common\VectorCMS.cpp">
+      <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\common\VKmath.cpp">
+      <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\common\log.cpp">
+      <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\external\include\spirv-reflect\spirv_reflect.c">
+      <Filter>external</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\helper\helperFile.cpp">
+      <Filter>helper</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\helper\debug.cpp" />
+    <ClCompile Include="..\..\app\helper\resourseload.cpp" />
+    <ClCompile Include="..\..\app\struct\geometry.cpp" />
+    <ClCompile Include="..\..\app\struct\type.cpp" />
+    <ClCompile Include="..\..\app\struct\data.cpp" />
+    <ClCompile Include="..\..\app\helper\helperDescriptor.cpp">
+      <Filter>helper</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\helper\helperDevice.cpp">
+      <Filter>helper</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\helper\helperPipeLine.cpp">
+      <Filter>helper</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\helper\helperResource.cpp">
+      <Filter>helper</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\app\helper\helperShader.cpp">
+      <Filter>helper</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>
