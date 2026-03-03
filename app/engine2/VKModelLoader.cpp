@@ -29,13 +29,13 @@ namespace vkengine
         directory = "";
     }
 
-    void ModelLoader::loadFromModelFile(const string &modelFilename, bool readBistroObj)
+    void ModelLoader::loadFromModelFile(const cString &modelFilename, bool readBistroObj)
     {
         // Start timer for loading time measurement
         auto startTime = std::chrono::high_resolution_clock::now();
 
         // Generate cache file path based on model filename
-        string cachePath = helper::file::getCachePath(modelFilename);
+        cString cachePath = helper::file::getCachePath(modelFilename);
 
         // Check if cache file exists and is newer than the model file
         bool useCache = false;
@@ -58,7 +58,7 @@ namespace vkengine
                 model.textures.reserve(model.textureFilenames.size());
                 for (auto &filename : model.textureFilenames)
                 {
-                    string prefix = readBistroObj ? directory + "/LowRes/" : "";
+                    cString prefix = readBistroObj ? directory + "/LowRes/" : "";
                     model.textures.emplace_back(model.ctx);
                     model.textures.back().createTextureFromImage(prefix + filename, false, model.textureSRgb[model.textures.size() - 1]);
                 }
@@ -151,7 +151,7 @@ namespace vkengine
         model.textures.reserve(model.textureFilenames.size());
         for (auto &filename : model.textureFilenames)
         {
-            string prefix = readBistroObj ? directory + "/LowRes/" : directory + "/";
+            cString prefix = readBistroObj ? directory + "/LowRes/" : directory + "/";
             model.textures.emplace_back(model.ctx);
             // Check if this is an embedded texture (indicated by * prefix)
             if (!filename.empty() && filename[0] == '*')
@@ -234,15 +234,15 @@ namespace vkengine
             {
                 // External texture file - use existing path logic
 
-                string prefix = readBistroObj ? directory + "/LowRes/" : directory + "/";
+                cString prefix = readBistroObj ? directory + "/LowRes/" : directory + "/";
                 // textures.back().createTextureFromImage(prefix + filename, false,
                 //                                         textureSRgb[textures.size() - 1]);
 
                 // 안내:
                 // - 캐릭터 fbx는 미리 추출한 텍스쳐 사용
                 // - 같은 폴더에 있기 때문에 파일이름에서 폴더명 제거
-                string shortFilename = readBistroObj ? filename : helper::file::getFilenameOnly(filename);
-                string resourcePath = prefix + shortFilename;
+                cString shortFilename = readBistroObj ? filename : helper::file::getFilenameOnly(filename);
+                cString resourcePath = prefix + shortFilename;
 
                 PRINT_TO_LOGGER("Texture filename: %s\n", resourcePath.c_str());
 
@@ -270,7 +270,7 @@ namespace vkengine
         return;
     }
 
-    void ModelLoader::loadFromCache(const string &cacheFilename)
+    void ModelLoader::loadFromCache(const cString &cacheFilename)
     {
         std::ifstream stream(cacheFilename, std::ios::binary);
         if (!stream.is_open())
@@ -333,7 +333,7 @@ namespace vkengine
             if (!stream.good())
                 return;
 
-            string filename;
+            cString filename;
             if (filenameLength > 0)
             {
                 filename.resize(filenameLength);
@@ -380,7 +380,7 @@ namespace vkengine
         for (uint32_t i = 0; i < materialCount; ++i)
         {
             model.materials[i].loadFromCache(
-                ""); // Use empty string since we're reading from stream
+                ""); // Use empty cString since we're reading from stream
 
             // Read material data directly from our stream
             uint32_t materialVersion;
@@ -455,7 +455,7 @@ namespace vkengine
         // model.textures.clear();
     }
 
-    void ModelLoader::writeToCache(const string &cacheFilename)
+    void ModelLoader::writeToCache(const cString &cacheFilename)
     {
         std::ofstream stream(cacheFilename, std::ios::binary);
         if (!stream.is_open())
@@ -569,7 +569,7 @@ namespace vkengine
     {
         // Create new VKModelNode
         unique_ptr<VKModelNode> modelNode = make_unique<VKModelNode>();
-        modelNode->name = string(node->mName.C_Str());
+        modelNode->name = cString(node->mName.C_Str());
         modelNode->parent = parent;
 
         modelNode->localMatrix = glm::transpose(glm::make_mat4(&node->mTransformation.a1));
@@ -639,7 +639,7 @@ namespace vkengine
 
         Mesh &currentMesh = meshes[meshIndex];
 
-        currentMesh.name = string(mesh->mName.C_Str());
+        currentMesh.name = cString(mesh->mName.C_Str());
 
         // Process vertices with UV validation
         currentMesh.vertices.reserve(mesh->mNumVertices);
@@ -715,7 +715,7 @@ namespace vkengine
             for (uint32_t boneIndex = 0; boneIndex < mesh->mNumBones; ++boneIndex)
             {
                 const aiBone *bone = mesh->mBones[boneIndex];
-                string boneName = bone->mName.C_Str();
+                cString boneName = bone->mName.C_Str();
 
                 // Get the GLOBAL bone index from the VKAnimation system
                 int globalBoneIndex = -1;
@@ -789,7 +789,7 @@ namespace vkengine
             mat.ubo.emissiveFactor = vec4(emissive.r, emissive.g, emissive.b, 1.0f);
         }
 
-        auto getTextureIndex = [this](const string &textureName, bool sRGB) -> int
+        auto getTextureIndex = [this](const cString &textureName, bool sRGB) -> int
         {
             auto it = std::find(model.textureFilenames.begin(), model.textureFilenames.end(),
                                 textureName);
@@ -907,7 +907,7 @@ namespace vkengine
         // Load textures
         {
             // 안내: Bistro 모델의 텍스쳐 경로에는 앞에 "..\\"가 덧붙어 있어서 나중에 제거합니다.
-            auto getTextureIndex = [this](string textureName, bool sRGB) -> int
+            auto getTextureIndex = [this](cString textureName, bool sRGB) -> int
             {
                 textureName = helper::file::normalizePath(textureName);
                 // PRINT_TO_LOGGER("Texture filename: {}", textureName);
@@ -936,7 +936,7 @@ namespace vkengine
             if (aiMat->GetTexture(aiTextureType_DIFFUSE, 0, &texturePath) == AI_SUCCESS)
             {
                 mat.ubo.baseColorTextureIndex = getTextureIndex(texturePath.C_Str(), true);
-                const std::string albedoMap = std::string(texturePath.C_Str());
+                const cString albedoMap = cString(texturePath.C_Str());
                 if (albedoMap.find("grey_30") != albedoMap.npos)
                     mat.flags |= VKMaterial::sTransparent;
             }
@@ -962,7 +962,7 @@ namespace vkengine
         // 기타 경험적으로 필요한 것들
         {
             aiString Name;
-            std::string materialName;
+            cString materialName;
             if (aiGetMaterialString(aiMat, AI_MATKEY_NAME, &Name) == AI_SUCCESS)
             {
                 materialName = Name.C_Str();
@@ -972,7 +972,7 @@ namespace vkengine
 
             auto name = [&materialName](const char *substr) -> bool
             {
-                return materialName.find(substr) != std::string::npos;
+                return materialName.find(substr) != cString::npos;
             };
             if (name("MASTER_Glass_Clean") || name("MenuSign_02_Glass") || name("Vespa_Headlight"))
             {
@@ -1075,19 +1075,19 @@ namespace vkengine
         PRINT_TO_LOGGER("Found {} embedded textures, writing to debug files...", scene->mNumTextures);
 
         // Create debug directory if it doesn't exist
-        string debugDir = "debug_textures";
+        cString debugDir = "debug_textures";
         helper::file::createDirectories(debugDir);
 
         for (uint32_t i = 0; i < scene->mNumTextures; ++i)
         {
             const aiTexture *aiTex = scene->mTextures[i];
 
-            string filename;
+            cString filename;
             if (aiTex->mHeight == 0)
             {
                 // Compressed texture data (PNG, JPG, etc.)
                 // Try to determine format from the format hint
-                string formatHint = string(aiTex->achFormatHint);
+                cString formatHint = cString(aiTex->achFormatHint);
                 if (formatHint.empty() || formatHint == "\0\0\0\0")
                 {
                     // Try to detect format from data header
@@ -1161,7 +1161,7 @@ namespace vkengine
         // 주의: mesh를 합친 후에는 그래프 구조에서도 합쳐진 것들을 반영시켜줘야 합니다.
         //      예: 그래프의 노드끼리도 합치기
 
-        vector<string> materialNamesToMerge = {"Foliage_Linde_Tree_Large_Orange_Leaves",
+        vector<cString> materialNamesToMerge = {"Foliage_Linde_Tree_Large_Orange_Leaves",
                                                "Foliage_Linde_Tree_Large_Green_Leaves",
                                                "Foliage_Linde_Tree_Large_Trunk"};
 

@@ -17,9 +17,9 @@ class ModelLoader
 {
   public:
     ModelLoader(VKModel& model);
-    void loadFromModelFile(const string& modelFilename, bool readBistroObj);
-    void loadFromCache(const string& cacheFilename);
-    void writeToCache(const string& cacheFilename);
+    void loadFromModelFile(const cString& modelFilename, bool readBistroObj);
+    void loadFromCache(const cString& cacheFilename);
+    void writeToCache(const cString& cacheFilename);
 
     void processNode(aiNode* node, const aiScene* scene, VKModelNode* parent = nullptr);
     void processMesh(aiMesh* mesh, const aiScene* scene, uint32_t meshIndex);
@@ -37,7 +37,7 @@ class ModelLoader
     VKModel& model;
 
     Assimp::Importer importer;
-    string directory;
+    cString directory;
 };
 
 } // namespace vkengine
