@@ -91,7 +91,7 @@ void PostProcessingExample::recreateSwapchain()
             *this->cxt,
             {
                 hdrColorBuffer.ResourceBinding(),
-                postProcessingOptionsUniforms[i].ResourceBinding()
+                postProcessingOptionsUniforms[i].getResourceBinding()
             });
     }
 
@@ -148,8 +148,8 @@ void PostProcessingExample::initializeSkybox()
     for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
         sceneDescriptorSets[i].create(*this->cxt,
             {
-                sceneDataUniforms[i].ResourceBinding(), // binding 0
-                skyOptionsUniforms[i].ResourceBinding() // binding 1
+                sceneDataUniforms[i].getResourceBinding(), // binding 0
+                skyOptionsUniforms[i].getResourceBinding() // binding 1
             });
     }
 
@@ -188,7 +188,7 @@ void PostProcessingExample::initializePostProcessing()
             *this->cxt,
             {
                 hdrColorBuffer.ResourceBinding(), // binding 0: sampler2D hdrColorBuffer
-                postProcessingOptionsUniforms[i].ResourceBinding() // binding 1: PostProcessingOptions uniform
+                postProcessingOptionsUniforms[i].getResourceBinding() // binding 1: PostProcessingOptions uniform
             });
     }
 }

@@ -30,8 +30,6 @@ namespace vkengine {
 
         std::vector<VkVertexInputAttributeDescription> createVertexInputAttrDesc(cString pipelineName) const;
 
-        /*std::vector<VkDescriptorSetLayoutBinding> collectPerPipelineBindings() const;*/
-
         const std::unordered_map<cString, std::vector<VKshader>>& getPipelineShaders() const;
 
         const std::vector<LayoutInfo>& getLayoutInfos() const;
@@ -41,7 +39,7 @@ namespace vkengine {
     private:
         VKcontext& ctx;
         std::unordered_map<cString, std::vector<VKshader>> pipelineShaders;
-        std::unordered_map<cString, std::vector<ShaderResourceLayout>> pipelineLayouts;
+        std::unordered_map<cString, ShaderResourceLayout> Resourcelayouts; // 파이프라인별 레이아웃 정보 저장용
         std::vector<LayoutInfo> layoutInfos;
 
         // 쉐이더 생성 및 파이프라인별 쉐이더 관리
@@ -54,7 +52,7 @@ namespace vkengine {
         // 리플렉션된 데이터를 활용하여 Vulkan 디스크립터 레이아웃 정보를 만드는 함수
         void collectPerPipelineBindings(
             const cString& pipelineName,
-            std::map<cUint32_t, std::map<cUint32_t, Bindinginfo>>& bindingCollector) const;
+            std::unordered_map<cString, ShaderResourceLayout>& bindingCollector) const;
 
         VkDescriptorSetLayoutBinding createLayoutBindingFromReflect(const SpvReflectDescriptorBinding* binding,
             VkShaderStageFlagBits shaderStage) const;

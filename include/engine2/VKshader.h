@@ -2,6 +2,7 @@
 #define VK_SHDAER_H_
 
 #include "common.h"
+#include "descriptor.h"
 
 #include "VKcontext.h"
 
@@ -31,6 +32,7 @@ namespace vkengine {
         cString name;
 
         std::vector<VkVertexInputAttributeDescription> makeVertexInputAttributeDescriptions() const;
+        std::vector<VertexInputinfo> makeVertexInputinfo() const;
 
     };
 }

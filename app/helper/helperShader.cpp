@@ -227,6 +227,10 @@ namespace vkengine
                     return VK_FORMAT_R32G32_SFLOAT;
                 case SPV_REFLECT_FORMAT_R32_SFLOAT:
                     return VK_FORMAT_R32_SFLOAT;
+                case SPV_REFLECT_FORMAT_R32G32B32A32_SINT:
+                    return VK_FORMAT_R32G32B32A32_SINT;
+                case SPV_REFLECT_FORMAT_R32G32B32A32_SFLOAT:
+                    return VK_FORMAT_R32G32B32A32_SFLOAT;
                 default:
                     EXIT_TO_LOGGER("Unsupported SPIR-V format");
                     return VK_FORMAT_UNDEFINED; // Unsupported or unknown format

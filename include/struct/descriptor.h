@@ -17,42 +17,35 @@ struct LayoutInfo
 
 namespace vkengine
 {
-    struct Bindinginfo
+    struct Bindingbase
     {
-        cString name;              // SPIR-V 바인딩 이름 (e.g. "uScene")
-        cUint32_t set;             // 디스크립터 세트 번호
+        cString name; // SPIR-V 바인딩 이름 (e.g. "uScene")
+    };
+
+    struct Bindinginfo : public Bindingbase
+    {
         VkDescriptorSetLayoutBinding binding; // Vulkan의 바인딩 정보 구조체
-        // UBO, SSBO, CombinedSampler, etc.
-        // 배열 크기
-        // 어느 셰이더 스테이지에서 사용하는지
     };
 
-    struct PushConstantinfo
+    struct PushConstantinfo : public Bindingbase
     {
-        VkShaderStageFlags stageFlags;
-        cUint32_t offset;
-        cUint32_t size;
-        cString name;
+        VkPushConstantRange range; // Vulkan의 푸시 상수 범위 구조체
     };
 
-    struct VertexInputinfo
+    struct VertexInputinfo : public Bindingbase
     {
-        cUint32_t location;
-        VkFormat format;
-        cUint32_t offset;  // vertex struct 내 바이트 오프셋
-        cString name; // e.g. "inPosition"
+        VkVertexInputAttributeDescription attributeDescription; // Vulkan의 정점 입력 속성 설명 구조체
     };
 
     struct DescriptorSetLayout
     {
-        cUint32_t setIndex;
-        std::vector<Bindinginfo> bindings; // binding 번호 순 정렬
+        std::unordered_map<cUint32_t, Bindinginfo> bindings; // key : binding index, value: 해당 바인딩의 정보
     };
 
     struct ShaderResourceLayout
     {
         cString pipelineName;
-        std::vector<DescriptorSetLayout> sets;        // setIndex 순 정렬
+        std::unordered_map<cUint32_t, DescriptorSetLayout> sets; // key: set index, value: 해당 set의 바인딩 정보
         std::optional<PushConstantinfo> pushConstant; // 없으면 nullopt
         std::vector<VertexInputinfo> vertexInputs;    // compute면 비어있음
 
@@ -60,6 +53,17 @@ namespace vkengine
         const Bindinginfo *findBindingByName(const cString &name) const;
     };
 
+    struct BindingbaseHash
+    {
+        size_t operator()(const std::vector<Bindingbase> &bindings) const;
+    };
+
+    struct BindingbaseEqual
+    {
+        bool operator()(const std::vector<Bindingbase> &lhs, const std::vector<Bindingbase> &rhs) const;
+
+    };
+    
 } // namespace vkengine
 
 #endif // INCLUDE_DESCRIPTOR_H_

@@ -367,8 +367,8 @@ int main(int argc, char* argv[]) {
     for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
         sceneDescriptorSets[i].create(vkContext,
             {
-                sceneDataUniforms[i].ResourceBinding(), // binding 0
-                skyOptionsUniforms[i].ResourceBinding() // binding 1
+                sceneDataUniforms[i].getResourceBinding(), // binding 0
+                skyOptionsUniforms[i].getResourceBinding() // binding 1
             });
     }
 

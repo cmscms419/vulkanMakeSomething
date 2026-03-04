@@ -49,29 +49,43 @@ namespace vkengine
             BindingEqual>
             bindingCollector;
 
-        // reflect된 바인딩 정보를 기반으로 ShaderResourceLayout 생성
-        ShaderResourceLayout layout{};
-
         for (const auto &[pipelineName, shaders] : this->pipelineShaders)
         {
             // 파이프라인별 바인딩 수집기: setIndex -> bindingIndex -> Bindinginfo
-            std::map<cUint32_t, std::map<cUint32_t, Bindinginfo>> pipelineBindingCollector;
-            collectPerPipelineBindings(pipelineName, pipelineBindingCollector);
+            // std::map<cUint32_t, std::map<cUint32_t, Bindinginfo>> pipelineBindingCollector;
+            // std::unordered_map<cString, ShaderResourceLayout> pipelineBindingCollector;
 
-            // setIndex별로 LayoutInfo 생성
-            for (const auto &[setIndex, bindingsMap] : pipelineBindingCollector)
+            collectPerPipelineBindings(pipelineName, this->Resourcelayouts);
+
+        }
+        
+        // setIndex별로 LayoutInfo 생성
+        for (const auto &[pipelineName, ShaderResourceLayoutMap] : Resourcelayouts)
+        {
+            if (ShaderResourceLayoutMap.pipelineName.empty())
             {
-                if (bindingsMap.empty())
+                PRINT_TO_LOGGER("Pipeline name is empty in shader resource layout");
+                continue;
+            }
+
+            if (ShaderResourceLayoutMap.sets.empty())
+            {
+                PRINT_TO_LOGGER("No sets found in shader resource layout for pipeline: %s", pipelineName.c_str());
+                continue;
+            }
+
+            for (const auto &[setIndex, descriptorSetLayout] : ShaderResourceLayoutMap.sets)
+            {
+                if (descriptorSetLayout.bindings.empty())
                 {
+                    PRINT_TO_LOGGER("No bindings found in descriptor set layout for pipeline: %s, set: %u", pipelineName.c_str(), setIndex);
                     continue;
                 }
-
-                // 레이아웃 정보 생성
+                
                 std::vector<VkDescriptorSetLayoutBinding> bindings;
+                bindings.reserve(descriptorSetLayout.bindings.size());
 
-                bindings.reserve(bindingsMap.size());
-                // map을 vector로 변환
-                for (const auto &[bindingIndex, layoutBinding] : bindingsMap)
+                for (const auto &[bindingIndex, layoutBinding] : descriptorSetLayout.bindings)
                 {
                     bindings.push_back(layoutBinding.binding);
                 }
@@ -130,7 +144,7 @@ namespace vkengine
 
     void VKShaderManager::collectPerPipelineBindings(
         const cString &pipelineName,
-        std::map<cUint32_t, std::map<cUint32_t, Bindinginfo>> &bindingCollector) const
+        std::unordered_map<cString, ShaderResourceLayout> &bindingCollector) const
     {
         // 파이프라인에 속한 모든 쉐이더의 바인딩 정보를 수집
         const auto &shaders = this->pipelineShaders.at(pipelineName);
@@ -139,7 +153,18 @@ namespace vkengine
         for (const auto &shader : shaders)
         {
             // Reflect 모듈에서 바인딩 정보 추출
+            // binding
+            // vertex input attribute
+            // push constant block
+            // ... 필요한 정보들을 모두 추출하여 bindingCollector에 저장
+
+            // try_emplace는 C++17부터 지원되는 함수로, 맵에 키가 없을 때만 새로 삽입
+            // 반환값은 삽입된 요소의 반복자와 삽입 여부를 나타내는 불리언 값
+            auto &[layout, inserted] = bindingCollector.try_emplace(pipelineName, ShaderResourceLayout{}); // TODO: ShaderResourceLayout 구조체 초기화
+            ShaderResourceLayout &shaderResourceLayout = layout->second;
+
             const auto &reflectModule = shader.reflectModule;
+            shaderResourceLayout.pipelineName = pipelineName;
 
             // 각 바인딩 정보를 순회하며 수집
             for (cUint32_t i = 0; i < reflectModule.descriptor_binding_count; ++i)
@@ -158,23 +183,76 @@ namespace vkengine
                 cString bindingName = binding->name;
 
                 // 레이아웃 바인딩 생성
-                // 만약, 이미 해당 set과 binding이 존재한다면 stageFlags만 업데이트
-                // try_emplace는 C++17부터 지원되는 함수로, 맵에 키가 없을 때만 새로 삽입
-                // 반환값은 삽입된 요소의 반복자와 삽입 여부를 나타내는 불리언 값
-                auto [bindingIt, inserted] = bindingCollector[setIndex].try_emplace(bindingIndex);
-
-                if (inserted)
+                if (shaderResourceLayout.sets.find(setIndex) == shaderResourceLayout.sets.end())
                 {
-                    // 새로운 바인딩이 추가된 경우
-                    bindingIt->second.binding = createLayoutBindingFromReflect(binding, static_cast<VkShaderStageFlagBits>(shader.stage));
-                    bindingIt->second.name = bindingName;
-                    bindingIt->second.set = setIndex;
+                    // 해당 set이 아직 존재하지 않는 경우, 새로운 DescriptorSetLayout 생성
+                    // 새로운 바인딩이 추가된 경우, setIndex에 해당하는 DescriptorSetLayout 생성
+                    VkDescriptorSetLayoutBinding layoutBinding = createLayoutBindingFromReflect(binding, shader.stage);
+                    DescriptorSetLayout descriptorSetLayout;
+
+                    descriptorSetLayout.bindings.emplace(bindingIndex, Bindinginfo{bindingName, layoutBinding});
+                    shaderResourceLayout.sets.emplace(setIndex, std::move(descriptorSetLayout));
                 }
                 else
                 {
+                    // 만약, set이 이미 존재한다면, binding 정보를 업데이트
                     // 이미 존재하는 바인딩인 경우, stageFlags 업데이트
-                    bindingIt->second.binding.stageFlags |= static_cast<VkShaderStageFlagBits>(shader.stage);
+                    // 아니면, 새로운 바인딩 추가
+                    if (shaderResourceLayout.sets[setIndex].bindings.size() <= bindingIndex)
+                    {
+                        // 새로운 바인딩 추가
+                        VkDescriptorSetLayoutBinding layoutBinding = createLayoutBindingFromReflect(binding, shader.stage);
+                        shaderResourceLayout.sets[setIndex].bindings.emplace(bindingIndex, Bindinginfo{bindingName, layoutBinding});
+                    }
+                    else
+                    {
+                        // 이미 존재하는 바인딩인 경우, stageFlags 업데이트
+                        shaderResourceLayout.sets[setIndex].bindings[bindingIndex].binding.stageFlags |= static_cast<VkShaderStageFlagBits>(shader.stage);
+                    }
                 }
+            }
+
+            // 각 쉐이더의 push constant 정보 수집
+            for (cUint32_t i = 0; i < reflectModule.push_constant_block_count; ++i)
+            {
+                const SpvReflectBlockVariable *pushConstantBlock = &reflectModule.push_constant_blocks[i];
+                // push constant 정보를 수집하여 shaderResourceLayout에 저장
+
+                if (pushConstantBlock->name == nullptr)
+                {
+                    PRINT_TO_LOGGER("Push constant block name is empty in shader");
+                    continue;
+                }
+
+                PushConstantinfo pushConstantInfo;
+                pushConstantInfo.name = pushConstantBlock->name;
+                pushConstantInfo.range.stageFlags = static_cast<VkShaderStageFlags>(shader.stage);
+                pushConstantInfo.range.offset = pushConstantBlock->offset;
+                pushConstantInfo.range.size = pushConstantBlock->size;
+
+                if (shaderResourceLayout.pushConstant.has_value())
+                {
+                    // 이미 push constant이 존재하는 경우, stageFlags 업데이트
+                    shaderResourceLayout.pushConstant->range.stageFlags |= pushConstantInfo.range.stageFlags;
+                }
+                else
+                {
+                    // 새로운 push constant 추가
+                    shaderResourceLayout.pushConstant = pushConstantInfo;
+                }
+            }
+
+            // 각 쉐이더의 vertex input attribute 정보 수집
+            if (shader.stage == VK_SHADER_STAGE_VERTEX_BIT)
+            {
+
+                shaderResourceLayout.vertexInputs = std::move(shader.makeVertexInputinfo());
+
+                if (shaderResourceLayout.vertexInputs.empty())
+                {
+                    PRINT_TO_LOGGER("No vertex input attributes found in vertex shader for pipeline: %s", pipelineName.c_str());
+                }
+
             }
         }
     }
@@ -210,7 +288,9 @@ namespace vkengine
         }
         this->pipelineShaders.clear();
         this->layoutInfos.clear();
+        this->Resourcelayouts.clear();
     }
+    
     std::vector<VkPipelineShaderStageCreateInfo> VKShaderManager::createPipelineShaderStageCIs(cString pipelineName) const
     {
         const auto &shaders = pipelineShaders.at(pipelineName);
@@ -230,6 +310,7 @@ namespace vkengine
         }
         return shaderStages;
     }
+    
     std::vector<VkVertexInputAttributeDescription> VKShaderManager::createVertexInputAttrDesc(cString pipelineName) const
     {
 
@@ -302,15 +383,15 @@ namespace vkengine
         return layoutInfos;
     }
 
-    // const ShaderResourceLayout &VKShaderManager::getShaderResourceLayout(cString pipelineName) const
-    // {
-    //     // const auto &layouts = pipelineLayouts.at(pipelineName);
+    const ShaderResourceLayout &VKShaderManager::getShaderResourceLayout(cString pipelineName) const
+    {
+        const auto &layouts = Resourcelayouts.at(pipelineName);
 
-    //     // if (layouts.empty())
-    //     // {
-    //     //     EXIT_TO_LOGGER("No shader resource layout found for pipeline: %s", pipelineName.c_str());
-    //     // }
+        if (layouts.pipelineName.empty())
+        {
+            EXIT_TO_LOGGER("No shader resource layout found for pipeline: %s", pipelineName.c_str());
+        }
 
-    //     // return layouts[0]; // 현재는 파이프라인당 하나의 레이아웃만 지원
-    // }
+        return layouts;
+    }
 }

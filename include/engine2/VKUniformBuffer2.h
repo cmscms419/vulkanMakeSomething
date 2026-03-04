@@ -34,13 +34,13 @@ namespace vkengine {
             return this->data;
         }
 
-        const VKBaseBuffer2& Buffer() const {
+        VKBaseBuffer2& Buffer() {
             return this->buffer;
         }
 
-        VKResourceBinding& ResourceBinding()
+        VKResourceBinding& getResourceBinding()
         {
-            return this->buffer.ResourceBinding();
+            return this->buffer.getResourceBinding();
         }
 
     private:

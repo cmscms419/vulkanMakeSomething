@@ -75,6 +75,7 @@
     <ClInclude Include="..\..\include\engine2\VKswapchain.h" />
     <ClInclude Include="..\..\include\engine2\VKUniformBuffer2.h" />
     <ClInclude Include="..\..\include\engine2\VKViewFrustum.h" />
+    <ClInclude Include="..\..\include\engine2\VKShaderResource.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{aa7beba8-c275-4c9b-ba08-a371b71683e6}</ProjectGuid>

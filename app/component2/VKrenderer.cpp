@@ -105,9 +105,13 @@ namespace vkengine {
         forwardToCompute.setSampler(samplerLinearRepeat.getSampler());
 
         // Create descriptor sets for sky textures (set 1 for sky pipeline)
-        skyDescriptorSet.create(ctx, { this->skyTextures.Prefiltered().ResourceBinding(),
-                                        this->skyTextures.Irradiance().ResourceBinding(),
-                                        this->skyTextures.BrdfLUT().ResourceBinding() });
+        // skyDescriptorSet.create(ctx, { this->skyTextures.Prefiltered().ResourceBinding(),
+        //                                 this->skyTextures.Irradiance().ResourceBinding(),
+        //                                 this->skyTextures.BrdfLUT().ResourceBinding() });
+
+        skyDescriptorSet.create(ctx, { std::ref(this->skyTextures.Prefiltered()),
+                                        std::ref(this->skyTextures.Irradiance()),
+                                        std::ref(this->skyTextures.BrdfLUT())});
 
         // Create descriptor set for shadow mapping
         shadowMapSet.create(ctx, { this->shadowMap.getResouceBinding()});
@@ -151,21 +155,21 @@ namespace vkengine {
         SceneSkyOptionsStates.resize(this->MaxFramesFlight);
         for (size_t i = 0; i < this->MaxFramesFlight; i++) {
             SceneSkyOptionsStates[i].create(
-                this->ctx, { sceneDataUniform[i].ResourceBinding(), skyOptionsUniform[i].ResourceBinding()});
+                this->ctx, { std::ref(sceneDataUniform[i].Buffer()), std::ref(skyOptionsUniform[i].Buffer())});
         }
 
         PostDescriptorSets.resize(this->MaxFramesFlight);
         for (size_t i = 0; i < this->MaxFramesFlight; i++) {
             PostDescriptorSets[i].create(
-                this->ctx, { forwardToCompute.ResourceBinding(), postOptionsUniform[i].ResourceBinding() });
+                this->ctx, { std::ref(forwardToCompute), std::ref(postOptionsUniform[i].Buffer()) });
         }
 
         SceneOptionsBoneDataSets.resize(this->MaxFramesFlight);
         for (size_t i = 0; i < this->MaxFramesFlight; i++) {
             SceneOptionsBoneDataSets[i].create(this->ctx, { 
-                                                       sceneDataUniform[i].ResourceBinding(),
-                                                       optionsUniform[i].ResourceBinding(),
-                                                       boneDataUniform[i].ResourceBinding() });
+                                                       std::ref(sceneDataUniform[i].Buffer()),
+                                                       std::ref(optionsUniform[i].Buffer()),
+                                                       std::ref(boneDataUniform[i].Buffer()) });
         }
     }
 
