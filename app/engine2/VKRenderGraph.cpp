@@ -1,6 +1,8 @@
 #include "VKRenderGraph.h"
 #include "log.h"
 
+#include <queue>
+
 using namespace vkengine::Log;
 
 namespace vkengine
