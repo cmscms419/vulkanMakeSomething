@@ -132,13 +132,15 @@ namespace vkengine {
 
         VKImage2D dummyTexture;
         VKskyTexture skyTextures;
+        VKImage2D shadowMap;
 
         VKSamplerHandler samplerLinearRepeat;
         VKSamplerHandler samplerLinearClamp;
         VKSamplerHandler samplerAnisoRepeat;
         VKSamplerHandler samplerAnisoClamp;
+        VKSamplerHandler samplerShadowMap;
 
-        VKShadowMap shadowMap;
+        // VKShadowMap shadowMap;
 
         DescriptorSetHander skyDescriptorSet;
         DescriptorSetHander postDescriptorSet;

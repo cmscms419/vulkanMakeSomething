@@ -212,6 +212,48 @@ namespace vkengine
         _VK_CHECK_RESULT_(vkCreateSampler(ctx.getDevice()->logicaldevice, &samplerInfo, nullptr, &sampler));
     }
 
+    void VKSamplerHandler::createShadowMapSampler()
+    {
+        cleanup();
+        
+        VkPhysicalDeviceProperties properties{};
+        VkPhysicalDeviceFeatures deviceFeatures{};
+
+        vkGetPhysicalDeviceProperties(this->ctx.getDevice()->physicalDevice, &properties);
+        vkGetPhysicalDeviceFeatures(this->ctx.getDevice()->physicalDevice, &deviceFeatures);
+
+        VkSamplerCreateInfo samplerInfo{};
+        samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+        samplerInfo.pNext = nullptr;
+        samplerInfo.flags = 0;
+
+        // Filtering
+        samplerInfo.magFilter = VK_FILTER_LINEAR;
+        samplerInfo.minFilter = VK_FILTER_LINEAR;
+        samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST;
+
+        // LOD settings
+        samplerInfo.mipLodBias = 0.0f;
+        samplerInfo.minLod = 0.0f;
+        samplerInfo.maxLod = 0.0f; // No mipmapping for shadow maps
+
+        // No anisotropy for this sampler
+        samplerInfo.anisotropyEnable = VK_FALSE;
+        samplerInfo.maxAnisotropy = 1.0f;
+
+        // Address modes - use CLAMP_TO_EDGE to prevent wrapping
+        samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+        samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+        samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+        
+        samplerInfo.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE; // Outside shadow map = fully lit
+        
+        samplerInfo.compareEnable = VK_TRUE;
+        samplerInfo.compareOp = VK_COMPARE_OP_LESS_OR_EQUAL; // For shadow comparison
+
+        _VK_CHECK_RESULT_(vkCreateSampler(ctx.getDevice()->logicaldevice, &samplerInfo, nullptr, &sampler));
+    }
+
     void VKSamplerHandler::cleanup()
     {
         if (sampler != VK_NULL_HANDLE)

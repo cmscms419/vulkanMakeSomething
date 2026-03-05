@@ -7,12 +7,12 @@ using namespace vkengine::Log;
 namespace vkengine {
     
     VKforwardRenderer::VKforwardRenderer(VKcontext& ctx, VKShaderManager& shadermanager, const cUint32_t& MaxFramesFlight, const cString& assetsPath, const cString& shaderPath)
-        : 
-        ctx(ctx), shaderManager(shadermanager), MaxFramesFlight(MaxFramesFlight),
+        : ctx(ctx), shaderManager(shadermanager), MaxFramesFlight(MaxFramesFlight),
         assetsPath(assetsPath), shaderPath(shaderPath),
         dummyTexture(ctx), msaaColorBuffer(ctx), depthStencil(ctx), msaaDepthStencil(ctx),
         skyTextures(ctx), shadowMap(ctx), samplerLinearRepeat(ctx), samplerLinearClamp(ctx),
-        samplerAnisoRepeat(ctx), samplerAnisoClamp(ctx), forwardToCompute(ctx), computeToPost(ctx)
+        samplerAnisoRepeat(ctx), samplerAnisoClamp(ctx), forwardToCompute(ctx), computeToPost(ctx),
+        samplerShadowMap(ctx)
     {
         directionalLightAngle1 = 27.0f;
         directionalLightAngle2 = 3.0f;
@@ -68,6 +68,7 @@ namespace vkengine {
         this->samplerLinearClamp.createLinearClamp();
         this->samplerAnisoRepeat.createAnisoRepeat();
         this->samplerAnisoClamp.createAnisoClamp();
+        this->samplerShadowMap.createShadowMapSampler();
 
         cString dummyImagePath = this->assetsPath + "CustomUVChecker_byValle_2K.png";
 
@@ -86,6 +87,10 @@ namespace vkengine {
         }
 
         this->dummyTexture.setSampler(this->samplerLinearRepeat.getSampler());
+
+        // Initialize shadow map texture
+        this->shadowMap.createShadowMap(2048 * 2, 2048 * 2);
+        this->shadowMap.setSampler(this->samplerShadowMap.getSampler());
 
         // Initialize IBL textures for PBR
         cString path = this->assetsPath + "cubeMap/";
@@ -114,7 +119,7 @@ namespace vkengine {
                                         std::ref(this->skyTextures.BrdfLUT())});
 
         // Create descriptor set for shadow mapping
-        shadowMapSet.create(ctx, { this->shadowMap.getResouceBinding()});
+        shadowMapSet.create(ctx, { std::ref(this->shadowMap) });
     }
 
     void VKforwardRenderer::createUniformBuffers() {

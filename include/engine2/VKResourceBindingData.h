@@ -10,7 +10,6 @@ namespace vkengine {
         friend class VKImage2D;
         friend class VKBaseBuffer2;
         friend class DescriptorSetHander;
-        friend class VKShadowMap;
         
         void update();
         void setSampler(VkSampler sampler);

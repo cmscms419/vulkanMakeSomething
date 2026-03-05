@@ -13,14 +13,20 @@ using namespace vkengine::Log;
 namespace vkengine
 {
 
-    std::string fixPath(const cString& path) // for linux path
+    std::string fixPath(const cString &path) // for linux path
     {
         std::string fixed = path;
         std::replace(fixed.begin(), fixed.end(), '\\', '/');
         return fixed;
     }
 
-    VKImage2D::VKImage2D(VKcontext& context) : ctx(context)
+    VkImage VKImage2D::getImage() { return this->image; }
+    VkImageView VKImage2D::getImageView() { return this->imageView; }
+    VkFormat VKImage2D::getImageFormat() { return this->imageFormat; }
+    cUint32_t VKImage2D::getHeight() { return this->height; }
+    cUint32_t VKImage2D::getWidth() { return this->width; }
+
+    VKImage2D::VKImage2D(VKcontext &context) : ctx(context)
     {
         image = VK_NULL_HANDLE;
         imageMemory = VK_NULL_HANDLE;
@@ -33,15 +39,15 @@ namespace vkengine
         resourceBinding = {};
     }
 
-    VKImage2D::VKImage2D(VKImage2D&& other) noexcept : ctx(other.ctx),
-        image(other.image),
-        imageMemory(other.imageMemory),
-        imageView(other.imageView),
-        imageFormat(other.imageFormat),
-        width(other.width),
-        height(other.height),
-        usageFlags(other.usageFlags),
-        aspectFlags(other.aspectFlags)
+    VKImage2D::VKImage2D(VKImage2D &&other) noexcept : ctx(other.ctx),
+                                                       image(other.image),
+                                                       imageMemory(other.imageMemory),
+                                                       imageView(other.imageView),
+                                                       imageFormat(other.imageFormat),
+                                                       width(other.width),
+                                                       height(other.height),
+                                                       usageFlags(other.usageFlags),
+                                                       aspectFlags(other.aspectFlags)
     {
         other.image = VK_NULL_HANDLE;
         other.imageMemory = VK_NULL_HANDLE;
@@ -92,8 +98,7 @@ namespace vkengine
             this->image,
             this->imageMemory,
             arrayLayers,
-            flags
-        );
+            flags);
 
         this->imageView = vkengine::helper::resource::createImageView(
             ctx.getDevice()->logicaldevice,
@@ -135,8 +140,7 @@ namespace vkengine
             this->image,
             this->imageMemory,
             arrayLayers,
-            flags
-        );
+            flags);
 
         this->imageView = vkengine::helper::resource::createCubeImageView(
             ctx.getDevice()->logicaldevice,
@@ -160,15 +164,16 @@ namespace vkengine
         cString extension = (extensionPos != cString::npos) ? filepath.substr(extensionPos) : "";
         std::transform(extension.begin(), extension.end(), extension.begin(), ::tolower);
 
-        if (extensionPos == cString::npos || (extension != ".ktx2")) {
+        if (extensionPos == cString::npos || (extension != ".ktx2"))
+        {
             EXIT_TO_LOGGER("지원하지 않는 이미지 형식입니다: " + extension);
         }
 
-        TextureResourceKTX* resource = nullptr;
+        TextureResourceKTX *resource = nullptr;
         cUint32_t mipLevels = 1;
         VkFormat vkFormat = VK_FORMAT_UNDEFINED;
-        ktxTexture* baseTexture = nullptr;
-        ktx_uint8_t* ktxTextureData = nullptr;
+        ktxTexture *baseTexture = nullptr;
+        ktx_uint8_t *ktxTextureData = nullptr;
         ktx_size_t ktxTextureSize = 0;
         cUint32_t layCounter = 0;
 
@@ -201,12 +206,14 @@ namespace vkengine
             ktxTextureSize = ktxTexture_GetDataSize(baseTexture);
             layCounter = usCubemap ? 6 : 1;
 
-            if (mipLevels == 0) {
+            if (mipLevels == 0)
+            {
                 delete resource;
                 EXIT_TO_LOGGER("KTX2 텍스처의 mipLevels가 유효하지 않습니다.\n");
             }
 
-            if (vkFormat == VK_FORMAT_UNDEFINED) {
+            if (vkFormat == VK_FORMAT_UNDEFINED)
+            {
                 vkFormat = usCubemap ? VK_FORMAT_R16G16B16A16_SFLOAT : VK_FORMAT_R16G16_SFLOAT;
             }
 
@@ -227,8 +234,7 @@ namespace vkengine
                     VK_IMAGE_ASPECT_COLOR_BIT,
                     mipLevels,
                     layCounter,
-                    flags
-                );
+                    flags);
             }
             else
             {
@@ -241,8 +247,7 @@ namespace vkengine
                     VK_IMAGE_ASPECT_COLOR_BIT,
                     mipLevels,
                     layCounter,
-                    flags
-                );
+                    flags);
             }
 
             VkCommandBuffer cmb = this->resourceBinding.getBarrierHelper().beginSingleTimeCommands2(
@@ -265,15 +270,14 @@ namespace vkengine
                 resource->texHeight,
                 mipLevels,
                 baseTexture,
-                usCubemap
-            );
+                usCubemap);
 
             // 이미지 레이아웃 전환 (TRANSFER_DST_OPTIMAL -> SHADER_READ_ONLY_OPTIMAL)
             resourceBinding.getBarrierHelper().transitionImageLayout2(
                 cmb,
                 this->image,
-                VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 
-                VK_ACCESS_2_SHADER_READ_BIT, 
+                VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+                VK_ACCESS_2_SHADER_READ_BIT,
                 VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT);
 
             resourceBinding.getBarrierHelper().endSingleTimeCommands2(
@@ -293,7 +297,8 @@ namespace vkengine
         std::transform(extension.begin(), extension.end(), extension.begin(), ::tolower);
 
         if (extensionPos == cString::npos ||
-            (extension != ".png" && extension != ".jpg" && extension != ".jpeg")) {
+            (extension != ".png" && extension != ".jpg" && extension != ".jpeg"))
+        {
             EXIT_TO_LOGGER("지원하지 않는 이미지 형식입니다: " + extension);
         }
 
@@ -302,26 +307,29 @@ namespace vkengine
             EXIT_TO_LOGGER("PNG, JPG는 큐브맵을 제공하지 않습니다.");
         }
 
-        TextureResourceBase* resource = nullptr;
+        TextureResourceBase *resource = nullptr;
 
-        if (extension == ".png") {
+        if (extension == ".png")
+        {
             resource = new TextureResourcePNG();
             resource->createResource(file);
         }
-        else {
+        else
+        {
             EXIT_TO_LOGGER("지원하지 않는 이미지 형식입니다: " + extension);
         }
 
-        if (resource != nullptr) {
+        if (resource != nullptr)
+        {
             this->createTextureFromPixelData(resource->data, resource->texWidth, resource->texHeight, resource->texChannels, sRGB);
         }
-        else {
+        else
+        {
             vkengine::Log::EXIT_TO_LOGGER("Failed to create texture: resource is null.");
         }
-
     }
 
-    void VKImage2D::createTextureFromPixelData(cUChar* pixelData, cUint32_t width, cUint32_t height, cUint32_t channels, cBool sRGB)
+    void VKImage2D::createTextureFromPixelData(cUChar *pixelData, cUint32_t width, cUint32_t height, cUint32_t channels, cBool sRGB)
     {
         if (!pixelData)
         {
@@ -356,8 +364,7 @@ namespace vkengine
             VK_IMAGE_ASPECT_COLOR_BIT,
             1,
             1,
-            (VkImageCreateFlagBits)0
-        );
+            (VkImageCreateFlagBits)0);
 
         // 해당 내부에는 VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT -> 한번만 사용한다는 의미가 담긴 플로그가 있다.
         // 2번정도 사용하기 때문에 별도 생각해야함
@@ -399,19 +406,28 @@ namespace vkengine
     void VKImage2D::createMsaaColorBuffer(cUint16_t width, cUint16_t height, VkSampleCountFlagBits sampleCount)
     {
         this->createImage(static_cast<cUint32_t>(width), static_cast<cUint32_t>(height),
-            VK_FORMAT_R16G16B16A16_SFLOAT, sampleCount, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
-            VK_IMAGE_ASPECT_COLOR_BIT, 1, 1, static_cast<VkImageCreateFlagBits>(0));
+                          VK_FORMAT_R16G16B16A16_SFLOAT, sampleCount, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
+                          VK_IMAGE_ASPECT_COLOR_BIT, 1, 1, static_cast<VkImageCreateFlagBits>(0));
     }
 
     void VKImage2D::createGeneralStorage(cUint16_t width, cUint32_t height)
     {
         VkImageUsageFlags usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT |
-            VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT |
-            VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+                                  VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT |
+                                  VK_IMAGE_USAGE_TRANSFER_DST_BIT;
 
-        createImage(static_cast<cUint32_t>(width), static_cast<cUint32_t>(height), 
-            VK_FORMAT_R16G16B16A16_SFLOAT, VK_SAMPLE_COUNT_1_BIT, usage,
-            VK_IMAGE_ASPECT_COLOR_BIT, 1, 1, static_cast<VkImageCreateFlagBits>(0));
+        createImage(static_cast<cUint32_t>(width), static_cast<cUint32_t>(height),
+                    VK_FORMAT_R16G16B16A16_SFLOAT, VK_SAMPLE_COUNT_1_BIT, usage,
+                    VK_IMAGE_ASPECT_COLOR_BIT, 1, 1, static_cast<VkImageCreateFlagBits>(0));
+    }
+
+    void VKImage2D::createShadowMap(cUint16_t width, cUint32_t height, VkFormat format, VkSampleCountFlagBits sampleCount)
+    {
+        VkImageUsageFlags usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT |
+                                  VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
+
+        createImage(width, height, format, sampleCount, usage,
+                    VK_IMAGE_ASPECT_DEPTH_BIT, 1, 1, static_cast<VkImageCreateFlagBits>(0));
     }
 
     void VKImage2D::updateResourceBindingAfterTransition()
@@ -491,17 +507,20 @@ namespace vkengine
     void VKImage2D::cleanup()
     {
         // Cleanup code for VKImage2D
-        if (imageView != VK_NULL_HANDLE) {
+        if (imageView != VK_NULL_HANDLE)
+        {
             vkDestroyImageView(ctx.getDevice()->logicaldevice, imageView, nullptr);
             imageView = VK_NULL_HANDLE;
         }
 
-        if (image != VK_NULL_HANDLE) {
+        if (image != VK_NULL_HANDLE)
+        {
             vkDestroyImage(ctx.getDevice()->logicaldevice, image, nullptr);
             image = VK_NULL_HANDLE;
         }
 
-        if (imageMemory != VK_NULL_HANDLE) {
+        if (imageMemory != VK_NULL_HANDLE)
+        {
             vkFreeMemory(ctx.getDevice()->logicaldevice, imageMemory, nullptr);
             imageMemory = VK_NULL_HANDLE;
         }
