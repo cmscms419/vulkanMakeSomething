@@ -198,4 +198,19 @@ struct PipelineConfig
     static PipelineConfig createTriangle();
 };
 
+enum class ResourceAccess : cUint16_t
+{
+    ColorAttachmentWrite = 0,
+    DepthAttachmentWrite,
+    ShaderReadOnly,
+    ShaderReadWrite, // compute general
+    Present,
+};
+
+struct ResourceUsage
+{
+    cString handle; // Like "forwardColor", "shadowDepth", "swapchain"
+    ResourceAccess access;
+};
+
 #endif // !INCLUDE_CONFIG_TYPE_H_

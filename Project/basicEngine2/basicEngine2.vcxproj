@@ -44,6 +44,7 @@
     <ClCompile Include="..\..\app\engine2\VKswapchain.cpp" />
     <ClCompile Include="..\..\app\engine2\VKViewFrustum.cpp" />
     <ClCompile Include="..\..\app\engine2\VKDepthStencil.cpp" />
+    <ClCompile Include="..\..\app\engine2\VKRenderGraph.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\include\engine2\VKDepthStencil.h" />
@@ -74,6 +75,7 @@
     <ClInclude Include="..\..\include\engine2\VKUniformBuffer2.h" />
     <ClInclude Include="..\..\include\engine2\VKViewFrustum.h" />
     <ClInclude Include="..\..\include\engine2\VKShaderResource.h" />
+    <ClInclude Include="..\..\include\engine2\VKRenderGraph.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{aa7beba8-c275-4c9b-ba08-a371b71683e6}</ProjectGuid>
