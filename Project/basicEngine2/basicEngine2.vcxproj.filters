@@ -187,8 +187,5 @@
     <ClInclude Include="..\..\include\engine2\VKStorageBuffer.h">
       <Filter>source2</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\engine2\VKshadowMap.h">
-      <Filter>source2</Filter>
-    </ClInclude>
   </ItemGroup>
 </Project>

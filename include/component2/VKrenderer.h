@@ -17,7 +17,6 @@
 #include "VKModel.h"
 #include "VKUniformBuffer2.h"
 #include "VKShaderManager.h"
-#include "VKShadowMap.h"
 
 namespace vkengine {
 
