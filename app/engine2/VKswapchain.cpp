@@ -270,7 +270,7 @@ namespace vkengine
         this->barrierHelpers.clear();
     }
 
-    void VKSwapChain::transitionTo(VkCommandBuffer commandBuffer, cUint32_t imageIndex, VkImageLayout newLayout, VkAccessFlags2 newAccess, VkPipelineStageFlags2 newStage)
+    void VKSwapChain::transitionTo(VkCommandBuffer commandBuffer, cUint32_t imageIndex)
     {
 
         if (imageIndex < this->barrierHelpers.size())

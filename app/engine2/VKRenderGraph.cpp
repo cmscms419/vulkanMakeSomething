@@ -47,8 +47,6 @@ namespace vkengine
 
     bool RenderGraph::compile()
     {
-        cBool result = false;
-
         // 1. 유효성 검사
         for (const auto &pass : passes)
         {
@@ -68,22 +66,53 @@ namespace vkengine
             }
         }
         // 2. buildAdjacency()
+        // "어떤 패스가 끝나야 어떤 패스가 시작될 수 있는지"를 인덱스로 표현한 인접 리스트 생성
         std::vector<std::vector<cSize>> adj = buildAdjacency();
 
         // 3. topologicalSort() → sortedOrder
+        // 실제 실행 순서를 결정하는 위상 정렬 알고리즘 (Kahn's algorithm)
         sortedOrder = topologicalSort(adj);
 
         // 4. printGraph() 로그 출력 (선택)
+        printGraph();
 
-        return result;
+        return true;
     }
 
     void RenderGraph::execute(VkCommandBuffer cmd, cUint32_t frameIndex, VkImage swapchainImage, VkImageView swapchainView)
     {
+        for (const cSize index : sortedOrder)
+        {
+            const RenderPassNode &pass = passes[index];
+
+            // 각 패스 실행 전에 필요한 배리어 삽입
+            insertBarriersBeforePass(cmd, frameIndex, pass);
+
+            // 패스 실행
+            pass.execute(cmd, frameIndex);
+        }
     }
 
     void RenderGraph::printGraph() const
     {
+#if 1
+        PRINT_TO_LOGGER("RenderGraph Execution Order:");
+        for (cSize idx : sortedOrder)
+        {
+            const RenderPassNode &pass = passes[idx];
+
+            PRINT_TO_LOGGER("Pass: %s", pass.name.c_str());
+            for (const auto &res : pass.inputs)
+            {
+                PRINT_TO_LOGGER("  Input: %s (%s)", res.handle.c_str(), getStringResourceAccess(res.access).c_str());
+            }
+            for (const auto &res : pass.outputs)
+            {
+                PRINT_TO_LOGGER("  Output: %s (%s)", res.handle.c_str(), getStringResourceAccess(res.access).c_str());
+            }
+        }
+#endif
+        return;
     }
 
     std::vector<std::vector<cSize>> RenderGraph::buildAdjacency() const
@@ -91,9 +120,12 @@ namespace vkengine
         std::vector<std::vector<cSize>> adj;
         std::unordered_map<cString, std::vector<cSize>> outputResources; // 리소스 핸들 → 패스 인덱스 매핑 (출력 리소스 기준)
 
+        adj.reserve(passes.size());
         adj.resize(passes.size());
-        outputResources.reserve(passes.size() * 4); // 패스당 평균 4개의 출력 리소스 가정
 
+        outputResources.reserve(passes.size() * static_cast<cSize>(ResourceAccess::MAX)); // 패스당 최대 ResourceAccess::MAX 개의 리소스가 있다고 가정하고 예약
+
+        // 모든 pass의 outputs 리소스 핸들을 outputResources에 등록
         for (cSize i = 0; i < passes.size(); ++i)
         {
             for (const auto &res : passes[i].outputs)
@@ -102,6 +134,7 @@ namespace vkengine
             }
         }
 
+        // 모든 pass의 inputs 리소스 핸들을 outputResources에서 찾아서 간선 추가
         for (cSize i = 0; i < passes.size(); ++i)
         {
             for (const auto &res : passes[i].inputs)
@@ -110,19 +143,12 @@ namespace vkengine
 
                 if (it != outputResources.end())
                 {
-                    std::vector<cSize> &srcs = outputResources[res.handle];
+                    std::vector<cSize> &srcs = outputResources[res.handle]; // passes[i].inputs이 어떤 패스의 output인지 srcs에 저장
 
                     for (cSize src : srcs)
                     {
-                        if (src != i) // 자기 자신 패스는 제외
-                        {
-                            adj[src].push_back(i); // src 패스 → i 패스 간선 추가
-                        }
+                        adj[src].push_back(i); // src 패스 → i 패스 간선 추가
                     }
-                }
-                else
-                {
-                    EXIT_TO_LOGGER("Error: Pass '%s' reads from resource '%s' that is not produced by any pass.", passes[i].name.c_str(), res.handle.c_str());
                 }
             }
         }
@@ -165,12 +191,72 @@ namespace vkengine
         return sorted;
     }
 
-    void RenderGraph::insertBarriersBeforePass(VkCommandBuffer cmd, const RenderPassNode &pass)
+    void RenderGraph::insertBarriersBeforePass(VkCommandBuffer cmd, cUint32_t frameIndex, const RenderPassNode &pass)
     {
-    }
+        // 패스의 입력 리소스들을 순회하면서 필요한 배리어 삽입
+        for (const ResourceUsage &res : pass.inputs)
+        {
+            ResourceEntry &entry = resources[res.handle];
 
-    VKBarrierHelper RenderGraph::toBarrierHelper(ResourceAccess access, VkFormat format)
-    {
-        return VKBarrierHelper();
+            if (entry.image == nullptr && entry.swapchain == nullptr)
+            {
+                PRINT_TO_LOGGER("Error: Resource '%s' used in pass '%s' is not registered as either image or swapchain.", res.handle.c_str(), pass.name.c_str());
+                continue;
+            }
+
+            switch (res.access)
+            {
+            case ResourceAccess::ColorAttachmentWrite:
+                entry.image->transitionToColorAttachment(cmd);
+                break;
+            case ResourceAccess::DepthAttachmentWrite:
+                entry.image->transitionToDepthStencilAttachment(cmd);
+                break;
+            case ResourceAccess::ShaderReadOnly:
+                entry.image->transitionToShaderReadOnly(cmd);
+                break;
+            case ResourceAccess::ShaderReadWrite:
+                entry.image->transitionToShaderReadWrite(cmd);
+                break;
+            case ResourceAccess::Present: // 아직 VKimage2D로 출력하는 구문을 만들지 않음
+                entry.swapchain->transitionTo(cmd, frameIndex);
+                break;
+            default:
+                break;
+            }
+        }
+
+        // 패스의 출력 리소스들을 순회하면서 필요한 배리어 삽입
+        for (const ResourceUsage &res : pass.outputs)
+        {
+            ResourceEntry &entry = resources[res.handle];
+
+            if (entry.image == nullptr && entry.swapchain == nullptr)
+            {
+                PRINT_TO_LOGGER("Error: Resource '%s' used in pass '%s' is not registered as either image or swapchain.", res.handle.c_str(), pass.name.c_str());
+                continue;
+            }
+
+            switch (res.access)
+            {
+            case ResourceAccess::ColorAttachmentWrite:
+                entry.image->transitionToColorAttachment(cmd);
+                break;
+            case ResourceAccess::DepthAttachmentWrite:
+                entry.image->transitionToDepthStencilAttachment(cmd);
+                break;
+            case ResourceAccess::ShaderReadOnly:
+                entry.image->transitionToShaderReadOnly(cmd);
+                break;
+            case ResourceAccess::ShaderReadWrite:
+                entry.image->transitionToShaderReadWrite(cmd);
+                break;
+            case ResourceAccess::Present:
+                entry.swapchain->transitionTo(cmd, frameIndex);
+                break;
+            default:
+                break;
+            }
+        }
     }
 }

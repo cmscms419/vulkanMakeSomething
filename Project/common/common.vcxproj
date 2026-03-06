@@ -38,12 +38,12 @@
     <ClInclude Include="..\..\include\struct\geometry.h" />
     <ClInclude Include="..\..\include\struct\material.h" />
     <ClInclude Include="..\..\include\struct\resource.h" />
-    <ClInclude Include="..\..\include\struct\configtype.h" />
     <ClInclude Include="..\..\include\struct\type.h" />
     <ClInclude Include="..\..\include\struct\ubo.h" />
     <ClInclude Include="..\..\include\struct\vkdevice.h" />
     <ClInclude Include="..\..\include\struct\object.h" />
     <ClInclude Include="..\..\include\struct\data.h" />
+    <ClInclude Include="..\..\include\struct\vkconfig.h" />
     <ClInclude Include="..\..\include\struct\descriptor.h" />
   </ItemGroup>
   <ItemGroup>
@@ -65,7 +65,7 @@
     <ClCompile Include="..\..\external\include\spirv-reflect\spirv_reflect.c" />
     <ClCompile Include="..\..\app\struct\geometry.cpp" />
     <ClCompile Include="..\..\app\struct\type.cpp" />
-    <ClCompile Include="..\..\app\struct\config.cpp" />
+    <ClCompile Include="..\..\app\struct\vkconfig.cpp" />
     <ClCompile Include="..\..\app\struct\data.cpp" />
     <ClInclude Include="..\..\include\struct\descriptor.h" />
   </ItemGroup>

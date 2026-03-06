@@ -470,6 +470,8 @@ namespace vkengine
         // Update the image info
         resourceBinding.imageInfo.imageView = imageView;
         resourceBinding.imageInfo.sampler = resourceBinding.sampler;
+
+        this->resourceBinding.update();
     }
 
     void VKImage2D::transitionTo(VkCommandBuffer commandBuffer, VkImageLayout newLayout, VkAccessFlags2 newAccess, VkPipelineStageFlags2 newStage)
@@ -491,7 +493,51 @@ namespace vkengine
             VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
             VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT,
             VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT);
-        updateResourceBindingAfterTransition();
+    }
+
+    void VKImage2D::transitionToDepthStencilAttachment(VkCommandBuffer commandBuffer)
+    {
+        transitionTo(
+            commandBuffer,
+            VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+            VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
+            VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT);
+    }
+
+    void VKImage2D::transitionToTransferDst(VkCommandBuffer commandBuffer)
+    {
+        transitionTo(
+            commandBuffer,
+            VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+            VK_ACCESS_2_TRANSFER_WRITE_BIT,
+            VK_PIPELINE_STAGE_2_TRANSFER_BIT);
+    }
+
+    void VKImage2D::transitionToShaderReadOnly(VkCommandBuffer commandBuffer)
+    {
+        transitionTo(
+            commandBuffer,
+            VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+            VK_ACCESS_2_SHADER_READ_BIT,
+            VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT);
+    }
+
+    void VKImage2D::transitionToShaderReadWrite(VkCommandBuffer commandBuffer)
+    {
+        transitionTo(
+            commandBuffer,
+            VK_IMAGE_LAYOUT_GENERAL,
+            VK_ACCESS_2_SHADER_READ_BIT | VK_ACCESS_2_SHADER_WRITE_BIT,
+            VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT | VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT);
+    }
+
+    void VKImage2D::transitionToPresent(VkCommandBuffer commandBuffer)
+    {
+        transitionTo(
+            commandBuffer,
+            VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+            VK_ACCESS_2_NONE,
+            VK_PIPELINE_STAGE_2_BOTTOM_OF_PIPE_BIT);
     }
 
     void VKImage2D::transitionToTransferSrc(VkCommandBuffer commandBuffer)
@@ -501,7 +547,6 @@ namespace vkengine
             VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
             VK_ACCESS_2_TRANSFER_READ_BIT,
             VK_PIPELINE_STAGE_2_TRANSFER_BIT);
-        updateResourceBindingAfterTransition();
     }
 
     void VKImage2D::cleanup()

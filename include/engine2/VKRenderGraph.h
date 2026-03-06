@@ -1,7 +1,7 @@
 #ifndef VK_INCLUDE_RENDER_GRAPH_H
 #define VK_INCLUDE_RENDER_GRAPH_H
 
-#include "config.h"
+#include "vkconfig.h"
 
 #include "VKImage2D.h"
 #include "VKswapchain.h"
@@ -19,7 +19,7 @@ namespace vkengine
         VKSwapChain *swapchain = nullptr;
     };
 
-    using PassExecuteFunc = std::function<void(VkCommandBuffer, cUint32_t frameIndex)>;
+    using PassExecuteFunc = std::function<void(VkCommandBuffer cmd, cUint32_t frameIndex)>;
 
     struct RenderPassNode
     {
@@ -50,8 +50,8 @@ namespace vkengine
 
         std::vector<std::vector<cSize>> buildAdjacency() const;
         std::vector<cSize> topologicalSort(const std::vector<std::vector<cSize>> &adj) const;
-        void insertBarriersBeforePass(VkCommandBuffer cmd, const RenderPassNode &pass);
-        static VKBarrierHelper toBarrierHelper(ResourceAccess access, VkFormat format);
+        void insertBarriersBeforePass(VkCommandBuffer cmd,cUint32_t frameIndex, const RenderPassNode &pass);
+
     };
 
 } // namespace vkengine

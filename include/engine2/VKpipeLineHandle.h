@@ -2,7 +2,7 @@
 #define VK_PIPELIN_INCLUDE_H_
 
 #include "common.h"
-#include "config.h"
+#include "vkconfig.h"
 #include <optional>
 
 #include "VKContext.h"

@@ -5,6 +5,8 @@
 #include "macros.h"
 
 #include <vector>
+#include <string>
+#include <unordered_map>
 
 // NEW: Model configuration structure
 struct ModelConfig
@@ -94,7 +96,7 @@ struct ApplicationConfig
 struct PipelineConfig
 {
     // Pipeline type and identification
-    std::string name;
+    cString name;
     enum class Type
     {
         Graphics,
@@ -104,9 +106,9 @@ struct PipelineConfig
     // Required format parameters (empty = not required)
     struct RequiredFormats
     {
-        bool outColorFormat = false;
-        bool depthFormat = false;
-        bool msaaSamples = false;
+        cBool outColorFormat = false;
+        cBool depthFormat = false;
+        cBool msaaSamples = false;
     } requiredFormats;
 
     // Vertex input configuration
@@ -126,8 +128,8 @@ struct PipelineConfig
     // Depth/Stencil configuration
     struct DepthStencil
     {
-        bool depthTest = false;
-        bool depthWrite = false;
+        cBool depthTest = false;
+        cBool depthWrite = false;
         VkCompareOp depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
     } depthStencil;
 
@@ -138,16 +140,16 @@ struct PipelineConfig
         VkFrontFace frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
 
         // Shadow-specific settings
-        bool depthClampEnable = false;
-        bool depthBiasEnable = false;
-        float depthBiasConstantFactor = 0.0f;
-        float depthBiasSlopeFactor = 0.0f;
+        cBool depthClampEnable = false;
+        cBool depthBiasEnable = false;
+        cFloat depthBiasConstantFactor = 0.0f;
+        cFloat depthBiasSlopeFactor = 0.0f;
     } rasterization;
 
     // Color blending configuration
     struct ColorBlend
     {
-        bool blendEnable = false;
+        cBool blendEnable = false;
 
         // Alpha blending preset (for GUI)
         struct AlphaBlending
@@ -181,9 +183,9 @@ struct PipelineConfig
     // Pipeline-specific configurations
     struct SpecialConfig
     {
-        bool isDepthOnly = false;           // ShadowMap: no color attachments
-        bool isScreenSpace = false;         // Post/Sky: no vertex buffers
-        bool hasCustomVertexFormat = false; // GUI: ImGui vertex format
+        cBool isDepthOnly = false;           // ShadowMap: no color attachments
+        cBool isScreenSpace = false;         // Post/Sky: no vertex buffers
+        cBool hasCustomVertexFormat = false; // GUI: ImGui vertex format
     } specialConfig;
 
     static PipelineConfig createGui();
@@ -205,6 +207,7 @@ enum class ResourceAccess : cUint16_t
     ShaderReadOnly,
     ShaderReadWrite, // compute general
     Present,
+    MAX
 };
 
 struct ResourceUsage
@@ -212,5 +215,24 @@ struct ResourceUsage
     cString handle; // Like "forwardColor", "shadowDepth", "swapchain"
     ResourceAccess access;
 };
+
+static inline cString getStringResourceAccess(ResourceAccess access)
+{
+    switch (access)
+    {
+    case ResourceAccess::ColorAttachmentWrite:
+        return "ColorAttachmentWrite";
+    case ResourceAccess::DepthAttachmentWrite:
+        return "DepthAttachmentWrite";
+    case ResourceAccess::ShaderReadOnly:
+        return "ShaderReadOnly";
+    case ResourceAccess::ShaderReadWrite:
+        return "ShaderReadWrite";
+    case ResourceAccess::Present:
+        return "Present";
+    default:
+        return "Unknown";
+    }
+}
 
 #endif // !INCLUDE_CONFIG_TYPE_H_

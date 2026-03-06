@@ -1,4 +1,4 @@
-#include "config.h"
+#include "vkconfig.h"
 
 // Implementation of factory methods
 PipelineConfig PipelineConfig::createGui()
@@ -11,7 +11,6 @@ PipelineConfig PipelineConfig::createGui()
     config.specialConfig.hasCustomVertexFormat = true;
     return config;
 }
-
 PipelineConfig PipelineConfig::createPbrForward()
 {
     PipelineConfig config;

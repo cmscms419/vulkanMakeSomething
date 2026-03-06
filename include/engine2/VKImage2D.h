@@ -41,8 +41,13 @@ namespace vkengine
 
         // 이미지 ColorAttachment 변환
         void transitionToColorAttachment(VkCommandBuffer commandBuffer);
-
+        void transitionToDepthStencilAttachment(VkCommandBuffer commandBuffer);
+        void transitionToTransferDst(VkCommandBuffer commandBuffer);
         void transitionToTransferSrc(VkCommandBuffer commandBuffer);
+        void transitionToShaderReadOnly(VkCommandBuffer commandBuffer);
+        void transitionToShaderReadWrite(VkCommandBuffer commandBuffer);
+        void transitionToPresent(VkCommandBuffer commandBuffer);
+
 
         VkImage getImage();
         VkImageView getImageView();

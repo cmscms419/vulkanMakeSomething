@@ -15,7 +15,7 @@ namespace vkengine {
         void initSurface(VkSurfaceKHR surface, cBool vsync);
         void createSwapChain();
         void createImageViews();
-        void transitionTo(VkCommandBuffer commandBuffer,cUint32_t imageIndex,VkImageLayout newLayout,VkAccessFlags2 newAccess,VkPipelineStageFlags2 newStage);
+        void transitionTo(VkCommandBuffer commandBuffer,cUint32_t imageIndex);
         void cleanup();
         void cleanupWithoutSurface();
 
