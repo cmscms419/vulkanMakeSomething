@@ -29,10 +29,10 @@ namespace vkengine
         PassExecuteFunc execute;
     };
 
-    class RenderGraph
+    class VKRenderGraph
     {
     public:
-        explicit RenderGraph(VKcontext &ctx);
+        explicit VKRenderGraph(VKcontext &ctx);
 
         void registerResource(const cString &handle, VKImage2D &img);
         void registerSwapchainResource(const cString &handle, VKSwapChain &swapchain);

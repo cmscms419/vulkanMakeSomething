@@ -7,10 +7,10 @@ using namespace vkengine::Log;
 
 namespace vkengine
 {
-    RenderGraph::RenderGraph(VKcontext &ctx) : ctx(ctx)
+    VKRenderGraph::VKRenderGraph(VKcontext &ctx) : ctx(ctx)
     {
     }
-    void RenderGraph::registerResource(const cString &handle, VKImage2D &img)
+    void VKRenderGraph::registerResource(const cString &handle, VKImage2D &img)
     {
         if (resources.find(handle) != resources.end())
         {
@@ -25,7 +25,7 @@ namespace vkengine
         resources.emplace(handle, entry);
     }
 
-    void RenderGraph::registerSwapchainResource(const cString &handle, VKSwapChain &swapchain)
+    void VKRenderGraph::registerSwapchainResource(const cString &handle, VKSwapChain &swapchain)
     {
         if (resources.find(handle) != resources.end())
         {
@@ -40,12 +40,12 @@ namespace vkengine
         resources.emplace(handle, entry);
     }
 
-    void RenderGraph::addPass(RenderPassNode pass)
+    void VKRenderGraph::addPass(RenderPassNode pass)
     {
         passes.push_back(std::move(pass));
     }
 
-    bool RenderGraph::compile()
+    bool VKRenderGraph::compile()
     {
         // 1. 유효성 검사
         for (const auto &pass : passes)
@@ -79,7 +79,7 @@ namespace vkengine
         return true;
     }
 
-    void RenderGraph::execute(VkCommandBuffer cmd, cUint32_t frameIndex, VkImage swapchainImage, VkImageView swapchainView)
+    void VKRenderGraph::execute(VkCommandBuffer cmd, cUint32_t frameIndex, VkImage swapchainImage, VkImageView swapchainView)
     {
         for (const cSize index : sortedOrder)
         {
@@ -93,7 +93,7 @@ namespace vkengine
         }
     }
 
-    void RenderGraph::printGraph() const
+    void VKRenderGraph::printGraph() const
     {
 #if 1
         PRINT_TO_LOGGER("RenderGraph Execution Order:");
@@ -115,7 +115,7 @@ namespace vkengine
         return;
     }
 
-    std::vector<std::vector<cSize>> RenderGraph::buildAdjacency() const
+    std::vector<std::vector<cSize>> VKRenderGraph::buildAdjacency() const
     {
         std::vector<std::vector<cSize>> adj;
         std::unordered_map<cString, std::vector<cSize>> outputResources; // 리소스 핸들 → 패스 인덱스 매핑 (출력 리소스 기준)
@@ -156,7 +156,7 @@ namespace vkengine
         return adj;
     }
 
-    std::vector<cSize> RenderGraph::topologicalSort(const std::vector<std::vector<cSize>> &adj) const
+    std::vector<cSize> VKRenderGraph::topologicalSort(const std::vector<std::vector<cSize>> &adj) const
     {
         std::vector<cSize> sorted;
         std::vector<cSize> inDegree(passes.size(), 0);
@@ -191,7 +191,7 @@ namespace vkengine
         return sorted;
     }
 
-    void RenderGraph::insertBarriersBeforePass(VkCommandBuffer cmd, cUint32_t frameIndex, const RenderPassNode &pass)
+    void VKRenderGraph::insertBarriersBeforePass(VkCommandBuffer cmd, cUint32_t frameIndex, const RenderPassNode &pass)
     {
         // 패스의 입력 리소스들을 순회하면서 필요한 배리어 삽입
         for (const ResourceUsage &res : pass.inputs)
