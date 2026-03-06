@@ -21,9 +21,9 @@ int main(int argc, char* argv[]) {
                 glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f))
         ));
     
-    std::unique_ptr<Application2> app2 = std::make_unique<Application2>(root_path);
+    std::unique_ptr<Application3> app3 = std::make_unique<Application3>(root_path);
 
-    app2->update();
+    app3->update();
     
     return 0;
 }

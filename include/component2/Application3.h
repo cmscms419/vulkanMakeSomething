@@ -1,5 +1,5 @@
-﻿#ifndef VK_APPLICATION_2_H_
-#define VK_APPLICATION_2_H_
+﻿#ifndef VK_APPLICATION_3_H_
+#define VK_APPLICATION_3_H_
 
 #include "common.h"
 
@@ -8,17 +8,17 @@
 #include "VKgui.h"
 #include "VKModel.h"
 #include "VKCommandBufferHander.h"
-#include "VKrenderer.h"
+#include "VKrenderer2.h"
 
 namespace vkengine {
 
-    class Application2 : public VulkanEngineWin2
+    class Application3 : public VulkanEngineWin2
     {
     public:
-        Application2(cString root_path);                                 // Default configuration
-        Application2(const ApplicationConfig& config, cString root_path);  // Custom configuration
-        Application2(const cString& configFile, cString root_path);        // Load from file (future feature)
-        ~Application2();
+        Application3(cString root_path);                                 // Default configuration
+        Application3(const ApplicationConfig& config, cString root_path);  // Custom configuration
+        Application3(const cString& configFile, cString root_path);        // Load from file (future feature)
+        ~Application3();
 
         void run();
         void update();
@@ -32,14 +32,8 @@ namespace vkengine {
 
         VkSampleCountFlagBits msaaSamples = VK_SAMPLE_COUNT_FLAG_BITS_MAX_ENUM;
 
-        std::shared_ptr<object::Camera2> camera;
-
-        VKShaderManager shaderManager;
-
-        std::vector<VKModel> models{};
-
         gui::VKimguiRenderer guiRenderer;
-        VKforwardRenderer forwardRenderer;
+        VKforwardRenderer2 forwardRenderer;
 
         cUint32_t frameCounter = 0;
         cUint32_t currentFrame = 0;     // For CPU resources (command buffers, fences)
@@ -51,6 +45,7 @@ namespace vkengine {
         void loadModels(const std::vector<ModelConfig>& modelConfigs);
         void setupCallbacks();
         void initializeVulkanResources();
+        void initializeRenderGraph();
 
         void renderHDRControlWindow();
         void renderPostProcessingControlWindow();

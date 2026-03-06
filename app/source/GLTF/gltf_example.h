@@ -1,7 +1,7 @@
 #ifndef GLTF_EXAMPLE_H_
 #define GLTF_EXAMPLE_H_
 
-#include "Application2.h"
+#include "Application3.h"
 
 namespace vkengine {
 

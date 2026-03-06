@@ -1,5 +1,9 @@
 ﻿#include "Application2.h"
 
+#include "helper.h"
+#include "vkconfig.h"
+#include "log.h"
+
 #include <glm/gtx/string_cast.hpp>
 #include <glm/gtx/matrix_decompose.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -239,10 +243,7 @@ namespace vkengine {
             // Transition swapchain image from undefined to color attachment layout
             this->swapChain->transitionTo(
                     cmd.getCommandBuffer(),
-                    imageIndex,
-                    VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-                    VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT,
-                    VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT);
+                    imageIndex);
 
             VkViewport viewport{ 0.0f, 0.0f, (float)this->extent.width, (float)this->extent.height,
                                 0.0f, 1.0f };
@@ -254,12 +255,7 @@ namespace vkengine {
             // Draw GUI (overwrite to swapchain image)
             this->guiRenderer.draw(cmd.getCommandBuffer(), this->swapChain->getSwapChainImageView(imageIndex), viewport);
 
-            this->swapChain->transitionTo(
-                cmd.getCommandBuffer(),
-                imageIndex,
-                VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
-                VK_ACCESS_2_NONE,
-                VK_PIPELINE_STAGE_2_BOTTOM_OF_PIPE_BIT);
+            this->swapChain->transitionTo(cmd.getCommandBuffer(),imageIndex);
         }
         _VK_CHECK_RESULT_(vkEndCommandBuffer(cmd.getCommandBuffer())); // End command buffer
 

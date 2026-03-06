@@ -12,6 +12,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\app\component2\Application2.cpp" />
+    <ClCompile Include="..\..\app\component2\Application3.cpp" />
     <ClCompile Include="..\..\app\component2\Camera2.cpp" />
     <ClCompile Include="..\..\app\component2\imgui\imgui.cpp" />
     <ClCompile Include="..\..\app\component2\imgui\imgui_demo.cpp" />
@@ -23,14 +24,17 @@
     <ClCompile Include="..\..\app\component2\VKengine2.cpp" />
     <ClCompile Include="..\..\app\component2\VKgui.cpp" />
     <ClCompile Include="..\..\app\component2\VKrenderer.cpp" />
+    <ClCompile Include="..\..\app\component2\VKrenderer2.cpp" />
     <ClCompile Include="..\..\app\component2\VKwindow.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\include\component2\Application2.h" />
+    <ClInclude Include="..\..\include\component2\Application3.h" />
     <ClInclude Include="..\..\include\component2\Camera2.h" />
     <ClInclude Include="..\..\include\component2\VKengine2.h" />
     <ClInclude Include="..\..\include\component2\VKgui.h" />
     <ClInclude Include="..\..\include\component2\VKrenderer.h" />
+    <ClInclude Include="..\..\include\component2\VKrenderer2.h" />
     <ClInclude Include="..\..\include\component2\VKwindow.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
