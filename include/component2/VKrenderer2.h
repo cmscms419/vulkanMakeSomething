@@ -45,30 +45,82 @@ namespace vkengine
         void cleanup();
 
         void buildRenderGraph(VKSwapChain &swapchain);
+        void prepareForModels(
+            std::vector<VKModel> &models,
+            VkFormat outColorFormat,
+            VkFormat depthFormat,
+            VkSampleCountFlagBits msaaSamples,
+            cUint32_t swapChainWidth,
+            cUint32_t swapChainHeight);
 
     private:
-        const cUint32_t MaxFramesFlight = MAX_FRAMES_IN_FLIGHT;
-        const cString assetsPath = RESOURSE_PATH;
-        const cString shaderPath = SHADER_PATH;
+        const cUint32_t MaxFramesFlight;
+        const cString assetsPath;
+        const cString shaderPath;
 
         VKcontext &ctx;
         VKShaderManager &shaderManager;
         VKRenderGraph renderGraph;
 
+        // 파이프 라인 핸들 매핑 - 파이프라인 이름으로 핸들 관리
+        std::unordered_map<cString, VKPipeLineHandle> pipelines;
+
         // Resources
-        // 렌더 상태 (람다 캡처용)
-        std::vector<VKModel> *currentModels = nullptr;
-        VkViewport currentViewport{};
-        VkRect2D currentScissor{};
-        VkImageView currentSwapchainImageView = VK_NULL_HANDLE;
+        // 랜더 타겟, 텍스처, 샘플러, 스카이박스 IBL 텍스처
+        std::vector<VKModel> *currentModels;
+
+        SceneDataUBO sceneDataUBO;
+        SkyOptionsUBO skyOptionsUBO;
+        OptionsUniform optionsUBO;
+        BoneDataUniform boneDataUBO;
+        PostProcessingOptionsUBO postOptionsUBO;
+
+        std::vector<VKUniformBuffer2<SceneDataUBO>> sceneDataUniform;
+        std::vector<VKUniformBuffer2<SkyOptionsUBO>> skyOptionsUniform;
+        std::vector<VKUniformBuffer2<OptionsUniform>> optionsUniform;
+        std::vector<VKUniformBuffer2<BoneDataUniform>> boneDataUniform;
+        std::vector<VKUniformBuffer2<PostProcessingOptionsUBO>> postOptionsUniform;
+
+        std::vector<DescriptorSetHander> SceneSkyOptionsStates{};
+        std::vector<DescriptorSetHander> SceneOptionsBoneDataSets{};
+        // std::vector<DescriptorSetHander> PostDescriptorSets{};
+
+        VKImage2D msaaColorBuffer;
+        VKDepthStencil depthStencil;
+        VKDepthStencil msaaDepthStencil;
+
+        VKImage2D forwardToCompute;
+        VKImage2D computeToPost;
+
+        VKImage2D dummyTexture;
+        VKskyTexture skyTextures;
+        VKImage2D shadowMap;
+
+        VKSamplerHandler samplerLinearRepeat;
+        VKSamplerHandler samplerLinearClamp;
+        VKSamplerHandler samplerAnisoRepeat;
+        VKSamplerHandler samplerAnisoClamp;
+        VKSamplerHandler samplerShadowMap;
+
+        DescriptorSetHander skyDescriptorSet;
+        // DescriptorSetHander postDescriptorSet;
+        DescriptorSetHander shadowMapSet;
 
         // 각 패스 실행 함수 (람다에서 호출)
         void executeShadowPass(VkCommandBuffer cmd, cUint32_t frameIndex);
         void executeForwardPass(VkCommandBuffer cmd, cUint32_t frameIndex);
         void executePostPass(VkCommandBuffer cmd, cUint32_t frameIndex);
 
+        // 랜더링을 위한 리소스 생성 함수들
+        // PBR, 스카이박스, 포스트 프로세싱, 쉐도우 맵 파이프라인 생성
+        // 렌더 타겟, 텍스처, 샘플러, 스카이박스 IBL 텍스처 생성
+        // Scene, Sky, Options, BoneData, PostProcessing 유니폼 버퍼 및 디스크립터 셋 생성
+        void createPipelines(const VkFormat colorFormat, const VkFormat depthFormat, VkSampleCountFlagBits msaaSamples);
+        void createTextures(cUint32_t swapchainWidth, cUint32_t swapchainHeight, VkSampleCountFlagBits msaaSamples);
+        void createUniformBuffers();
+
         // 쉐도우 맵 생성 - 광원 시점에서 깊이 정보 렌더링
-        void makeShadowMap(VkCommandBuffer cmd, uint32_t currentFrame);
+        void makeShadowMap(VkCommandBuffer cmd, cUint32_t currentFrame);
     };
 }
 

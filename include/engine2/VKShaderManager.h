@@ -15,7 +15,7 @@ namespace vkengine {
     {
     public:
         VKShaderManager(VKcontext& ctx, cString path, const std::initializer_list<std::pair<cString, std::vector<cString>>>& pipelineShaders);
-        
+
         VKShaderManager(const VKShaderManager&) = delete;
 
         VKShaderManager& operator=(const VKShaderManager&) = delete;
