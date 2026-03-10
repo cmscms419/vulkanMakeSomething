@@ -38,7 +38,8 @@ namespace vkengine
         void registerSwapchainResource(const cString &handle, VKSwapChain &swapchain);
         void addPass(RenderPassNode pass);
         bool compile(); // addPass 후 한 번만 호출 (위상 정렬 + 유효성 검사)
-        void execute(VkCommandBuffer cmd, cUint32_t frameIndex, VkImage swapchainImage, VkImageView swapchainView);
+        void execute(VkCommandBuffer cmd, cUint32_t frameIndex);
+        VKSwapChain& getVKSwapChain();
 
     private:
         VKcontext &ctx;

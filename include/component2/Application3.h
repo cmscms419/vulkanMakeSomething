@@ -32,14 +32,16 @@ namespace vkengine {
 
         VkSampleCountFlagBits msaaSamples = VK_SAMPLE_COUNT_FLAG_BITS_MAX_ENUM;
 
-        // gui::VKimguiRenderer guiRenderer;
+        std::shared_ptr<object::Camera2> camera;
+        std::vector<VKModel> models;
+
+        gui::VKimguiRenderer guiRenderer;
         VKShaderManager shaderManager;
         VKforwardRenderer2 forwardRenderer;
 
         cUint32_t frameCounter = 0;
         cUint32_t currentFrame = 0;     // For CPU resources (command buffers, fences)
         cUint32_t currentSemaphore = 0; // For GPU semaphores (swapchain sync)
-        std::vector<VKModel> models;
 
         // NEW: Configuration loading methods
         void initializeWithConfig(const ApplicationConfig& config);

@@ -38,6 +38,8 @@ namespace vkengine
         entry.swapchain = &swapchain;
 
         resources.emplace(handle, entry);
+
+        swapchainHandle = handle;
     }
 
     void VKRenderGraph::addPass(RenderPassNode pass)
@@ -79,7 +81,7 @@ namespace vkengine
         return true;
     }
 
-    void VKRenderGraph::execute(VkCommandBuffer cmd, cUint32_t frameIndex, VkImage swapchainImage, VkImageView swapchainView)
+    void VKRenderGraph::execute(VkCommandBuffer cmd, cUint32_t frameIndex)
     {
         for (const cSize index : sortedOrder)
         {
@@ -91,6 +93,13 @@ namespace vkengine
             // 패스 실행
             pass.execute(cmd, frameIndex);
         }
+    }
+
+    VKSwapChain &VKRenderGraph::getVKSwapChain()
+    {
+        auto result = this->resources.find(this->swapchainHandle);
+        
+        return *result->second.swapchain;
     }
 
     void VKRenderGraph::printGraph() const

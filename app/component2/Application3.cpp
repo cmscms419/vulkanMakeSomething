@@ -25,13 +25,19 @@ namespace vkengine
                         {
                             {"shadowMap", {"vertshadowMap.spv", "fragshadowMap.spv"}},
                             {"pbrForward", {"vertpbrForward.spv", "fragpbrForward.spv"}},
-                            //   {"gui", {"vertimgui.spv", "fragimgui.spv"}},
+                            {"gui", {"vertimgui.spv", "fragimgui.spv"}},
                             {"sky", {"vertskybox2.spv", "fragskybox2.spv"}},
                             {"post", {"vertpost.spv", "fragpost.spv"}},
                             {"ssao", {"compssao.spv"}},
                         }},
-          //   guiRenderer{*this->cxt, shaderManager, swapChain->getSwapChainImageFormat(), RootPath + this->AssetsPath},
-          forwardRenderer(*this->cxt, shaderManager, this->kMaxFramesInFlight, RootPath + this->AssetsPath, RootPath + this->ShaderPath)
+        guiRenderer{*this->cxt, shaderManager, swapChain->getSwapChainImageFormat(), RootPath + this->AssetsPath},
+        forwardRenderer(
+            *this->cxt, 
+            shaderManager, 
+            this->kMaxFramesInFlight, 
+            RootPath + this->AssetsPath, 
+            RootPath + this->ShaderPath
+        )
     {
         initializeVulkanResources();
         setupCallbacks();
@@ -100,6 +106,7 @@ namespace vkengine
             PRINT_TO_LOGGER("\n"); // 빈 줄
         }
     }
+    
     void Application3::setupCallbacks()
     {
         // engine에서 제공하는 카메라 컨트롤 윈도우 사용
@@ -119,6 +126,7 @@ namespace vkengine
 
         // engine에서 이미 fence와 semaphore를 생성하므로 생략
     }
+    
     void Application3::initializeRenderGraph()
     {
         this->forwardRenderer.buildRenderGraph(*this->swapChain);
