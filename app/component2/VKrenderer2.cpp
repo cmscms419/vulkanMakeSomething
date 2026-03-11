@@ -8,7 +8,7 @@ using namespace vkengine::Log;
 namespace vkengine
 {
 
-    VKforwardRenderer2::VKforwardRenderer2(
+    VKRenderer2::VKRenderer2(
         VKcontext &ctx,
         VKShaderManager &shadermanager,
         const cUint32_t &MaxFramesFlight,
@@ -21,32 +21,39 @@ namespace vkengine
           samplerAnisoRepeat(ctx), samplerAnisoClamp(ctx), forwardToCompute(ctx), computeToPost(ctx),
           samplerShadowMap(ctx)
     {
-        PRINT_TO_LOGGER("VKforwardRenderer2 created with MaxFramesFlight: %d assetsPath: %s shaderPath: %s",
+        PRINT_TO_LOGGER("Renderer2 created with MaxFramesFlight: %d assetsPath: %s shaderPath: %s",
                         MaxFramesFlight,
                         assetsPath.c_str(),
                         shaderPath.c_str());
     }
 
-    VKforwardRenderer2::~VKforwardRenderer2()
+    VKRenderer2::~VKRenderer2()
     {
         this->cleanup();
     }
 
-    void VKforwardRenderer2::cleanup()
+    void VKRenderer2::cleanup()
     {
     }
-    void VKforwardRenderer2::rendering(VkCommandBuffer cmd, uint32_t currentFrame, std::vector<VKModel> &models, VkViewport viewport, VkRect2D scissor)
+    void VKRenderer2::update(object::Camera2 &camera, uint32_t currentFrame, double time)
+    {
+        this->sceneDataUniform[currentFrame].updateData();
+        this->optionsUniform[currentFrame].updateData();
+        this->skyOptionsUniform[currentFrame].updateData();
+        this->postOptionsUniform[currentFrame].updateData();
+    }
+    void VKRenderer2::rendering(VkCommandBuffer cmd, uint32_t currentFrame, uint32_t imageIndex, std::vector<VKModel> &models, VkViewport viewport, VkRect2D scissor)
     {
         this->currentModels = &models;
         this->currentScissor = scissor;
         this->currentViewport = viewport;
 
-        this->renderGraph.execute(cmd, currentFrame);
+        this->renderGraph.execute(cmd, currentFrame, imageIndex);
 
         this->currentModels = nullptr;
     }
 
-    void VKforwardRenderer2::buildRenderGraph(VKSwapChain &swapchain)
+    void VKRenderer2::buildRenderGraph(VKSwapChain &swapchain)
     {
         this->renderGraph.registerSwapchainResource("swapchain", swapchain);      // swapchain 리소스 등록
         this->renderGraph.registerResource("shadowDepth", shadowMap);             // 쉐도우 맵 리소스 등록
@@ -57,53 +64,36 @@ namespace vkengine
             "shadow",
             {},
             {{"shadowDepth", ResourceAccess::DepthAttachmentWrite}},
-            [this](VkCommandBuffer cmd, cUint32_t frameIndex)
+            [this](VkCommandBuffer cmd, cUint32_t frameIndex, cUint32_t imageIndex)
             {
-                this->makeShadowMap(cmd, frameIndex)
+                this->makeShadowMap(cmd, frameIndex, imageIndex);
             }};
         RenderPassNode forwardPass{
             "pbrForward",
             {{"shadowDepth", ResourceAccess::ShaderReadOnly}},
-            {{"forwardToCompute", ResourceAccess::ShaderReadWrite}},
-            [this](VkCommandBuffer cmd, cUint32_t frameIndex)
+            {{"forwardToCompute", ResourceAccess::ColorAttachmentWrite}},
+            [this](VkCommandBuffer cmd, cUint32_t frameIndex, cUint32_t imageIndex)
             {
-                this->makeForwardPBRPass(cmd, frameIndex);
-            }};
-        RenderPassNode skyboxPass{
-            "sky",
-            {{"forwardToCompute", ResourceAccess::ShaderReadOnly}},
-            {{"computeToPost", ResourceAccess::ColorAttachmentWrite}},
-            [this](VkCommandBuffer cmd, cUint32_t frameIndex)
-            {
-                this->makeSkyPass(cmd, frameIndex);
+                this->makeForwardPBRPass(cmd, frameIndex, imageIndex);
             }};
 
         RenderPassNode postProcessPass{
             "postProcess",
-            {{"computeToPost", ResourceAccess::ShaderReadOnly}},
-            {{"computeToPost", ResourceAccess::ShaderReadWrite}},
-            [this](VkCommandBuffer cmd, cUint32_t frameIndex)
-            {
-                this->makePostProcessPass(cmd, frameIndex);
-            }};
-
-        RenderPassNode PresentPass{
-            "present",
-            {{"computeToPost", ResourceAccess::ShaderReadOnly}},
+            {{"forwardToCompute", ResourceAccess::ShaderReadOnly}},
             {{"swapchain", ResourceAccess::Present}},
-            [this](VkCommandBuffer cmd, cUint32_t frameIndex)
+            [this](VkCommandBuffer cmd, cUint32_t frameIndex, cUint32_t imageIndex)
             {
-                // this->executePostPass(cmd, frameIndex);
-                this->makePresent(cmd, frameIndex);
+                this->makePostProcessPass(cmd, frameIndex, imageIndex);
             }};
 
         this->renderGraph.addPass(shadowPass);
         this->renderGraph.addPass(forwardPass);
+        this->renderGraph.addPass(postProcessPass);
 
         this->renderGraph.compile();
     }
 
-    void VKforwardRenderer2::prepareForModels(std::vector<VKModel> &models, VkFormat outColorFormat, VkFormat depthFormat, VkSampleCountFlagBits msaaSamples, cUint32_t swapChainWidth, cUint32_t swapChainHeight)
+    void VKRenderer2::prepareForModels(std::vector<VKModel> &models, VkFormat outColorFormat, VkFormat depthFormat, VkSampleCountFlagBits msaaSamples, cUint32_t swapChainWidth, cUint32_t swapChainHeight)
     {
         this->createPipelines(outColorFormat, depthFormat, msaaSamples);
         this->createTextures(swapChainWidth, swapChainHeight, msaaSamples);
@@ -115,7 +105,7 @@ namespace vkengine
         }
     }
 
-    void VKforwardRenderer2::createPipelines(const VkFormat colorFormat, const VkFormat depthFormat, VkSampleCountFlagBits msaaSamples)
+    void VKRenderer2::createPipelines(const VkFormat colorFormat, const VkFormat depthFormat, VkSampleCountFlagBits msaaSamples)
     {
         pipelines.emplace("pbrForward",
                           VKPipeLineHandle(ctx, shaderManager, "pbrForward", VK_FORMAT_R16G16B16A16_SFLOAT,
@@ -128,7 +118,7 @@ namespace vkengine
                                                         VK_FORMAT_D16_UNORM, VK_SAMPLE_COUNT_1_BIT));
     }
 
-    void VKforwardRenderer2::createTextures(cUint32_t swapchainWidth, cUint32_t swapchainHeight, VkSampleCountFlagBits msaaSamples)
+    void VKRenderer2::createTextures(cUint32_t swapchainWidth, cUint32_t swapchainHeight, VkSampleCountFlagBits msaaSamples)
     {
         this->samplerLinearRepeat.createLinearRepeat();
         this->samplerLinearClamp.createLinearClamp();
@@ -184,7 +174,33 @@ namespace vkengine
         shadowMapSet.create(ctx, {std::ref(this->shadowMap)});
     }
 
-    void VKforwardRenderer2::createUniformBuffers()
+    void VKRenderer2::resize(uint32_t width, uint32_t height, VkSampleCountFlagBits msaaSamples)
+    {
+        // 크기에 의존하는 이미지 정리
+        this->msaaColorBuffer.cleanup();
+        this->msaaDepthStencil.cleanup();
+        this->depthStencil.cleanup();
+        this->forwardToCompute.cleanup();
+        this->computeToPost.cleanup();
+
+        // 새 크기로 재생성
+        this->msaaColorBuffer.createMsaaColorBuffer(width, height, msaaSamples);
+        this->msaaDepthStencil.create(width, height, msaaSamples);
+        this->depthStencil.create(width, height, VK_SAMPLE_COUNT_1_BIT);
+        this->forwardToCompute.createGeneralStorage(width, height);
+        this->computeToPost.createGeneralStorage(width, height);
+
+        this->forwardToCompute.setSampler(this->samplerLinearRepeat.getSampler());
+
+        // PostDescriptorSets는 forwardToCompute를 참조하므로 재생성
+        for (size_t i = 0; i < this->MaxFramesFlight; i++)
+        {
+            PostDescriptorSets[i].create(
+                this->ctx, {std::ref(forwardToCompute), std::ref(postOptionsUniform[i].Buffer())});
+        }
+    }
+
+    void VKRenderer2::createUniformBuffers()
     {
         const VkDevice device = ctx.getDevice()->logicaldevice;
 
@@ -248,7 +264,7 @@ namespace vkengine
         }
     }
 
-    void VKforwardRenderer2::makeForwardPBRPass(VkCommandBuffer cmd, cUint32_t currentFrame)
+    void VKRenderer2::makeForwardPBRPass(VkCommandBuffer cmd, cUint32_t currentFrame, cUint32_t imageIndex)
     {
         VkRect2D renderArea = {0, 0, this->currentScissor.extent.width, this->currentScissor.extent.height};
 
@@ -273,9 +289,8 @@ namespace vkengine
         vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
                           pipelines.at("pbrForward").getPipeline());
 
-        for (size_t j = 0; j < this->currentModels.size(); j++)
+        for (size_t j = 0; j < this->currentModels->size(); j++)
         {
-            // if (!this->currentModels[j].Visible())
             if (!this->currentModels->at(j).Visible())
             {
                 continue;
@@ -319,10 +334,7 @@ namespace vkengine
                 vkCmdDrawIndexed(cmd, static_cast<uint32_t>(mesh.indices.size()), 1, 0, 0, 0);
             }
         }
-    }
 
-    void VKforwardRenderer2::makeSkyPass(VkCommandBuffer cmd, cUint32_t currentFrame)
-    {
         // Sky rendering pass
         vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelines.at("sky").getPipeline());
 
@@ -338,12 +350,12 @@ namespace vkengine
         vkCmdEndRendering(cmd);
     }
 
-    void VKforwardRenderer2::makePostProcessPass(VkCommandBuffer cmd, cUint32_t currentFrame)
+    void VKRenderer2::makePostProcessPass(VkCommandBuffer cmd, cUint32_t currentFrame, cUint32_t imageIndex)
     {
         VkRect2D renderArea = {0, 0, this->currentScissor.extent.width, this->currentScissor.extent.height};
-        VkImageView& swapchainImageView = this->renderGraph.getVKSwapChain().getSwapChainImageView(currentFrame);
+        VkImageView &swapchainImageView = this->renderGraph.getVKSwapChain().getSwapChainImageView(imageIndex);
 
-        if (swapchainImageView = nullptr)
+        if (swapchainImageView == VK_NULL_HANDLE)
         {
             EXIT_TO_LOGGER("swapchainImageView us null");
         }
@@ -370,11 +382,7 @@ namespace vkengine
         vkCmdEndRendering(cmd);
     }
 
-    void VKforwardRenderer2::makePresent(VkCommandBuffer cmd, cUint32_t currentFrame)
-    {
-    }
-
-    void VKforwardRenderer2::makeShadowMap(VkCommandBuffer cmd, uint32_t currentFrame)
+    void VKRenderer2::makeShadowMap(VkCommandBuffer cmd, uint32_t currentFrame, cUint32_t imageIndex)
     {
 #if 1
         // 그림자 맵 렌더링 시작
@@ -452,7 +460,7 @@ namespace vkengine
 #endif
     }
 
-    VkRenderingAttachmentInfo VKforwardRenderer2::createColorAttachment(VkImageView imageView, VkAttachmentLoadOp loadOp, VkClearColorValue clearColor, VkImageView resolveImageView, VkResolveModeFlagBits resolveMode) const
+    VkRenderingAttachmentInfo VKRenderer2::createColorAttachment(VkImageView imageView, VkAttachmentLoadOp loadOp, VkClearColorValue clearColor, VkImageView resolveImageView, VkResolveModeFlagBits resolveMode) const
     {
         VkRenderingAttachmentInfo attachment{VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO};
         attachment.imageView = imageView;
@@ -466,7 +474,7 @@ namespace vkengine
         return attachment;
     }
 
-    VkRenderingAttachmentInfo VKforwardRenderer2::createDepthAttachment(VkImageView imageView, VkAttachmentLoadOp loadOp, float clearDepth, VkImageView resolveImageView, VkResolveModeFlagBits resolveMode) const
+    VkRenderingAttachmentInfo VKRenderer2::createDepthAttachment(VkImageView imageView, VkAttachmentLoadOp loadOp, float clearDepth, VkImageView resolveImageView, VkResolveModeFlagBits resolveMode) const
     {
         VkRenderingAttachmentInfo attachment{VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO};
         attachment.imageView = imageView;
@@ -480,7 +488,7 @@ namespace vkengine
         return attachment;
     }
 
-    VkRenderingInfo VKforwardRenderer2::createRenderingInfo(const VkRect2D &renderArea, const VkRenderingAttachmentInfo *colorAttachment, const VkRenderingAttachmentInfo *depthAttachment) const
+    VkRenderingInfo VKRenderer2::createRenderingInfo(const VkRect2D &renderArea, const VkRenderingAttachmentInfo *colorAttachment, const VkRenderingAttachmentInfo *depthAttachment) const
     {
         VkRenderingInfo renderingInfo{VK_STRUCTURE_TYPE_RENDERING_INFO_KHR};
         renderingInfo.renderArea = renderArea;
@@ -490,6 +498,66 @@ namespace vkengine
         renderingInfo.pDepthAttachment = depthAttachment;
         renderingInfo.pStencilAttachment = depthAttachment;
         return renderingInfo;
+    }
+
+    const CullingStats &VKRenderer2::getCullingStats() const
+    {
+        return this->cullingStats;
+    }
+
+    cBool VKRenderer2::isFrustumCullingEnabled() const
+    {
+        return this->frustumCullingEnabled;
+    }
+
+    void VKRenderer2::performFrustumCulling(std::vector<VKModel> &models)
+    {
+        cullingStats.totalMeshes = 0;
+        cullingStats.culledMeshes = 0;
+        cullingStats.renderedMeshes = 0;
+
+        if (!frustumCullingEnabled)
+        {
+            for (auto &model : models)
+            {
+                for (auto &mesh : model.Meshes())
+                {
+                    mesh.isCulled = false;
+                    cullingStats.totalMeshes++;
+                    cullingStats.renderedMeshes++;
+                }
+            }
+            return;
+        }
+
+        for (auto &model : models)
+        {
+            for (auto &mesh : model.Meshes())
+            {
+                cullingStats.totalMeshes++;
+
+                bool isVisible = viewFrustum.intersects(mesh.worldBounds);
+                mesh.isCulled = !isVisible;
+
+                if (isVisible)
+                    cullingStats.renderedMeshes++;
+                else
+                    cullingStats.culledMeshes++;
+            }
+        }
+    }
+
+    void VKRenderer2::setFrustumCullingEnabled(bool enabled)
+    {
+        this->frustumCullingEnabled = enabled;
+    }
+
+    void VKRenderer2::updateViewFrustum(const cMat4 &viewProjection)
+    {
+        if (this->frustumCullingEnabled)
+        {
+            this->viewFrustum.extractFromViewProjection(viewProjection);
+        }
     }
 
 }

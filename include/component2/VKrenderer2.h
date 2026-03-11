@@ -31,26 +31,29 @@ namespace vkengine
         cUint32_t renderedMeshes = 0;
     };
 
-    class VKforwardRenderer2
+    class VKRenderer2
     {
     public:
         // 렌더러 생성자 - Vulkan 컨텍스트, 셰이더 매니저, 프레임 수, 리소스 경로 초기화
-        VKforwardRenderer2(VKcontext &ctx, VKShaderManager &shadermanager,
-                           const cUint32_t &MaxFramesFlight,
-                           const cString &assetsPath,
-                           const cString &shaderPath);
+        VKRenderer2(VKcontext &ctx, VKShaderManager &shadermanager,
+                    const cUint32_t &MaxFramesFlight,
+                    const cString &assetsPath,
+                    const cString &shaderPath);
 
-        ~VKforwardRenderer2();
+        ~VKRenderer2();
         void cleanup();
 
+        void update(object::Camera2 &camera, uint32_t currentFrame, double time);
         void rendering(
             VkCommandBuffer cmd,
             uint32_t currentFrame,
+            uint32_t imageIndex,
             std::vector<VKModel> &models,
             VkViewport viewport,
             VkRect2D scissor);
 
         void buildRenderGraph(VKSwapChain &swapchain);
+        void resize(uint32_t width, uint32_t height, VkSampleCountFlagBits msaaSamples);
 
         void prepareForModels(
             std::vector<VKModel> &models,
@@ -59,6 +62,41 @@ namespace vkengine
             VkSampleCountFlagBits msaaSamples,
             cUint32_t swapChainWidth,
             cUint32_t swapChainHeight);
+
+        // View frustum culling
+        // 컬링 통계 정보 반환 (전체, 컬링된, 렌더링된 메시 수)
+        const CullingStats& getCullingStats() const;
+        // 프러스텀 컬링 활성화 상태 반환
+        cBool isFrustumCullingEnabled() const;
+        // 뷰 프러스텀 기반 메시 컬링 수행 - 보이지 않는 메시는 isCulled 플래그 설정
+        void performFrustumCulling(std::vector<VKModel>& models);
+        // 프러스텀 컬링 활성화/비활성화 설정
+        void setFrustumCullingEnabled(bool enabled);
+        // 뷰 프로젝션 행렬로부터 프러스텀 평면 추출 및 업데이트
+        void updateViewFrustum(const cMat4& viewProjection);
+        
+
+        // UBO getter 함수들 - 각 유니폼 버퍼 오브젝트의 현재 데이터 반환
+        SceneDataUBO &getSceneDataUBO()
+        {
+            return this->sceneDataUBO;
+        }
+        SkyOptionsUBO &getSkyOptionsUBO()
+        {
+            return this->skyOptionsUBO;
+        }
+        OptionsUniform &getOptionsUniform()
+        {
+            return this->optionsUBO;
+        }
+        BoneDataUniform &getBoneDataUniform()
+        {
+            return this->boneDataUBO;
+        }
+        PostProcessingOptionsUBO &getPostProcessingOptionsUBO()
+        {
+            return this->postOptionsUBO;
+        }
 
     private:
         const cUint32_t MaxFramesFlight;
@@ -115,6 +153,10 @@ namespace vkengine
         // DescriptorSetHander postDescriptorSet;
         DescriptorSetHander shadowMapSet;
 
+        ViewFrustum viewFrustum{};
+        cBool frustumCullingEnabled{true};
+        CullingStats cullingStats;
+
         // 랜더링을 위한 리소스 생성 함수들
         // PBR, 스카이박스, 포스트 프로세싱, 쉐도우 맵 파이프라인 생성
         // 렌더 타겟, 텍스처, 샘플러, 스카이박스 IBL 텍스처 생성
@@ -123,11 +165,10 @@ namespace vkengine
         void createTextures(cUint32_t swapchainWidth, cUint32_t swapchainHeight, VkSampleCountFlagBits msaaSamples);
         void createUniformBuffers();
 
-        void makeShadowMap(VkCommandBuffer cmd, cUint32_t currentFrame);
-        void makeForwardPBRPass(VkCommandBuffer cmd, cUint32_t currentFrame);
-        void makeSkyPass(VkCommandBuffer cmd, cUint32_t currentFrame);
-        void makePostProcessPass(VkCommandBuffer cmd, cUint32_t currentFrame);
-        void makePresent(VkCommandBuffer cmd, cUint32_t currentFrame);
+        void makeShadowMap(VkCommandBuffer cmd, cUint32_t currentFrame, cUint32_t imageIndex);
+        void makeForwardPBRPass(VkCommandBuffer cmd, cUint32_t currentFrame, cUint32_t imageIndex);
+        void makePostProcessPass(VkCommandBuffer cmd, cUint32_t currentFrame, cUint32_t imageIndex);
+        void makePresent(VkCommandBuffer cmd, cUint32_t currentFrame, cUint32_t imageIndex);
 
         // Helper functions for creating rendering structures
         // 컬러 어태치먼트 정보 생성 - MSAA resolve 지원

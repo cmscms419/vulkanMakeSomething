@@ -16,10 +16,10 @@ namespace vkengine {
     DescriptorManager2::DescriptorManager2(VkDevice& device) : logicaldevice(device) {
         descriptorPools = {};
         layoutsAndInfos = {};
-        allocatedTypeCounts_ = {};
-        remainingTypeCounts_ = {};
-        allocatedSets_ = 0;
-        remainingSets_ = 0;
+        allocatedTypeCounts = {};
+        remainingTypeCounts = {};
+        allocatedSets = 0;
+        remainingSets = 0;
     }
 
     const std::vector<VkDescriptorSetLayoutBinding>& DescriptorManager2::layoutToBindings(const VkDescriptorSetLayout& layout)
@@ -46,7 +46,7 @@ namespace vkengine {
 
     void DescriptorManager2::createFromScript()
     {
-        std::ifstream file(kScriptFilename_);
+        std::ifstream file(kScriptFilename);
 
         if (!file.is_open())
         {
@@ -93,14 +93,14 @@ namespace vkengine {
     {
         if (this->descriptorPools.empty()) return false;
 
-        if (this->remainingSets_ < requiredNumSets) return false;
+        if (this->remainingSets < requiredNumSets) return false;
 
         for (auto it = requiredTypeCounts.begin(); it != requiredTypeCounts.end(); ++it) {
             VkDescriptorType type = it->first;
             cUint32_t count = it->second;
 
-            auto remainingIt = this->remainingTypeCounts_.find(type);
-            if (remainingIt == this->remainingTypeCounts_.end() || remainingIt->second < count) {
+            auto remainingIt = this->remainingTypeCounts.find(type);
+            if (remainingIt == this->remainingTypeCounts.end() || remainingIt->second < count) {
                 return false;
             }
         }
@@ -119,19 +119,19 @@ namespace vkengine {
 
         this->descriptorPools.push_back(descriptorPool);
 
-        this->remainingSets_ += maxSets;
+        this->remainingSets += maxSets;
         for (const auto& typeCount : typeCounts) {
-            this->remainingTypeCounts_[typeCount.type] += typeCount.descriptorCount;
+            this->remainingTypeCounts[typeCount.type] += typeCount.descriptorCount;
         }
 
     }
 
     void DescriptorManager2::updateRemainingCapacity(const std::vector<VkDescriptorSetLayoutBinding>& bindings, uint32_t numSets)
     {
-        this->remainingSets_ -= numSets;
+        this->remainingSets -= numSets;
 
         for (const auto& binding : bindings) {
-            this->remainingTypeCounts_[binding.descriptorType] -= binding.descriptorCount * numSets;
+            this->remainingTypeCounts[binding.descriptorType] -= binding.descriptorCount * numSets;
         }
     }
 
@@ -158,7 +158,7 @@ namespace vkengine {
             }
 
             // 3.1.2 새로운 pool을 생성한다.
-            this->createNewPool(poolSizes, std::max(1u, this->remainingSets_ * 2));
+            this->createNewPool(poolSizes, std::max(1u, this->remainingSets * 2));
 
             // 3.1.3. 남아있는 capacity로부터 할당이 가능한지 다시 확인한다.
             if (!this->canAllocateFromRemaining(requiredTypeCounts, 1)) {
@@ -180,10 +180,10 @@ namespace vkengine {
 
         // 5. allocated capacity를 업데이트 한다.
         this->updateRemainingCapacity(bindings, 1);
-        this->allocatedSets_ += 1;
+        this->allocatedSets += 1;
 
         for (const auto& binding : bindings) {
-            this->allocatedTypeCounts_[binding.descriptorType] += binding.descriptorCount;
+            this->allocatedTypeCounts[binding.descriptorType] += binding.descriptorCount;
         }
 
         return descriptorSet;
@@ -228,16 +228,16 @@ namespace vkengine {
     {
         PRINT_TO_LOGGER("Descriptor Manager Allocation Statistics:\n");
 
-        PRINT_TO_LOGGER("Allocated Descriptor Sets: %u\n", this->allocatedSets_);
+        PRINT_TO_LOGGER("Allocated Descriptor Sets: %u\n", this->allocatedSets);
         PRINT_TO_LOGGER("Allocated Descriptor Types:\n");
 
-        if (this->allocatedTypeCounts_.empty())
+        if (this->allocatedTypeCounts.empty())
         {
             PRINT_TO_LOGGER("- None\n");
             return;
         }
 
-        for (const auto& [type, count] : this->allocatedTypeCounts_)
+        for (const auto& [type, count] : this->allocatedTypeCounts)
         {
             PRINT_TO_LOGGER("- %s: %u\n", helper::descriptor::descriptorTypeToString(type).c_str(), count);
         }
@@ -282,22 +282,21 @@ namespace vkengine {
 
     void DescriptorManager2::cleanup()
     {
-
         if (!this->descriptorPools.empty())
         {
-            std::ofstream file(this->kScriptFilename_);
+            std::ofstream file(this->kScriptFilename);
 
             if (file.is_open())
             {
-                file << "NumSets " << this->remainingSets_ << "\n";
+                file << "NumSets " << this->remainingSets << "\n";
 
                 // 남아있는 descriptor type과 개수를 스크립트 파일에 기록한다.
-                for (const auto& [type, count] : this->remainingTypeCounts_)
+                for (const auto& [type, count] : this->remainingTypeCounts)
                 {
                     file << helper::descriptor::descriptorTypeToString(type) << " " << count << "\n";
                 }
                 file.close();
-                PRINT_TO_LOGGER("Saved remaining descriptor pool capacity to %s\n", this->kScriptFilename_.c_str());
+                PRINT_TO_LOGGER("Saved remaining descriptor pool capacity to %s\n", this->kScriptFilename.c_str());
             }
             else
             {

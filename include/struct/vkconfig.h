@@ -202,7 +202,8 @@ struct PipelineConfig
 
 enum class ResourceAccess : cUint16_t
 {
-    ColorAttachmentWrite = 0,
+    NOTTHING = 0,
+    ColorAttachmentWrite,
     DepthAttachmentWrite,
     ShaderReadOnly,
     ShaderReadWrite, // compute general
@@ -220,6 +221,8 @@ static inline cString getStringResourceAccess(ResourceAccess access)
 {
     switch (access)
     {
+    case ResourceAccess::NOTTHING:
+        return "NOTTHING";
     case ResourceAccess::ColorAttachmentWrite:
         return "ColorAttachmentWrite";
     case ResourceAccess::DepthAttachmentWrite:

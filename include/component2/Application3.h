@@ -29,6 +29,7 @@ namespace vkengine {
         const cUint32_t kMaxFramesInFlight = MAX_FRAMES_IN_FLIGHT;
         const cString AssetsPath = RESOURSE_PATH;
         const cString ShaderPath = SHADER_PATH;
+        VKShaderManager shaderManager;
 
         VkSampleCountFlagBits msaaSamples = VK_SAMPLE_COUNT_FLAG_BITS_MAX_ENUM;
 
@@ -36,8 +37,7 @@ namespace vkengine {
         std::vector<VKModel> models;
 
         gui::VKimguiRenderer guiRenderer;
-        VKShaderManager shaderManager;
-        VKforwardRenderer2 forwardRenderer;
+        VKRenderer2 Renderer;
 
         cUint32_t frameCounter = 0;
         cUint32_t currentFrame = 0;     // For CPU resources (command buffers, fences)

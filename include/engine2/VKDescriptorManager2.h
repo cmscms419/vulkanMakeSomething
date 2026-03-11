@@ -59,12 +59,12 @@ namespace vkengine {
         std::vector<std::tuple<VkDescriptorSetLayout, LayoutInfo>> layoutsAndInfos;
 
         // Usage tracking
-        std::unordered_map<VkDescriptorType, uint32_t> allocatedTypeCounts_;
-        std::unordered_map<VkDescriptorType, uint32_t> remainingTypeCounts_;
-        uint32_t allocatedSets_;
-        uint32_t remainingSets_;
+        std::unordered_map<VkDescriptorType, uint32_t> allocatedTypeCounts;
+        std::unordered_map<VkDescriptorType, uint32_t> remainingTypeCounts;
+        uint32_t allocatedSets;
+        uint32_t remainingSets;
 
-        const cString kScriptFilename_ = "DescriptorPoolSize.txt";
+        const cString kScriptFilename = "DescriptorPoolSize.txt";
     };
 
 }

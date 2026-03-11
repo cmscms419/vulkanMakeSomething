@@ -125,8 +125,7 @@ namespace vkengine {
         {
             if (format == VK_FORMAT_D32_SFLOAT_S8_UINT ||
                 format == VK_FORMAT_D24_UNORM_S8_UINT ||
-                format == VK_FORMAT_D16_UNORM_S8_UINT ||
-                format == VK_FORMAT_D16_UNORM) {
+                format == VK_FORMAT_D16_UNORM_S8_UINT) {
                 return VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT;
             }
             else if (format == VK_FORMAT_D32_SFLOAT ||

@@ -19,7 +19,7 @@ namespace vkengine
         VKSwapChain *swapchain = nullptr;
     };
 
-    using PassExecuteFunc = std::function<void(VkCommandBuffer cmd, cUint32_t frameIndex)>;
+    using PassExecuteFunc = std::function<void(VkCommandBuffer cmd, cUint32_t frameIndex, cUint32_t imageindex)>;
 
     struct RenderPassNode
     {
@@ -38,7 +38,7 @@ namespace vkengine
         void registerSwapchainResource(const cString &handle, VKSwapChain &swapchain);
         void addPass(RenderPassNode pass);
         bool compile(); // addPass 후 한 번만 호출 (위상 정렬 + 유효성 검사)
-        void execute(VkCommandBuffer cmd, cUint32_t frameIndex);
+        void execute(VkCommandBuffer cmd, cUint32_t frameIndex, cUint32_t imageindex);
         VKSwapChain& getVKSwapChain();
 
     private:
@@ -50,7 +50,7 @@ namespace vkengine
 
         std::vector<std::vector<cSize>> buildAdjacency() const;
         std::vector<cSize> topologicalSort(const std::vector<std::vector<cSize>> &adj) const;
-        void insertBarriersBeforePass(VkCommandBuffer cmd, cUint32_t frameIndex, const RenderPassNode &pass);
+        void insertBarriersBeforePass(VkCommandBuffer cmd, cUint32_t frameIndex, cUint32_t imageindex, const RenderPassNode &pass);
         void printGraph() const;
     };
 

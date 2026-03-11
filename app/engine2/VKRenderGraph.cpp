@@ -14,7 +14,7 @@ namespace vkengine
     {
         if (resources.find(handle) != resources.end())
         {
-            PRINT_TO_LOGGER("Warning: Resource '%s' is already registered in RenderGraph. Overwriting.", handle.c_str());
+            PRINT_TO_LOGGER("Warning: Resource '%s' is already registered in RenderGraph. Overwriting.\n", handle.c_str());
             return;
         }
         ResourceEntry entry;
@@ -29,7 +29,7 @@ namespace vkengine
     {
         if (resources.find(handle) != resources.end())
         {
-            PRINT_TO_LOGGER("Warning: Resource '%s' is already registered in RenderGraph. Overwriting.", handle.c_str());
+            PRINT_TO_LOGGER("Warning: Resource '%s' is already registered in RenderGraph. Overwriting.\n", handle.c_str());
             return;
         }
         ResourceEntry entry;
@@ -56,14 +56,14 @@ namespace vkengine
             {
                 if (resources.find(res.handle) == resources.end())
                 {
-                    EXIT_TO_LOGGER("Error: Pass '%s' reads from unregistered resource '%s'.", pass.name.c_str(), res.handle.c_str());
+                    EXIT_TO_LOGGER("Error: Pass '%s' reads from unregistered resource '%s'.\n", pass.name.c_str(), res.handle.c_str());
                 }
             }
             for (const auto &res : pass.outputs)
             {
                 if (resources.find(res.handle) == resources.end())
                 {
-                    EXIT_TO_LOGGER("Error: Pass '%s' writes to unregistered resource '%s'.", pass.name.c_str(), res.handle.c_str());
+                    EXIT_TO_LOGGER("Error: Pass '%s' writes to unregistered resource '%s'.\n", pass.name.c_str(), res.handle.c_str());
                 }
             }
         }
@@ -81,43 +81,43 @@ namespace vkengine
         return true;
     }
 
-    void VKRenderGraph::execute(VkCommandBuffer cmd, cUint32_t frameIndex)
+    void VKRenderGraph::execute(VkCommandBuffer cmd, cUint32_t frameIndex, cUint32_t imageindex)
     {
         for (const cSize index : sortedOrder)
         {
             const RenderPassNode &pass = passes[index];
 
             // 각 패스 실행 전에 필요한 배리어 삽입
-            insertBarriersBeforePass(cmd, frameIndex, pass);
+            insertBarriersBeforePass(cmd, frameIndex, imageindex, pass);
 
             // 패스 실행
-            pass.execute(cmd, frameIndex);
+            pass.execute(cmd, frameIndex, imageindex);
         }
     }
 
     VKSwapChain &VKRenderGraph::getVKSwapChain()
     {
         auto result = this->resources.find(this->swapchainHandle);
-        
+
         return *result->second.swapchain;
     }
 
     void VKRenderGraph::printGraph() const
     {
 #if 1
-        PRINT_TO_LOGGER("RenderGraph Execution Order:");
+        PRINT_TO_LOGGER("RenderGraph Execution Order:\n");
         for (cSize idx : sortedOrder)
         {
             const RenderPassNode &pass = passes[idx];
 
-            PRINT_TO_LOGGER("Pass: %s", pass.name.c_str());
+            PRINT_TO_LOGGER("Pass: %s\n", pass.name.c_str());
             for (const auto &res : pass.inputs)
             {
-                PRINT_TO_LOGGER("  Input: %s (%s)", res.handle.c_str(), getStringResourceAccess(res.access).c_str());
+                PRINT_TO_LOGGER("  Input: %s (%s)\n", res.handle.c_str(), getStringResourceAccess(res.access).c_str());
             }
             for (const auto &res : pass.outputs)
             {
-                PRINT_TO_LOGGER("  Output: %s (%s)", res.handle.c_str(), getStringResourceAccess(res.access).c_str());
+                PRINT_TO_LOGGER("  Output: %s (%s)\n", res.handle.c_str(), getStringResourceAccess(res.access).c_str());
             }
         }
 #endif
@@ -195,12 +195,12 @@ namespace vkengine
 
         // 4. 사이클 감지
         if (sorted.size() != passes.size())
-            EXIT_TO_LOGGER("Error: Cycle detected in RenderGraph.");
+            EXIT_TO_LOGGER("Error: Cycle detected in RenderGraph.\n");
 
         return sorted;
     }
 
-    void VKRenderGraph::insertBarriersBeforePass(VkCommandBuffer cmd, cUint32_t frameIndex, const RenderPassNode &pass)
+    void VKRenderGraph::insertBarriersBeforePass(VkCommandBuffer cmd, cUint32_t frameIndex, cUint32_t imageindex, const RenderPassNode &pass)
     {
         // 패스의 입력 리소스들을 순회하면서 필요한 배리어 삽입
         for (const ResourceUsage &res : pass.inputs)
@@ -209,7 +209,7 @@ namespace vkengine
 
             if (entry.image == nullptr && entry.swapchain == nullptr)
             {
-                PRINT_TO_LOGGER("Error: Resource '%s' used in pass '%s' is not registered as either image or swapchain.", res.handle.c_str(), pass.name.c_str());
+                PRINT_TO_LOGGER("Error: Resource '%s' used in pass '%s' is not registered as either image or swapchain.\n", res.handle.c_str(), pass.name.c_str());
                 continue;
             }
 
@@ -242,7 +242,7 @@ namespace vkengine
 
             if (entry.image == nullptr && entry.swapchain == nullptr)
             {
-                PRINT_TO_LOGGER("Error: Resource '%s' used in pass '%s' is not registered as either image or swapchain.", res.handle.c_str(), pass.name.c_str());
+                PRINT_TO_LOGGER("Error: Resource '%s' used in pass '%s' is not registered as either image or swapchain.\n", res.handle.c_str(), pass.name.c_str());
                 continue;
             }
 
@@ -261,7 +261,7 @@ namespace vkengine
                 entry.image->transitionToShaderReadWrite(cmd);
                 break;
             case ResourceAccess::Present:
-                entry.swapchain->transitionTo(cmd, frameIndex);
+                entry.swapchain->transitionTo(cmd, imageindex);
                 break;
             default:
                 break;

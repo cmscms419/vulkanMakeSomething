@@ -23,12 +23,12 @@ VKAnimation::~VKAnimation() = default;
 void VKAnimation::loadFromScene(const aiScene* scene)
 {
     if (!scene) {
-        PRINT_TO_LOGGER("VKAnimation::loadFromScene - Invalid scene");
+        PRINT_TO_LOGGER("VKAnimation::loadFromScene - Invalid scene\n");
         return;
     }
 
     PRINT_TO_LOGGER("Loading animation data from scene...\n");
-    PRINT_TO_LOGGER("  Animations found: %d", scene->mNumAnimations);
+    PRINT_TO_LOGGER("  Animations found: %d\n", scene->mNumAnimations);
 
     // Store global inverse transform
     if (scene->mRootNode) {
@@ -48,10 +48,10 @@ void VKAnimation::loadFromScene(const aiScene* scene)
     // Initialize bone matrices
     boneMatrices.resize(bones.size(), cMat4(1.0f));
 
-    PRINT_TO_LOGGER("VKAnimation loading complete:");
-    PRINT_TO_LOGGER("  VKAnimation clips: %d", animations_.size());
-    PRINT_TO_LOGGER("  Bones: %d", bones.size());
-    PRINT_TO_LOGGER("  Scene nodes: %d", nodeMapping.size());
+    PRINT_TO_LOGGER("VKAnimation loading complete:\n");
+    PRINT_TO_LOGGER("  VKAnimation clips: %d\n", animations_.size());
+    PRINT_TO_LOGGER("  Bones: %d\n", bones.size());
+    PRINT_TO_LOGGER("  Scene nodes: %d\n", nodeMapping.size());
 }
 
 void VKAnimation::processBones(const aiScene* scene)
@@ -59,7 +59,7 @@ void VKAnimation::processBones(const aiScene* scene)
     if (!scene)
         return;
 
-    PRINT_TO_LOGGER("Processing bones for global hierarchy...");
+    PRINT_TO_LOGGER("Processing bones for global hierarchy...\n");
 
     // Collect all unique bone names from all meshes
     std::unordered_map<cString, cMat4> boneOffsetMatrices;
@@ -72,7 +72,7 @@ void VKAnimation::processBones(const aiScene* scene)
         if (!mesh->HasBones())
             continue;
 
-        PRINT_TO_LOGGER("  Processing %d bones from mesh '%s'", mesh->mNumBones, mesh->mName.C_Str());
+        PRINT_TO_LOGGER("  Processing %d bones from mesh '%s'\n", mesh->mNumBones, mesh->mName.C_Str());
 
         totalMeshBones += mesh->mNumBones;
 
@@ -189,8 +189,8 @@ void VKAnimation::buildBoneHierarchy(const aiScene* scene)
                 if (globalBoneNameToId.find(parentName) != globalBoneNameToId.end()) {
                     int parentIndex = globalBoneNameToId[parentName];
                     bones[boneIndex].parentIndex = parentIndex;
-                    PRINT_TO_LOGGER("  Bone '%s' [%d] -> parent '%s' [%d]\n", nodeName, boneIndex,
-                             parentName, parentIndex);
+                    PRINT_TO_LOGGER("  Bone '%s' [%d] -> parent '%s' [%d]\n", nodeName.c_str(), boneIndex,
+                             parentName.c_str(), parentIndex);
                 }
             }
         }
@@ -213,7 +213,7 @@ void VKAnimation::assignGlobalBoneIds()
         globalBoneIdToName_[pair.second] = pair.first;
     }
 
-    PRINT_TO_LOGGER("Global bone ID assignment complete: {} bones", bones.size());
+    PRINT_TO_LOGGER("Global bone ID assignment complete: %d bones\n", bones.size());
 }
 
 int VKAnimation::getGlobalBoneIndex(const cString& boneName) const
@@ -403,10 +403,10 @@ void VKAnimation::buildSceneGraph(const aiScene* scene)
     if (!scene || !scene->mRootNode)
         return;
 
-    PRINT_TO_LOGGER("Building animation scene graph...");
+    PRINT_TO_LOGGER("Building animation scene graph...\n");
     nodeMapping.clear();
     rootNode = buildSceneNode(scene->mRootNode, nullptr);
-    PRINT_TO_LOGGER("Scene graph built with {} nodes", nodeMapping.size());
+    PRINT_TO_LOGGER("Scene graph built with %d nodes\n", nodeMapping.size());
 }
 
 std::unique_ptr<VKAnimation::SceneNode> VKAnimation::buildSceneNode(const aiNode* aiNode, SceneNode* parent)
