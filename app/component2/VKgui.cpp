@@ -69,7 +69,7 @@ namespace vkengine {
 
             fontSampler.createAnisoRepeat();
             fontImage.setSampler(fontSampler.getSampler());
-            fontSet.create(this->ctx, { std::ref(fontImage.getResourceBinding()) });
+            fontSet.create(this->ctx, { std::ref(fontImage) });
         }
 
         VKimguiRenderer::~VKimguiRenderer()

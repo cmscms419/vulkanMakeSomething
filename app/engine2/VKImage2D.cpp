@@ -1,4 +1,4 @@
-﻿#include "VKImage2D.h"
+#include "VKImage2D.h"
 
 #include <algorithm>
 
@@ -20,43 +20,36 @@ namespace vkengine
         return fixed;
     }
 
-    VkImage VKImage2D::getImage() { return this->image; }
-    VkImageView VKImage2D::getImageView() { return this->imageView; }
-    VkFormat VKImage2D::getImageFormat() { return this->imageFormat; }
-    cUint32_t VKImage2D::getHeight() { return this->height; }
-    cUint32_t VKImage2D::getWidth() { return this->width; }
-
     VKImage2D::VKImage2D(VKcontext &context) : ctx(context)
     {
-        image = VK_NULL_HANDLE;
-        imageMemory = VK_NULL_HANDLE;
-        imageView = VK_NULL_HANDLE;
-        imageFormat = VK_FORMAT_UNDEFINED;
-        width = 0;
-        height = 0;
-        usageFlags = 0;
-        aspectFlags = 0;
-        resourceBinding = {};
     }
 
-    VKImage2D::VKImage2D(VKImage2D &&other) noexcept : ctx(other.ctx),
-                                                       image(other.image),
-                                                       imageMemory(other.imageMemory),
-                                                       imageView(other.imageView),
-                                                       imageFormat(other.imageFormat),
-                                                       width(other.width),
-                                                       height(other.height),
-                                                       usageFlags(other.usageFlags),
-                                                       aspectFlags(other.aspectFlags)
+    VKImage2D::VKImage2D(VKImage2D &&other) noexcept
+        : ctx(other.ctx),
+          imageFormat(other.imageFormat),
+          width(other.width),
+          height(other.height),
+          usageFlags(other.usageFlags),
+          aspectFlags(other.aspectFlags)
     {
-        other.image = VK_NULL_HANDLE;
-        other.imageMemory = VK_NULL_HANDLE;
-        other.imageView = VK_NULL_HANDLE;
-        other.imageFormat = VK_FORMAT_UNDEFINED;
-        other.width = 0;
-        other.height = 0;
-        other.usageFlags = 0;
-        other.aspectFlags = 0;
+        // base class protected fields
+        this->image        = other.image;
+        this->imageMemory  = other.imageMemory;
+        this->imageView    = other.imageView;
+        this->sampler      = other.sampler;
+        this->descriptorType  = other.descriptorType;
+        this->descriptorCount = other.descriptorCount;
+        this->imageInfo    = other.imageInfo;
+        this->barrierHelper = std::move(other.barrierHelper);
+
+        other.image        = VK_NULL_HANDLE;
+        other.imageMemory  = VK_NULL_HANDLE;
+        other.imageView    = VK_NULL_HANDLE;
+        other.imageFormat  = VK_FORMAT_UNDEFINED;
+        other.width        = 0;
+        other.height       = 0;
+        other.usageFlags   = 0;
+        other.aspectFlags  = 0;
     }
 
     VKImage2D::~VKImage2D()
@@ -78,41 +71,27 @@ namespace vkengine
         this->cleanup();
 
         this->imageFormat = format;
-        this->width = width;
-        this->height = height;
-        this->usageFlags = usage;
+        this->width       = width;
+        this->height      = height;
+        this->usageFlags  = usage;
         this->aspectFlags = aspectMask;
 
-        // VKimage2D 이미지 생성
         vkengine::helper::resource::createImage2(
             ctx.getDevice()->logicaldevice,
             this->ctx.getDevice()->physicalDevice,
-            width,
-            height,
-            mipLevels,
-            sampleCount,
-            format,
-            VK_IMAGE_TILING_OPTIMAL,
-            usage,
+            width, height, mipLevels, sampleCount, format,
+            VK_IMAGE_TILING_OPTIMAL, usage,
             VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-            this->image,
-            this->imageMemory,
-            arrayLayers,
-            flags);
+            this->image, this->imageMemory,
+            arrayLayers, flags);
 
         this->imageView = vkengine::helper::resource::createImageView(
             ctx.getDevice()->logicaldevice,
-            this->image,
-            format,
-            aspectMask,
-            mipLevels,
-            arrayLayers);
+            this->image, format, aspectMask, mipLevels, arrayLayers);
 
-        this->resourceBinding.image = this->image;
-        this->resourceBinding.imageView = this->imageView;
-        this->resourceBinding.descriptorCount = 1;
-        this->resourceBinding.update();
-        this->getBarrierHelper().update(this->imageFormat, mipLevels, arrayLayers);
+        this->descriptorCount = 1;
+        this->update();
+        this->barrierHelper.update(this->imageFormat, mipLevels, arrayLayers);
     }
 
     void VKImage2D::createCubeImage(cUint32_t width, cUint32_t height, VkFormat format, VkSampleCountFlagBits sampleCount, VkImageUsageFlags usage, VkImageAspectFlags aspectMask, cUint32_t mipLevels, cUint32_t arrayLayers, VkImageCreateFlagBits flags)
@@ -120,40 +99,27 @@ namespace vkengine
         this->cleanup();
 
         this->imageFormat = format;
-        this->width = width;
-        this->height = height;
-        this->usageFlags = usage;
+        this->width       = width;
+        this->height      = height;
+        this->usageFlags  = usage;
         this->aspectFlags = aspectMask;
 
-        // VKimage2D 이미지 생성
         vkengine::helper::resource::createImage2(
             ctx.getDevice()->logicaldevice,
             this->ctx.getDevice()->physicalDevice,
-            width,
-            height,
-            mipLevels,
-            sampleCount,
-            format,
-            VK_IMAGE_TILING_OPTIMAL,
-            usage,
+            width, height, mipLevels, sampleCount, format,
+            VK_IMAGE_TILING_OPTIMAL, usage,
             VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-            this->image,
-            this->imageMemory,
-            arrayLayers,
-            flags);
+            this->image, this->imageMemory,
+            arrayLayers, flags);
 
         this->imageView = vkengine::helper::resource::createCubeImageView(
             ctx.getDevice()->logicaldevice,
-            this->image,
-            format,
-            aspectMask,
-            mipLevels);
+            this->image, format, aspectMask, mipLevels);
 
-        this->resourceBinding.image = this->image;
-        this->resourceBinding.imageView = this->imageView;
-        this->resourceBinding.descriptorCount = 1;
-        this->resourceBinding.update();
-        this->getBarrierHelper().update(this->imageFormat, mipLevels, arrayLayers);
+        this->descriptorCount = 1;
+        this->update();
+        this->barrierHelper.update(this->imageFormat, mipLevels, arrayLayers);
     }
 
     void VKImage2D::createTextureFromKtx2(cString filepath, cBool usCubemap)
@@ -199,12 +165,12 @@ namespace vkengine
                 EXIT_TO_LOGGER("KTX2 텍스처 리소스가 유효하지 않습니다.\n");
             }
 
-            mipLevels = resource->texture2 ? resource->texture2->numLevels : 1;
-            vkFormat = ktxTexture2_GetVkFormat(resource->texture2);
-            baseTexture = ktxTexture(resource->texture2);
-            ktxTextureData = ktxTexture_GetData(baseTexture);
-            ktxTextureSize = ktxTexture_GetDataSize(baseTexture);
-            layCounter = usCubemap ? 6 : 1;
+            mipLevels       = resource->texture2 ? resource->texture2->numLevels : 1;
+            vkFormat        = ktxTexture2_GetVkFormat(resource->texture2);
+            baseTexture     = ktxTexture(resource->texture2);
+            ktxTextureData  = ktxTexture_GetData(baseTexture);
+            ktxTextureSize  = ktxTexture_GetDataSize(baseTexture);
+            layCounter      = usCubemap ? 6 : 1;
 
             if (mipLevels == 0)
             {
@@ -218,7 +184,6 @@ namespace vkengine
             }
 
             VkImageCreateFlagBits flags = static_cast<VkImageCreateFlagBits>(usCubemap ? VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT : 0);
-            VkImageViewType viewType = usCubemap ? VK_IMAGE_VIEW_TYPE_CUBE : VK_IMAGE_VIEW_TYPE_2D;
 
             VKBaseBuffer2 stagingBuffer(this->ctx);
             stagingBuffer.createStagingBuffer(ktxTextureSize, ktxTextureData);
@@ -226,61 +191,43 @@ namespace vkengine
             if (usCubemap)
             {
                 this->createCubeImage(
-                    resource->texWidth,
-                    resource->texHeight,
-                    vkFormat,
+                    resource->texWidth, resource->texHeight, vkFormat,
                     VK_SAMPLE_COUNT_1_BIT,
                     VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
-                    VK_IMAGE_ASPECT_COLOR_BIT,
-                    mipLevels,
-                    layCounter,
-                    flags);
+                    VK_IMAGE_ASPECT_COLOR_BIT, mipLevels, layCounter, flags);
             }
             else
             {
                 this->createImage(
-                    resource->texWidth,
-                    resource->texHeight,
-                    vkFormat,
+                    resource->texWidth, resource->texHeight, vkFormat,
                     VK_SAMPLE_COUNT_1_BIT,
                     VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
-                    VK_IMAGE_ASPECT_COLOR_BIT,
-                    mipLevels,
-                    layCounter,
-                    flags);
+                    VK_IMAGE_ASPECT_COLOR_BIT, mipLevels, layCounter, flags);
             }
 
-            VkCommandBuffer cmb = this->resourceBinding.getBarrierHelper().beginSingleTimeCommands2(
+            VkCommandBuffer cmb = this->barrierHelper.beginSingleTimeCommands2(
                 ctx.getDevice()->logicaldevice,
                 ctx.getDevice()->transferCommandPool,
                 VK_COMMAND_BUFFER_LEVEL_PRIMARY);
 
-            resourceBinding.getBarrierHelper().transitionImageLayout2(
-                cmb,
-                this->image,
+            this->barrierHelper.transitionImageLayout2(
+                cmb, this->image,
                 VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
                 VK_ACCESS_2_TRANSFER_WRITE_BIT,
                 VK_PIPELINE_STAGE_2_TRANSFER_BIT);
 
             vkengine::helper::resource::copyBufferToImageKTX2(
-                cmb,
-                stagingBuffer.Buffer(),
-                this->image,
-                resource->texWidth,
-                resource->texHeight,
-                mipLevels,
-                baseTexture,
-                usCubemap);
+                cmb, stagingBuffer.Buffer(), this->image,
+                resource->texWidth, resource->texHeight,
+                mipLevels, baseTexture, usCubemap);
 
-            // 이미지 레이아웃 전환 (TRANSFER_DST_OPTIMAL -> SHADER_READ_ONLY_OPTIMAL)
-            resourceBinding.getBarrierHelper().transitionImageLayout2(
-                cmb,
-                this->image,
+            this->barrierHelper.transitionImageLayout2(
+                cmb, this->image,
                 VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
                 VK_ACCESS_2_SHADER_READ_BIT,
                 VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT);
 
-            resourceBinding.getBarrierHelper().endSingleTimeCommands2(
+            this->barrierHelper.endSingleTimeCommands2(
                 ctx.getDevice()->logicaldevice,
                 ctx.getDevice()->transferCommandPool,
                 ctx.getDevice()->transferVKQueue,
@@ -343,7 +290,6 @@ namespace vkengine
         case 4:
             imageFormat = sRGB ? VK_FORMAT_R8G8B8A8_SRGB : VK_FORMAT_R8G8B8A8_UNORM;
             break;
-
         default:
             EXIT_TO_LOGGER("지원하지 않는 이미지 채널 수입니다: " + std::to_string(channels));
             break;
@@ -351,52 +297,36 @@ namespace vkengine
 
         VkDeviceSize imageSize = width * height * channels * sizeof(cUChar);
 
-        // 스테이징 버퍼에 이미지 데이터 복사
         VKBaseBuffer2 stagingBuffer(this->ctx);
         stagingBuffer.createStagingBuffer(imageSize, pixelData);
 
         this->createImage(
-            width,
-            height,
-            imageFormat,
+            width, height, imageFormat,
             VK_SAMPLE_COUNT_1_BIT,
             VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
-            VK_IMAGE_ASPECT_COLOR_BIT,
-            1,
-            1,
-            (VkImageCreateFlagBits)0);
+            VK_IMAGE_ASPECT_COLOR_BIT, 1, 1, (VkImageCreateFlagBits)0);
 
-        // 해당 내부에는 VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT -> 한번만 사용한다는 의미가 담긴 플로그가 있다.
-        // 2번정도 사용하기 때문에 별도 생각해야함
-        VkCommandBuffer cmb = this->resourceBinding.getBarrierHelper().beginSingleTimeCommands2(
+        VkCommandBuffer cmb = this->barrierHelper.beginSingleTimeCommands2(
             ctx.getDevice()->logicaldevice,
             ctx.getDevice()->transferCommandPool,
             VK_COMMAND_BUFFER_LEVEL_PRIMARY);
 
-        // 이미지 레이아웃 전환 (UNDEFINED -> TRANSFER_DST_OPTIMAL)
-        resourceBinding.getBarrierHelper().transitionImageLayout2(
-            cmb,
-            this->image,
+        this->barrierHelper.transitionImageLayout2(
+            cmb, this->image,
             VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
             VK_ACCESS_2_TRANSFER_WRITE_BIT,
             VK_PIPELINE_STAGE_2_TRANSFER_BIT);
 
         vkengine::helper::resource::copyBufferToImage3(
-            cmb,
-            stagingBuffer.Buffer(),
-            this->image,
-            width,
-            height);
+            cmb, stagingBuffer.Buffer(), this->image, width, height);
 
-        // 이미지 레이아웃 전환 (TRANSFER_DST_OPTIMAL -> SHADER_READ_ONLY_OPTIMAL)
-        resourceBinding.getBarrierHelper().transitionImageLayout2(
-            cmb,
-            this->image,
+        this->barrierHelper.transitionImageLayout2(
+            cmb, this->image,
             VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
             VK_ACCESS_2_SHADER_READ_BIT,
             VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT);
 
-        resourceBinding.getBarrierHelper().endSingleTimeCommands2(
+        this->barrierHelper.endSingleTimeCommands2(
             ctx.getDevice()->logicaldevice,
             ctx.getDevice()->transferCommandPool,
             ctx.getDevice()->transferVKQueue,
@@ -432,64 +362,48 @@ namespace vkengine
 
     void VKImage2D::updateResourceBindingAfterTransition()
     {
-        VkImageLayout currentLayout = resourceBinding.barrierHelper.Currentlayout();
+        VkImageLayout currentLayout = this->barrierHelper.Currentlayout();
 
         if (currentLayout == VK_IMAGE_LAYOUT_GENERAL)
         {
-            // General layout is used for storage images
-            resourceBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
-            resourceBinding.imageInfo.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
+            this->descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+            this->imageInfo.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
         }
         else if (currentLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
         {
-            // Shader read-only layout is used for sampled images
-            if (resourceBinding.sampler != VK_NULL_HANDLE)
-            {
-                resourceBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-            }
-            else
-            {
-                resourceBinding.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
-            }
-            resourceBinding.imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+            this->descriptorType = (this->sampler != VK_NULL_HANDLE)
+                ? VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
+                : VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
+            this->imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
         }
         else if (currentLayout == VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL ||
                  currentLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
         {
-            // Attachment layouts are typically used for input attachments when used in descriptors
-            resourceBinding.descriptorType = VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
-            resourceBinding.imageInfo.imageLayout = currentLayout;
+            this->descriptorType = VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
+            this->imageInfo.imageLayout = currentLayout;
         }
         else
         {
-            // For other layouts, default to storage image with general layout capability
-            resourceBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
-            resourceBinding.imageInfo.imageLayout = currentLayout;
+            this->descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+            this->imageInfo.imageLayout = currentLayout;
         }
 
-        // Update the image info
-        resourceBinding.imageInfo.imageView = imageView;
-        resourceBinding.imageInfo.sampler = resourceBinding.sampler;
+        this->imageInfo.imageView = this->imageView;
+        this->imageInfo.sampler   = this->sampler;
 
-        this->resourceBinding.update();
+        this->update();
     }
 
     void VKImage2D::transitionTo(VkCommandBuffer commandBuffer, VkImageLayout newLayout, VkAccessFlags2 newAccess, VkPipelineStageFlags2 newStage)
     {
-        resourceBinding.getBarrierHelper().transitionImageLayout2(
-            commandBuffer,
-            this->image,
-            newLayout,
-            newAccess,
-            newStage);
+        this->barrierHelper.transitionImageLayout2(
+            commandBuffer, this->image, newLayout, newAccess, newStage);
         updateResourceBindingAfterTransition();
     }
 
-    // 이미지 ColorAttachment 변환
     void VKImage2D::transitionToColorAttachment(VkCommandBuffer commandBuffer)
     {
-        transitionTo(
-            commandBuffer,
+        transitionTo(commandBuffer,
             VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
             VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT,
             VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT);
@@ -497,8 +411,7 @@ namespace vkengine
 
     void VKImage2D::transitionToDepthStencilAttachment(VkCommandBuffer commandBuffer)
     {
-        transitionTo(
-            commandBuffer,
+        transitionTo(commandBuffer,
             VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
             VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
             VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT);
@@ -506,8 +419,7 @@ namespace vkengine
 
     void VKImage2D::transitionToTransferDst(VkCommandBuffer commandBuffer)
     {
-        transitionTo(
-            commandBuffer,
+        transitionTo(commandBuffer,
             VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
             VK_ACCESS_2_TRANSFER_WRITE_BIT,
             VK_PIPELINE_STAGE_2_TRANSFER_BIT);
@@ -515,8 +427,7 @@ namespace vkengine
 
     void VKImage2D::transitionToShaderReadOnly(VkCommandBuffer commandBuffer)
     {
-        transitionTo(
-            commandBuffer,
+        transitionTo(commandBuffer,
             VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
             VK_ACCESS_2_SHADER_READ_BIT,
             VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT);
@@ -524,8 +435,7 @@ namespace vkengine
 
     void VKImage2D::transitionToShaderReadWrite(VkCommandBuffer commandBuffer)
     {
-        transitionTo(
-            commandBuffer,
+        transitionTo(commandBuffer,
             VK_IMAGE_LAYOUT_GENERAL,
             VK_ACCESS_2_SHADER_READ_BIT | VK_ACCESS_2_SHADER_WRITE_BIT,
             VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT | VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT);
@@ -533,8 +443,7 @@ namespace vkengine
 
     void VKImage2D::transitionToPresent(VkCommandBuffer commandBuffer)
     {
-        transitionTo(
-            commandBuffer,
+        transitionTo(commandBuffer,
             VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
             VK_ACCESS_2_NONE,
             VK_PIPELINE_STAGE_2_BOTTOM_OF_PIPE_BIT);
@@ -542,8 +451,7 @@ namespace vkengine
 
     void VKImage2D::transitionToTransferSrc(VkCommandBuffer commandBuffer)
     {
-        transitionTo(
-            commandBuffer,
+        transitionTo(commandBuffer,
             VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
             VK_ACCESS_2_TRANSFER_READ_BIT,
             VK_PIPELINE_STAGE_2_TRANSFER_BIT);
@@ -551,7 +459,6 @@ namespace vkengine
 
     void VKImage2D::cleanup()
     {
-        // Cleanup code for VKImage2D
         if (imageView != VK_NULL_HANDLE)
         {
             vkDestroyImageView(ctx.getDevice()->logicaldevice, imageView, nullptr);
@@ -570,9 +477,9 @@ namespace vkengine
             imageMemory = VK_NULL_HANDLE;
         }
 
-        this->resourceBinding.getBarrierHelper().Currentlayout() = VK_IMAGE_LAYOUT_UNDEFINED;
-        this->resourceBinding.getBarrierHelper().Currentaccess() = VK_ACCESS_2_NONE;
-        this->resourceBinding.getBarrierHelper().Currentstage() = VK_PIPELINE_STAGE_2_NONE;
+        this->barrierHelper.Currentlayout() = VK_IMAGE_LAYOUT_UNDEFINED;
+        this->barrierHelper.Currentaccess() = VK_ACCESS_2_NONE;
+        this->barrierHelper.Currentstage()  = VK_PIPELINE_STAGE_2_NONE;
     }
 
 }

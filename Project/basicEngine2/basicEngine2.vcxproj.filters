@@ -103,7 +103,6 @@
       <Filter>pipeLine</Filter>
     </ClCompile>
     <ClCompile Include="..\..\app\engine2\VKSamplerHandler.cpp" />
-    <ClCompile Include="..\..\app\engine2\VKResourceBindingData.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\include\engine2\VKdeviceHandler2.h">
@@ -170,9 +169,6 @@
       <Filter>source2</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\engine2\VKModelNode.h">
-      <Filter>source2</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\engine2\VKResourceBindingData.h">
       <Filter>source2</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\engine2\VKDescriptorSet.h">

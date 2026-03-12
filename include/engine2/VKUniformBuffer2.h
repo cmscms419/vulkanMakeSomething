@@ -38,11 +38,6 @@ namespace vkengine {
             return this->buffer;
         }
 
-        VKResourceBinding& getResourceBinding()
-        {
-            return this->buffer.getResourceBinding();
-        }
-
     private:
         Type& data;
         VKBaseBuffer2 buffer;

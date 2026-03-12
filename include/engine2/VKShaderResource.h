@@ -3,26 +3,57 @@
 
 #include "common.h"
 
-#include "VKResourceBindingData.h"
+#include "VKbarrier2.h"
 
 namespace vkengine
 {
+    enum shaderResourceType{
+        NONE,
+        IMAGE,
+        VERTEX_BUFFER,
+        INDEX_BUFFER,
+        UNIFORM_BUFFER
+    };
+
     class VKShaderResource
     {
     public:
         virtual ~VKShaderResource() = default;
 
-        // [1] Descriptor Set Layout 정보 — descriptorType, descriptorCount 기입
-        //     stageFlags는 ShaderManager가 SPIRV-Reflect로 결정해서 주입함
-        virtual void updateBinding(VkDescriptorSetLayoutBinding &binding) = 0;
+        // Descriptor Set Layout 정보 — descriptorType, descriptorCount 기입
+        // stageFlags는 ShaderManager가 SPIRV-Reflect로 결정해서 주입함
+        virtual void updateBinding(VkDescriptorSetLayoutBinding &binding);
 
-        // [2] 실제 GPU 리소스 데이터 — bufferInfo 또는 imageInfo 채우기
-        //     dstSet / dstBinding 은 DescriptorSetHander::create() 가 덮어씀
-        virtual void updateWrite(VkWriteDescriptorSet &write) = 0;
+        // 실제 GPU 리소스 데이터 — bufferInfo 또는 imageInfo 채우기
+        // dstSet / dstBinding 은 DescriptorSetHander::create() 가 덮어씀
+        virtual void updateWrite(VkWriteDescriptorSet &write);
 
-        // [3] BarrierHelper 접근 (RenderGraph 배리어 삽입용)
-        virtual VKResourceBinding &getResourceBinding() = 0;
-        virtual const VKResourceBinding &getResourceBinding() const = 0;
+        virtual void cleanup() = 0;
+        
+        void update();
+        void setSampler(VkSampler sampler);
+        VKBarrierHelper &getBarrierHelper();
+
+    protected:
+        VkImage image{VK_NULL_HANDLE};
+        VkImageView imageView{VK_NULL_HANDLE};
+        VkImageLayout imageLayout{VK_IMAGE_LAYOUT_UNDEFINED};
+        VkSampler sampler{VK_NULL_HANDLE};
+
+        VkDescriptorType descriptorType{};
+        cUint32_t descriptorCount{};
+        VkShaderStageFlags stageFlags{};
+
+        VkDescriptorImageInfo imageInfo{};
+        VkDescriptorBufferInfo bufferInfo{};
+        VkBufferView texelBufferView = {VK_NULL_HANDLE};
+
+        VkBuffer buffer{VK_NULL_HANDLE};
+        VkDeviceMemory memory;
+        VkDeviceSize bufferSize{0};
+        void *mapped; //< 매핑된 메모리 포인터
+
+        VKBarrierHelper barrierHelper;
     };
 }
 

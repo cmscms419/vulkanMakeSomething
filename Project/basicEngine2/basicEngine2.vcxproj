@@ -33,7 +33,6 @@
     <ClCompile Include="..\..\app\engine2\VKModelNode.cpp" />
     <ClCompile Include="..\..\app\engine2\VKpipeLineHandle.cpp" />
     <ClCompile Include="..\..\app\engine2\VKSamplerHandler.cpp" />
-    <ClCompile Include="..\..\app\engine2\VKResourceBindingData.cpp" />
     <ClCompile Include="..\..\app\engine2\VKshader.cpp" />
     <ClCompile Include="..\..\app\engine2\VKShaderManager.cpp" />
     <ClCompile Include="..\..\app\engine2\VKShadowMapPiPipeline.cpp" />
@@ -45,6 +44,7 @@
     <ClCompile Include="..\..\app\engine2\VKViewFrustum.cpp" />
     <ClCompile Include="..\..\app\engine2\VKDepthStencil.cpp" />
     <ClCompile Include="..\..\app\engine2\VKRenderGraph.cpp" />
+    <ClCompile Include="..\..\app\engine2\VKShaderResource.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\include\engine2\VKDepthStencil.h" />
@@ -65,7 +65,7 @@
     <ClInclude Include="..\..\include\engine2\VKModel.h" />
     <ClInclude Include="..\..\include\engine2\VKModelLoader.h" />
     <ClInclude Include="..\..\include\engine2\VKModelNode.h" />
-    <ClInclude Include="..\..\include\engine2\VKResourceBindingData.h" />
+    <ClInclude Include="..\..\include\engine2\h" />
     <ClInclude Include="..\..\include\engine2\VKSamplerHandler.h" />
     <ClInclude Include="..\..\include\engine2\VKshader.h" />
     <ClInclude Include="..\..\include\engine2\VKShaderManager.h" />

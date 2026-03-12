@@ -7,7 +7,6 @@
 #include "VKContext.h"
 #include "VKSamplerHandler.h"
 #include "VKImage2D.h"
-#include "VKResourceBindingData.h"
 #include "VKDescriptorManager2.h"
 #include "VKUniformBuffer2.h"
 

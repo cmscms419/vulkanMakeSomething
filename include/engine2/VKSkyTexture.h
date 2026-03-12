@@ -4,7 +4,6 @@
 #include "VKContext.h"
 #include "VKImage2D.h"
 #include "VKSamplerHandler.h"
-#include "VKResourceBindingData.h"
 
 namespace vkengine {
     class VKskyTexture

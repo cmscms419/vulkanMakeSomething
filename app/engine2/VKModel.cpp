@@ -79,10 +79,7 @@ void VKModel::createDescriptorManager2(VKSamplerHandler& sampler, VKImage2D& dum
         auto& b5 = mat.ubo.metallicRoughnessTextureIndex < 0 ? dummyTexture : this->GetTexture(mat.ubo.metallicRoughnessTextureIndex);
         auto& b6 = mat.ubo.occlusionTextureIndex < 0 ? dummyTexture : this->GetTexture(mat.ubo.occlusionTextureIndex);
         
-        materialDescriptorSetHander[i].create(ctx, {materialUBO[i].getResourceBinding(),
-                                                b1.getResourceBinding(), b2.getResourceBinding(),
-                                                b3.getResourceBinding(), b4.getResourceBinding(),
-                                                b5.getResourceBinding(), b6.getResourceBinding()});
+        materialDescriptorSetHander[i].create(ctx, {materialUBO[i].Buffer(), b1, b2, b3, b4, b5, b6});
     }
 }
 
