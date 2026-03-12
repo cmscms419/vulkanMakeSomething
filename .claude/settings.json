@@ -2,6 +2,9 @@
   "permissions": {
     "additionalDirectories": [
       "c:\\cmscms419\\private\\vulkanMakeSomething_basic2\\docs"
+    ],
+    "allow": [
+      "Bash(grep -r coeffss*[ c:cmscms419vulkanMakeSomethingappengine2)"
     ]
   }
 }

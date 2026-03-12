@@ -40,7 +40,8 @@ layout(set = 0, binding = 2) uniform BoneDataUBO {
 // Push constants for various coefficients
 layout(push_constant) uniform PushConstants {
     mat4 model;
-    float coeffs[16];
+    float coeffs[15];
+    uint materialIndex;
 } pushConstants;
 
 // Output to fragment shader

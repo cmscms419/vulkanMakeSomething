@@ -67,7 +67,7 @@
     <ClCompile Include="..\..\app\struct\type.cpp" />
     <ClCompile Include="..\..\app\struct\vkconfig.cpp" />
     <ClCompile Include="..\..\app\struct\data.cpp" />
-    <ClInclude Include="..\..\include\struct\descriptor.h" />
+    <ClCompile Include="..\..\app\struct\descriptor.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{1950486a-e32d-424d-b403-243f6a452517}</ProjectGuid>

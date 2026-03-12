@@ -89,4 +89,15 @@ struct PostProcessingOptionsUBO
     cFloat padding1 = 0.0f;
 };
 
+// Push constant structure for per-draw data
+// Matches shader layout: mat4 model(64) + float coeffs[15](60) + uint materialIndex(4) = 128 bytes
+struct DrawModelResource {
+    cMat4    modelMatrix;       // model transform matrix
+    cFloat    coeffs[15];       // [0]=specular, [1]=diffuse, [2]=emissive,
+                                // [3]=shadowOffset, [4]=metallic, [5]=roughness,
+                                // [6-14]= 아직 정해지 않음
+    uint32_t materialIndex;     // index into material array (was coeffs[15])
+};
+static_assert(sizeof(DrawModelResource) == 128, "DrawModelResource must be 128 bytes");
+
 #endif // !INCLUDE_UBO_H_

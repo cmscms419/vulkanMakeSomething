@@ -25,8 +25,9 @@ VKModel::VKModel(VKcontext& ctx) : ctx(ctx)
     materialDescriptorSetHander = {};
     name = "";
     visible = true;
-    modelMatrix = cMat4(1.0f);
-    std::fill(std::begin(coeffs), std::end(coeffs), 0.0f);
+    resource.modelMatrix = cMat4(1.0f);
+resource.materialIndex = 0;
+    std::fill(std::begin(resource.coeffs), std::end(resource.coeffs), 0.0f);
 }
 
 VKModel::VKModel(VKModel&& other) noexcept
@@ -38,16 +39,16 @@ VKModel::VKModel(VKModel&& other) noexcept
       boundingBoxMin(other.boundingBoxMin), boundingBoxMax(other.boundingBoxMax),
       materialUBO(std::move(other.materialUBO)),
       materialDescriptorSetHander(std::move(other.materialDescriptorSetHander)), visible(other.visible),
-      modelMatrix(other.modelMatrix)
+      resource(other.resource)
 {
     // Reset moved-from object to safe state
     other.globalInverseTransform = cMat4(1.0f);
     other.boundingBoxMin = cVec3(FLT_MAX);
     other.boundingBoxMax = cVec3(-FLT_MAX);
     other.visible = true;
-    other.modelMatrix = cMat4(1.0f);
-    other.name = "";
-    std::fill(std::begin(other.coeffs), std::end(other.coeffs), 0.0f);
+        other.name = "";
+other.resource.modelMatrix = cMat4(1.0f);
+    std::fill(std::begin(other.resource.coeffs), std::end(other.resource.coeffs), 0.0f);
 }
 
 VKModel::~VKModel()

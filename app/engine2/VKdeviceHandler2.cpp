@@ -12,7 +12,7 @@ namespace vkengine {
 
     VKdeviceHandler2::VKdeviceHandler2(VkPhysicalDevice physicalDevice, QueueFamilyIndices2 indice)
     {
-        logicaldevice = VK_NULL_HANDLE; 
+        logicaldevice = VK_NULL_HANDLE;
         properties = {};
         features = {};
         enabledFeatures = {};
@@ -48,7 +48,7 @@ namespace vkengine {
         }
         this->queueFamilyProperties.resize(queueFamilyCount);
         vkGetPhysicalDeviceQueueFamilyProperties(this->physicalDevice, &queueFamilyCount,
-            this->queueFamilyProperties.data());
+                                                 this->queueFamilyProperties.data());
 
 
         if (supportedApiVersion >= VK_API_VERSION_1_3) {
@@ -83,14 +83,14 @@ namespace vkengine {
     void VKdeviceHandler2::printPysicaldeviceProperties() const
     {
         PRINT_TO_LOGGER("Selected %s (%s)\n", properties.deviceName,
-            helper::device::getPhysicalDeviceTypeString(properties.deviceType).c_str());
+                        helper::device::getPhysicalDeviceTypeString(properties.deviceType).c_str());
         PRINT_TO_LOGGER("  nonCoherentAtomSize: %llu\n", properties.limits.nonCoherentAtomSize);
         PRINT_TO_LOGGER("  Max UBO size: %u KBytes\n", properties.limits.maxUniformBufferRange / 1024);
         PRINT_TO_LOGGER("  Max SSBO size: %u KBytes\n", properties.limits.maxStorageBufferRange / 1024);
         PRINT_TO_LOGGER("  UBO offset alignment: %llu\n",
-            properties.limits.minUniformBufferOffsetAlignment);
+                        properties.limits.minUniformBufferOffsetAlignment);
         PRINT_TO_LOGGER("  SSBO offset alignment: %llu\n",
-            properties.limits.minStorageBufferOffsetAlignment);
+                        properties.limits.minStorageBufferOffsetAlignment);
 
         PRINT_TO_LOGGER("\nDevice Features:\n");
         PRINT_TO_LOGGER("  geometryShader: %s\n", features.geometryShader ? "YES" : "NO");
@@ -131,7 +131,7 @@ namespace vkengine {
             if (propFlags.empty())
                 propFlags = "NONE ";
             PRINT_TO_LOGGER("    Memory Heap %d: size %llu MBytes, flags: %s\n", i,
-                memHeap.size / 1024 / 1024, propFlags.c_str());
+                            memHeap.size / 1024 / 1024, propFlags.c_str());
         }
 
     }
@@ -146,6 +146,37 @@ namespace vkengine {
         cBool result = true;
 
         const VkQueueFlags requestedQueueTypes = VK_QUEUE_COMPUTE_BIT | VK_QUEUE_GRAPHICS_BIT;
+
+        // Vulkan Query descriptor indexing features
+        VkPhysicalDeviceDescriptorIndexingFeatures descriptorIndexingFeatures{};
+        descriptorIndexingFeatures.sType =
+            VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES;
+
+        VkPhysicalDeviceFeatures2 deviceFeatures2{};
+        deviceFeatures2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
+        deviceFeatures2.pNext = &descriptorIndexingFeatures;
+
+        vkGetPhysicalDeviceFeatures2(this->physicalDevice, &deviceFeatures2);
+
+        // Check required descriptor indexing features
+        if (!descriptorIndexingFeatures.descriptorBindingPartiallyBound ||
+            !descriptorIndexingFeatures.runtimeDescriptorArray ||
+            !descriptorIndexingFeatures.descriptorBindingVariableDescriptorCount)
+        {
+            EXIT_TO_LOGGER(
+                "GPU does not support required descriptor indexing features for bindless textures:\n"
+                "  - descriptorBindingPartiallyBound: %s\n"
+                "  - runtimeDescriptorArray: %s\n"
+                "  - descriptorBindingVariableDescriptorCount: %s",
+                descriptorIndexingFeatures.descriptorBindingPartiallyBound ? "YES" : "NO",
+                descriptorIndexingFeatures.runtimeDescriptorArray ? "YES" : "NO",
+                descriptorIndexingFeatures.descriptorBindingVariableDescriptorCount ? "YES" : "NO");
+        }
+
+        PRINT_TO_LOGGER("Descriptor indexing features supported:");
+        PRINT_TO_LOGGER("  descriptorBindingPartiallyBound: YES");
+        PRINT_TO_LOGGER("  runtimeDescriptorArray: YES");
+        PRINT_TO_LOGGER("  descriptorBindingVariableDescriptorCount: YES");
 
         VkPhysicalDeviceVulkan13Features enabledFeatures13{
             VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES };
@@ -208,6 +239,11 @@ namespace vkengine {
         enabledFeatures.depthClamp = features.depthClamp;
         enabledFeatures.depthBiasClamp = features.depthBiasClamp;
 
+        // Enable descriptor indexing features
+        descriptorIndexingFeatures.descriptorBindingPartiallyBound = VK_TRUE;
+        descriptorIndexingFeatures.runtimeDescriptorArray = VK_TRUE;
+        descriptorIndexingFeatures.descriptorBindingVariableDescriptorCount = VK_TRUE;
+
         // 논리 장치 생성 정보 구조체를 초기화합니다.
         VkDeviceCreateInfo createInfo{};
 
@@ -223,6 +259,9 @@ namespace vkengine {
         physicalDeviceFeatures2.pNext = &enabledFeatures13;
         createInfo.pEnabledFeatures = nullptr;
         createInfo.pNext = &physicalDeviceFeatures2;
+
+        // chain descriptorindexing featrues
+        enabledFeatures13.pNext = &descriptorIndexingFeatures;
 
         _VK_CHECK_RESULT_(vkCreateDevice(this->physicalDevice, &createInfo, nullptr, &this->logicaldevice));
 

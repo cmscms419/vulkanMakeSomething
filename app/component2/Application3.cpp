@@ -66,7 +66,7 @@ namespace vkengine
             cString fullPath = this->RootPath + this->AssetsPath + modelConfig.filePath;
             model.loadFromModelFile(fullPath, modelConfig.isBistroObj);
             model.Name() = modelConfig.displayName;
-            model.ModelMatrix() = modelConfig.transform;
+            model.ModelResource().modelMatrix = modelConfig.transform;
 
             PRINT_TO_LOGGER("Loaded model '%s'\n", modelConfig.displayName.c_str());
             PRINT_TO_LOGGER("   - Meshes: %zu\n", model.Meshes().size());
@@ -106,6 +106,7 @@ namespace vkengine
         // engine에서 제공하는 카메라 컨트롤 윈도우 사용
         this->window->setCamera(this->camera);
     }
+    
     void Application3::initializeVulkanResources()
     {
         this->msaaSamples = helper::device::getMaxUsableSampleCount(this->cxt->getDevice()->physicalDevice);
@@ -139,7 +140,7 @@ namespace vkengine
 
         for (auto &model : models)
         {
-            const glm::mat4 &modelMatrix = model.ModelMatrix();
+            const glm::mat4 &modelMatrix = model.ModelResource().modelMatrix;
             for (auto &mesh : model.Meshes())
             {
                 mesh.updateWorldBounds(modelMatrix);
@@ -287,9 +288,9 @@ namespace vkengine
                 // Transform the first model's bounding box to find the initial light bounding box
                 // 초기 빛 경계 상자를 찾기 위해 첫 번째 모델의 경계 상자를 변환합니다.
                 cVec3 firstMin =
-                    cVec3(models[0].ModelMatrix() * cVec4(models[0].BoundingBoxMin(), 1.0f));
+                    cVec3(models[0].ModelResource().modelMatrix * cVec4(models[0].BoundingBoxMin(), 1.0f));
                 cVec3 firstMax =
-                    cVec3(models[0].ModelMatrix() * cVec4(models[0].BoundingBoxMax(), 1.0f));
+                    cVec3(models[0].ModelResource().modelMatrix * cVec4(models[0].BoundingBoxMax(), 1.0f));
 
                 // Ensure min is actually smaller than max for each component
                 // 각 구성 요소에 대해 최소값이 실제로 최대값보다 작은지 확인합니다.
@@ -302,8 +303,8 @@ namespace vkengine
                 {
                     // Transform this model's bounding box to world space
                     // 이 모델의 경계 상자를 월드 공간으로 변환합니다.
-                    cVec3 modelMin = cVec3(models[i].ModelMatrix() * cVec4(models[i].BoundingBoxMin(), 1.0f));
-                    cVec3 modelMax = cVec3(models[i].ModelMatrix() * cVec4(models[i].BoundingBoxMax(), 1.0f));
+                    cVec3 modelMin = cVec3(models[i].ModelResource().modelMatrix * cVec4(models[i].BoundingBoxMin(), 1.0f));
+                    cVec3 modelMax = cVec3(models[i].ModelResource().modelMatrix * cVec4(models[i].BoundingBoxMax(), 1.0f));
 
                     // Ensure proper min/max ordering
                     // 올바른 최소/최대 순서 보장
@@ -470,7 +471,7 @@ namespace vkengine
                 ImGui::Checkbox(labelBuffer, &m.Visible());
 
                 // Coefficients 슬라이더들
-                float *coeffs = m.Coeffs();
+                float *coeffs = m.ModelResource().coeffs;
 
                 snprintf(labelBuffer, sizeof(labelBuffer), "Specular##%u", i);
                 ImGui::SliderFloat(labelBuffer, &coeffs[0], 0.0f, 1.0f);
@@ -495,13 +496,13 @@ namespace vkengine
 
             // Extract and edit position
             char labelBuffer2[128];
-            glm::vec3 position = glm::vec3(m.ModelMatrix()[3]);
+            glm::vec3 position = glm::vec3(m.ModelResource().modelMatrix[3]);
 
             snprintf(labelBuffer2, sizeof(labelBuffer2), "Position##%u", i);
 
             if (ImGui::SliderFloat3(labelBuffer2, &position.x, -10.0f, 10.0f))
             {
-                m.ModelMatrix()[3] = glm::vec4(position, 1.0f);
+                m.ModelResource().modelMatrix[3] = glm::vec4(position, 1.0f);
             }
 
             // Decompose matrix into components
@@ -509,7 +510,7 @@ namespace vkengine
             glm::vec4 perspective;
             glm::quat rotation;
 
-            if (glm::decompose(m.ModelMatrix(), scale, rotation, translation, skew, perspective))
+            if (glm::decompose(m.ModelResource().modelMatrix, scale, rotation, translation, skew, perspective))
             {
                 // Convert quaternion to euler angles for easier editing
                 glm::vec3 eulerAngles = glm::eulerAngles(rotation);
@@ -527,7 +528,7 @@ namespace vkengine
                     glm::mat4 R = glm::mat4_cast(rotation);
                     glm::mat4 S = glm::scale(glm::mat4(1.0f), scale);
 
-                    m.ModelMatrix() = T * R * S;
+                    m.ModelResource().modelMatrix = T * R * S;
                 }
             }
         }

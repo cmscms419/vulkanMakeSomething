@@ -298,11 +298,7 @@ namespace vkengine
 
             vkCmdPushConstants(cmd, pipelines.at("pbrForward").getPipelineLayout(),
                                VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0,
-                               sizeof(this->currentModels->at(j).ModelMatrix()), &this->currentModels->at(j).ModelMatrix());
-            vkCmdPushConstants(cmd, pipelines.at("pbrForward").getPipelineLayout(),
-                               VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
-                               sizeof(this->currentModels->at(j).ModelMatrix()), sizeof(float) * 16,
-                               this->currentModels->at(j).Coeffs());
+                               sizeof(this->currentModels->at(j).ModelResource), &this->currentModels->at(j).ModelResource());
 
             for (size_t i = 0; i < this->currentModels->at(j).Meshes().size(); i++)
             {
@@ -431,8 +427,8 @@ namespace vkengine
             }
 
             vkCmdPushConstants(cmd, this->pipelines.at("shadowMap").getPipelineLayout(),
-                               VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(this->currentModels->at(j).ModelMatrix()),
-                               &this->currentModels->at(j).ModelMatrix());
+                               VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(this->currentModels->at(j).ModelResource().modelMatrix),
+                               &this->currentModels->at(j).ModelResource().modelMatrix);
 
             // Render all meshes in this model
             for (size_t i = 0; i < this->currentModels->at(j).Meshes().size(); i++)
