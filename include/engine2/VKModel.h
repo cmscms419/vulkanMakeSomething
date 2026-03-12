@@ -3,6 +3,7 @@
 
 #include "common.h"
 #include "material.h"
+#include "ubo.h"
 
 #include <memory>
 
@@ -150,14 +151,9 @@ class VKModel
         return visible;
     }
 
-    auto ModelMatrix() -> cMat4&
+    DrawModelResource& ModelResource()
     {
-        return modelMatrix;
-    }
-
-    auto Coeffs() -> float*
-    {
-        return coeffs;
+        return resource;
     }
 
     Mesh createMesh() {
@@ -198,8 +194,7 @@ class VKModel
 
     cString name;
     cBool visible;
-    cMat4 modelMatrix;
-    cFloat coeffs[16]; // 여러가지 옵션에 사용
+    DrawModelResource resource;
 
     void calculateBoundingBox();
 };

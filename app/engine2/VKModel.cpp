@@ -26,7 +26,7 @@ VKModel::VKModel(VKcontext& ctx) : ctx(ctx)
     name = "";
     visible = true;
     resource.modelMatrix = cMat4(1.0f);
-resource.materialIndex = 0;
+    resource.materialIndex = 0;
     std::fill(std::begin(resource.coeffs), std::end(resource.coeffs), 0.0f);
 }
 
@@ -46,8 +46,8 @@ VKModel::VKModel(VKModel&& other) noexcept
     other.boundingBoxMin = cVec3(FLT_MAX);
     other.boundingBoxMax = cVec3(-FLT_MAX);
     other.visible = true;
-        other.name = "";
-other.resource.modelMatrix = cMat4(1.0f);
+    other.name = "";
+    other.resource.modelMatrix = cMat4(1.0f);
     std::fill(std::begin(other.resource.coeffs), std::end(other.resource.coeffs), 0.0f);
 }
 

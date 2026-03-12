@@ -298,7 +298,7 @@ namespace vkengine
 
             vkCmdPushConstants(cmd, pipelines.at("pbrForward").getPipelineLayout(),
                                VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0,
-                               sizeof(this->currentModels->at(j).ModelResource), &this->currentModels->at(j).ModelResource());
+                               sizeof(this->currentModels->at(j).ModelResource()), &this->currentModels->at(j).ModelResource());
 
             for (size_t i = 0; i < this->currentModels->at(j).Meshes().size(); i++)
             {
