@@ -74,7 +74,7 @@ namespace vkengine
         vkUnmapMemory(ctx.getDevice()->logicaldevice, stagingBufferMemory);
 
         this->vertex->createModelVertexBuffer(vertexBufferSize, nullptr);
-        this->index->createModeIndexBuffer(indexBufferSize, nullptr);
+        this->index->createModelIndexBuffer(indexBufferSize, nullptr);
 
         VKCommandBufferHander cmd = ctx.createGrapicsCommandBufferHander(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
 

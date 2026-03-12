@@ -7,7 +7,8 @@
 
 namespace vkengine
 {
-    enum shaderResourceType{
+    enum shaderResourceType
+    {
         NONE,
         IMAGE,
         VERTEX_BUFFER,
@@ -29,17 +30,24 @@ namespace vkengine
         virtual void updateWrite(VkWriteDescriptorSet &write);
 
         virtual void cleanup() = 0;
-        
+
         void update();
         void setSampler(VkSampler sampler);
         VKBarrierHelper &getBarrierHelper();
 
     protected:
+        cString name;
+
         VkImage image{VK_NULL_HANDLE};
         VkImageView imageView{VK_NULL_HANDLE};
         VkImageLayout imageLayout{VK_IMAGE_LAYOUT_UNDEFINED};
         VkSampler sampler{VK_NULL_HANDLE};
 
+        VkBuffer buffer{VK_NULL_HANDLE};
+        VkDeviceSize bufferSize{0};
+        void *mapped; //< 매핑된 메모리 포인터
+        
+        VkDeviceMemory memory;
         VkDescriptorType descriptorType{};
         cUint32_t descriptorCount{};
         VkShaderStageFlags stageFlags{};
@@ -48,10 +56,6 @@ namespace vkengine
         VkDescriptorBufferInfo bufferInfo{};
         VkBufferView texelBufferView = {VK_NULL_HANDLE};
 
-        VkBuffer buffer{VK_NULL_HANDLE};
-        VkDeviceMemory memory;
-        VkDeviceSize bufferSize{0};
-        void *mapped; //< 매핑된 메모리 포인터
 
         VKBarrierHelper barrierHelper;
     };

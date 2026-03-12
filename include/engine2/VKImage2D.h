@@ -49,7 +49,6 @@ namespace vkengine
 
     private:
         VKcontext &ctx;
-        VkDeviceMemory imageMemory{VK_NULL_HANDLE};
         VkFormat imageFormat{VK_FORMAT_UNDEFINED};
 
         cUint32_t width{0};

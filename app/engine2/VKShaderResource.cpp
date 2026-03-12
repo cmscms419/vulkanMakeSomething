@@ -31,7 +31,7 @@ namespace vkengine
             EXIT_TO_LOGGER("Neither image is ready");
         }
     }
-    
+
     void VKShaderResource::updateBinding(VkDescriptorSetLayoutBinding &binding)
     {
         binding.descriptorType = this->descriptorType;

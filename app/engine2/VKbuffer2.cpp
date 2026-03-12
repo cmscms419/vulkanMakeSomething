@@ -121,7 +121,7 @@ namespace vkengine
         _VK_CHECK_RESULT_(vkBindBufferMemory(this->ctx.getDevice()->logicaldevice, this->buffer, this->memory, 0));
     }
 
-    void VKBaseBuffer2::createModeIndexBuffer(VkDeviceSize size, void* data)
+    void VKBaseBuffer2::createModelIndexBuffer(VkDeviceSize size, void* data)
     {
         this->usageFlags = VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
         this->memoryPropertyFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
@@ -197,12 +197,13 @@ namespace vkengine
     }
 
     VKBaseBuffer2::VKBaseBuffer2(VKBaseBuffer2 &&other) noexcept
-        : ctx(other.ctx), name(std::move(other.name)),
+        : ctx(other.ctx),
           size(other.size), offset(other.offset), alignment(other.alignment),
           usageFlags(other.usageFlags), memoryPropertyFlags(other.memoryPropertyFlags),
           allocatedSize(other.allocatedSize)
     {
         // base class protected fields
+        this->name           = other.name;
         this->buffer         = other.buffer;
         this->memory         = other.memory;
         this->mapped         = other.mapped;

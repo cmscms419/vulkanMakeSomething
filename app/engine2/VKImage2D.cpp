@@ -33,8 +33,9 @@ namespace vkengine
           aspectFlags(other.aspectFlags)
     {
         // base class protected fields
+        this->name           = other.name;
         this->image        = other.image;
-        this->imageMemory  = other.imageMemory;
+        this->memory  = other.memory;
         this->imageView    = other.imageView;
         this->sampler      = other.sampler;
         this->descriptorType  = other.descriptorType;
@@ -43,7 +44,7 @@ namespace vkengine
         this->barrierHelper = std::move(other.barrierHelper);
 
         other.image        = VK_NULL_HANDLE;
-        other.imageMemory  = VK_NULL_HANDLE;
+        other.memory  = VK_NULL_HANDLE;
         other.imageView    = VK_NULL_HANDLE;
         other.imageFormat  = VK_FORMAT_UNDEFINED;
         other.width        = 0;
@@ -82,7 +83,7 @@ namespace vkengine
             width, height, mipLevels, sampleCount, format,
             VK_IMAGE_TILING_OPTIMAL, usage,
             VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-            this->image, this->imageMemory,
+            this->image, this->memory,
             arrayLayers, flags);
 
         this->imageView = vkengine::helper::resource::createImageView(
@@ -110,7 +111,7 @@ namespace vkengine
             width, height, mipLevels, sampleCount, format,
             VK_IMAGE_TILING_OPTIMAL, usage,
             VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-            this->image, this->imageMemory,
+            this->image, this->memory,
             arrayLayers, flags);
 
         this->imageView = vkengine::helper::resource::createCubeImageView(
@@ -471,10 +472,10 @@ namespace vkengine
             image = VK_NULL_HANDLE;
         }
 
-        if (imageMemory != VK_NULL_HANDLE)
+        if (memory != VK_NULL_HANDLE)
         {
-            vkFreeMemory(ctx.getDevice()->logicaldevice, imageMemory, nullptr);
-            imageMemory = VK_NULL_HANDLE;
+            vkFreeMemory(ctx.getDevice()->logicaldevice, memory, nullptr);
+            memory = VK_NULL_HANDLE;
         }
 
         this->barrierHelper.Currentlayout() = VK_IMAGE_LAYOUT_UNDEFINED;
