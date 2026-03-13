@@ -47,7 +47,7 @@ namespace vkengine
         VkDeviceSize bufferSize{0};
         void *mapped; //< 매핑된 메모리 포인터
         
-        VkDeviceMemory memory;
+        VkDeviceMemory memory{VK_NULL_HANDLE};
         VkDescriptorType descriptorType{};
         cUint32_t descriptorCount{};
         VkShaderStageFlags stageFlags{};
