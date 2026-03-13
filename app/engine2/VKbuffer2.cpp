@@ -1,5 +1,8 @@
 ﻿#include "VKbuffer2.h"
 #include "helper.h"
+#include "log.h"
+
+using namespace vkengine::Log;
 
 namespace vkengine
 {
@@ -8,15 +11,16 @@ namespace vkengine
     {
         cleanup();
 
+        this->descriptorCount = 1;
         this->usageFlags = usageFlags;
         this->memoryPropertyFlags = memoryPropertyFlags;
-        this->size = size;
+        this->bufferSize = size;
         this->offset = 0;
 
         helper::resource::createBuffer2(
             this->ctx.getDevice()->logicaldevice,
             this->ctx.getDevice()->physicalDevice,
-            this->size,
+            this->bufferSize,
             this->usageFlags,
             this->memoryPropertyFlags,
             this->buffer,
@@ -42,8 +46,6 @@ namespace vkengine
 
         // 할당된 메모리를 버퍼와 바인딩하여 GPU에서 사용할 수 있게 한다.
         _VK_CHECK_RESULT_(vkBindBufferMemory(ctx.getDevice()->logicaldevice, this->buffer, this->memory, 0));
-
-        this->bufferSize = this->size;
         this->update();
     }
 
@@ -103,47 +105,82 @@ namespace vkengine
     {
         this->usageFlags = VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
         this->memoryPropertyFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
-        this->size = size;
+        this->bufferSize = size;
         this->offset = 0;
 
         helper::resource::createBuffer2(
             this->ctx.getDevice()->logicaldevice,
             this->ctx.getDevice()->physicalDevice,
-            this->size,
+            this->bufferSize,
             this->usageFlags,
             this->memoryPropertyFlags,
             this->buffer,
             this->memory,
             &this->allocatedSize,
-            &this->alignment
-        );
+            &this->alignment);
 
         _VK_CHECK_RESULT_(vkBindBufferMemory(this->ctx.getDevice()->logicaldevice, this->buffer, this->memory, 0));
     }
 
-    void VKBaseBuffer2::createModelIndexBuffer(VkDeviceSize size, void* data)
+    void VKBaseBuffer2::createModelIndexBuffer(VkDeviceSize size, void *data)
     {
         this->usageFlags = VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
         this->memoryPropertyFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
-        this->size = size;
+        this->bufferSize = size;
         this->offset = 0;
 
         helper::resource::createBuffer2(
             this->ctx.getDevice()->logicaldevice,
             this->ctx.getDevice()->physicalDevice,
-            this->size,
+            this->bufferSize,
             this->usageFlags,
             this->memoryPropertyFlags,
             this->buffer,
             this->memory,
             &this->allocatedSize,
-            &this->alignment
-        );
+            &this->alignment);
 
         _VK_CHECK_RESULT_(vkBindBufferMemory(this->ctx.getDevice()->logicaldevice, this->buffer, this->memory, 0));
     }
 
-    void VKBaseBuffer2::updateData(const void* data, VkDeviceSize size, VkDeviceSize offset)
+    void VKBaseBuffer2::createStorageBuffer(VkDeviceSize size, VkBufferUsageFlags additionalUsage, cBool hostVisible)
+    {
+        this->descriptorCount = 1;
+        this->hostVisible = hostVisible;
+
+        if (this->hostVisible)
+        {
+            this->create(VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | additionalUsage,
+                         VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+                         size, nullptr);
+        }
+        else
+        {
+#if 1
+            this->usageFlags = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT | additionalUsage;
+            this->memoryPropertyFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
+            this->bufferSize = size;
+
+            helper::resource::createBuffer2(
+                this->ctx.getDevice()->logicaldevice,
+                this->ctx.getDevice()->physicalDevice,
+                this->bufferSize,
+                this->usageFlags,
+                this->memoryPropertyFlags,
+                this->buffer,
+                this->memory,
+                &this->allocatedSize,
+                &this->alignment);
+
+            _VK_CHECK_RESULT_(vkBindBufferMemory(ctx.getDevice()->logicaldevice, this->buffer, this->memory, 0));
+            this->update();
+#else
+
+#endif
+        }
+    }
+
+    void VKBaseBuffer2::updateData(const void *data, VkDeviceSize size, VkDeviceSize offset)
     {
         bool check = true;
 
@@ -152,7 +189,7 @@ namespace vkengine
             check = false;
         }
 
-        if (offset + size > this->size)
+        if (offset + size > this->bufferSize)
         {
             check = false;
         }
@@ -170,6 +207,29 @@ namespace vkengine
         }
     }
 
+    void *VKBaseBuffer2::map()
+    {
+        if (!hostVisible || mapped != nullptr || buffer == VK_NULL_HANDLE)
+        {
+            return mapped;
+        }
+
+        const VkDevice device = this->ctx.getDevice()->logicaldevice;
+        _VK_CHECK_RESULT_(vkMapMemory(device, memory, 0, bufferSize, 0, &mapped));
+
+        return mapped;
+    }
+
+    void VKBaseBuffer2::unmap()
+    {
+        if (mapped != nullptr && buffer != VK_NULL_HANDLE)
+        {
+            const VkDevice device = this->ctx.getDevice()->logicaldevice;
+            vkUnmapMemory(device, memory);
+            mapped = nullptr;
+        }
+    }
+
     // CPU에서 작성한 메모리 변경사항을 GPU에 확실히 전달하는 역할
     void VKBaseBuffer2::flush() const
     {
@@ -181,41 +241,80 @@ namespace vkengine
         _VK_CHECK_RESULT_(vkFlushMappedMemoryRanges(ctx.getDevice()->logicaldevice, 1, &mappedRange));
     }
 
+    void VKBaseBuffer2::updateBinding(VkDescriptorSetLayoutBinding &binding)
+    {
+        switch (this->descriptorType)
+        {
+        case VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER:
+        case VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER:
+        case VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER:
+        case VK_DESCRIPTOR_TYPE_STORAGE_BUFFER:
+        case VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC:
+        case VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC:
+            binding.descriptorType = this->descriptorType;
+            binding.descriptorCount = this->descriptorCount;
+            binding.pImmutableSamplers = nullptr;
+            binding.stageFlags = this->stageFlags;
+            break;
+        default:
+            EXIT_TO_LOGGER("Descriptor Type Buffer");
+            break;
+        }
+    }
+
+    void VKBaseBuffer2::updateWrite(VkWriteDescriptorSet &write)
+    {
+        write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        write.pNext = nullptr;
+        write.dstSet = VK_NULL_HANDLE; // Will be set by DescriptorSet::create()
+        write.dstBinding = 0;          // Will be set by DescriptorSet::create()
+        write.dstArrayElement = 0;
+        write.descriptorType = this->descriptorType;
+        write.descriptorCount = this->descriptorCount;
+        write.pBufferInfo = &this->bufferInfo;
+        write.pImageInfo = nullptr;
+        write.pTexelBufferView = nullptr;
+    }
+
     VKBaseBuffer2::VKBaseBuffer2(VKcontext &ctx) : ctx(ctx)
     {
         name = "Default";
-        buffer = VK_NULL_HANDLE;             //< Vulkan 버퍼 핸들
-        memory = VK_NULL_HANDLE;             ///< Vulkan 장치 메모리 핸들
-        bufferInfo = {}; ///< Vulkan 디스크립터 버퍼 정보
-        size = 0;                            ///< 버퍼 크기
-        offset = 0;                          ///< 버퍼 간격
-        allocatedSize = 0;                   ///< createBuffer 할 때, 만들어지는 버퍼의 크기
-        alignment = 0;                       ///< 버퍼 정렬
-        usageFlags = 0;                      ///< 버퍼 사용 플래그
-        memoryPropertyFlags = 0;             ///< 메모리 속성 플래그
-        mapped = nullptr;                    ///< 매핑된 메모리 포인터
+        buffer = VK_NULL_HANDLE; //< Vulkan 버퍼 핸들
+        memory = VK_NULL_HANDLE; ///< Vulkan 장치 메모리 핸들
+        bufferInfo = {};         ///< Vulkan 디스크립터 버퍼 정보
+        bufferSize = 0;          ///< 버퍼 크기
+        offset = 0;              ///< 버퍼 간격
+        allocatedSize = 0;       ///< createBuffer 할 때, 만들어지는 버퍼의 크기
+        alignment = 0;           ///< 버퍼 정렬
+        usageFlags = 0;          ///< 버퍼 사용 플래그
+        memoryPropertyFlags = 0; ///< 메모리 속성 플래그
+        mapped = nullptr;        ///< 매핑된 메모리 포인터
+        hostVisible = false;
+        type = shaderResourceType::BUFFER;
     }
 
     VKBaseBuffer2::VKBaseBuffer2(VKBaseBuffer2 &&other) noexcept
         : ctx(other.ctx),
-          size(other.size), offset(other.offset), alignment(other.alignment),
-          usageFlags(other.usageFlags), memoryPropertyFlags(other.memoryPropertyFlags),
-          allocatedSize(other.allocatedSize)
+          usageFlags(other.usageFlags), memoryPropertyFlags(other.memoryPropertyFlags)
     {
         // base class protected fields
-        this->name           = other.name;
-        this->buffer         = other.buffer;
-        this->memory         = other.memory;
-        this->mapped         = other.mapped;
-        this->bufferInfo     = other.bufferInfo;
-        this->bufferSize     = other.bufferSize;
+        this->name = other.name;
+        this->buffer = other.buffer;
+        this->memory = other.memory;
+        this->mapped = other.mapped;
+        this->offset = other.offset;
+        this->bufferSize = other.bufferSize;
+        this->alignment = other.alignment;
+        this->allocatedSize = other.allocatedSize;
+        this->bufferInfo = other.bufferInfo;
         this->descriptorType = other.descriptorType;
 
-        other.buffer        = VK_NULL_HANDLE;
-        other.memory        = VK_NULL_HANDLE;
-        other.mapped        = nullptr;
-        other.size          = 0;
-        other.alignment     = 0;
+        other.buffer = VK_NULL_HANDLE;
+        other.memory = VK_NULL_HANDLE;
+        other.mapped = nullptr;
+        other.offset = 0;
+        other.bufferSize = 0;
+        other.alignment = 0;
         other.allocatedSize = 0;
     }
 }

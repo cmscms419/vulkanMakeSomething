@@ -8,11 +8,9 @@
 #include "VKDescriptorSet.h"
 #include "VKContext.h"
 #include "VKImage2D.h"
-#include "VKStorageBuffer.h"
 #include "VKSamplerHandler.h"
 #include "VKSkyTexture.h"
 #include "VKpipeLineHandle.h"
-#include "VKDepthStencil.h"
 #include "VKViewFrustum.h"
 #include "VKModel.h"
 #include "VKUniformBuffer2.h"
@@ -133,8 +131,8 @@ namespace vkengine
         std::vector<DescriptorSetHander> PostDescriptorSets{};
 
         VKImage2D msaaColorBuffer;
-        VKDepthStencil depthStencil;
-        VKDepthStencil msaaDepthStencil;
+        VKImage2D depthStencil;
+        VKImage2D msaaDepthStencil;
 
         VKImage2D forwardToCompute;
         VKImage2D computeToPost;

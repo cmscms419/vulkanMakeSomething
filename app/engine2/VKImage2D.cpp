@@ -22,35 +22,37 @@ namespace vkengine
 
     VKImage2D::VKImage2D(VKcontext &context) : ctx(context)
     {
+        this->type = shaderResourceType::IMAGE;
     }
 
     VKImage2D::VKImage2D(VKImage2D &&other) noexcept
         : ctx(other.ctx),
           imageFormat(other.imageFormat),
+          samplerView(other.samplerView),
           width(other.width),
           height(other.height),
           usageFlags(other.usageFlags),
           aspectFlags(other.aspectFlags)
     {
         // base class protected fields
-        this->name           = other.name;
-        this->image        = other.image;
-        this->memory  = other.memory;
-        this->imageView    = other.imageView;
-        this->sampler      = other.sampler;
-        this->descriptorType  = other.descriptorType;
+        this->name = other.name;
+        this->image = other.image;
+        this->memory = other.memory;
+        this->imageView = other.imageView;
+        this->sampler = other.sampler;
+        this->descriptorType = other.descriptorType;
         this->descriptorCount = other.descriptorCount;
-        this->imageInfo    = other.imageInfo;
+        this->imageInfo = other.imageInfo;
         this->barrierHelper = std::move(other.barrierHelper);
 
-        other.image        = VK_NULL_HANDLE;
-        other.memory  = VK_NULL_HANDLE;
-        other.imageView    = VK_NULL_HANDLE;
-        other.imageFormat  = VK_FORMAT_UNDEFINED;
-        other.width        = 0;
-        other.height       = 0;
-        other.usageFlags   = 0;
-        other.aspectFlags  = 0;
+        other.image = VK_NULL_HANDLE;
+        other.memory = VK_NULL_HANDLE;
+        other.imageView = VK_NULL_HANDLE;
+        other.imageFormat = VK_FORMAT_UNDEFINED;
+        other.width = 0;
+        other.height = 0;
+        other.usageFlags = 0;
+        other.aspectFlags = 0;
     }
 
     VKImage2D::~VKImage2D()
@@ -72,19 +74,26 @@ namespace vkengine
         this->cleanup();
 
         this->imageFormat = format;
-        this->width       = width;
-        this->height      = height;
-        this->usageFlags  = usage;
+        this->width = width;
+        this->height = height;
+        this->usageFlags = usage;
         this->aspectFlags = aspectMask;
 
         vkengine::helper::resource::createImage2(
-            ctx.getDevice()->logicaldevice,
+            this->ctx.getDevice()->logicaldevice,
             this->ctx.getDevice()->physicalDevice,
-            width, height, mipLevels, sampleCount, format,
-            VK_IMAGE_TILING_OPTIMAL, usage,
+            width,
+            height,
+            mipLevels,
+            sampleCount,
+            format,
+            VK_IMAGE_TILING_OPTIMAL,
+            usage,
             VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-            this->image, this->memory,
-            arrayLayers, flags);
+            this->image,
+            this->memory,
+            arrayLayers,
+            flags);
 
         this->imageView = vkengine::helper::resource::createImageView(
             ctx.getDevice()->logicaldevice,
@@ -100,19 +109,26 @@ namespace vkengine
         this->cleanup();
 
         this->imageFormat = format;
-        this->width       = width;
-        this->height      = height;
-        this->usageFlags  = usage;
+        this->width = width;
+        this->height = height;
+        this->usageFlags = usage;
         this->aspectFlags = aspectMask;
 
         vkengine::helper::resource::createImage2(
-            ctx.getDevice()->logicaldevice,
+            this->ctx.getDevice()->logicaldevice,
             this->ctx.getDevice()->physicalDevice,
-            width, height, mipLevels, sampleCount, format,
-            VK_IMAGE_TILING_OPTIMAL, usage,
+            width,
+            height,
+            mipLevels,
+            sampleCount,
+            format,
+            VK_IMAGE_TILING_OPTIMAL,
+            usage,
             VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-            this->image, this->memory,
-            arrayLayers, flags);
+            this->image,
+            this->memory,
+            arrayLayers,
+            flags);
 
         this->imageView = vkengine::helper::resource::createCubeImageView(
             ctx.getDevice()->logicaldevice,
@@ -166,12 +182,12 @@ namespace vkengine
                 EXIT_TO_LOGGER("KTX2 텍스처 리소스가 유효하지 않습니다.");
             }
 
-            mipLevels       = resource->texture2 ? resource->texture2->numLevels : 1;
-            vkFormat        = ktxTexture2_GetVkFormat(resource->texture2);
-            baseTexture     = ktxTexture(resource->texture2);
-            ktxTextureData  = ktxTexture_GetData(baseTexture);
-            ktxTextureSize  = ktxTexture_GetDataSize(baseTexture);
-            layCounter      = usCubemap ? 6 : 1;
+            mipLevels = resource->texture2 ? resource->texture2->numLevels : 1;
+            vkFormat = ktxTexture2_GetVkFormat(resource->texture2);
+            baseTexture = ktxTexture(resource->texture2);
+            ktxTextureData = ktxTexture_GetData(baseTexture);
+            ktxTextureSize = ktxTexture_GetDataSize(baseTexture);
+            layCounter = usCubemap ? 6 : 1;
 
             if (mipLevels == 0)
             {
@@ -361,6 +377,49 @@ namespace vkengine
                     VK_IMAGE_ASPECT_DEPTH_BIT, 1, 1, static_cast<VkImageCreateFlagBits>(0));
     }
 
+    void VKImage2D::createDepthStencil(cUint32_t width, cUint32_t height, VkSampleCountFlagBits msaaSamples)
+    {
+        this->usageFlags = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+        this->imageFormat = ctx.getDepthStencil()->depthFormat;
+        this->width = width;
+        this->height = height;
+        this->aspectFlags = VK_IMAGE_ASPECT_DEPTH_BIT | ((this->imageFormat >= VK_FORMAT_D16_UNORM_S8_UINT) ? VK_IMAGE_ASPECT_STENCIL_BIT : 0);
+
+        helper::resource::createImage(
+            ctx.getDevice()->logicaldevice,
+            ctx.getDevice()->physicalDevice,
+            this->width,
+            this->height,
+            1,
+            msaaSamples,
+            this->imageFormat,
+            VK_IMAGE_TILING_OPTIMAL,
+            this->usageFlags,
+            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+            image,
+            memory);
+
+        this->imageView = vkengine::helper::resource::createImageView(
+            ctx.getDevice()->logicaldevice,
+            image,
+            this->imageFormat,
+            this->aspectFlags,
+            1,
+            1);
+
+        this->samplerView = vkengine::helper::resource::createImageView(
+            ctx.getDevice()->logicaldevice,
+            this->image,
+            this->imageFormat,
+            VK_IMAGE_ASPECT_DEPTH_BIT,
+            1,
+            1);
+
+        this->descriptorCount = 1;
+        this->update();
+        this->barrierHelper.update(this->imageFormat, 1, 1);
+    }
+
     void VKImage2D::updateResourceBindingAfterTransition()
     {
         VkImageLayout currentLayout = this->barrierHelper.Currentlayout();
@@ -373,8 +432,8 @@ namespace vkengine
         else if (currentLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
         {
             this->descriptorType = (this->sampler != VK_NULL_HANDLE)
-                ? VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
-                : VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
+                                       ? VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
+                                       : VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
             this->imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
         }
         else if (currentLayout == VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL ||
@@ -389,10 +448,7 @@ namespace vkengine
             this->imageInfo.imageLayout = currentLayout;
         }
 
-        this->imageInfo.imageView = this->imageView;
-        this->imageInfo.sampler   = this->sampler;
-
-        this->update();
+        // this->update();
     }
 
     void VKImage2D::transitionTo(VkCommandBuffer commandBuffer, VkImageLayout newLayout, VkAccessFlags2 newAccess, VkPipelineStageFlags2 newStage)
@@ -405,57 +461,93 @@ namespace vkengine
     void VKImage2D::transitionToColorAttachment(VkCommandBuffer commandBuffer)
     {
         transitionTo(commandBuffer,
-            VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-            VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT,
-            VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT);
+                     VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+                     VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT,
+                     VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT);
     }
 
     void VKImage2D::transitionToDepthStencilAttachment(VkCommandBuffer commandBuffer)
     {
         transitionTo(commandBuffer,
-            VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
-            VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
-            VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT);
+                     VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+                     VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
+                     VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT);
     }
 
     void VKImage2D::transitionToTransferDst(VkCommandBuffer commandBuffer)
     {
         transitionTo(commandBuffer,
-            VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-            VK_ACCESS_2_TRANSFER_WRITE_BIT,
-            VK_PIPELINE_STAGE_2_TRANSFER_BIT);
+                     VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                     VK_ACCESS_2_TRANSFER_WRITE_BIT,
+                     VK_PIPELINE_STAGE_2_TRANSFER_BIT);
     }
 
     void VKImage2D::transitionToShaderReadOnly(VkCommandBuffer commandBuffer)
     {
         transitionTo(commandBuffer,
-            VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-            VK_ACCESS_2_SHADER_READ_BIT,
-            VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT);
+                     VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+                     VK_ACCESS_2_SHADER_READ_BIT,
+                     VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT);
     }
 
     void VKImage2D::transitionToShaderReadWrite(VkCommandBuffer commandBuffer)
     {
         transitionTo(commandBuffer,
-            VK_IMAGE_LAYOUT_GENERAL,
-            VK_ACCESS_2_SHADER_READ_BIT | VK_ACCESS_2_SHADER_WRITE_BIT,
-            VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT | VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT);
+                     VK_IMAGE_LAYOUT_GENERAL,
+                     VK_ACCESS_2_SHADER_READ_BIT | VK_ACCESS_2_SHADER_WRITE_BIT,
+                     VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT | VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT);
     }
 
     void VKImage2D::transitionToPresent(VkCommandBuffer commandBuffer)
     {
         transitionTo(commandBuffer,
-            VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
-            VK_ACCESS_2_NONE,
-            VK_PIPELINE_STAGE_2_BOTTOM_OF_PIPE_BIT);
+                     VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+                     VK_ACCESS_2_NONE,
+                     VK_PIPELINE_STAGE_2_BOTTOM_OF_PIPE_BIT);
+    }
+
+    void VKImage2D::updateBinding(VkDescriptorSetLayoutBinding &binding)
+    {
+        switch (this->descriptorType)
+        {
+        case VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT:
+        case VK_DESCRIPTOR_TYPE_SAMPLER:
+        case VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER:
+        case VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE:
+        case VK_DESCRIPTOR_TYPE_STORAGE_IMAGE:
+        case VK_DESCRIPTOR_TYPE_SAMPLE_WEIGHT_IMAGE_QCOM:
+        case VK_DESCRIPTOR_TYPE_BLOCK_MATCH_IMAGE_QCOM:
+            binding.descriptorType = this->descriptorType;
+            binding.descriptorCount = this->descriptorCount;
+            binding.pImmutableSamplers = nullptr;
+            binding.stageFlags = this->stageFlags;
+            break;
+        default:
+            EXIT_TO_LOGGER("Descriptor Type Image");
+            break;
+        }
+    }
+
+    void VKImage2D::updateWrite(VkWriteDescriptorSet &write)
+    {
+        write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        write.pNext = nullptr;
+        write.dstSet = VK_NULL_HANDLE; // Will be set by DescriptorSet::create()
+        write.dstBinding = 0;          // Will be set by DescriptorSet::create()
+        write.dstArrayElement = 0;
+        write.descriptorType = this->descriptorType;
+        write.descriptorCount = this->descriptorCount;
+        write.pImageInfo = &this->imageInfo;
+        write.pBufferInfo = nullptr;
+        write.pTexelBufferView = nullptr;
     }
 
     void VKImage2D::transitionToTransferSrc(VkCommandBuffer commandBuffer)
     {
         transitionTo(commandBuffer,
-            VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-            VK_ACCESS_2_TRANSFER_READ_BIT,
-            VK_PIPELINE_STAGE_2_TRANSFER_BIT);
+                     VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+                     VK_ACCESS_2_TRANSFER_READ_BIT,
+                     VK_PIPELINE_STAGE_2_TRANSFER_BIT);
     }
 
     void VKImage2D::cleanup()
@@ -464,6 +556,12 @@ namespace vkengine
         {
             vkDestroyImageView(ctx.getDevice()->logicaldevice, imageView, nullptr);
             imageView = VK_NULL_HANDLE;
+        }
+
+        if (samplerView != VK_NULL_HANDLE)
+        {
+            vkDestroyImageView(ctx.getDevice()->logicaldevice, samplerView, nullptr);
+            samplerView = VK_NULL_HANDLE;
         }
 
         if (image != VK_NULL_HANDLE)
@@ -478,9 +576,10 @@ namespace vkengine
             memory = VK_NULL_HANDLE;
         }
 
+
         this->barrierHelper.Currentlayout() = VK_IMAGE_LAYOUT_UNDEFINED;
         this->barrierHelper.Currentaccess() = VK_ACCESS_2_NONE;
-        this->barrierHelper.Currentstage()  = VK_PIPELINE_STAGE_2_NONE;
+        this->barrierHelper.Currentstage() = VK_PIPELINE_STAGE_2_NONE;
     }
 
 }

@@ -32,9 +32,15 @@ namespace vkengine
         void createUniformBuffer(VkDeviceSize size, void *data);
         void createModelVertexBuffer(VkDeviceSize size, void *data);
         void createModelIndexBuffer(VkDeviceSize size, void *data);
+        void createStorageBuffer(VkDeviceSize size, VkBufferUsageFlags additionalUsage, cBool hostVisible);
+
+        void VKBaseBuffer2::updateBinding(VkDescriptorSetLayoutBinding &binding) override;
+        void VKBaseBuffer2::updateWrite(VkWriteDescriptorSet &write) override;
 
         void updateData(const void *data, VkDeviceSize size, VkDeviceSize offset);
         void flush() const;
+        void *map();
+        void unmap();
 
         VkBuffer &Buffer()
         {
@@ -50,10 +56,7 @@ namespace vkengine
         void create(VkBufferUsageFlags usageFlags, VkMemoryPropertyFlags memoryPropertyFlags,
                     VkDeviceSize size, void *data);
         VKcontext &ctx;
-        VkDeviceSize size;          ///< 버퍼 크기
-        VkDeviceSize offset;        ///< 버퍼 간격
-        VkDeviceSize allocatedSize; ///< createBuffer 할 때, 만들어지는 버퍼의 크기
-        VkDeviceSize alignment;     ///< 버퍼 정렬
+        cBool hostVisible;
 
         VkBufferUsageFlags usageFlags;             ///< 버퍼 사용 플래그
         VkMemoryPropertyFlags memoryPropertyFlags; ///< 메모리 속성 플래그

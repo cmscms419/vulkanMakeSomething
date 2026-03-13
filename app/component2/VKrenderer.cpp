@@ -157,8 +157,8 @@ namespace vkengine
 
         // Create render targets
         this->msaaColorBuffer.createMsaaColorBuffer(swapchainWidth, swapchainHeight, msaaSamples);
-        this->msaaDepthStencil.create(swapchainWidth, swapchainHeight, msaaSamples);
-        this->depthStencil.create(swapchainWidth, swapchainHeight, VK_SAMPLE_COUNT_1_BIT);
+        this->msaaDepthStencil.createDepthStencil(swapchainWidth, swapchainHeight, msaaSamples);
+        this->depthStencil.createDepthStencil(swapchainWidth, swapchainHeight, VK_SAMPLE_COUNT_1_BIT);
         this->forwardToCompute.createGeneralStorage(swapchainWidth, swapchainHeight);
         this->computeToPost.createGeneralStorage(swapchainWidth, swapchainHeight);
 
@@ -185,8 +185,8 @@ namespace vkengine
 
         // 새 크기로 재생성
         this->msaaColorBuffer.createMsaaColorBuffer(width, height, msaaSamples);
-        this->msaaDepthStencil.create(width, height, msaaSamples);
-        this->depthStencil.create(width, height, VK_SAMPLE_COUNT_1_BIT);
+        this->msaaDepthStencil.createDepthStencil(width, height, msaaSamples);
+        this->depthStencil.createDepthStencil(width, height, VK_SAMPLE_COUNT_1_BIT);
         this->forwardToCompute.createGeneralStorage(width, height);
         this->computeToPost.createGeneralStorage(width, height);
 
@@ -274,8 +274,8 @@ namespace vkengine
 
         auto depthAttachment =
             createDepthAttachment(
-                msaaDepthStencil.view, VK_ATTACHMENT_LOAD_OP_CLEAR, 1.0f,
-                depthStencil.view, VK_RESOLVE_MODE_SAMPLE_ZERO_BIT);
+                msaaDepthStencil.getImageView(), VK_ATTACHMENT_LOAD_OP_CLEAR, 1.0f,
+                depthStencil.getImageView(), VK_RESOLVE_MODE_SAMPLE_ZERO_BIT);
 
         auto renderingInfo = createRenderingInfo(renderArea, &colorAttachment, &depthAttachment);
 

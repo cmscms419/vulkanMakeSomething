@@ -11,9 +11,7 @@ namespace vkengine
     {
         NONE,
         IMAGE,
-        VERTEX_BUFFER,
-        INDEX_BUFFER,
-        UNIFORM_BUFFER
+        BUFFER
     };
 
     class VKShaderResource
@@ -45,6 +43,9 @@ namespace vkengine
 
         VkBuffer buffer{VK_NULL_HANDLE};
         VkDeviceSize bufferSize{0};
+        VkDeviceSize offset;        ///< 버퍼 간격
+        VkDeviceSize allocatedSize; ///< createBuffer 할 때, 만들어지는 버퍼의 크기
+        VkDeviceSize alignment;     ///< 버퍼 정렬
         void *mapped; //< 매핑된 메모리 포인터
         
         VkDeviceMemory memory{VK_NULL_HANDLE};
@@ -56,7 +57,7 @@ namespace vkengine
         VkDescriptorBufferInfo bufferInfo{};
         VkBufferView texelBufferView = {VK_NULL_HANDLE};
 
-
+        shaderResourceType type;
         VKBarrierHelper barrierHelper;
     };
 }

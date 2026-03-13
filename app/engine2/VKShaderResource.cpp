@@ -24,7 +24,6 @@ namespace vkengine
         {
             descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
             imageInfo.imageView = imageView;
-            imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
         }
         else
         {
@@ -34,20 +33,12 @@ namespace vkengine
 
     void VKShaderResource::updateBinding(VkDescriptorSetLayoutBinding &binding)
     {
-        binding.descriptorType = this->descriptorType;
-        binding.descriptorCount = 1;
-        binding.stageFlags = 0;
+        PRINT_TO_LOGGER("Nothing updateBinding %s", this->name.c_str());
     }
-
+    
     void VKShaderResource::updateWrite(VkWriteDescriptorSet &write)
     {
-        write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-        write.descriptorType = this->descriptorType;
-        write.descriptorCount = 1;
-        if (buffer != VK_NULL_HANDLE)
-            write.pBufferInfo = &this->bufferInfo;
-        else
-            write.pImageInfo = &this->imageInfo;
+        PRINT_TO_LOGGER("Nothing updateWrite %s", this->name.c_str());
     }
 
     void VKShaderResource::setSampler(VkSampler sampler)
