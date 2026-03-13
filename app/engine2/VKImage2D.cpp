@@ -151,19 +151,19 @@ namespace vkengine
         }
         else
         {
-            EXIT_TO_LOGGER("지원하지 않는 이미지 형식입니다: \n" + extension);
+            EXIT_TO_LOGGER("지원하지 않는 이미지 형식입니다: " + extension);
         }
 
         if (!resource)
         {
-            EXIT_TO_LOGGER("리소스가 생성되지 않았습니다 \n");
+            EXIT_TO_LOGGER("리소스가 생성되지 않았습니다 ");
         }
         else
         {
             if (!resource->texture2)
             {
                 delete resource;
-                EXIT_TO_LOGGER("KTX2 텍스처 리소스가 유효하지 않습니다.\n");
+                EXIT_TO_LOGGER("KTX2 텍스처 리소스가 유효하지 않습니다.");
             }
 
             mipLevels       = resource->texture2 ? resource->texture2->numLevels : 1;
@@ -176,7 +176,7 @@ namespace vkengine
             if (mipLevels == 0)
             {
                 delete resource;
-                EXIT_TO_LOGGER("KTX2 텍스처의 mipLevels가 유효하지 않습니다.\n");
+                EXIT_TO_LOGGER("KTX2 텍스처의 mipLevels가 유효하지 않습니다.");
             }
 
             if (vkFormat == VK_FORMAT_UNDEFINED)
@@ -281,7 +281,7 @@ namespace vkengine
     {
         if (!pixelData)
         {
-            EXIT_TO_LOGGER("pixelData is nullptr\n");
+            EXIT_TO_LOGGER("pixelData is nullptr");
         }
 
         VkFormat imageFormat{};

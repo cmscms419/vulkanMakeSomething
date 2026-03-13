@@ -93,9 +93,9 @@ namespace vkengine {
         }
 
         // print instanceExtensions
-        PRINT_TO_LOGGER("Supported Instance Extensions: \n");
+        PRINT_TO_LOGGER("Supported Instance Extensions: ");
         for (const cString& extension : supportedInstanceExtensions) {
-            PRINT_TO_LOGGER("  %s\n", extension.c_str());
+            PRINT_TO_LOGGER("  %s", extension.c_str());
         }
 
         // MoltenVK on macOS/iOS supported
@@ -176,7 +176,7 @@ namespace vkengine {
 
         _VK_CHECK_RESULT_(vkCreateInstance(&createInfo, nullptr, &VKinstance));
 
-        PRINT_TO_LOGGER("Vulkan instance created successfully\n");
+        PRINT_TO_LOGGER("Vulkan instance created successfully");
         return true;
     }
 
@@ -399,7 +399,7 @@ namespace vkengine {
             typeBits >>= 1;
         }
 
-        EXIT_TO_LOGGER("Could not find a suitable memory type.\n");
+        EXIT_TO_LOGGER("Could not find a suitable memory type.");
         return cUint32_t(-1);
     }
 

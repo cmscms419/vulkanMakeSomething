@@ -185,7 +185,7 @@ namespace vkengine
                     return it->second;
                 }
 
-                EXIT_TO_LOGGER("Error: Unknown descriptor type string: %s\n", typeStr.c_str());
+                EXIT_TO_LOGGER("Error: Unknown descriptor type string: %s", typeStr.c_str());
                 return VK_DESCRIPTOR_TYPE_MAX_ENUM; // Return a default value in case of error
             }
 

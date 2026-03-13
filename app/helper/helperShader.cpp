@@ -98,11 +98,11 @@ namespace vkengine
 
             void printReflectionInfo(const SpvReflectShaderModule &reflectModule)
             {
-                PRINT_TO_LOGGER("=== SPIR-V Shader Reflection Information ===\n");
+                PRINT_TO_LOGGER("=== SPIR-V Shader Reflection Information ===");
                 PRINT_TO_LOGGER("Entry Point: ");
-                PRINT_TO_LOGGER(reflectModule.entry_point_name ? reflectModule.entry_point_name : "Unknown\n");
-                PRINT_TO_LOGGER("\n");
-                PRINT_TO_LOGGER("Shader Stage: %s\n", getShaderStageString(reflectModule.shader_stage));
+                PRINT_TO_LOGGER(reflectModule.entry_point_name ? reflectModule.entry_point_name : "Unknown");
+                PRINT_TO_LOGGER("");
+                PRINT_TO_LOGGER("Shader Stage: %s", getShaderStageString(reflectModule.shader_stage));
                 PRINT_TO_LOGGER("Source Language: ");
                 switch (reflectModule.source_language)
                 {
@@ -119,31 +119,31 @@ namespace vkengine
                     PRINT_TO_LOGGER("Unknown (%d)", reflectModule.source_language);
                     break;
                 }
-                PRINT_TO_LOGGER("\n");
+                PRINT_TO_LOGGER("");
 
-                PRINT_TO_LOGGER(" v%d\n", reflectModule.source_language_version);
+                PRINT_TO_LOGGER(" v%d", reflectModule.source_language_version);
 
                 if (reflectModule.source_file)
                 {
-                    PRINT_TO_LOGGER("Source File: %s\n", reflectModule.source_file);
+                    PRINT_TO_LOGGER("Source File: %s", reflectModule.source_file);
                 }
 
-                PRINT_TO_LOGGER("\n--- Descriptor Bindings ---\n");
-                PRINT_TO_LOGGER("Total descriptor bindings: %d\n", reflectModule.descriptor_binding_count);
+                PRINT_TO_LOGGER("--- Descriptor Bindings ---");
+                PRINT_TO_LOGGER("Total descriptor bindings: %d", reflectModule.descriptor_binding_count);
 
                 for (uint32_t i = 0; i < reflectModule.descriptor_binding_count; ++i)
                 {
                     const SpvReflectDescriptorBinding *binding = &reflectModule.descriptor_bindings[i];
-                    PRINT_TO_LOGGER("  Binding %d:\n", i);
-                    PRINT_TO_LOGGER("    Name: %s\n", (binding->name ? binding->name : "Unknown"));
-                    PRINT_TO_LOGGER("    Set: %d\n", binding->set);
-                    PRINT_TO_LOGGER("    Binding: %d\n", binding->binding);
-                    PRINT_TO_LOGGER("    Type: %s\n", descriptor::getDescriptorTypeString(binding->descriptor_type));
-                    PRINT_TO_LOGGER("    Count: %d\n", binding->count);
+                    PRINT_TO_LOGGER("  Binding %d:", i);
+                    PRINT_TO_LOGGER("    Name: %s", (binding->name ? binding->name : "Unknown"));
+                    PRINT_TO_LOGGER("    Set: %d", binding->set);
+                    PRINT_TO_LOGGER("    Binding: %d", binding->binding);
+                    PRINT_TO_LOGGER("    Type: %s", descriptor::getDescriptorTypeString(binding->descriptor_type));
+                    PRINT_TO_LOGGER("    Count: %d", binding->count);
 
                     if (binding->image.dim != SpvDimMax)
                     {
-                        PRINT_TO_LOGGER("    Image Dimension: \n");
+                        PRINT_TO_LOGGER("    Image Dimension: ");
                         switch (binding->image.dim)
                         {
                         case SpvDim1D:
@@ -169,48 +169,48 @@ namespace vkengine
                     }
                 }
 
-                PRINT_TO_LOGGER("\n--- Descriptor Sets ---\n");
-                PRINT_TO_LOGGER("Total descriptor sets: %d\n", reflectModule.descriptor_set_count);
+                PRINT_TO_LOGGER("--- Descriptor Sets ---");
+                PRINT_TO_LOGGER("Total descriptor sets: %d", reflectModule.descriptor_set_count);
                 for (uint32_t i = 0; i < reflectModule.descriptor_set_count; ++i)
                 {
                     const SpvReflectDescriptorSet *set = &reflectModule.descriptor_sets[i];
-                    PRINT_TO_LOGGER("  Set %d: %d bindings\n", set->set, set->binding_count);
+                    PRINT_TO_LOGGER("  Set %d: %d bindings", set->set, set->binding_count);
                 }
 
-                PRINT_TO_LOGGER("\n--- Input Variables ---\n");
-                PRINT_TO_LOGGER("Total input variables: %d\n", reflectModule.input_variable_count);
+                PRINT_TO_LOGGER("--- Input Variables ---");
+                PRINT_TO_LOGGER("Total input variables: %d", reflectModule.input_variable_count);
                 for (uint32_t i = 0; i < reflectModule.input_variable_count; ++i)
                 {
                     const SpvReflectInterfaceVariable *var = reflectModule.input_variables[i];
-                    PRINT_TO_LOGGER("  Input %d: %s\n", i, (var->name ? var->name : "Unknown\n"));
-                    PRINT_TO_LOGGER("    Location: %d\n", var->location);
+                    PRINT_TO_LOGGER("  Input %d: %s", i, (var->name ? var->name : "Unknown"));
+                    PRINT_TO_LOGGER("    Location: %d", var->location);
                 }
 
-                PRINT_TO_LOGGER("\n--- Output Variables ---\n");
-                PRINT_TO_LOGGER("Total output variables: %d\n", reflectModule.output_variable_count);
+                PRINT_TO_LOGGER("--- Output Variables ---");
+                PRINT_TO_LOGGER("Total output variables: %d", reflectModule.output_variable_count);
                 for (uint32_t i = 0; i < reflectModule.output_variable_count; ++i)
                 {
                     const SpvReflectInterfaceVariable *var = reflectModule.output_variables[i];
-                    PRINT_TO_LOGGER("  Output %d: %s\n", i, (var->name ? var->name : "Unknown\n"));
-                    PRINT_TO_LOGGER("    Location: %d\n", var->location);
+                    PRINT_TO_LOGGER("  Output %d: %s", i, (var->name ? var->name : "Unknown"));
+                    PRINT_TO_LOGGER("    Location: %d", var->location);
                 }
 
-                PRINT_TO_LOGGER("\n--- Push Constants ---\n");
-                PRINT_TO_LOGGER("Total push constant blocks: %d\n", reflectModule.push_constant_block_count);
+                PRINT_TO_LOGGER("--- Push Constants ---");
+                PRINT_TO_LOGGER("Total push constant blocks: %d", reflectModule.push_constant_block_count);
                 for (uint32_t i = 0; i < reflectModule.push_constant_block_count; ++i)
                 {
                     const SpvReflectBlockVariable *block = &reflectModule.push_constant_blocks[i];
-                    PRINT_TO_LOGGER("  Push constant block %d:\n", i);
-                    PRINT_TO_LOGGER("    Name: %s\n", (block->name ? block->name : "Unknown\n"));
-                    PRINT_TO_LOGGER("    Size: %d bytes\n", block->size);
-                    PRINT_TO_LOGGER("    Offset: %d\n", block->offset);
+                    PRINT_TO_LOGGER("  Push constant block %d:", i);
+                    PRINT_TO_LOGGER("    Name: %s", (block->name ? block->name : "Unknown"));
+                    PRINT_TO_LOGGER("    Size: %d bytes", block->size);
+                    PRINT_TO_LOGGER("    Offset: %d", block->offset);
                 }
 
                 // For compute shaders, show workgroup size
                 if (reflectModule.shader_stage & SPV_REFLECT_SHADER_STAGE_COMPUTE_BIT)
                 {
-                    PRINT_TO_LOGGER("\n--- Compute Shader Info ---\n");
-                    PRINT_TO_LOGGER("Local workgroup size: (%d, %d, %d)\n",
+                    PRINT_TO_LOGGER("--- Compute Shader Info ---");
+                    PRINT_TO_LOGGER("Local workgroup size: (%d, %d, %d)",
                                     reflectModule.entry_points[0].local_size.x,
                                     reflectModule.entry_points[0].local_size.y,
                                     reflectModule.entry_points[0].local_size.z);

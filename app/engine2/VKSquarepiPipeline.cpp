@@ -14,7 +14,7 @@ namespace vkengine {
         const cUint32_t sizeofVertexStructure = 1;
         const VkDevice device = ctx.getDevice()->logicaldevice;
 
-        PRINT_TO_LOGGER("Creating Graphics Pipeline: " + this->name + "\n");
+        PRINT_TO_LOGGER("Creating Graphics Pipeline: " + this->name + "");
 
         // Fixed vertex input - no vertex buffers needed for procedural triangle
         // 

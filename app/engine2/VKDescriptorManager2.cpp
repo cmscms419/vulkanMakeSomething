@@ -32,7 +32,7 @@ namespace vkengine {
             }
         }
 
-        EXIT_TO_LOGGER("Error: Descriptor set layout not found in DescriptorManager2.\n");
+        EXIT_TO_LOGGER("Error: Descriptor set layout not found in DescriptorManager2.");
 
         static const std::vector<VkDescriptorSetLayoutBinding> emptyBindings;
         return emptyBindings;
@@ -50,7 +50,7 @@ namespace vkengine {
 
         if (!file.is_open())
         {
-            PRINT_TO_LOGGER("Error: Unable to open descriptor_pools.txt script file.\n");
+            PRINT_TO_LOGGER("Error: Unable to open descriptor_pools.txt script file.");
             return;
         }
 
@@ -85,7 +85,7 @@ namespace vkengine {
         if (numSets > 0 && !poolSizes.empty())
         {
             this->createNewPool(poolSizes, numSets);
-            PRINT_TO_LOGGER("Created initial pool with %u sets and %u descriptor types\n", numSets, static_cast<unsigned int>(poolSizes.size()));
+            PRINT_TO_LOGGER("Created initial pool with %u sets and %u descriptor types", numSets, static_cast<unsigned int>(poolSizes.size()));
         }
     }
 
@@ -162,7 +162,7 @@ namespace vkengine {
 
             // 3.1.3. 남아있는 capacity로부터 할당이 가능한지 다시 확인한다.
             if (!this->canAllocateFromRemaining(requiredTypeCounts, 1)) {
-                EXIT_TO_LOGGER("Error: Unable to allocate descriptor set even after creating a new pool.\n");
+                EXIT_TO_LOGGER("Error: Unable to allocate descriptor set even after creating a new pool.");
             }
         }
 
@@ -175,7 +175,7 @@ namespace vkengine {
 
         if (res == VK_ERROR_OUT_OF_POOL_MEMORY)
         {
-            EXIT_TO_LOGGER("Error: Out of pool memory when allocating descriptor set.\n");
+            EXIT_TO_LOGGER("Error: Out of pool memory when allocating descriptor set.");
         }
 
         // 5. allocated capacity를 업데이트 한다.
@@ -201,23 +201,22 @@ namespace vkengine {
             this->layoutsAndInfos.push_back({ layout, layoutInfo });
         }
 
-        PRINT_TO_LOGGER("Created %zu descriptor set layouts.\n", layoutInfos.size());
-
-        PRINT_TO_LOGGER("ShaderManager: Created %zu unique layout(s)", layoutInfos.size());
+        PRINT_TO_LOGGER("Created %zu descriptor set layouts.", layoutInfos.size());
+        PRINT_TO_LOGGER("ShaderManager: Created %zu ", layoutInfos.size());
         for (size_t i = 0; i < layoutInfos.size(); ++i) {
             const auto& info = layoutInfos[i];
             const auto& layout = std::get<0>(this->layoutsAndInfos[i]);
 
-            PRINT_TO_LOGGER("  Layout %zu (0x%zx): %zu binding(s), used by:\n", i,
+            PRINT_TO_LOGGER("  Layout %zu (0x%zx): %zu binding(s), used by:", i,
                 reinterpret_cast<uintptr_t>(layout), info.bindings.size());
             for (const auto& [pipelineName, setNumber] : info.pipelineNamesAndSetNumbers) {
-                PRINT_TO_LOGGER("    - Pipeline '%s', Set %d\n", pipelineName.c_str(), setNumber);
+                PRINT_TO_LOGGER("    - Pipeline '%s', Set %d", pipelineName.c_str(), setNumber);
             }
 
             // Print binding details
             for (size_t j = 0; j < info.bindings.size(); ++j) {
                 const auto& binding = info.bindings[j];
-                PRINT_TO_LOGGER("    Binding %d: type= %s, count= %d, stages= %s\n", binding.binding,
+                PRINT_TO_LOGGER("    Binding %d: type= %s, count= %d, stages= %s", binding.binding,
                     helper::descriptor::descriptorTypeToString(binding.descriptorType).c_str(), binding.descriptorCount,
                     helper::shader::shaderStageFlagsToString(binding.stageFlags).c_str());
             }
@@ -226,23 +225,23 @@ namespace vkengine {
 
     void DescriptorManager2::printAllocatedStatistics() const
     {
-        PRINT_TO_LOGGER("Descriptor Manager Allocation Statistics:\n");
+        PRINT_TO_LOGGER("Descriptor Manager Allocation Statistics:");
 
-        PRINT_TO_LOGGER("Allocated Descriptor Sets: %u\n", this->allocatedSets);
-        PRINT_TO_LOGGER("Allocated Descriptor Types:\n");
+        PRINT_TO_LOGGER("Allocated Descriptor Sets: %u", this->allocatedSets);
+        PRINT_TO_LOGGER("Allocated Descriptor Types:");
 
         if (this->allocatedTypeCounts.empty())
         {
-            PRINT_TO_LOGGER("- None\n");
+            PRINT_TO_LOGGER("- None");
             return;
         }
 
         for (const auto& [type, count] : this->allocatedTypeCounts)
         {
-            PRINT_TO_LOGGER("- %s: %u\n", helper::descriptor::descriptorTypeToString(type).c_str(), count);
+            PRINT_TO_LOGGER("- %s: %u", helper::descriptor::descriptorTypeToString(type).c_str(), count);
         }
 
-        PRINT_TO_LOGGER("\n");
+        PRINT_TO_LOGGER("");
     }
 
     std::vector<VkDescriptorSetLayout> DescriptorManager2::getLayoutsForPipeline(const cString& pipelineName)
@@ -288,19 +287,19 @@ namespace vkengine {
 
             if (file.is_open())
             {
-                file << "NumSets " << this->remainingSets << "\n";
+                file << "NumSets " << this->remainingSets << "";
 
                 // 남아있는 descriptor type과 개수를 스크립트 파일에 기록한다.
                 for (const auto& [type, count] : this->remainingTypeCounts)
                 {
-                    file << helper::descriptor::descriptorTypeToString(type) << " " << count << "\n";
+                    file << helper::descriptor::descriptorTypeToString(type) << " " << count << "";
                 }
                 file.close();
-                PRINT_TO_LOGGER("Saved remaining descriptor pool capacity to %s\n", this->kScriptFilename.c_str());
+                PRINT_TO_LOGGER("Saved remaining descriptor pool capacity to %s", this->kScriptFilename.c_str());
             }
             else
             {
-                PRINT_TO_LOGGER("Error: Unable to open descriptor_pools.txt script file for writing.\n");
+                PRINT_TO_LOGGER("Error: Unable to open descriptor_pools.txt script file for writing.");
             }
         }
 

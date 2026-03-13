@@ -7,7 +7,7 @@ namespace vkengine
 {
     void VKPipeLineHandle::createComputePipeline()
     {
-        PRINT_TO_LOGGER("Creating compute pipeline: %s\n", this->name.c_str());
+        PRINT_TO_LOGGER("Creating compute pipeline: %s", this->name.c_str());
 
         const VkDevice device = this->ctx.getDevice()->logicaldevice;
         const VkPipelineCache pipelineCache = this->ctx.getPipelineCache();
@@ -40,6 +40,6 @@ namespace vkengine
 
         _VK_CHECK_RESULT_(vkCreateComputePipelines(device, pipelineCache, 1, &pipelineCI, nullptr, &this->pipeline));
 
-        EXIT_TO_LOGGER("Successfully created compute pipeline\n");
+        EXIT_TO_LOGGER("Successfully created compute pipeline");
     }
 }

@@ -26,7 +26,7 @@ namespace vkengine
         
         if (layout == VK_NULL_HANDLE)
         {
-            EXIT_TO_LOGGER("Error: Failed to create descriptor set layout for material.\n");
+            EXIT_TO_LOGGER("Error: Failed to create descriptor set layout for material.");
         }
         
         // 완전한 layoutBindings (stageFlags 채워진 버전) 재취득

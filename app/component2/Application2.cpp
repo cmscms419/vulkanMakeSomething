@@ -43,7 +43,7 @@ namespace vkengine {
     Application2::Application2(const cString& configFile, cString root_path) :
         Application2(ApplicationConfig::createDefault(), root_path)
     {
-        PRINT_TO_LOGGER("Config file loading not implemented yet, using default configuration\n");
+        PRINT_TO_LOGGER("Config file loading not implemented yet, using default configuration");
     }
 
     Application2::~Application2()
@@ -222,7 +222,7 @@ namespace vkengine {
             return; // Ignore resize in this example
         }
         else if ((result != VK_SUCCESS) && (result != VK_SUBOPTIMAL_KHR)) {
-            EXIT_TO_LOGGER("Could not acquire the next swap chain image!\n");
+            EXIT_TO_LOGGER("Could not acquire the next swap chain image!");
         }
 
         // Use currentFrame index (CPU-side command buffer)
@@ -571,14 +571,14 @@ namespace vkengine {
         model.Name() = modelConfig.displayName;
         model.ModelMatrix() = modelConfig.transform;
 
-        PRINT_TO_LOGGER("Loaded model '%s'\n", modelConfig.displayName.c_str());
-        PRINT_TO_LOGGER("   - Meshes: %zu\n", model.Meshes().size());
-        PRINT_TO_LOGGER("   - Materials: %zu\n", model.Materials().size());
-        PRINT_TO_LOGGER("   - Textures: %zu\n", model.Textures().size());
+        PRINT_TO_LOGGER("Loaded model '%s'", modelConfig.displayName.c_str());
+        PRINT_TO_LOGGER("   - Meshes: %zu", model.Meshes().size());
+        PRINT_TO_LOGGER("   - Materials: %zu", model.Materials().size());
+        PRINT_TO_LOGGER("   - Textures: %zu", model.Textures().size());
 
         // Setup animation if model supports it
         if (model.hasAnimations() && modelConfig.autoPlayAnimation) {
-            PRINT_TO_LOGGER("   Animations: %d found\n", model.getAnimationCount());
+            PRINT_TO_LOGGER("   Animations: %d found", model.getAnimationCount());
 
             if (model.getAnimationCount() > 0) {
                 uint32_t animIndex = std::min(modelConfig.initialAnimationIndex, 
@@ -588,16 +588,16 @@ namespace vkengine {
                 model.setAnimationSpeed(modelConfig.animationSpeed);
                 model.playAnimation();
 
-                PRINT_TO_LOGGER("   ▶ Started animation: '%s' (%.2f sec)\n", 
+                PRINT_TO_LOGGER("   ▶ Started animation: '%s' (%.2f sec)", 
                                model.getAnimation()->getCurrentAnimationName(),
                                model.getAnimation()->getDuration());
             }
         }
         else if (!model.hasAnimations()) {
-            PRINT_TO_LOGGER("   Animations: None\n");
+            PRINT_TO_LOGGER("   Animations: None");
         }
         
-        PRINT_TO_LOGGER("\n"); // 빈 줄
+        PRINT_TO_LOGGER(""); // 빈 줄
         }
     }
     

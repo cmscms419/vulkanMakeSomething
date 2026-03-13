@@ -163,7 +163,7 @@ namespace vkengine
                 *allocatedSize = memRequirements.size;  // 실제 할당된 크기
                 *alignment = memRequirements.alignment; // 정렬 방식
 
-                PRINT_TO_LOGGER("allocatedSize : %d, alignment : %d \n", *allocatedSize, *alignment);
+                PRINT_TO_LOGGER("allocatedSize : %d, alignment : %d ", *allocatedSize, *alignment);
 
                 // 메모리 할당 정보를 담은 구조체를 초기화한다.
                 VkMemoryAllocateInfo allocInfo{};
@@ -868,7 +868,7 @@ namespace vkengine
                     sourceStage = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT;
                     destinationStage = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT;
 
-                    PRINT_TO_LOGGER("All pass pipeline stage!\n");
+                    PRINT_TO_LOGGER("All pass pipeline stage!");
                 }
 
                 // 파이프라인 배리어를 추가하여 레이아웃 전환 명령을 기록합니다.
@@ -952,7 +952,7 @@ namespace vkengine
                     sourceStage = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT;
                     destinationStage = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT;
 
-                    PRINT_TO_LOGGER("All pass pipeline stage!\n");
+                    PRINT_TO_LOGGER("All pass pipeline stage!");
                 }
 
                 // 파이프라인 배리어를 추가하여 레이아웃 전환 명령을 기록합니다.

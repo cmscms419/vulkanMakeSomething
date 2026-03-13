@@ -58,7 +58,7 @@ namespace vkengine
         // 버텍스 쉐이더만 버텍스 입력 속성을 가질 수 있습니다.
         if (this->stage != VK_SHADER_STAGE_VERTEX_BIT)
         {
-            EXIT_TO_LOGGER("Shader stage is not vertex shader. No vertex input attributes.\n");
+            EXIT_TO_LOGGER("Shader stage is not vertex shader. No vertex input attributes.");
             return attributes;
         }
 
@@ -66,7 +66,7 @@ namespace vkengine
         cUint32_t varCount = this->reflectModule.input_variable_count;
         if (varCount == 0 || this->reflectModule.input_variables == nullptr)
         {
-            PRINT_TO_LOGGER("[Warning] No input variables found in shader: %s\n", name);
+            PRINT_TO_LOGGER("[Warning] No input variables found in shader: %s", name);
             return attributes;
         }
 
@@ -95,7 +95,7 @@ namespace vkengine
 
             if (var->location == -1)
             {
-                PRINT_TO_LOGGER("[Warning] Input variable without location in shader: %s\n", name);
+                PRINT_TO_LOGGER("[Warning] Input variable without location in shader: %s", name);
                 continue;
             }
 
@@ -110,9 +110,9 @@ namespace vkengine
             attribute.format = helper::shader::getVkFormatFromSpvReflectFormat(var->format);
             attribute.offset = offset; // 오프셋은 나중에 버텍스 바인딩에서 설정
 
-            PRINT_TO_LOGGER("Attribute - Location: %d, Binding: %d, Format: %d, Offset: %d, Name: %s\n",
+            PRINT_TO_LOGGER("Attribute - Location: %d, Binding: %d, Format: %d, Offset: %d, Name: %s",
                             attribute.location, attribute.binding, attribute.format, attribute.offset,
-                            var->name ? var->name : "Unknown\n");
+                            var->name ? var->name : "Unknown");
 
             attributes.push_back(attribute);
 
@@ -129,7 +129,7 @@ namespace vkengine
         // 버텍스 쉐이더만 버텍스 입력 속성을 가질 수 있습니다.
         if (this->stage != VK_SHADER_STAGE_VERTEX_BIT)
         {
-            EXIT_TO_LOGGER("Shader stage is not vertex shader. No vertex input attributes.\n");
+            EXIT_TO_LOGGER("Shader stage is not vertex shader. No vertex input attributes.");
             return vertexInputInfos;
         }
 
@@ -137,7 +137,7 @@ namespace vkengine
         cUint32_t varCount = this->reflectModule.input_variable_count;
         if (varCount == 0 || this->reflectModule.input_variables == nullptr)
         {
-            PRINT_TO_LOGGER("[Warning] No input variables found in shader: %s\n", name);
+            PRINT_TO_LOGGER("[Warning] No input variables found in shader: %s", name);
             return vertexInputInfos;
         }
 
@@ -166,7 +166,7 @@ namespace vkengine
 
             if (var->location == -1)
             {
-                PRINT_TO_LOGGER("[Warning] Input variable without location in shader: %s\n", name);
+                PRINT_TO_LOGGER("[Warning] Input variable without location in shader: %s", name);
                 continue;
             }
 
@@ -181,9 +181,9 @@ namespace vkengine
             attribute.format = helper::shader::getVkFormatFromSpvReflectFormat(var->format);
             attribute.offset = offset; // 오프셋은 나중에 버텍스 바인딩에서 설정
 
-            PRINT_TO_LOGGER("Attribute - Location: %d, Binding: %d, Format: %d, Offset: %d, Name: %s\n",
+            PRINT_TO_LOGGER("Attribute - Location: %d, Binding: %d, Format: %d, Offset: %d, Name: %s",
                             attribute.location, attribute.binding, attribute.format, attribute.offset,
-                            var->name ? var->name : "Unknown\n");
+                            var->name ? var->name : "Unknown");
 
             vertexInputInfos.push_back(VertexInputinfo{var->name, attribute});
 

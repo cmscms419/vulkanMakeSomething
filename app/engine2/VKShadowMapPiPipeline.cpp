@@ -12,7 +12,7 @@ namespace vkengine {
 
         const VkDevice device = ctx.getDevice()->logicaldevice;
 
-        PRINT_TO_LOGGER("Creating a graphics pipeline: %s \n", name.c_str());
+        PRINT_TO_LOGGER("Creating a graphics pipeline: %s ", name.c_str());
 
         // 2. Create graphics pipeline
         std::array<VkVertexInputAttributeDescription, 7> vertexInputAttributes{ Vertex2::getAttributeDescriptionsAnimated() };

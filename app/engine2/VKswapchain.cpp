@@ -161,20 +161,20 @@ namespace vkengine
             barrierHelpers[i].Currentstage() = VK_PIPELINE_STAGE_2_NONE;
         }
 
-        PRINT_TO_LOGGER("create swap chain\n");
-        PRINT_TO_LOGGER("SwapChain imageCount: %d\n", imageCount);
-        PRINT_TO_LOGGER("SwapChain imageFormat: %d\n", this->ImageFormat);
-        PRINT_TO_LOGGER("SwapChain imageColorSpace: %d\n", this->colorSpace);
-        PRINT_TO_LOGGER("SwapChain imageExtent.width: %d\n", this->windowSize.width);
-        PRINT_TO_LOGGER("SwapChain imageExtent.height: %d\n", this->windowSize.height);
-        PRINT_TO_LOGGER("SwapChain imageArrayLayers: %d\n", 1);
-        PRINT_TO_LOGGER("SwapChain imageUsage: %d\n", createInfo.imageUsage);
-        PRINT_TO_LOGGER("SwapChain imageSharingMode: %d\n", createInfo.imageSharingMode);
-        PRINT_TO_LOGGER("SwapChain preTransform: %d\n", this->capabilities.currentTransform);
-        PRINT_TO_LOGGER("SwapChain compositeAlpha: %d\n", createInfo.compositeAlpha);
-        PRINT_TO_LOGGER("SwapChain presentMode: %d\n", this->selectPresentMode);
-        PRINT_TO_LOGGER("SwapChain clipped: %d\n", VK_TRUE);
-        PRINT_TO_LOGGER("\n");
+        PRINT_TO_LOGGER("create swap chain");
+        PRINT_TO_LOGGER("SwapChain imageCount: %d", imageCount);
+        PRINT_TO_LOGGER("SwapChain imageFormat: %d", this->ImageFormat);
+        PRINT_TO_LOGGER("SwapChain imageColorSpace: %d", this->colorSpace);
+        PRINT_TO_LOGGER("SwapChain imageExtent.width: %d", this->windowSize.width);
+        PRINT_TO_LOGGER("SwapChain imageExtent.height: %d", this->windowSize.height);
+        PRINT_TO_LOGGER("SwapChain imageArrayLayers: %d", 1);
+        PRINT_TO_LOGGER("SwapChain imageUsage: %d", createInfo.imageUsage);
+        PRINT_TO_LOGGER("SwapChain imageSharingMode: %d", createInfo.imageSharingMode);
+        PRINT_TO_LOGGER("SwapChain preTransform: %d", this->capabilities.currentTransform);
+        PRINT_TO_LOGGER("SwapChain compositeAlpha: %d", createInfo.compositeAlpha);
+        PRINT_TO_LOGGER("SwapChain presentMode: %d", this->selectPresentMode);
+        PRINT_TO_LOGGER("SwapChain clipped: %d", VK_TRUE);
+        PRINT_TO_LOGGER("");
     }
 
     void VKSwapChain::createImageViews()

@@ -271,7 +271,7 @@ int main(int argc, char* argv[]) {
         if (acquireResult == VK_ERROR_OUT_OF_DATE_KHR) {
             //this->recreateSwapChain(); // 스왑 체인을 다시 생성합니다.
             // TODO 다시 만들어야 한다. 
-            EXIT_TO_LOGGER("Window resize not implemented\n");
+            EXIT_TO_LOGGER("Window resize not implemented");
         }
         else if (acquireResult != VK_SUCCESS && acquireResult != VK_SUBOPTIMAL_KHR)
         {

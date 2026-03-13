@@ -15,10 +15,10 @@ namespace vkengine {
     }
     void VKskyTexture::LoadKTXMap(const cString& prefilteredFilename, const cString& irradianceFilename, const cString& brdfLutFileName)
     {
-        PRINT_TO_LOGGER("Loading IBL textures...\n");
-        PRINT_TO_LOGGER("  Prefiltered: %s\n", prefilteredFilename.c_str());
-        PRINT_TO_LOGGER("  Irradiance: %s\n", irradianceFilename.c_str());
-        PRINT_TO_LOGGER("  BRDF LUT: %s\n", brdfLutFileName.c_str());
+        PRINT_TO_LOGGER("Loading IBL textures...");
+        PRINT_TO_LOGGER("  Prefiltered: %s", prefilteredFilename.c_str());
+        PRINT_TO_LOGGER("  Irradiance: %s", irradianceFilename.c_str());
+        PRINT_TO_LOGGER("  BRDF LUT: %s", brdfLutFileName.c_str());
 
         this->prefiltered.createTextureFromKtx2(prefilteredFilename, true);
         this->prefiltered.setSampler(this->samplerLinearRepeat.getSampler());

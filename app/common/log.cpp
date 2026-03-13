@@ -33,6 +33,7 @@ namespace vkengine
         void Logger::printLog(cString message)
         {
             Logger &logger = getInstance();
+            message += "\n";
 
             _PRINT_TO_CONSOLE_("%s", message.c_str());
 

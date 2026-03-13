@@ -17,13 +17,13 @@ namespace vkengine
             this->setPerspectiveProjection(fov, aspect, nearP, farP);
 
             PRINT_TO_LOGGER("Camera2 Position: %f %f %f", this->pos.x, this->pos.y, this->pos.z);
-            PRINT_TO_LOGGER("\n");
+            PRINT_TO_LOGGER("");
             PRINT_TO_LOGGER("Camera2 Target: %f %f %f", this->target.x, this->target.y, this->target.z);
-            PRINT_TO_LOGGER("\n");
+            PRINT_TO_LOGGER("");
             PRINT_TO_LOGGER("Camera2 Direction: %f %f %f", this->dir.x, this->dir.y, this->dir.z);
-            PRINT_TO_LOGGER("\n");
+            PRINT_TO_LOGGER("");
             PRINT_TO_LOGGER("Camera2 Right: %f %f %f", this->right.x, this->right.y, this->right.z);
-            PRINT_TO_LOGGER("\n");
+            PRINT_TO_LOGGER("");
         }
 
         Camera2::Camera2(cVec3 pos, cVec3 up, cVec3 dir, cVec3 right)
@@ -42,11 +42,11 @@ namespace vkengine
             this->setPerspectiveProjection(fov, aspect, nearP, farP);
 
             PRINT_TO_LOGGER("Camera2 Position: %f %f %f", this->pos.x, this->pos.y, this->pos.z);
-            PRINT_TO_LOGGER("\n");
+            PRINT_TO_LOGGER("");
             PRINT_TO_LOGGER("Camera2 Target: %f %f %f", this->target.x, this->target.y, this->target.z);
-            PRINT_TO_LOGGER("\n");
+            PRINT_TO_LOGGER("");
             PRINT_TO_LOGGER("Camera2 Direction: %f %f %f", this->dir.x, this->dir.y, this->dir.z);
-            PRINT_TO_LOGGER("\n");
+            PRINT_TO_LOGGER("");
             PRINT_TO_LOGGER("Camera2 Right: %f %f %f", this->right.x, this->right.y, this->right.z);
         }
 

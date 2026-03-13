@@ -92,7 +92,7 @@ namespace vkengine {
             glfwWindow::glfwWindow()
             {
                 if (!glfwInit()) {
-                    EXIT_TO_LOGGER("Failed to initialize GLFW\n");
+                    EXIT_TO_LOGGER("Failed to initialize GLFW");
                     return;
                 }
 
@@ -105,7 +105,7 @@ namespace vkengine {
             {
             
                 if (!glfwInit()) {
-                    EXIT_TO_LOGGER("Failed to initialize GLFW\n");
+                    EXIT_TO_LOGGER("Failed to initialize GLFW");
                     return;
                 }
 
@@ -143,7 +143,7 @@ namespace vkengine {
                 );
 
                 if (!m_window) {
-                    EXIT_TO_LOGGER("Failed to create GLFW window\n");
+                    EXIT_TO_LOGGER("Failed to create GLFW window");
                 }
                 else {
                     // 사용자 포인터 설정 (콜백에서 this 포인터 접근용)
@@ -221,10 +221,10 @@ namespace vkengine {
 
                 // instanceExtensions.push_back(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME);
 
-                PRINT_TO_LOGGER("GLFW Required Instance Extensions:\n");
-                PRINT_TO_LOGGER("GlfwRequiredInstanceExtensions : \n", glfwExtensionCount);
+                PRINT_TO_LOGGER("GLFW Required Instance Extensions:");
+                PRINT_TO_LOGGER("GlfwRequiredInstanceExtensions : ", glfwExtensionCount);
                 for (const char* ext : instanceExtensions) {
-                    PRINT_TO_LOGGER("\t%s\n", ext);
+                    PRINT_TO_LOGGER("\t%s", ext);
                 }
 
                 return instanceExtensions;

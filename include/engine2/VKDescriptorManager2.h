@@ -14,8 +14,7 @@ namespace vkengine {
 
     struct DescriptorManager2 {
 
-        const std::vector<VkDescriptorSetLayoutBinding>&
-            layoutToBindings(const VkDescriptorSetLayout& layout);
+        const std::vector<VkDescriptorSetLayoutBinding>& layoutToBindings(const VkDescriptorSetLayout& layout);
 
         DescriptorManager2(VkDevice& device);
         ~DescriptorManager2();

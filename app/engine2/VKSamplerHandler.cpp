@@ -8,14 +8,14 @@ namespace vkengine
 
     VKSamplerHandler::VKSamplerHandler(VKcontext &context) : ctx(context)
     {
-        Log::PRINT_TO_LOGGER("VK Sampler created.\n");
+        Log::PRINT_TO_LOGGER("VK Sampler created.");
         sampler = VK_NULL_HANDLE;
     }
 
     VKSamplerHandler::~VKSamplerHandler()
     {
         this->cleanup();
-        Log::PRINT_TO_LOGGER("VK Sampler destroyed.\n");
+        Log::PRINT_TO_LOGGER("VK Sampler destroyed.");
     }
     
     VkSampler VKSamplerHandler::getSampler() const { return sampler; }
@@ -51,7 +51,7 @@ namespace vkengine
         {
             samplerInfo.anisotropyEnable = VK_FALSE;
             samplerInfo.maxAnisotropy = 1.0f;
-            PRINT_TO_LOGGER("Warning: Anisotropic filtering is not supported on this device.\n");
+            PRINT_TO_LOGGER("Warning: Anisotropic filtering is not supported on this device.");
         }
 
         samplerInfo.compareEnable = VK_FALSE;

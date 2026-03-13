@@ -44,7 +44,7 @@ namespace vkengine {
         vkGetPhysicalDeviceQueueFamilyProperties(this->physicalDevice, &queueFamilyCount, nullptr);
         if (queueFamilyCount <= 0)
         {
-            EXIT_TO_LOGGER("Failed to get queue family properties\n");
+            EXIT_TO_LOGGER("Failed to get queue family properties");
         }
         this->queueFamilyProperties.resize(queueFamilyCount);
         vkGetPhysicalDeviceQueueFamilyProperties(this->physicalDevice, &queueFamilyCount,
@@ -68,9 +68,9 @@ namespace vkengine {
             // Vulkan 1.0을 지원하는 디바이스 처리
         }
 
-        PRINT_TO_LOGGER("Select Device\n");
-        PRINT_TO_LOGGER("Select DeviceProperties.deviceType: %d\n", properties.deviceType);
-        PRINT_TO_LOGGER("Select Device Name: %s\n", properties.deviceName);
+        PRINT_TO_LOGGER("Select Device");
+        PRINT_TO_LOGGER("Select DeviceProperties.deviceType: %d", properties.deviceType);
+        PRINT_TO_LOGGER("Select Device Name: %s", properties.deviceName);
 
         helper::device::getDeviceExtensionSupport(physicalDevice, &this->supportedExtensions);
     }
@@ -82,22 +82,22 @@ namespace vkengine {
 
     void VKdeviceHandler2::printPysicaldeviceProperties() const
     {
-        PRINT_TO_LOGGER("Selected %s (%s)\n", properties.deviceName,
+        PRINT_TO_LOGGER("Selected %s (%s)", properties.deviceName,
                         helper::device::getPhysicalDeviceTypeString(properties.deviceType).c_str());
-        PRINT_TO_LOGGER("  nonCoherentAtomSize: %llu\n", properties.limits.nonCoherentAtomSize);
-        PRINT_TO_LOGGER("  Max UBO size: %u KBytes\n", properties.limits.maxUniformBufferRange / 1024);
-        PRINT_TO_LOGGER("  Max SSBO size: %u KBytes\n", properties.limits.maxStorageBufferRange / 1024);
-        PRINT_TO_LOGGER("  UBO offset alignment: %llu\n",
+        PRINT_TO_LOGGER("  nonCoherentAtomSize: %llu", properties.limits.nonCoherentAtomSize);
+        PRINT_TO_LOGGER("  Max UBO size: %u KBytes", properties.limits.maxUniformBufferRange / 1024);
+        PRINT_TO_LOGGER("  Max SSBO size: %u KBytes", properties.limits.maxStorageBufferRange / 1024);
+        PRINT_TO_LOGGER("  UBO offset alignment: %llu",
                         properties.limits.minUniformBufferOffsetAlignment);
-        PRINT_TO_LOGGER("  SSBO offset alignment: %llu\n",
+        PRINT_TO_LOGGER("  SSBO offset alignment: %llu",
                         properties.limits.minStorageBufferOffsetAlignment);
 
-        PRINT_TO_LOGGER("\nDevice Features:\n");
-        PRINT_TO_LOGGER("  geometryShader: %s\n", features.geometryShader ? "YES" : "NO");
-        PRINT_TO_LOGGER("  tessellationShader: %s\n", features.tessellationShader ? "YES" : "NO");
+        PRINT_TO_LOGGER("Device Features:");
+        PRINT_TO_LOGGER("  geometryShader: %s", features.geometryShader ? "YES" : "NO");
+        PRINT_TO_LOGGER("  tessellationShader: %s", features.tessellationShader ? "YES" : "NO");
 
-        PRINT_TO_LOGGER("\nDevice Memory Properties:\n");
-        PRINT_TO_LOGGER("  Memory Type Count: %d\n", memoryProperties.memoryTypeCount);
+        PRINT_TO_LOGGER("Device Memory Properties:");
+        PRINT_TO_LOGGER("  Memory Type Count: %d", memoryProperties.memoryTypeCount);
 
         for (cUint32_t i = 0; i < memoryProperties.memoryTypeCount; ++i) {
             const auto& memType = memoryProperties.memoryTypes[i];
@@ -117,10 +117,10 @@ namespace vkengine {
             if (propFlags.empty())
                 propFlags = "NONE ";
 
-            PRINT_TO_LOGGER("    Memory Type %d: heap %d, flags: %s\n", i, memType.heapIndex, propFlags.c_str());
+            PRINT_TO_LOGGER("    Memory Type %d: heap %d, flags: %s", i, memType.heapIndex, propFlags.c_str());
         }
 
-        PRINT_TO_LOGGER("  Memory Heap Count: %d\n", memoryProperties.memoryHeapCount);
+        PRINT_TO_LOGGER("  Memory Heap Count: %d", memoryProperties.memoryHeapCount);
         for (cUint32_t i = 0; i < memoryProperties.memoryHeapCount; ++i) {
             const auto& memHeap = memoryProperties.memoryHeaps[i];
             cString propFlags;
@@ -130,7 +130,7 @@ namespace vkengine {
                 propFlags += "MULTI_INSTANCE ";
             if (propFlags.empty())
                 propFlags = "NONE ";
-            PRINT_TO_LOGGER("    Memory Heap %d: size %llu MBytes, flags: %s\n", i,
+            PRINT_TO_LOGGER("    Memory Heap %d: size %llu MBytes, flags: %s", i,
                             memHeap.size / 1024 / 1024, propFlags.c_str());
         }
 
@@ -164,9 +164,9 @@ namespace vkengine {
             !descriptorIndexingFeatures.descriptorBindingVariableDescriptorCount)
         {
             EXIT_TO_LOGGER(
-                "GPU does not support required descriptor indexing features for bindless textures:\n"
-                "  - descriptorBindingPartiallyBound: %s\n"
-                "  - runtimeDescriptorArray: %s\n"
+                "GPU does not support required descriptor indexing features for bindless textures:"
+                "  - descriptorBindingPartiallyBound: %s"
+                "  - runtimeDescriptorArray: %s"
                 "  - descriptorBindingVariableDescriptorCount: %s",
                 descriptorIndexingFeatures.descriptorBindingPartiallyBound ? "YES" : "NO",
                 descriptorIndexingFeatures.runtimeDescriptorArray ? "YES" : "NO",
