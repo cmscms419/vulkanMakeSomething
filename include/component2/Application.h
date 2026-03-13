@@ -8,17 +8,17 @@
 #include "VKgui.h"
 #include "VKModel.h"
 #include "VKCommandBufferHander.h"
-#include "VKrenderer2.h"
+#include "VKrenderer.h"
 
 namespace vkengine {
 
-    class Application3 : public VulkanEngineWin2
+    class Application : public VulkanEngineWin2
     {
     public:
-        Application3(cString root_path);                                 // Default configuration
-        Application3(const ApplicationConfig& config, cString root_path);  // Custom configuration
-        Application3(const cString& configFile, cString root_path);        // Load from file (future feature)
-        ~Application3();
+        Application(cString root_path);                                 // Default configuration
+        Application(const ApplicationConfig& config, cString root_path);  // Custom configuration
+        Application(const cString& configFile, cString root_path);        // Load from file (future feature)
+        ~Application();
 
         void run();
         void update();
@@ -37,7 +37,7 @@ namespace vkengine {
         std::vector<VKModel> models;
 
         gui::VKimguiRenderer guiRenderer;
-        VKRenderer2 Renderer;
+        VKRenderer Renderer;
 
         cUint32_t frameCounter = 0;
         cUint32_t currentFrame = 0;     // For CPU resources (command buffers, fences)

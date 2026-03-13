@@ -1,4 +1,5 @@
 #include "VKrenderer.h"
+
 #include "log.h"
 #include "resourseload.h"
 
@@ -7,45 +8,96 @@ using namespace vkengine::Log;
 namespace vkengine
 {
 
-    VKforwardRenderer::VKforwardRenderer(
+    VKRenderer::VKRenderer(
         VKcontext &ctx,
         VKShaderManager &shadermanager,
         const cUint32_t &MaxFramesFlight,
         const cString &assetsPath,
         const cString &shaderPath)
-        : ctx(ctx), shaderManager(shadermanager), MaxFramesFlight(MaxFramesFlight),
-          assetsPath(assetsPath), shaderPath(shaderPath),
+        : ctx(ctx), renderGraph(ctx), shaderManager(shadermanager),
+          MaxFramesFlight(MaxFramesFlight), assetsPath(assetsPath), shaderPath(shaderPath),
           dummyTexture(ctx), msaaColorBuffer(ctx), depthStencil(ctx), msaaDepthStencil(ctx),
           skyTextures(ctx), shadowMap(ctx), samplerLinearRepeat(ctx), samplerLinearClamp(ctx),
           samplerAnisoRepeat(ctx), samplerAnisoClamp(ctx), forwardToCompute(ctx), computeToPost(ctx),
           samplerShadowMap(ctx)
     {
-        directionalLightAngle1 = 27.0f;
-        directionalLightAngle2 = 3.0f;
-        directionalLightIntensity = 27.66f;
-        shadowBiasConstant = 0.5f;
-        shadowBiasSlope = 1.0f;
-        shadowBiasClamp = 0.0f;
-        ssaoRadius = 0.5f;
-        ssaoBias = 0.025f;
-        ssaoSampleCount = 16;
-        ssaoPower = 2.0f;
+        PRINT_TO_LOGGER("Renderer2 created with MaxFramesFlight: %d assetsPath: %s shaderPath: %s",
+                        MaxFramesFlight,
+                        assetsPath.c_str(),
+                        shaderPath.c_str());
     }
 
-    VKforwardRenderer::~VKforwardRenderer()
+    VKRenderer::~VKRenderer()
     {
         this->cleanup();
     }
 
-    void VKforwardRenderer::cleanup()
+    void VKRenderer::cleanup()
     {
     }
-
-    void VKforwardRenderer::prepareForModels(std::vector<VKModel> &models, VkFormat outColorFormat, VkFormat depthFormat, VkSampleCountFlagBits msaaSamples, uint32_t swapChainWidth, uint32_t swapChainHeight)
+    void VKRenderer::update(object::Camera2 &camera, uint32_t currentFrame, double time)
     {
-        createPipelines(outColorFormat, depthFormat, msaaSamples);
-        createTextures(swapChainWidth, swapChainHeight, msaaSamples);
-        createUniformBuffers();
+        this->sceneDataUniform[currentFrame].updateData();
+        this->optionsUniform[currentFrame].updateData();
+        this->skyOptionsUniform[currentFrame].updateData();
+        this->postOptionsUniform[currentFrame].updateData();
+    }
+    void VKRenderer::rendering(VkCommandBuffer cmd, uint32_t currentFrame, uint32_t imageIndex, std::vector<VKModel> &models, VkViewport viewport, VkRect2D scissor)
+    {
+        this->currentModels = &models;
+        this->currentScissor = scissor;
+        this->currentViewport = viewport;
+
+        this->renderGraph.execute(cmd, currentFrame, imageIndex);
+
+        this->currentModels = nullptr;
+    }
+
+    void VKRenderer::buildRenderGraph(VKSwapChain &swapchain)
+    {
+        this->renderGraph.registerSwapchainResource("swapchain", swapchain);      // swapchain 리소스 등록
+        this->renderGraph.registerResource("shadowDepth", shadowMap);             // 쉐도우 맵 리소스 등록
+        this->renderGraph.registerResource("forwardToCompute", forwardToCompute); // 포워드 패스 출력 등록
+        this->renderGraph.registerResource("computeToPost", computeToPost);       // 컴퓨트 패스 출력 등록
+
+        RenderPassNode shadowPass{
+            "shadow",
+            {},
+            {{"shadowDepth", ResourceAccess::DepthAttachmentWrite}},
+            [this](VkCommandBuffer cmd, cUint32_t frameIndex, cUint32_t imageIndex)
+            {
+                this->makeShadowMap(cmd, frameIndex, imageIndex);
+            }};
+        RenderPassNode forwardPass{
+            "pbrForward",
+            {{"shadowDepth", ResourceAccess::ShaderReadOnly}},
+            {{"forwardToCompute", ResourceAccess::ColorAttachmentWrite}},
+            [this](VkCommandBuffer cmd, cUint32_t frameIndex, cUint32_t imageIndex)
+            {
+                this->makeForwardPBRPass(cmd, frameIndex, imageIndex);
+            }};
+
+        RenderPassNode postProcessPass{
+            "postProcess",
+            {{"forwardToCompute", ResourceAccess::ShaderReadOnly}},
+            {{"swapchain", ResourceAccess::Present}},
+            [this](VkCommandBuffer cmd, cUint32_t frameIndex, cUint32_t imageIndex)
+            {
+                this->makePostProcessPass(cmd, frameIndex, imageIndex);
+            }};
+
+        this->renderGraph.addPass(shadowPass);
+        this->renderGraph.addPass(forwardPass);
+        this->renderGraph.addPass(postProcessPass);
+
+        this->renderGraph.compile();
+    }
+
+    void VKRenderer::prepareForModels(std::vector<VKModel> &models, VkFormat outColorFormat, VkFormat depthFormat, VkSampleCountFlagBits msaaSamples, cUint32_t swapChainWidth, cUint32_t swapChainHeight)
+    {
+        this->createPipelines(outColorFormat, depthFormat, msaaSamples);
+        this->createTextures(swapChainWidth, swapChainHeight, msaaSamples);
+        this->createUniformBuffers();
 
         for (VKModel &model : models)
         {
@@ -53,7 +105,7 @@ namespace vkengine
         }
     }
 
-    void VKforwardRenderer::createPipelines(const VkFormat colorFormat, const VkFormat depthFormat, VkSampleCountFlagBits msaaSamples)
+    void VKRenderer::createPipelines(const VkFormat colorFormat, const VkFormat depthFormat, VkSampleCountFlagBits msaaSamples)
     {
         pipelines.emplace("pbrForward",
                           VKPipeLineHandle(ctx, shaderManager, "pbrForward", VK_FORMAT_R16G16B16A16_SFLOAT,
@@ -66,7 +118,7 @@ namespace vkengine
                                                         VK_FORMAT_D16_UNORM, VK_SAMPLE_COUNT_1_BIT));
     }
 
-    void VKforwardRenderer::createTextures(uint32_t swapchainWidth, uint32_t swapchainHeight, VkSampleCountFlagBits msaaSamples)
+    void VKRenderer::createTextures(cUint32_t swapchainWidth, cUint32_t swapchainHeight, VkSampleCountFlagBits msaaSamples)
     {
         this->samplerLinearRepeat.createLinearRepeat();
         this->samplerLinearClamp.createLinearClamp();
@@ -75,9 +127,7 @@ namespace vkengine
         this->samplerShadowMap.createShadowMapSampler();
 
         cString dummyImagePath = this->assetsPath + "CustomUVChecker_byValle_2K.png";
-
         cUint32_t width, height;
-
         cUChar *pixels = load_png_rgba(dummyImagePath.c_str(), &width, &height, TextureType::Texture_rgb_alpha);
 
         if (!pixels)
@@ -116,10 +166,6 @@ namespace vkengine
         forwardToCompute.setSampler(samplerLinearRepeat.getSampler());
 
         // Create descriptor sets for sky textures (set 1 for sky pipeline)
-        // skyDescriptorSet.create(ctx, { this->skyTextures.Prefiltered().ResourceBinding(),
-        //                                 this->skyTextures.Irradiance().ResourceBinding(),
-        //                                 this->skyTextures.BrdfLUT().ResourceBinding() });
-
         skyDescriptorSet.create(ctx, {std::ref(this->skyTextures.Prefiltered()),
                                       std::ref(this->skyTextures.Irradiance()),
                                       std::ref(this->skyTextures.BrdfLUT())});
@@ -128,7 +174,33 @@ namespace vkengine
         shadowMapSet.create(ctx, {std::ref(this->shadowMap)});
     }
 
-    void VKforwardRenderer::createUniformBuffers()
+    void VKRenderer::resize(uint32_t width, uint32_t height, VkSampleCountFlagBits msaaSamples)
+    {
+        // 크기에 의존하는 이미지 정리
+        this->msaaColorBuffer.cleanup();
+        this->msaaDepthStencil.cleanup();
+        this->depthStencil.cleanup();
+        this->forwardToCompute.cleanup();
+        this->computeToPost.cleanup();
+
+        // 새 크기로 재생성
+        this->msaaColorBuffer.createMsaaColorBuffer(width, height, msaaSamples);
+        this->msaaDepthStencil.create(width, height, msaaSamples);
+        this->depthStencil.create(width, height, VK_SAMPLE_COUNT_1_BIT);
+        this->forwardToCompute.createGeneralStorage(width, height);
+        this->computeToPost.createGeneralStorage(width, height);
+
+        this->forwardToCompute.setSampler(this->samplerLinearRepeat.getSampler());
+
+        // PostDescriptorSets는 forwardToCompute를 참조하므로 재생성
+        for (size_t i = 0; i < this->MaxFramesFlight; i++)
+        {
+            PostDescriptorSets[i].create(
+                this->ctx, {std::ref(forwardToCompute), std::ref(postOptionsUniform[i].Buffer())});
+        }
+    }
+
+    void VKRenderer::createUniformBuffers()
     {
         const VkDevice device = ctx.getDevice()->logicaldevice;
 
@@ -192,206 +264,123 @@ namespace vkengine
         }
     }
 
-    void VKforwardRenderer::update(object::Camera2 &camera, uint32_t currentFrame, double time)
+    void VKRenderer::makeForwardPBRPass(VkCommandBuffer cmd, cUint32_t currentFrame, cUint32_t imageIndex)
     {
-        this->sceneDataUniform[currentFrame].updateData();
-        this->optionsUniform[currentFrame].updateData();
-        this->skyOptionsUniform[currentFrame].updateData();
-        this->postOptionsUniform[currentFrame].updateData();
-    }
+        VkRect2D renderArea = {0, 0, this->currentScissor.extent.width, this->currentScissor.extent.height};
 
-    void VKforwardRenderer::updateBoneData(const std::vector<VKModel> &models, uint32_t currentFrame)
-    {
-        // Reset bone data
-        boneDataUBO.animationData.x = 0.0f;
-        for (int i = 0; i < 256; ++i)
-        {
-            boneDataUBO.boneMatrices[i] = glm::mat4(1.0f);
-        }
+        auto colorAttachment = createColorAttachment(
+            msaaColorBuffer.getImageView(), VK_ATTACHMENT_LOAD_OP_CLEAR, {0.0f, 0.0f, 0.5f, 0.0f},
+            forwardToCompute.getImageView(), VK_RESOLVE_MODE_AVERAGE_BIT);
 
-        // Check if any model has animation data
-        bool hasAnyAnimation = false;
-        for (const auto &model : models)
+        auto depthAttachment =
+            createDepthAttachment(
+                msaaDepthStencil.view, VK_ATTACHMENT_LOAD_OP_CLEAR, 1.0f,
+                depthStencil.view, VK_RESOLVE_MODE_SAMPLE_ZERO_BIT);
+
+        auto renderingInfo = createRenderingInfo(renderArea, &colorAttachment, &depthAttachment);
+
+        vkCmdBeginRendering(cmd, &renderingInfo);
+        vkCmdSetViewport(cmd, 0, 1, &this->currentViewport);
+        vkCmdSetScissor(cmd, 0, 1, &this->currentScissor);
+
+        VkDeviceSize offsets[1]{0};
+
+        // Render models
+        vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
+                          pipelines.at("pbrForward").getPipeline());
+
+        for (size_t j = 0; j < this->currentModels->size(); j++)
         {
-            if (model.hasAnimations() && model.hasBones())
+            if (!this->currentModels->at(j).Visible())
             {
-                hasAnyAnimation = true;
-
-                // Get bone matrices from the first animated model
-                const auto &boneMatrices = model.getBoneMatrices();
-
-                // Copy bone matrices (up to 256 bones)
-                size_t bonesToCopy = std::min(boneMatrices.size(), static_cast<size_t>(256));
-                for (size_t i = 0; i < bonesToCopy; ++i)
-                {
-                    boneDataUBO.boneMatrices[i] = boneMatrices[i];
-                }
-
-                break; // For now, use the first animated model
+                continue;
             }
-        }
 
-        boneDataUBO.animationData.x = float(hasAnyAnimation);
+            vkCmdPushConstants(cmd, pipelines.at("pbrForward").getPipelineLayout(),
+                               VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0,
+                               sizeof(this->currentModels->at(j).ModelResource()), &this->currentModels->at(j).ModelResource());
 
-        // DEBUG: Log hasAnimation state
-        static bool lastHasAnimation = false;
-        if (lastHasAnimation != hasAnyAnimation)
-        {
-            PRINT_TO_LOGGER("hasAnimation changed to: &s", hasAnyAnimation ? "true" : "false");
-            lastHasAnimation = hasAnyAnimation;
-        }
-
-        // Update the GPU buffer
-        boneDataUniform[currentFrame].updateData();
-    }
-
-    void VKforwardRenderer::draw(VkCommandBuffer cmd, uint32_t currentFrame, VkImageView swapchainImageView, std::vector<VKModel> &models, VkViewport viewport, VkRect2D scissor)
-    {
-        VkRect2D renderArea = {0, 0, scissor.extent.width, scissor.extent.height};
-
-        // Forward rendering pass
-        {
-            forwardToCompute.transitionTo(
-                cmd,
-                VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-                VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT,
-                VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT);
-
-            auto colorAttachment = createColorAttachment(
-                msaaColorBuffer.getImageView(), VK_ATTACHMENT_LOAD_OP_CLEAR, {0.0f, 0.0f, 0.5f, 0.0f},
-                forwardToCompute.getImageView(), VK_RESOLVE_MODE_AVERAGE_BIT);
-
-            auto depthAttachment =
-                createDepthAttachment(
-                    msaaDepthStencil.view, VK_ATTACHMENT_LOAD_OP_CLEAR, 1.0f,
-                    depthStencil.view, VK_RESOLVE_MODE_SAMPLE_ZERO_BIT);
-
-            auto renderingInfo = createRenderingInfo(renderArea, &colorAttachment, &depthAttachment);
-
-            vkCmdBeginRendering(cmd, &renderingInfo);
-            vkCmdSetViewport(cmd, 0, 1, &viewport);
-            vkCmdSetScissor(cmd, 0, 1, &scissor);
-
-            VkDeviceSize offsets[1]{0};
-
-            // Render models
-            vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
-                              pipelines.at("pbrForward").getPipeline());
-
-            for (size_t j = 0; j < models.size(); j++)
+            for (size_t i = 0; i < this->currentModels->at(j).Meshes().size(); i++)
             {
-                if (!models[j].Visible())
+
+                auto &mesh = this->currentModels->at(j).Meshes()[i];
+
+                // Skip culled meshes
+                if (mesh.isCulled)
                 {
                     continue;
                 }
 
-                vkCmdPushConstants(cmd, pipelines.at("pbrForward").getPipelineLayout(),
-                                   VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0,
-                                   sizeof(models[j].ModelMatrix()), &models[j].ModelMatrix());
-                vkCmdPushConstants(cmd, pipelines.at("pbrForward").getPipelineLayout(),
-                                   VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
-                                   sizeof(models[j].ModelMatrix()), sizeof(float) * 16,
-                                   models[j].Coeffs());
+                uint32_t matIndex = mesh.materialIndex;
 
-                for (size_t i = 0; i < models[j].Meshes().size(); i++)
-                {
+                const auto descriptorSets =
+                    std::vector{
+                        this->SceneOptionsBoneDataSets[currentFrame].get(),
+                        this->currentModels->at(j).MaterialDescriptorSetsManager(matIndex).get(),
+                        skyDescriptorSet.get(),
+                        shadowMapSet.get()};
 
-                    auto &mesh = models[j].Meshes()[i];
+                vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
+                                        pipelines.at("pbrForward").getPipelineLayout(), 0,
+                                        static_cast<uint32_t>(descriptorSets.size()),
+                                        descriptorSets.data(), 0, nullptr);
 
-                    // Skip culled meshes
-                    if (mesh.isCulled)
-                    {
-                        continue;
-                    }
-
-                    uint32_t matIndex = mesh.materialIndex;
-
-                    const auto descriptorSets =
-                        std::vector{
-                            this->SceneOptionsBoneDataSets[currentFrame].get(),
-                            models[j].MaterialDescriptorSetsManager(matIndex).get(),
-                            skyDescriptorSet.get(),
-                            shadowMapSet.get()};
-
-                    vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
-                                            pipelines.at("pbrForward").getPipelineLayout(), 0,
-                                            static_cast<uint32_t>(descriptorSets.size()),
-                                            descriptorSets.data(), 0, nullptr);
-
-                    vkCmdBindVertexBuffers(cmd, 0, 1, &mesh.vertex->Buffer(), offsets);
-                    vkCmdBindIndexBuffer(cmd, mesh.index->Buffer(), 0, VK_INDEX_TYPE_UINT32);
-                    vkCmdDrawIndexed(cmd, static_cast<uint32_t>(mesh.indices.size()), 1, 0, 0, 0);
-                }
+                vkCmdBindVertexBuffers(cmd, 0, 1, &mesh.vertex->Buffer(), offsets);
+                vkCmdBindIndexBuffer(cmd, mesh.index->Buffer(), 0, VK_INDEX_TYPE_UINT32);
+                vkCmdDrawIndexed(cmd, static_cast<uint32_t>(mesh.indices.size()), 1, 0, 0, 0);
             }
         }
+
         // Sky rendering pass
-        {
+        vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelines.at("sky").getPipeline());
 
-            vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelines.at("sky").getPipeline());
+        const auto skyDescriptorSets = std::vector{
+            SceneSkyOptionsStates[currentFrame].get(), // Set 0: scene + sky options
+            skyDescriptorSet.get()                     // Set 1: sky textures
+        };
 
-            const auto skyDescriptorSets = std::vector{
-                SceneSkyOptionsStates[currentFrame].get(), // Set 0: scene + sky options
-                skyDescriptorSet.get()                     // Set 1: sky textures
-            };
-
-            vkCmdBindDescriptorSets(
-                cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelines.at("sky").getPipelineLayout(), 0,
-                static_cast<uint32_t>(skyDescriptorSets.size()), skyDescriptorSets.data(), 0, nullptr);
-            vkCmdDraw(cmd, 36, 1, 0, 0);
-            vkCmdEndRendering(cmd);
-        }
-        // Post-processing pass
-        {
-            forwardToCompute.transitionTo(
-                cmd,
-                VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-                VK_ACCESS_2_SHADER_READ_BIT,
-                VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT);
-
-            auto colorAttachment = createColorAttachment(
-                swapchainImageView, VK_ATTACHMENT_LOAD_OP_CLEAR, {0.0f, 0.0f, 1.0f, 0.0f});
-
-            // No depth attachment needed for post-processing
-            auto renderingInfo = createRenderingInfo(renderArea, &colorAttachment, nullptr);
-
-            vkCmdBeginRendering(cmd, &renderingInfo);
-            vkCmdSetViewport(cmd, 0, 1, &viewport);
-            vkCmdSetScissor(cmd, 0, 1, &scissor);
-            vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, this->pipelines.at("post").getPipeline());
-
-            const auto postDescriptorSets =
-                std::vector{this->PostDescriptorSets[currentFrame].get()};
-            vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
-                                    pipelines.at("post").getPipelineLayout(), 0,
-                                    static_cast<uint32_t>(postDescriptorSets.size()),
-                                    postDescriptorSets.data(), 0, nullptr);
-
-            vkCmdDraw(cmd, 6, 1, 0, 0);
-            vkCmdEndRendering(cmd);
-        }
-    
+        vkCmdBindDescriptorSets(
+            cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelines.at("sky").getPipelineLayout(), 0,
+            static_cast<uint32_t>(skyDescriptorSets.size()), skyDescriptorSets.data(), 0, nullptr);
+        vkCmdDraw(cmd, 36, 1, 0, 0);
+        vkCmdEndRendering(cmd);
     }
 
-    void VKforwardRenderer::makeShadowMap(VkCommandBuffer cmd, uint32_t currentFrame, std::vector<VKModel> &models)
+    void VKRenderer::makePostProcessPass(VkCommandBuffer cmd, cUint32_t currentFrame, cUint32_t imageIndex)
     {
-        // 깊이 맵 생성을 위한 쉐도우 패스(깊이 맵을 생성하는 렌더링 패스)
-        VkImageMemoryBarrier2 shadowMapBarrier{VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2};
-        shadowMapBarrier.srcStageMask = VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT;
-        shadowMapBarrier.dstStageMask = VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT;
-        shadowMapBarrier.srcAccessMask = VK_ACCESS_2_NONE;
-        shadowMapBarrier.dstAccessMask = VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-        shadowMapBarrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-        shadowMapBarrier.newLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-        shadowMapBarrier.image = this->shadowMap.getImage();
-        shadowMapBarrier.subresourceRange = {VK_IMAGE_ASPECT_DEPTH_BIT, 0, 1, 0, 1};
-        shadowMapBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-        shadowMapBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        VkRect2D renderArea = {0, 0, this->currentScissor.extent.width, this->currentScissor.extent.height};
+        VkImageView &swapchainImageView = this->renderGraph.getVKSwapChain().getSwapChainImageView(imageIndex);
 
-        VkDependencyInfo depInfo{VK_STRUCTURE_TYPE_DEPENDENCY_INFO};
-        depInfo.imageMemoryBarrierCount = 1;
-        depInfo.pImageMemoryBarriers = &shadowMapBarrier;
-        vkCmdPipelineBarrier2(cmd, &depInfo);
+        if (swapchainImageView == VK_NULL_HANDLE)
+        {
+            EXIT_TO_LOGGER("swapchainImageView us null");
+        }
 
+        auto colorAttachment = createColorAttachment(
+            swapchainImageView, VK_ATTACHMENT_LOAD_OP_CLEAR, {0.0f, 0.0f, 1.0f, 0.0f});
+
+        // No depth attachment needed for post-processing
+        auto renderingInfo = createRenderingInfo(renderArea, &colorAttachment, nullptr);
+
+        vkCmdBeginRendering(cmd, &renderingInfo);
+        vkCmdSetViewport(cmd, 0, 1, &this->currentViewport);
+        vkCmdSetScissor(cmd, 0, 1, &this->currentScissor);
+        vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, this->pipelines.at("post").getPipeline());
+
+        const auto postDescriptorSets =
+            std::vector{this->PostDescriptorSets[currentFrame].get()};
+        vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
+                                pipelines.at("post").getPipelineLayout(), 0,
+                                static_cast<uint32_t>(postDescriptorSets.size()),
+                                postDescriptorSets.data(), 0, nullptr);
+
+        vkCmdDraw(cmd, 6, 1, 0, 0);
+        vkCmdEndRendering(cmd);
+    }
+
+    void VKRenderer::makeShadowMap(VkCommandBuffer cmd, uint32_t currentFrame, cUint32_t imageIndex)
+    {
+#if 1
         // 그림자 맵 렌더링 시작
         VkRenderingAttachmentInfo shadowDepthAttachment{VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO};
         shadowDepthAttachment.imageView = this->shadowMap.getImageView();
@@ -427,24 +416,24 @@ namespace vkengine
                           0.0f,  // Clamp value
                           2.0f); // Slope factor
 
-        // Render all visible models to shadow map
+        // Render all visible this->currentModels to shadow map
         VkDeviceSize offsets[1]{0};
 
-        for (size_t j = 0; j < models.size(); j++)
+        for (size_t j = 0; j < this->currentModels->size(); j++)
         {
-            if (!models[j].Visible())
+            if (!this->currentModels->at(j).Visible())
             {
                 continue;
             }
 
             vkCmdPushConstants(cmd, this->pipelines.at("shadowMap").getPipelineLayout(),
-                               VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(models[j].ModelMatrix()),
-                               &models[j].ModelMatrix());
+                               VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(this->currentModels->at(j).ModelResource().modelMatrix),
+                               &this->currentModels->at(j).ModelResource().modelMatrix);
 
             // Render all meshes in this model
-            for (size_t i = 0; i < models[j].Meshes().size(); i++)
+            for (size_t i = 0; i < this->currentModels->at(j).Meshes().size(); i++)
             {
-                auto &mesh = models[j].Meshes()[i];
+                auto &mesh = this->currentModels->at(j).Meshes()[i];
 
                 // Skip culled meshes in shadow pass too
                 if (mesh.isCulled)
@@ -462,37 +451,62 @@ namespace vkengine
         }
 
         vkCmdEndRendering(cmd);
+#else
 
-        // Transition shadow map to shader read-only for sampling in main render pass
-        VkImageMemoryBarrier2 shadowMapReadBarrier{VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2};
-        shadowMapReadBarrier.srcStageMask = VK_PIPELINE_STAGE_2_LATE_FRAGMENT_TESTS_BIT;
-        shadowMapReadBarrier.dstStageMask = VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT;
-        shadowMapReadBarrier.srcAccessMask = VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-        shadowMapReadBarrier.dstAccessMask = VK_ACCESS_2_SHADER_READ_BIT;
-        shadowMapReadBarrier.oldLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-        shadowMapReadBarrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-        shadowMapReadBarrier.image = this->shadowMap.getImage();
-        shadowMapReadBarrier.subresourceRange = {VK_IMAGE_ASPECT_DEPTH_BIT, 0, 1, 0, 1};
-        shadowMapReadBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-        shadowMapReadBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-
-        VkDependencyInfo readDepInfo{VK_STRUCTURE_TYPE_DEPENDENCY_INFO};
-        readDepInfo.imageMemoryBarrierCount = 1;
-        readDepInfo.pImageMemoryBarriers = &shadowMapReadBarrier;
-        vkCmdPipelineBarrier2(cmd, &readDepInfo);
+#endif
     }
 
-    auto VKforwardRenderer::getCullingStats() const -> const CullingStats &
+    VkRenderingAttachmentInfo VKRenderer::createColorAttachment(VkImageView imageView, VkAttachmentLoadOp loadOp, VkClearColorValue clearColor, VkImageView resolveImageView, VkResolveModeFlagBits resolveMode) const
+    {
+        VkRenderingAttachmentInfo attachment{VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO};
+        attachment.imageView = imageView;
+        attachment.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+        attachment.loadOp = loadOp;
+        attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+        attachment.clearValue.color = clearColor;
+        attachment.resolveMode = resolveMode;
+        attachment.resolveImageView = resolveImageView;
+        attachment.resolveImageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+        return attachment;
+    }
+
+    VkRenderingAttachmentInfo VKRenderer::createDepthAttachment(VkImageView imageView, VkAttachmentLoadOp loadOp, float clearDepth, VkImageView resolveImageView, VkResolveModeFlagBits resolveMode) const
+    {
+        VkRenderingAttachmentInfo attachment{VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO};
+        attachment.imageView = imageView;
+        attachment.imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+        attachment.loadOp = loadOp;
+        attachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        attachment.clearValue.depthStencil = {clearDepth, 0};
+        attachment.resolveMode = resolveMode;
+        attachment.resolveImageView = resolveImageView;
+        attachment.resolveImageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+        return attachment;
+    }
+
+    VkRenderingInfo VKRenderer::createRenderingInfo(const VkRect2D &renderArea, const VkRenderingAttachmentInfo *colorAttachment, const VkRenderingAttachmentInfo *depthAttachment) const
+    {
+        VkRenderingInfo renderingInfo{VK_STRUCTURE_TYPE_RENDERING_INFO_KHR};
+        renderingInfo.renderArea = renderArea;
+        renderingInfo.layerCount = 1;
+        renderingInfo.colorAttachmentCount = colorAttachment ? 1 : 0;
+        renderingInfo.pColorAttachments = colorAttachment;
+        renderingInfo.pDepthAttachment = depthAttachment;
+        renderingInfo.pStencilAttachment = depthAttachment;
+        return renderingInfo;
+    }
+
+    const CullingStats &VKRenderer::getCullingStats() const
     {
         return this->cullingStats;
     }
 
-    bool VKforwardRenderer::isFrustumCullingEnabled() const
+    cBool VKRenderer::isFrustumCullingEnabled() const
     {
         return this->frustumCullingEnabled;
     }
 
-    void VKforwardRenderer::performFrustumCulling(std::vector<VKModel> &models)
+    void VKRenderer::performFrustumCulling(std::vector<VKModel> &models)
     {
         cullingStats.totalMeshes = 0;
         cullingStats.culledMeshes = 0;
@@ -519,27 +533,22 @@ namespace vkengine
                 cullingStats.totalMeshes++;
 
                 bool isVisible = viewFrustum.intersects(mesh.worldBounds);
-
                 mesh.isCulled = !isVisible;
 
                 if (isVisible)
-                {
                     cullingStats.renderedMeshes++;
-                }
                 else
-                {
                     cullingStats.culledMeshes++;
-                }
             }
         }
     }
 
-    void VKforwardRenderer::setFrustumCullingEnabled(bool enabled)
+    void VKRenderer::setFrustumCullingEnabled(bool enabled)
     {
         this->frustumCullingEnabled = enabled;
     }
-    
-    void VKforwardRenderer::updateViewFrustum(const cMat4 &viewProjection)
+
+    void VKRenderer::updateViewFrustum(const cMat4 &viewProjection)
     {
         if (this->frustumCullingEnabled)
         {
@@ -547,43 +556,4 @@ namespace vkengine
         }
     }
 
-    VkRenderingAttachmentInfo VKforwardRenderer::createColorAttachment(VkImageView imageView, VkAttachmentLoadOp loadOp, VkClearColorValue clearColor, VkImageView resolveImageView, VkResolveModeFlagBits resolveMode) const
-    {
-        VkRenderingAttachmentInfo attachment{VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO};
-        attachment.imageView = imageView;
-        attachment.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-        attachment.loadOp = loadOp;
-        attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-        attachment.clearValue.color = clearColor;
-        attachment.resolveMode = resolveMode;
-        attachment.resolveImageView = resolveImageView;
-        attachment.resolveImageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-        return attachment;
-    }
-
-    VkRenderingAttachmentInfo VKforwardRenderer::createDepthAttachment(VkImageView imageView, VkAttachmentLoadOp loadOp, float clearDepth, VkImageView resolveImageView, VkResolveModeFlagBits resolveMode) const
-    {
-        VkRenderingAttachmentInfo attachment{VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO};
-        attachment.imageView = imageView;
-        attachment.imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-        attachment.loadOp = loadOp;
-        attachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-        attachment.clearValue.depthStencil = {clearDepth, 0};
-        attachment.resolveMode = resolveMode;
-        attachment.resolveImageView = resolveImageView;
-        attachment.resolveImageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-        return attachment;
-    }
-
-    VkRenderingInfo VKforwardRenderer::createRenderingInfo(const VkRect2D &renderArea, const VkRenderingAttachmentInfo *colorAttachment, const VkRenderingAttachmentInfo *depthAttachment) const
-    {
-        VkRenderingInfo renderingInfo{VK_STRUCTURE_TYPE_RENDERING_INFO_KHR};
-        renderingInfo.renderArea = renderArea;
-        renderingInfo.layerCount = 1;
-        renderingInfo.colorAttachmentCount = colorAttachment ? 1 : 0;
-        renderingInfo.pColorAttachments = colorAttachment;
-        renderingInfo.pDepthAttachment = depthAttachment;
-        renderingInfo.pStencilAttachment = depthAttachment;
-        return renderingInfo;
-    }
 }

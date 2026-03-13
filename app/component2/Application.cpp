@@ -1,4 +1,4 @@
-#include "Application3.h"
+#include "Application.h"
 
 #include "helper.h"
 #include "vkconfig.h"
@@ -7,17 +7,17 @@
 #include <glm/gtx/string_cast.hpp>
 #include <glm/gtx/matrix_decompose.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-#include "Application3.h"
+#include "Application.h"
 
 using namespace vkengine::Log;
 
 namespace vkengine
 {
-    Application3::Application3(cString root_path) : Application3(ApplicationConfig::createDefault(), root_path)
+    Application::Application(cString root_path) : Application(ApplicationConfig::createDefault(), root_path)
     {
     }
 
-    Application3::Application3(const ApplicationConfig &config, cString root_path)
+    Application::Application(const ApplicationConfig &config, cString root_path)
         : VulkanEngineWin2(true),
           RootPath{root_path.c_str()},
           shaderManager{*this->cxt,
@@ -39,11 +39,11 @@ namespace vkengine
         initializeRenderGraph();
     }
 
-    Application3::~Application3()
+    Application::~Application()
     {
     }
 
-    void Application3::initializeWithConfig(const ApplicationConfig &config)
+    void Application::initializeWithConfig(const ApplicationConfig &config)
     {
         this->loadModels(config.models);
 
@@ -56,7 +56,7 @@ namespace vkengine
             this->extent.height);
     }
 
-    void Application3::loadModels(const std::vector<ModelConfig> &modelConfigs)
+    void Application::loadModels(const std::vector<ModelConfig> &modelConfigs)
     {
         for (const auto &modelConfig : modelConfigs)
         {
@@ -101,13 +101,13 @@ namespace vkengine
         }
     }
 
-    void Application3::setupCallbacks()
+    void Application::setupCallbacks()
     {
         // engine에서 제공하는 카메라 컨트롤 윈도우 사용
         this->window->setCamera(this->camera);
     }
     
-    void Application3::initializeVulkanResources()
+    void Application::initializeVulkanResources()
     {
         this->msaaSamples = helper::device::getMaxUsableSampleCount(this->cxt->getDevice()->physicalDevice);
         this->commandBuffers = this->cxt->createGrapicsCommandBufferHanders(this->kMaxFramesInFlight);
@@ -122,12 +122,12 @@ namespace vkengine
         // engine에서 이미 fence와 semaphore를 생성하므로 생략
     }
 
-    void Application3::initializeRenderGraph()
+    void Application::initializeRenderGraph()
     {
         this->Renderer.buildRenderGraph(*this->swapChain);
     }
 
-    void Application3::run()
+    void Application::run()
     {
         _VK_CHECK_RESULT_(vkWaitForFences(this->cxt->getDevice()->logicaldevice, 1, &this->inFlightFences[currentFrame], VK_TRUE, UINT64_MAX));
         _VK_CHECK_RESULT_(vkResetFences(this->cxt->getDevice()->logicaldevice, 1, &this->inFlightFences[currentFrame]));
@@ -217,7 +217,7 @@ namespace vkengine
         }
     }
 
-    void Application3::update()
+    void Application::update()
     {
         auto lastTime = std::chrono::high_resolution_clock::now();
         float deltaTime = 0.016f; // Default to ~60 FPS
@@ -354,7 +354,7 @@ namespace vkengine
         this->cxt->waitIdle();
     }
 
-    void Application3::updateGui()
+    void Application::updateGui()
     {
         static float scale = 1.4f;
 
@@ -546,7 +546,7 @@ namespace vkengine
         ImGui::Render();
     }
 
-    void Application3::renderHDRControlWindow()
+    void Application::renderHDRControlWindow()
     {
         ImGui::SetNextWindowPos(ImVec2(320, 10), ImGuiCond_FirstUseEver);
         ImGui::SetNextWindowSize(ImVec2(350, 350), ImGuiCond_FirstUseEver);
@@ -639,7 +639,7 @@ namespace vkengine
         ImGui::End();
     }
 
-    void Application3::renderPostProcessingControlWindow()
+    void Application::renderPostProcessingControlWindow()
     {
         ImGui::SetNextWindowPos(ImVec2(680, 10), ImGuiCond_FirstUseEver);
         ImGui::SetNextWindowSize(ImVec2(400, 600), ImGuiCond_FirstUseEver);
@@ -774,7 +774,7 @@ namespace vkengine
         ImGui::End();
     }
 
-    void Application3::renderCameraControlWindow()
+    void Application::renderCameraControlWindow()
     {
         ImGui::SetNextWindowPos(ImVec2(10, 350), ImGuiCond_FirstUseEver);
         ImGui::SetNextWindowSize(ImVec2(300, 400), ImGuiCond_FirstUseEver);
