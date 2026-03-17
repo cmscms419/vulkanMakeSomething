@@ -25,36 +25,6 @@ namespace vkengine
         this->type = shaderResourceType::IMAGE;
     }
 
-    VKImage2D::VKImage2D(VKImage2D &&other) noexcept
-        : ctx(other.ctx),
-          imageFormat(other.imageFormat),
-          samplerView(other.samplerView),
-          width(other.width),
-          height(other.height),
-          usageFlags(other.usageFlags),
-          aspectFlags(other.aspectFlags)
-    {
-        // base class protected fields
-        this->name = other.name;
-        this->image = other.image;
-        this->memory = other.memory;
-        this->imageView = other.imageView;
-        this->sampler = other.sampler;
-        this->descriptorType = other.descriptorType;
-        this->descriptorCount = other.descriptorCount;
-        this->imageInfo = other.imageInfo;
-        this->barrierHelper = std::move(other.barrierHelper);
-
-        other.image = VK_NULL_HANDLE;
-        other.memory = VK_NULL_HANDLE;
-        other.imageView = VK_NULL_HANDLE;
-        other.imageFormat = VK_FORMAT_UNDEFINED;
-        other.width = 0;
-        other.height = 0;
-        other.usageFlags = 0;
-        other.aspectFlags = 0;
-    }
-
     VKImage2D::~VKImage2D()
     {
         cleanup();

@@ -33,6 +33,9 @@ namespace vkengine
         void setSampler(VkSampler sampler);
         VKBarrierHelper &getBarrierHelper();
 
+        void updateImageInfo(VkDescriptorImageInfo& imageInfo);
+        void updateBufferInfo(VkDescriptorBufferInfo& bufferInfo);
+
     protected:
         cString name;
 

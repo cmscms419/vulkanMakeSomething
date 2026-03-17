@@ -42,6 +42,7 @@
     <ClCompile Include="..\..\app\engine2\VKViewFrustum.cpp" />
     <ClCompile Include="..\..\app\engine2\VKRenderGraph.cpp" />
     <ClCompile Include="..\..\app\engine2\VKShaderResource.cpp" />
+    <ClCompile Include="..\..\app\engine2\VKtexturesTable.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\include\engine2\VKDescriptorSet.h" />
@@ -70,6 +71,7 @@
     <ClInclude Include="..\..\include\engine2\VKViewFrustum.h" />
     <ClInclude Include="..\..\include\engine2\VKShaderResource.h" />
     <ClInclude Include="..\..\include\engine2\VKRenderGraph.h" />
+    <ClInclude Include="..\..\include\engine2\VKtexturesTable.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{aa7beba8-c275-4c9b-ba08-a371b71683e6}</ProjectGuid>

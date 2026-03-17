@@ -11,7 +11,7 @@ namespace vkengine
     {
     public:
         VKImage2D(VKcontext &context);
-        VKImage2D(VKImage2D &&other) noexcept;
+        VKImage2D(VKImage2D &&other) = delete;
         VKImage2D(const VKImage2D &) = delete;
         VKImage2D &operator=(const VKImage2D &) = delete;
         VKImage2D &operator=(VKImage2D &&) = delete;

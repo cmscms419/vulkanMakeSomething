@@ -22,7 +22,6 @@ VKModel::VKModel(VKcontext& ctx) : ctx(ctx)
     globalInverseTransform = cMat4(1.0f);
     boundingBoxMin = cVec3(FLT_MAX);
     boundingBoxMax = cVec3(-FLT_MAX);
-    materialDescriptorSetHander = {};
     name = "";
     visible = true;
     resource.modelMatrix = cMat4(1.0f);
@@ -36,9 +35,7 @@ VKModel::VKModel(VKModel&& other) noexcept
       textureSRgb(std::move(other.textureSRgb)), rootNode(std::move(other.rootNode)),
       animation(std::move(other.animation)), name(std::move(other.name)),
       globalInverseTransform(other.globalInverseTransform),
-      boundingBoxMin(other.boundingBoxMin), boundingBoxMax(other.boundingBoxMax),
-      materialUBO(std::move(other.materialUBO)),
-      materialDescriptorSetHander(std::move(other.materialDescriptorSetHander)), visible(other.visible),
+      boundingBoxMin(other.boundingBoxMin), boundingBoxMax(other.boundingBoxMax), visible(other.visible),
       resource(other.resource)
 {
     // Reset moved-from object to safe state
@@ -56,8 +53,9 @@ VKModel::~VKModel()
     cleanup();
 }
 
-void VKModel::createDescriptorManager2(VKSamplerHandler& sampler, VKImage2D& dummyTexture)
+void VKModel::createDescriptorManager2(VKSamplerHandler &sampler, std::vector<cMaterial> &allMaterials, VKtexturesTable &table)
 {
+#if 0
     for (size_t i = 0; i < materials.size(); i++) {
         auto& mat = materials[i];
         materialUBO.emplace_back(this->ctx, mat.ubo);
@@ -81,6 +79,66 @@ void VKModel::createDescriptorManager2(VKSamplerHandler& sampler, VKImage2D& dum
         
         materialDescriptorSetHander[i].create(ctx, {materialUBO[i].Buffer(), b1, b2, b3, b4, b5, b6});
     }
+
+    for (auto &ubo : materialUBO)
+    {
+        ubo.updateData();
+    }
+
+#else
+    for (auto& t : textures) {
+        t->setSampler(sampler.getSampler());
+    }
+
+    // allMaterials의 사이즈 뒤에서 추가되어야 한다.
+    // allMaterials의 뒤에 무엇이 있는지 알 수 없기 때문에, allMaterials.backIndex 뒤 부터 인덱스를 추가해야 한다.
+    // texture 또한 마찬가지 이다.
+    int materialBaseIndex = int(allMaterials.size());
+    int textureBaseIndex = int(table.getTextures().size());
+
+    // texture의 객수 만큼 범위를 할당     
+    table.getTextures().reserve(textureBaseIndex + this->textures.size());
+    for (auto& texture : this->textures)
+    {
+        table.getTextures().push_back(std::move(texture));
+    }
+    this->textures.clear();
+    
+    // 각 Material의 로컬 텍스처 인덱스를 전역 인덱스로 교체
+    if (!materials.empty())
+    {
+        for (size_t i = 0; i < materials.size(); i++) {
+            auto& mat = materials[i];
+            if (mat.ubo.baseColorTextureIndex != -1) {
+                mat.ubo.baseColorTextureIndex += textureBaseIndex;
+            }
+            if (mat.ubo.emissiveTextureIndex != -1) {
+                mat.ubo.emissiveTextureIndex += textureBaseIndex;
+            }
+            if (mat.ubo.normalTextureIndex != -1) {
+                mat.ubo.normalTextureIndex += textureBaseIndex;
+            }
+            if (mat.ubo.opacityTextureIndex != -1) {
+                mat.ubo.opacityTextureIndex += textureBaseIndex;
+            }
+            if (mat.ubo.metallicRoughnessTextureIndex != -1) {
+                mat.ubo.metallicRoughnessTextureIndex += textureBaseIndex;
+            }
+            if (mat.ubo.occlusionTextureIndex != -1) {
+                mat.ubo.occlusionTextureIndex += textureBaseIndex;
+            }
+
+        }
+
+        for (const auto& material : materials) {
+            allMaterials.push_back(material.ubo);
+        }
+
+        for(auto& mesh : this->meshes){
+            mesh.materialIndex += materialBaseIndex;
+        }
+    }
+#endif
 }
 
 void VKModel::createVulkanResources()
@@ -126,7 +184,7 @@ void VKModel::cleanup()
     // }
 
     for (auto& texture : textures) {
-        texture.cleanup();
+        texture->cleanup();
     }
 
     meshes.clear();

@@ -113,6 +113,9 @@ namespace vkengine
         std::vector<VKModel> *currentModels;
         VkViewport currentViewport;
         VkRect2D currentScissor;
+        VKBaseBuffer2 materialStorageBuffer;
+        VKtexturesTable table;
+        DescriptorSetHander materialDescriptorSet;
 
         SceneDataUBO sceneDataUBO;
         SkyOptionsUBO skyOptionsUBO;

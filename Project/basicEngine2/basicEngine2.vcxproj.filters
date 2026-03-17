@@ -78,9 +78,6 @@
     <ClCompile Include="..\..\app\engine2\VKViewFrustum.cpp">
       <Filter>source2</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\app\engine2\VKStorageBuffer.cpp">
-      <Filter>source2</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\app\engine2\VKComputepiPipeline.cpp">
       <Filter>pipeLine</Filter>
     </ClCompile>
@@ -175,12 +172,6 @@
       <Filter>source2</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\engine2\VKViewFrustum.h">
-      <Filter>source2</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\engine2\VKDepthStencil.h">
-      <Filter>source2</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\engine2\VKStorageBuffer.h">
       <Filter>source2</Filter>
     </ClInclude>
   </ItemGroup>

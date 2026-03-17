@@ -32,12 +32,13 @@ namespace vkengine
         void createUniformBuffer(VkDeviceSize size, void *data);
         void createModelVertexBuffer(VkDeviceSize size, void *data);
         void createModelIndexBuffer(VkDeviceSize size, void *data);
-        void createStorageBuffer(VkDeviceSize size, VkBufferUsageFlags additionalUsage, cBool hostVisible);
+        void createStorageBuffer(VkDeviceSize size, VkBufferUsageFlags additionalUsage = 0);
 
         void VKBaseBuffer2::updateBinding(VkDescriptorSetLayoutBinding &binding) override;
         void VKBaseBuffer2::updateWrite(VkWriteDescriptorSet &write) override;
 
         void updateData(const void *data, VkDeviceSize size, VkDeviceSize offset);
+        void copyData(const void *data, VkDeviceSize size, VkDeviceSize offset = 0);
         void flush() const;
         void *map();
         void unmap();

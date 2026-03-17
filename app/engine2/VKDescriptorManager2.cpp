@@ -161,14 +161,45 @@ namespace vkengine {
             this->createNewPool(poolSizes, std::max(1u, this->remainingSets * 2));
 
             // 3.1.3. 남아있는 capacity로부터 할당이 가능한지 다시 확인한다.
-            if (!this->canAllocateFromRemaining(requiredTypeCounts, 1)) {
-                EXIT_TO_LOGGER("Error: Unable to allocate descriptor set even after creating a new pool.");
+            // if (!this->canAllocateFromRemaining(requiredTypeCounts, 1)) {
+            //     EXIT_TO_LOGGER("Error: Unable to allocate descriptor set even after creating a new pool.");
+            // }
+        }
+
+        // 4. 만약에, 어떤 binding이 descriptor count를 가지고 있는지 확인한다.
+        cBool hasVariableDescriptorCount = false;
+        cUint32_t variableDescriptorCount = 0;
+        cUint32_t highestBinding = 0;
+
+        for (const auto& binding : bindings) {
+            if (binding.binding > highestBinding) {
+                highestBinding = binding.binding;
             }
         }
 
-        // 4. 마지막 pool를 사용해서 descriptor set을 할당한다.
+        for (const auto& binding : bindings) {
+            if (binding.descriptorCount > 1 && binding.binding == highestBinding) {
+                hasVariableDescriptorCount = true;
+                variableDescriptorCount = binding.descriptorCount;
+                break;
+            }
+        }
+
+        // 5. 마지막 pool를 사용해서 descriptor set을 할당한다.
         VkDescriptorSetAllocateInfo allocInfo = helper::descriptor::descriptorSetAllocateInfo(
             this->descriptorPools.back(), layout, 1);
+
+        // descriptor count가 추가로 들어가는 것이 있으면, 해당 설정을 추가할 수 있는 플러그 추가
+        VkDescriptorSetVariableDescriptorCountAllocateInfo variableCountInfo{};
+        if(hasVariableDescriptorCount)
+        {
+            variableCountInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_VARIABLE_DESCRIPTOR_COUNT_ALLOCATE_INFO;
+            variableCountInfo.descriptorSetCount = 1;
+            variableCountInfo.pDescriptorCounts = &variableDescriptorCount;
+            allocInfo.pNext = &variableCountInfo;
+
+            PRINT_TO_LOGGER("Allocating descriptor set with variable count: %d", variableDescriptorCount);
+        }
 
         VkDescriptorSet descriptorSet{ VK_NULL_HANDLE };
         VkResult res = vkAllocateDescriptorSets(this->logicaldevice, &allocInfo, &descriptorSet);
@@ -194,6 +225,67 @@ namespace vkengine {
         for (const auto& layoutInfo : layoutInfos)
         {
             VkDescriptorSetLayoutCreateInfo layoutCreateInfo = helper::descriptor::descriptorSetLayoutCreateInfo(layoutInfo.bindings);
+
+            // 바인딩 번호를 기준으로 바인딩을 정렬하여 가장 높은 번호를 찾습니다.
+            std::vector<VkDescriptorSetLayoutBinding> sortedBindings = layoutInfo.bindings;
+            std::sort(sortedBindings.begin(), sortedBindings.end(),
+                      [](const VkDescriptorSetLayoutBinding &a, const VkDescriptorSetLayoutBinding &b)
+                      {
+                          return a.binding < b.binding;
+                      });
+            for(int i = 0; i < layoutInfo.bindings.size(); i++)
+            {
+                if (layoutInfo.bindings[i].binding != i){
+                    EXIT_TO_LOGGER("binding index mismatch %d vs %d", i, layoutInfo.bindings[i].binding);
+                }
+            }
+
+            cBool needsPartiallyBound = false;
+            cBool needsVariableCount = false;
+            uint32_t highestBinding = sortedBindings.empty() ? 0 : sortedBindings.back().binding;
+
+            for (const auto& binding : sortedBindings) {
+                if (binding.descriptorCount > 1) {
+                    needsPartiallyBound = true;
+
+                    // Variable count ONLY allowed on the highest binding number
+                    if (binding.binding == highestBinding) {
+                        needsVariableCount = true;
+                        PRINT_TO_LOGGER("    Binding %d is variable-length array (count=%d)", 
+                            binding.binding, binding.descriptorCount);
+                    } else {
+                        PRINT_TO_LOGGER("    Binding %d is fixed-length array (count=%d) - not last binding",
+                            binding.binding, binding.descriptorCount);
+                    }
+                }
+            }
+
+            layoutCreateInfo.flags = 0;
+
+            // PARTIALLY_BOUND 또는 VARIABLE_DESCRIPTOR_COUNT - 이 항목들은 바인딩 플래그에만 사용됩니다.
+            std::vector<VkDescriptorBindingFlags> bindingFlags;
+            VkDescriptorSetLayoutBindingFlagsCreateInfo bindingFlagsInfo{};
+
+            if (needsPartiallyBound || needsVariableCount) {
+                bindingFlags.resize(layoutInfo.bindings.size(), 0);
+
+                for (size_t i = 0; i < layoutInfo.bindings.size(); ++i) {
+                    if (layoutInfo.bindings[i].descriptorCount > 1) {
+                        bindingFlags[i] |= VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT;
+                        bindingFlags[i] |= VK_DESCRIPTOR_BINDING_UPDATE_UNUSED_WHILE_PENDING_BIT;
+
+                        // 가장 높은 바인딩 번호에 대해서만 변수 개수 계산
+                        if (layoutInfo.bindings[i].binding == highestBinding) {
+                            bindingFlags[i] |= VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT;
+                        }
+                    }
+                }
+
+                bindingFlagsInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO;
+                bindingFlagsInfo.bindingCount = static_cast<uint32_t>(bindingFlags.size());
+                bindingFlagsInfo.pBindingFlags = bindingFlags.data();
+                layoutCreateInfo.pNext = &bindingFlagsInfo;
+            }
             VkDescriptorSetLayout layout = VK_NULL_HANDLE;
 
             _VK_CHECK_RESULT_(vkCreateDescriptorSetLayout(this->logicaldevice, &layoutCreateInfo, nullptr, &layout));

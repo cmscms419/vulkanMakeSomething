@@ -16,6 +16,7 @@
 #include "VKUniformBuffer2.h"
 #include "VKAnimation.h"
 #include "VKDescriptorSet.h"
+#include "VKtexturesTable.h"
 
 namespace vkengine {
 
@@ -33,7 +34,7 @@ class VKModel
     void cleanup();
     void createVulkanResources();
 
-    void createDescriptorManager2(VKSamplerHandler& sampler, VKImage2D& dummyTexture);
+    void createDescriptorManager2(VKSamplerHandler& sampler, std::vector<cMaterial>& allMaterials, VKtexturesTable &table);
 
     // VKAnimation methods - ADD THESE
     void updateAnimation(float deltaTime);
@@ -125,18 +126,13 @@ class VKModel
     {
         return boundingBoxMax;
     }
-    VKImage2D& GetTexture(int index)
+    std::unique_ptr<VKImage2D>& GetTexture(int index)
     {
         return textures[index];
     }
-    std::vector<VKImage2D>& Textures()
+    std::vector<std::unique_ptr<VKImage2D>>& Textures()
     {
         return textures;
-    }
-
-    const DescriptorSetHander& MaterialDescriptorSetsManager(uint32_t mat_index)
-    {
-        return materialDescriptorSetHander[mat_index];
     }
 
     void loadFromModelFile(const cString& modelFilename, bool readBistroObj);
@@ -175,7 +171,7 @@ class VKModel
     // VKModel asset data
     std::vector<Mesh> meshes;
     std::vector<VKMaterial> materials;
-    std::vector<VKImage2D> textures;
+    std::vector<std::unique_ptr<VKImage2D>> textures;
     std::vector<cString> textureFilenames;
     std::vector<cBool> textureSRgb; // sRGB 여부 (임시 저장)
     // 이름이 같은 텍스쳐 중복 생성 방지
@@ -188,9 +184,6 @@ class VKModel
     // Bounding box
     cVec3 boundingBoxMin;
     cVec3 boundingBoxMax;
-
-    std::vector<VKUniformBuffer2<cMaterial>> materialUBO;
-    std::vector<DescriptorSetHander> materialDescriptorSetHander;
 
     cString name;
     cBool visible;

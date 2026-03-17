@@ -50,4 +50,18 @@ namespace vkengine
     {
         return this->barrierHelper;
     }
+
+    void VKShaderResource::updateImageInfo(VkDescriptorImageInfo &imageInfo)
+    {
+        imageInfo.sampler = this->imageInfo.sampler;
+        imageInfo.imageView = this->imageInfo.imageView;
+        imageInfo.imageLayout = this->imageInfo.imageLayout;
+    }
+    
+    void VKShaderResource::updateBufferInfo(VkDescriptorBufferInfo &bufferInfo)
+    {
+        bufferInfo.buffer = this->bufferInfo.buffer;
+        bufferInfo.offset = this->bufferInfo.offset;
+        bufferInfo.range = this->bufferInfo.range;
+    }
 }

@@ -19,7 +19,7 @@ namespace vkengine
           dummyTexture(ctx), msaaColorBuffer(ctx), depthStencil(ctx), msaaDepthStencil(ctx),
           skyTextures(ctx), shadowMap(ctx), samplerLinearRepeat(ctx), samplerLinearClamp(ctx),
           samplerAnisoRepeat(ctx), samplerAnisoClamp(ctx), forwardToCompute(ctx), computeToPost(ctx),
-          samplerShadowMap(ctx)
+          samplerShadowMap(ctx), materialStorageBuffer(ctx), table(ctx)
     {
         PRINT_TO_LOGGER("Renderer2 created with MaxFramesFlight: %d assetsPath: %s shaderPath: %s",
                         MaxFramesFlight,
@@ -99,10 +99,23 @@ namespace vkengine
         this->createTextures(swapChainWidth, swapChainHeight, msaaSamples);
         this->createUniformBuffers();
 
+        std::vector<cMaterial> allMaterials;
+
         for (VKModel &model : models)
         {
-            model.createDescriptorManager2(samplerLinearRepeat, dummyTexture);
+            model.createDescriptorManager2(samplerLinearRepeat, allMaterials, table);
         }
+
+        VkDeviceSize size = sizeof(cMaterial) * allMaterials.size();
+
+        materialStorageBuffer.createStorageBuffer(size,
+                                                  VK_BUFFER_USAGE_STORAGE_BUFFER_BIT |
+                                                      VK_BUFFER_USAGE_TRANSFER_DST_BIT |
+                                                      VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
+
+        materialStorageBuffer.copyData(allMaterials.data(), size);
+        materialDescriptorSet.create(ctx, {std::ref(this->materialStorageBuffer),
+                                           std::ref(this->table)});
     }
 
     void VKRenderer::createPipelines(const VkFormat colorFormat, const VkFormat depthFormat, VkSampleCountFlagBits msaaSamples)
@@ -288,6 +301,18 @@ namespace vkengine
         // Render models
         vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
                           pipelines.at("pbrForward").getPipeline());
+                          
+        const auto descriptorSets =
+            std::vector{
+                this->SceneOptionsBoneDataSets[currentFrame].get(),
+                this->materialDescriptorSet.get(),
+                skyDescriptorSet.get(),
+                shadowMapSet.get()};
+
+        vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
+                                pipelines.at("pbrForward").getPipelineLayout(), 0,
+                                static_cast<uint32_t>(descriptorSets.size()),
+                                descriptorSets.data(), 0, nullptr);
 
         for (size_t j = 0; j < this->currentModels->size(); j++)
         {
@@ -296,9 +321,6 @@ namespace vkengine
                 continue;
             }
 
-            vkCmdPushConstants(cmd, pipelines.at("pbrForward").getPipelineLayout(),
-                               VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0,
-                               sizeof(this->currentModels->at(j).ModelResource()), &this->currentModels->at(j).ModelResource());
 
             for (size_t i = 0; i < this->currentModels->at(j).Meshes().size(); i++)
             {
@@ -312,18 +334,11 @@ namespace vkengine
                 }
 
                 uint32_t matIndex = mesh.materialIndex;
+                this->currentModels->at(j).ModelResource().materialIndex = matIndex;
 
-                const auto descriptorSets =
-                    std::vector{
-                        this->SceneOptionsBoneDataSets[currentFrame].get(),
-                        this->currentModels->at(j).MaterialDescriptorSetsManager(matIndex).get(),
-                        skyDescriptorSet.get(),
-                        shadowMapSet.get()};
-
-                vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
-                                        pipelines.at("pbrForward").getPipelineLayout(), 0,
-                                        static_cast<uint32_t>(descriptorSets.size()),
-                                        descriptorSets.data(), 0, nullptr);
+                vkCmdPushConstants(cmd, pipelines.at("pbrForward").getPipelineLayout(),
+                                   VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0,
+                                   sizeof(this->currentModels->at(j).ModelResource()), &this->currentModels->at(j).ModelResource());
 
                 vkCmdBindVertexBuffers(cmd, 0, 1, &mesh.vertex->Buffer(), offsets);
                 vkCmdBindIndexBuffer(cmd, mesh.index->Buffer(), 0, VK_INDEX_TYPE_UINT32);

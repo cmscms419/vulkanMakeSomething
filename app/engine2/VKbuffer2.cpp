@@ -1,4 +1,5 @@
 ﻿#include "VKbuffer2.h"
+#include "VKCommandBufferHander.h"
 #include "helper.h"
 #include "log.h"
 
@@ -143,9 +144,12 @@ namespace vkengine
         _VK_CHECK_RESULT_(vkBindBufferMemory(this->ctx.getDevice()->logicaldevice, this->buffer, this->memory, 0));
     }
 
-    void VKBaseBuffer2::createStorageBuffer(VkDeviceSize size, VkBufferUsageFlags additionalUsage, cBool hostVisible)
+    void VKBaseBuffer2::createStorageBuffer(VkDeviceSize size, VkBufferUsageFlags additionalUsage)
     {
         this->descriptorCount = 1;
+        this->descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+        VkDevice device = this->ctx.getDevice()->logicaldevice;
+#if 0
         this->hostVisible = hostVisible;
 
         if (this->hostVisible)
@@ -156,7 +160,6 @@ namespace vkengine
         }
         else
         {
-#if 1
             this->usageFlags = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT | additionalUsage;
             this->memoryPropertyFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
             this->bufferSize = size;
@@ -174,10 +177,41 @@ namespace vkengine
 
             _VK_CHECK_RESULT_(vkBindBufferMemory(ctx.getDevice()->logicaldevice, this->buffer, this->memory, 0));
             this->update();
-#else
-
-#endif
         }
+#else
+        this->bufferSize = size;
+
+        // 버퍼 생성 정보를 담은 구조체를 초기화한다.
+        VkBufferCreateInfo bufferInfo{VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO};
+        bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO; // 구조체 타입을 지정한다.
+        bufferInfo.size = this->bufferSize;                                  // 생성할 버퍼의 크기를 설정한다.
+        bufferInfo.usage = additionalUsage;                      // 버퍼 사용 목적을 지정한다 (예: vertex, index 등).
+        bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;      // 버퍼의 공유 모드를 독점으로 설정한다.
+
+        // 지정된 정보를 바탕으로 버퍼를 생성
+        _VK_CHECK_RESULT_(vkCreateBuffer(device, &bufferInfo, nullptr, &buffer));
+
+        // 생성된 버퍼에 필요한 메모리 요구사항 정보를 가져온다.
+        VkMemoryRequirements memRequirements;
+        vkGetBufferMemoryRequirements(device, buffer, &memRequirements);
+        uint32_t memoryTypeIndex = ctx.getMemoryTypeIndex(memRequirements.memoryTypeBits,
+                                                          VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+        if (memoryTypeIndex == uint32_t(-1))
+        {
+            memoryTypeIndex = ctx.getMemoryTypeIndex(memRequirements.memoryTypeBits,
+                                                     VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
+                                                         VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+            this->hostVisible = true;
+        }
+
+        VkMemoryAllocateInfo allocInfo{VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO};
+        allocInfo.allocationSize = memRequirements.size;
+        allocInfo.memoryTypeIndex = memoryTypeIndex;
+        _VK_CHECK_RESULT_(vkAllocateMemory(device, &allocInfo, nullptr, &memory));
+        _VK_CHECK_RESULT_(vkBindBufferMemory(device, buffer, memory, 0));
+
+        this->update();
+#endif
     }
 
     void VKBaseBuffer2::updateData(const void *data, VkDeviceSize size, VkDeviceSize offset)
@@ -204,6 +238,57 @@ namespace vkengine
         if ((this->memoryPropertyFlags & VK_MEMORY_PROPERTY_HOST_COHERENT_BIT) == 0)
         {
             this->flush();
+        }
+    }
+
+    void VKBaseBuffer2::copyData(const void *data, VkDeviceSize size, VkDeviceSize offset)
+    {
+        if (buffer == VK_NULL_HANDLE)
+            return;
+
+        if (hostVisible)
+        {
+            void *mappedData = map();
+            if (mappedData)
+            {
+                memcpy(static_cast<char *>(mappedData) + offset, data, size);
+            }
+        }
+        else
+        {
+            VkDevice device = this->ctx.getDevice()->logicaldevice;
+            VkBuffer stagingBuffer;
+            VkDeviceMemory stagingMemory;
+            VkDeviceSize stagingallCatedSize;
+            VkDeviceSize stagingalignment;
+
+            helper::resource::createBuffer2(
+                device,
+                this->ctx.getDevice()->physicalDevice,
+                size,
+                VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+                stagingBuffer,
+                stagingMemory,
+                &stagingallCatedSize,
+                &stagingalignment);
+            _VK_CHECK_RESULT_(vkBindBufferMemory(device, stagingBuffer, stagingMemory, 0));
+
+            helper::resource::copyToDeviceMemory(device, data, stagingMemory, size);
+
+            VKCommandBufferHander commandBuffer = this->ctx.createTransferCommandBufferHander(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
+
+            VkBufferCopy copyRegion{};
+            copyRegion.srcOffset = 0;
+            copyRegion.dstOffset = offset;
+            copyRegion.size = size;
+            vkCmdCopyBuffer(commandBuffer.getCommandBuffer(), stagingBuffer, this->buffer, 1, &copyRegion);
+
+            commandBuffer.submitAndWait();
+
+            // Cleanup staging resources
+            vkDestroyBuffer(device, stagingBuffer, nullptr);
+            vkFreeMemory(device, stagingMemory, nullptr);
         }
     }
 
@@ -245,6 +330,7 @@ namespace vkengine
     {
         switch (this->descriptorType)
         {
+        case VK_DESCRIPTOR_TYPE_SAMPLER:
         case VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER:
         case VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER:
         case VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER:

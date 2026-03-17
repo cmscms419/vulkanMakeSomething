@@ -59,8 +59,8 @@ namespace vkengine
                 for (auto &filename : model.textureFilenames)
                 {
                     cString prefix = readBistroObj ? directory + "/LowRes/" : "";
-                    model.textures.emplace_back(model.ctx);
-                    model.textures.back().createTextureFromImage(prefix + filename, false, model.textureSRgb[model.textures.size() - 1]);
+                    model.textures.emplace_back(std::make_unique<VKImage2D>(model.ctx));
+                    model.textures.back()->createTextureFromImage(prefix + filename, false, model.textureSRgb[model.textures.size() - 1]);
                 }
 
                 // Calculate elapsed time
@@ -152,7 +152,7 @@ namespace vkengine
         for (auto &filename : model.textureFilenames)
         {
             cString prefix = readBistroObj ? directory + "/LowRes/" : directory + "/";
-            model.textures.emplace_back(model.ctx);
+            model.textures.emplace_back(std::make_unique<VKImage2D>(model.ctx));
             // Check if this is an embedded texture (indicated by * prefix)
             if (!filename.empty() && filename[0] == '*')
             {
@@ -198,7 +198,7 @@ namespace vkengine
                     if (data)
                     {
                         // Create texture directly from memory data
-                        model.textures.back().createTextureFromPixelData(
+                        model.textures.back()->createTextureFromPixelData(
                             data, width, height, 4, model.textureSRgb[model.textures.size() - 1]);
 
                         // Free memory
@@ -244,7 +244,7 @@ namespace vkengine
 
                 PRINT_TO_LOGGER("Texture filename: %s", resourcePath.c_str());
 
-                model.textures.back().createTextureFromImage(
+                model.textures.back()->createTextureFromImage(
                     resourcePath, false, model.textureSRgb[model.textures.size() - 1]);
             }
         }
