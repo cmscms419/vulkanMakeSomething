@@ -45,17 +45,16 @@ namespace vkengine
         virtual void updateBinding(VkDescriptorSetLayoutBinding &binding) override;
         virtual void updateWrite(VkWriteDescriptorSet &write) override;
 
-        VkImage getImage()         { return this->image; }
+        VkImage getImage() { return this->image; }
         VkImageView getImageView() { return this->imageView; }
-        VkImageView getSamplerView() { return this->samplerView; }
-        VkFormat getImageFormat()  { return this->imageFormat; }
-        cUint32_t getHeight()      { return this->height; }
-        cUint32_t getWidth()       { return this->width; }
+        VkImageView getDepthStencilView_() { return this->depthStencilView; }
+        VkFormat getImageFormat() { return this->imageFormat; }
+        cUint32_t getHeight() { return this->height; }
+        cUint32_t getWidth() { return this->width; }
 
     private:
         VKcontext &ctx;
         VkFormat imageFormat{VK_FORMAT_UNDEFINED};
-        VkImageView samplerView{VK_NULL_HANDLE};
 
         cUint32_t width{0};
         cUint32_t height{0};

@@ -40,6 +40,6 @@ namespace vkengine
 
         _VK_CHECK_RESULT_(vkCreateComputePipelines(device, pipelineCache, 1, &pipelineCI, nullptr, &this->pipeline));
 
-        EXIT_TO_LOGGER("Successfully created compute pipeline");
+        PRINT_TO_LOGGER("Successfully created compute pipeline");
     }
 }

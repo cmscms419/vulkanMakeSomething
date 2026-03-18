@@ -26,6 +26,7 @@ namespace vkengine
         cString name;
         std::vector<ResourceUsage> inputs;  // 이 패스가 읽는 리소스
         std::vector<ResourceUsage> outputs; // 이 패스가 쓰는 리소스
+        std::vector<ResourceUsage> shaderResources; // 디스크립터 바인딩 용
         PassExecuteFunc execute;
     };
 

@@ -122,16 +122,19 @@ namespace vkengine
         OptionsUniform optionsUBO;
         BoneDataUniform boneDataUBO;
         PostProcessingOptionsUBO postOptionsUBO;
+        SSAOParamsUBO ssaoParamsUBO;
 
         std::vector<VKUniformBuffer2<SceneDataUBO>> sceneDataUniform;
         std::vector<VKUniformBuffer2<SkyOptionsUBO>> skyOptionsUniform;
         std::vector<VKUniformBuffer2<OptionsUniform>> optionsUniform;
         std::vector<VKUniformBuffer2<BoneDataUniform>> boneDataUniform;
         std::vector<VKUniformBuffer2<PostProcessingOptionsUBO>> postOptionsUniform;
+        std::vector<VKUniformBuffer2<SSAOParamsUBO>> ssaoParamsUniform;
 
         std::vector<DescriptorSetHander> SceneSkyOptionsStates{};
         std::vector<DescriptorSetHander> SceneOptionsBoneDataSets{};
         std::vector<DescriptorSetHander> PostDescriptorSets{};
+        std::vector<DescriptorSetHander> ssaoDescriptorSets{};
 
         VKImage2D msaaColorBuffer;
         VKImage2D depthStencil;
@@ -151,7 +154,6 @@ namespace vkengine
         VKSamplerHandler samplerShadowMap;
 
         DescriptorSetHander skyDescriptorSet;
-        // DescriptorSetHander postDescriptorSet;
         DescriptorSetHander shadowMapSet;
 
         ViewFrustum viewFrustum{};
@@ -170,6 +172,7 @@ namespace vkengine
         void makeForwardPBRPass(VkCommandBuffer cmd, cUint32_t currentFrame, cUint32_t imageIndex);
         void makePostProcessPass(VkCommandBuffer cmd, cUint32_t currentFrame, cUint32_t imageIndex);
         void makePresent(VkCommandBuffer cmd, cUint32_t currentFrame, cUint32_t imageIndex);
+        void makeSSAOPass(VkCommandBuffer cmd, cUint32_t currentFrame, cUint32_t imageIndex);
 
         // Helper functions for creating rendering structures
         // 컬러 어태치먼트 정보 생성 - MSAA resolve 지원

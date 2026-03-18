@@ -267,5 +267,32 @@ namespace vkengine
                 break;
             }
         }
+
+        // 패스의 비스크립터 다인딩들을 순회하면서 필요한 배리어 삽입
+        for (const ResourceUsage &res : pass.shaderResources)
+        {
+            ResourceEntry &entry = resources[res.handle];
+
+            switch (res.access)
+            {
+            case ResourceAccess::ColorAttachmentWrite:
+                entry.image->transitionToColorAttachment(cmd);
+                break;
+            case ResourceAccess::DepthAttachmentWrite:
+                entry.image->transitionToDepthStencilAttachment(cmd);
+                break;
+            case ResourceAccess::ShaderReadOnly:
+                entry.image->transitionToShaderReadOnly(cmd);
+                break;
+            case ResourceAccess::ShaderReadWrite:
+                entry.image->transitionToShaderReadWrite(cmd);
+                break;
+            case ResourceAccess::Present:
+                entry.swapchain->transitionTo(cmd, imageindex);
+                break;
+            default:
+                break;
+            }
+        }
     }
 }

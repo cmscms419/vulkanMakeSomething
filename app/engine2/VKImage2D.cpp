@@ -333,7 +333,7 @@ namespace vkengine
                                   VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT |
                                   VK_IMAGE_USAGE_TRANSFER_DST_BIT;
 
-        createImage(static_cast<cUint32_t>(width), static_cast<cUint32_t>(height),
+        this->createImage(static_cast<cUint32_t>(width), static_cast<cUint32_t>(height),
                     VK_FORMAT_R16G16B16A16_SFLOAT, VK_SAMPLE_COUNT_1_BIT, usage,
                     VK_IMAGE_ASPECT_COLOR_BIT, 1, 1, static_cast<VkImageCreateFlagBits>(0));
     }
@@ -343,7 +343,7 @@ namespace vkengine
         VkImageUsageFlags usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT |
                                   VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
 
-        createImage(width, height, format, sampleCount, usage,
+        this->createImage(width, height, format, sampleCount, usage,
                     VK_IMAGE_ASPECT_DEPTH_BIT, 1, 1, static_cast<VkImageCreateFlagBits>(0));
     }
 
@@ -371,13 +371,13 @@ namespace vkengine
 
         this->imageView = vkengine::helper::resource::createImageView(
             ctx.getDevice()->logicaldevice,
-            image,
+            this->image,
             this->imageFormat,
             this->aspectFlags,
             1,
             1);
 
-        this->samplerView = vkengine::helper::resource::createImageView(
+        this->depthStencilView = vkengine::helper::resource::createImageView(
             ctx.getDevice()->logicaldevice,
             this->image,
             this->imageFormat,
@@ -387,6 +387,7 @@ namespace vkengine
 
         this->descriptorCount = 1;
         this->update();
+        this->type = shaderResourceType::DEPTH_IMAGE;
         this->barrierHelper.update(this->imageFormat, 1, 1);
     }
 
@@ -417,8 +418,6 @@ namespace vkengine
             this->descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
             this->imageInfo.imageLayout = currentLayout;
         }
-
-        // this->update();
     }
 
     void VKImage2D::transitionTo(VkCommandBuffer commandBuffer, VkImageLayout newLayout, VkAccessFlags2 newAccess, VkPipelineStageFlags2 newStage)
@@ -528,10 +527,10 @@ namespace vkengine
             imageView = VK_NULL_HANDLE;
         }
 
-        if (samplerView != VK_NULL_HANDLE)
+        if (depthStencilView != VK_NULL_HANDLE)
         {
-            vkDestroyImageView(ctx.getDevice()->logicaldevice, samplerView, nullptr);
-            samplerView = VK_NULL_HANDLE;
+            vkDestroyImageView(ctx.getDevice()->logicaldevice, depthStencilView, nullptr);
+            depthStencilView = VK_NULL_HANDLE;
         }
 
         if (image != VK_NULL_HANDLE)

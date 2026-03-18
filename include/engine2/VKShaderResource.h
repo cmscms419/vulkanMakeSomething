@@ -11,6 +11,7 @@ namespace vkengine
     {
         NONE,
         IMAGE,
+        DEPTH_IMAGE,
         BUFFER
     };
 
@@ -41,6 +42,7 @@ namespace vkengine
 
         VkImage image{VK_NULL_HANDLE};
         VkImageView imageView{VK_NULL_HANDLE};
+        VkImageView depthStencilView{VK_NULL_HANDLE};
         VkImageLayout imageLayout{VK_IMAGE_LAYOUT_UNDEFINED};
         VkSampler sampler{VK_NULL_HANDLE};
 

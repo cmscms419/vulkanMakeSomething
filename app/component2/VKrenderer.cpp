@@ -35,14 +35,15 @@ namespace vkengine
     void VKRenderer::cleanup()
     {
     }
-    void VKRenderer::update(object::Camera2 &camera, uint32_t currentFrame, double time)
+    void VKRenderer::update(object::Camera2 &camera, cUint32_t currentFrame, double time)
     {
         this->sceneDataUniform[currentFrame].updateData();
         this->optionsUniform[currentFrame].updateData();
         this->skyOptionsUniform[currentFrame].updateData();
         this->postOptionsUniform[currentFrame].updateData();
+        this->ssaoParamsUniform[currentFrame].updateData();
     }
-    void VKRenderer::rendering(VkCommandBuffer cmd, uint32_t currentFrame, uint32_t imageIndex, std::vector<VKModel> &models, VkViewport viewport, VkRect2D scissor)
+    void VKRenderer::rendering(VkCommandBuffer cmd, cUint32_t currentFrame, cUint32_t imageIndex, std::vector<VKModel> &models, VkViewport viewport, VkRect2D scissor)
     {
         this->currentModels = &models;
         this->currentScissor = scissor;
@@ -59,11 +60,13 @@ namespace vkengine
         this->renderGraph.registerResource("shadowDepth", shadowMap);             // 쉐도우 맵 리소스 등록
         this->renderGraph.registerResource("forwardToCompute", forwardToCompute); // 포워드 패스 출력 등록
         this->renderGraph.registerResource("computeToPost", computeToPost);       // 컴퓨트 패스 출력 등록
+        this->renderGraph.registerResource("depthStencil", depthStencil);         // depthstencil 리소스 등록
 
         RenderPassNode shadowPass{
             "shadow",
             {},
             {{"shadowDepth", ResourceAccess::DepthAttachmentWrite}},
+            {},
             [this](VkCommandBuffer cmd, cUint32_t frameIndex, cUint32_t imageIndex)
             {
                 this->makeShadowMap(cmd, frameIndex, imageIndex);
@@ -72,15 +75,27 @@ namespace vkengine
             "pbrForward",
             {{"shadowDepth", ResourceAccess::ShaderReadOnly}},
             {{"forwardToCompute", ResourceAccess::ColorAttachmentWrite}},
+            {},
             [this](VkCommandBuffer cmd, cUint32_t frameIndex, cUint32_t imageIndex)
             {
                 this->makeForwardPBRPass(cmd, frameIndex, imageIndex);
             }};
 
+        RenderPassNode ssaoPass{
+            "ssao",
+            {{"forwardToCompute", ResourceAccess::NOTTHING}},
+            {{"computeToPost", ResourceAccess::NOTTHING}},
+            {{"depthStencil", ResourceAccess::ShaderReadOnly}},
+            [this](VkCommandBuffer cmd, cUint32_t frameIndex, cUint32_t imageIndex)
+            {
+                this->makeSSAOPass(cmd, frameIndex, imageIndex);
+            }};
+
         RenderPassNode postProcessPass{
             "postProcess",
-            {{"forwardToCompute", ResourceAccess::ShaderReadOnly}},
+            {{"computeToPost", ResourceAccess::ShaderReadOnly}},
             {{"swapchain", ResourceAccess::Present}},
+            {},
             [this](VkCommandBuffer cmd, cUint32_t frameIndex, cUint32_t imageIndex)
             {
                 this->makePostProcessPass(cmd, frameIndex, imageIndex);
@@ -89,6 +104,7 @@ namespace vkengine
         this->renderGraph.addPass(shadowPass);
         this->renderGraph.addPass(forwardPass);
         this->renderGraph.addPass(postProcessPass);
+        this->renderGraph.addPass(ssaoPass);
 
         this->renderGraph.compile();
     }
@@ -128,6 +144,8 @@ namespace vkengine
         pipelines.emplace("post", VKPipeLineHandle(ctx, shaderManager, "post", colorFormat,
                                                    depthFormat, VK_SAMPLE_COUNT_1_BIT));
         pipelines.emplace("shadowMap", VKPipeLineHandle(ctx, shaderManager, "shadowMap", VK_FORMAT_D16_UNORM,
+                                                        VK_FORMAT_D16_UNORM, VK_SAMPLE_COUNT_1_BIT));
+        pipelines.emplace("ssao", VKPipeLineHandle(ctx, shaderManager, "ssao", VK_FORMAT_D16_UNORM,
                                                         VK_FORMAT_D16_UNORM, VK_SAMPLE_COUNT_1_BIT));
     }
 
@@ -177,6 +195,8 @@ namespace vkengine
 
         // Set samplers
         forwardToCompute.setSampler(samplerLinearRepeat.getSampler());
+        depthStencil.setSampler(samplerLinearRepeat.getSampler());
+        computeToPost.setSampler(samplerLinearRepeat.getSampler());
 
         // Create descriptor sets for sky textures (set 1 for sky pipeline)
         skyDescriptorSet.create(ctx, {std::ref(this->skyTextures.Prefiltered()),
@@ -187,7 +207,7 @@ namespace vkengine
         shadowMapSet.create(ctx, {std::ref(this->shadowMap)});
     }
 
-    void VKRenderer::resize(uint32_t width, uint32_t height, VkSampleCountFlagBits msaaSamples)
+    void VKRenderer::resize(cUint32_t width, cUint32_t height, VkSampleCountFlagBits msaaSamples)
     {
         // 크기에 의존하는 이미지 정리
         this->msaaColorBuffer.cleanup();
@@ -209,7 +229,8 @@ namespace vkengine
         for (size_t i = 0; i < this->MaxFramesFlight; i++)
         {
             PostDescriptorSets[i].create(
-                this->ctx, {std::ref(forwardToCompute), std::ref(postOptionsUniform[i].Buffer())});
+                this->ctx, {std::ref(forwardToCompute),
+                            std::ref(postOptionsUniform[i].Buffer())});
         }
     }
 
@@ -220,7 +241,7 @@ namespace vkengine
         // Create scene uniform buffers
         this->sceneDataUniform.clear();
         this->sceneDataUniform.reserve(this->MaxFramesFlight);
-        for (uint32_t i = 0; i < this->MaxFramesFlight; ++i)
+        for (cUint32_t i = 0; i < this->MaxFramesFlight; ++i)
         {
             sceneDataUniform.emplace_back(this->ctx, sceneDataUBO);
         }
@@ -228,28 +249,35 @@ namespace vkengine
         // Create options uniform buffers
         optionsUniform.clear();
         optionsUniform.reserve(this->MaxFramesFlight);
-        for (uint32_t i = 0; i < this->MaxFramesFlight; ++i)
+        for (cUint32_t i = 0; i < this->MaxFramesFlight; ++i)
         {
             optionsUniform.emplace_back(this->ctx, optionsUBO);
         }
 
         skyOptionsUniform.clear();
         skyOptionsUniform.reserve(this->MaxFramesFlight);
-        for (uint32_t i = 0; i < this->MaxFramesFlight; ++i)
+        for (cUint32_t i = 0; i < this->MaxFramesFlight; ++i)
         {
             skyOptionsUniform.emplace_back(this->ctx, skyOptionsUBO);
         }
 
         postOptionsUniform.clear();
         postOptionsUniform.reserve(this->MaxFramesFlight);
-        for (uint32_t i = 0; i < this->MaxFramesFlight; ++i)
+        for (cUint32_t i = 0; i < this->MaxFramesFlight; ++i)
         {
             postOptionsUniform.emplace_back(this->ctx, postOptionsUBO);
         }
 
+        ssaoParamsUniform.clear();
+        ssaoParamsUniform.reserve(this->MaxFramesFlight);
+        for (size_t i = 0; i < this->MaxFramesFlight; i++)
+        {
+            ssaoParamsUniform.emplace_back(this->ctx, ssaoParamsUBO);
+        }
+
         boneDataUniform.clear();
         boneDataUniform.reserve(this->MaxFramesFlight);
-        for (uint32_t i = 0; i < this->MaxFramesFlight; ++i)
+        for (cUint32_t i = 0; i < this->MaxFramesFlight; ++i)
         {
             boneDataUniform.emplace_back(this->ctx, boneDataUBO);
         }
@@ -265,7 +293,7 @@ namespace vkengine
         for (size_t i = 0; i < this->MaxFramesFlight; i++)
         {
             PostDescriptorSets[i].create(
-                this->ctx, {std::ref(forwardToCompute), std::ref(postOptionsUniform[i].Buffer())});
+                this->ctx, {std::ref(computeToPost), std::ref(postOptionsUniform[i].Buffer())});
         }
 
         SceneOptionsBoneDataSets.resize(this->MaxFramesFlight);
@@ -274,6 +302,39 @@ namespace vkengine
             SceneOptionsBoneDataSets[i].create(this->ctx, {std::ref(sceneDataUniform[i].Buffer()),
                                                            std::ref(optionsUniform[i].Buffer()),
                                                            std::ref(boneDataUniform[i].Buffer())});
+        }
+
+        // SSAO 디스크립터 세트 생성
+        // forwardToCompute 및 computeToPost가 스토리지 바인딩에 맞게 올바르게 구성되었는지 확인
+        // forwardToCompute는 읽기 전용 스토리지 이미지(입력)로 사용됩니다.
+        // computeToPost는 쓰기 전용 스토리지 이미지(출력)로 사용됩니다.
+        // 이미지 레이아웃 전환을 위한 명령 버퍼 생성
+        // set을 만들기 위해서 변환
+        VKCommandBufferHander cmd = ctx.createGrapicsCommandBufferHander(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
+
+        this->forwardToCompute.transitionTo(
+            cmd.getCommandBuffer(),
+            VK_IMAGE_LAYOUT_GENERAL,
+            VK_ACCESS_2_SHADER_READ_BIT,
+            VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT);
+
+        this->computeToPost.transitionTo(
+            cmd.getCommandBuffer(),
+            VK_IMAGE_LAYOUT_GENERAL,
+            VK_ACCESS_2_SHADER_WRITE_BIT,
+            VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT);
+
+        cmd.submitAndWait();
+        ssaoDescriptorSets.resize(this->MaxFramesFlight);
+        for (size_t i = 0; i < this->MaxFramesFlight; i++)
+        {
+            ssaoDescriptorSets[i].create(this->ctx, {
+                                                        std::ref(sceneDataUniform[i].Buffer()),
+                                                        std::ref(ssaoParamsUniform[i].Buffer()),
+                                                        std::ref(this->forwardToCompute),
+                                                        std::ref(this->computeToPost),
+                                                        std::ref(this->depthStencil),
+                                                    });
         }
     }
 
@@ -301,7 +362,7 @@ namespace vkengine
         // Render models
         vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
                           pipelines.at("pbrForward").getPipeline());
-                          
+
         const auto descriptorSets =
             std::vector{
                 this->SceneOptionsBoneDataSets[currentFrame].get(),
@@ -311,7 +372,7 @@ namespace vkengine
 
         vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
                                 pipelines.at("pbrForward").getPipelineLayout(), 0,
-                                static_cast<uint32_t>(descriptorSets.size()),
+                                static_cast<cUint32_t>(descriptorSets.size()),
                                 descriptorSets.data(), 0, nullptr);
 
         for (size_t j = 0; j < this->currentModels->size(); j++)
@@ -320,7 +381,6 @@ namespace vkengine
             {
                 continue;
             }
-
 
             for (size_t i = 0; i < this->currentModels->at(j).Meshes().size(); i++)
             {
@@ -333,7 +393,7 @@ namespace vkengine
                     continue;
                 }
 
-                uint32_t matIndex = mesh.materialIndex;
+                cUint32_t matIndex = mesh.materialIndex;
                 this->currentModels->at(j).ModelResource().materialIndex = matIndex;
 
                 vkCmdPushConstants(cmd, pipelines.at("pbrForward").getPipelineLayout(),
@@ -342,7 +402,7 @@ namespace vkengine
 
                 vkCmdBindVertexBuffers(cmd, 0, 1, &mesh.vertex->Buffer(), offsets);
                 vkCmdBindIndexBuffer(cmd, mesh.index->Buffer(), 0, VK_INDEX_TYPE_UINT32);
-                vkCmdDrawIndexed(cmd, static_cast<uint32_t>(mesh.indices.size()), 1, 0, 0, 0);
+                vkCmdDrawIndexed(cmd, static_cast<cUint32_t>(mesh.indices.size()), 1, 0, 0, 0);
             }
         }
 
@@ -356,7 +416,7 @@ namespace vkengine
 
         vkCmdBindDescriptorSets(
             cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelines.at("sky").getPipelineLayout(), 0,
-            static_cast<uint32_t>(skyDescriptorSets.size()), skyDescriptorSets.data(), 0, nullptr);
+            static_cast<cUint32_t>(skyDescriptorSets.size()), skyDescriptorSets.data(), 0, nullptr);
         vkCmdDraw(cmd, 36, 1, 0, 0);
         vkCmdEndRendering(cmd);
     }
@@ -386,14 +446,56 @@ namespace vkengine
             std::vector{this->PostDescriptorSets[currentFrame].get()};
         vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
                                 pipelines.at("post").getPipelineLayout(), 0,
-                                static_cast<uint32_t>(postDescriptorSets.size()),
+                                static_cast<cUint32_t>(postDescriptorSets.size()),
                                 postDescriptorSets.data(), 0, nullptr);
 
         vkCmdDraw(cmd, 6, 1, 0, 0);
         vkCmdEndRendering(cmd);
     }
 
-    void VKRenderer::makeShadowMap(VkCommandBuffer cmd, uint32_t currentFrame, cUint32_t imageIndex)
+    void VKRenderer::makeSSAOPass(VkCommandBuffer cmd, cUint32_t currentFrame, cUint32_t imageIndex)
+    {
+        this->forwardToCompute.transitionTo(cmd,
+                                            VK_IMAGE_LAYOUT_GENERAL,
+                                            VK_ACCESS_2_SHADER_READ_BIT,
+                                            VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT);
+
+        // computeToPost_: Empty buffer → writeonly storage image for SSAO output
+        this->computeToPost.transitionTo(
+            cmd,
+            VK_IMAGE_LAYOUT_GENERAL,
+            VK_ACCESS_2_SHADER_WRITE_BIT,
+            VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT);
+
+        // Bind SSAO compute pipeline
+        vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_COMPUTE, pipelines.at("ssao").getPipeline());
+
+        // Bind descriptor sets for SSAO
+        const auto ssaoDescriptorSets = std::vector{this->ssaoDescriptorSets[currentFrame].get()};
+        vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_COMPUTE,
+                                pipelines.at("ssao").getPipelineLayout(), 0,
+                                static_cast<cUint32_t>(ssaoDescriptorSets.size()),
+                                ssaoDescriptorSets.data(), 0, nullptr);
+
+        // Dispatch compute shader
+        // Calculate dispatch size based on image dimensions and local work group size (16x16)
+        cUint32_t groupCountX = (currentScissor.extent.width + 15) / 16;  // Round up division
+        cUint32_t groupCountY = (currentScissor.extent.height + 15) / 16; // Round up division
+        vkCmdDispatch(cmd, groupCountX, groupCountY, 1);
+
+        VkMemoryBarrier2 memoryBarrier{VK_STRUCTURE_TYPE_MEMORY_BARRIER_2};
+        memoryBarrier.srcStageMask = VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT;
+        memoryBarrier.dstStageMask = VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT;
+        memoryBarrier.srcAccessMask = VK_ACCESS_2_SHADER_WRITE_BIT;
+        memoryBarrier.dstAccessMask = VK_ACCESS_2_SHADER_READ_BIT;
+
+        VkDependencyInfo dependencyInfo{VK_STRUCTURE_TYPE_DEPENDENCY_INFO};
+        dependencyInfo.memoryBarrierCount = 1;
+        dependencyInfo.pMemoryBarriers = &memoryBarrier;
+        vkCmdPipelineBarrier2(cmd, &dependencyInfo);
+    }
+
+    void VKRenderer::makeShadowMap(VkCommandBuffer cmd, cUint32_t currentFrame, cUint32_t imageIndex)
     {
 #if 1
         // 그림자 맵 렌더링 시작
@@ -424,7 +526,7 @@ namespace vkengine
 
         vkCmdBindDescriptorSets(
             cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, this->pipelines.at("shadowMap").getPipelineLayout(), 0,
-            static_cast<uint32_t>(descriptorSets.size()), descriptorSets.data(), 0, nullptr);
+            static_cast<cUint32_t>(descriptorSets.size()), descriptorSets.data(), 0, nullptr);
 
         vkCmdSetDepthBias(cmd,
                           1.1f,  // Constant factor
@@ -461,7 +563,7 @@ namespace vkengine
                 vkCmdBindIndexBuffer(cmd, mesh.index->Buffer(), 0, VK_INDEX_TYPE_UINT32);
 
                 // Draw the mesh
-                vkCmdDrawIndexed(cmd, static_cast<uint32_t>(mesh.indices.size()), 1, 0, 0, 0);
+                vkCmdDrawIndexed(cmd, static_cast<cUint32_t>(mesh.indices.size()), 1, 0, 0, 0);
             }
         }
 
