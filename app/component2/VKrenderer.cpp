@@ -189,7 +189,7 @@ namespace vkengine
         // Create render targets
         this->msaaColorBuffer.createMsaaColorBuffer(swapchainWidth, swapchainHeight, msaaSamples);
         this->msaaDepthStencil.createDepthStencil(swapchainWidth, swapchainHeight, msaaSamples);
-        this->depthStencil.createDepthStencil(swapchainWidth, swapchainHeight, VK_SAMPLE_COUNT_1_BIT);
+        this->depthStencil.createDepthStencil(swapchainWidth, swapchainHeight, VK_SAMPLE_COUNT_1_BIT, true);
         this->forwardToCompute.createGeneralStorage(swapchainWidth, swapchainHeight);
         this->computeToPost.createGeneralStorage(swapchainWidth, swapchainHeight);
 

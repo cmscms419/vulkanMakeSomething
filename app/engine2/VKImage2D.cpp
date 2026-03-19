@@ -22,7 +22,6 @@ namespace vkengine
 
     VKImage2D::VKImage2D(VKcontext &context) : ctx(context)
     {
-        this->type = shaderResourceType::IMAGE;
     }
 
     VKImage2D::~VKImage2D()
@@ -347,13 +346,18 @@ namespace vkengine
                     VK_IMAGE_ASPECT_DEPTH_BIT, 1, 1, static_cast<VkImageCreateFlagBits>(0));
     }
 
-    void VKImage2D::createDepthStencil(cUint32_t width, cUint32_t height, VkSampleCountFlagBits msaaSamples)
+    void VKImage2D::createDepthStencil(cUint32_t width, cUint32_t height, VkSampleCountFlagBits msaaSamples, cBool onlyDepth)
     {
         this->usageFlags = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
         this->imageFormat = ctx.getDepthStencil()->depthFormat;
         this->width = width;
         this->height = height;
-        this->aspectFlags = VK_IMAGE_ASPECT_DEPTH_BIT | ((this->imageFormat >= VK_FORMAT_D16_UNORM_S8_UINT) ? VK_IMAGE_ASPECT_STENCIL_BIT : 0);
+        this->aspectFlags = VK_IMAGE_ASPECT_DEPTH_BIT;
+        
+        if (!onlyDepth)
+        {
+            this->aspectFlags |= ((this->imageFormat >= VK_FORMAT_D16_UNORM_S8_UINT) ? VK_IMAGE_ASPECT_STENCIL_BIT : 0);
+        }
 
         helper::resource::createImage(
             ctx.getDevice()->logicaldevice,
@@ -377,17 +381,8 @@ namespace vkengine
             1,
             1);
 
-        this->depthStencilView = vkengine::helper::resource::createImageView(
-            ctx.getDevice()->logicaldevice,
-            this->image,
-            this->imageFormat,
-            VK_IMAGE_ASPECT_DEPTH_BIT,
-            1,
-            1);
-
         this->descriptorCount = 1;
         this->update();
-        this->type = shaderResourceType::DEPTH_IMAGE;
         this->barrierHelper.update(this->imageFormat, 1, 1);
     }
 
@@ -467,6 +462,11 @@ namespace vkengine
                      VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT | VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT);
     }
 
+    void VKImage2D::transitionToShaderWriteOnly(VkCommandBuffer commandBuffer)
+    {
+        EXIT_TO_LOGGER("TODO: 아직 만들지 않음");
+    }
+
     void VKImage2D::transitionToPresent(VkCommandBuffer commandBuffer)
     {
         transitionTo(commandBuffer,
@@ -525,12 +525,6 @@ namespace vkengine
         {
             vkDestroyImageView(ctx.getDevice()->logicaldevice, imageView, nullptr);
             imageView = VK_NULL_HANDLE;
-        }
-
-        if (depthStencilView != VK_NULL_HANDLE)
-        {
-            vkDestroyImageView(ctx.getDevice()->logicaldevice, depthStencilView, nullptr);
-            depthStencilView = VK_NULL_HANDLE;
         }
 
         if (image != VK_NULL_HANDLE)

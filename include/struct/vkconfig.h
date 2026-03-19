@@ -206,6 +206,7 @@ enum class ResourceAccess : cUint16_t
     ColorAttachmentWrite,
     DepthAttachmentWrite,
     ShaderReadOnly,
+    ShaderWriteOnly,
     ShaderReadWrite, // compute general
     Present,
     MAX
@@ -229,6 +230,8 @@ static inline cString getStringResourceAccess(ResourceAccess access)
         return "DepthAttachmentWrite";
     case ResourceAccess::ShaderReadOnly:
         return "ShaderReadOnly";
+    case ResourceAccess::ShaderWriteOnly:
+        return "ShaderWriteOnly";
     case ResourceAccess::ShaderReadWrite:
         return "ShaderReadWrite";
     case ResourceAccess::Present:

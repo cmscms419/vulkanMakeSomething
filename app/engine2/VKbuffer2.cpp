@@ -376,7 +376,6 @@ namespace vkengine
         memoryPropertyFlags = 0; ///< 메모리 속성 플래그
         mapped = nullptr;        ///< 매핑된 메모리 포인터
         hostVisible = false;
-        type = shaderResourceType::BUFFER;
     }
 
     VKBaseBuffer2::VKBaseBuffer2(VKBaseBuffer2 &&other) noexcept

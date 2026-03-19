@@ -7,40 +7,27 @@ namespace vkengine
 {
     void VKShaderResource::update()
     {
-        switch (this->type)
+        if (buffer)
         {
-        case shaderResourceType::BUFFER:
             bufferInfo.buffer = buffer;
             bufferInfo.offset = 0;
             bufferInfo.range = bufferSize;
-            break;
-        case shaderResourceType::IMAGE:
-            if (image && sampler)
-            {
+        }
+        else if (image && sampler)
+        {
             descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER; // 이미지와 셈플러가 결합된 형태
             imageInfo.imageView = imageView;
             imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
             imageInfo.sampler = sampler;
-            }
-            else if (image)
-            {
-                descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE; // 이미지와 셈플러가 서로 분리된 형태
-                imageInfo.imageView = imageView;
-            }
-            break;
-        case shaderResourceType::DEPTH_IMAGE:
-            if (image && sampler)
-            {
-                descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-                imageInfo.imageView = depthStencilView;
-                imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-                imageInfo.sampler = sampler;
-            }
-            break;
-        case shaderResourceType::NONE:
-        default:
+        }
+        else if (image)
+        {
+            descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE; // 이미지와 셈플러가 서로 분리된 형태
+            imageInfo.imageView = imageView;
+        }
+        else
+        {
             EXIT_TO_LOGGER("Neither image is ready");
-            break;
         }
     }
 

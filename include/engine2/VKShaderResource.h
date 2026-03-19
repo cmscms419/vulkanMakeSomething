@@ -7,14 +7,6 @@
 
 namespace vkengine
 {
-    enum shaderResourceType
-    {
-        NONE,
-        IMAGE,
-        DEPTH_IMAGE,
-        BUFFER
-    };
-
     class VKShaderResource
     {
     public:
@@ -42,7 +34,6 @@ namespace vkengine
 
         VkImage image{VK_NULL_HANDLE};
         VkImageView imageView{VK_NULL_HANDLE};
-        VkImageView depthStencilView{VK_NULL_HANDLE};
         VkImageLayout imageLayout{VK_IMAGE_LAYOUT_UNDEFINED};
         VkSampler sampler{VK_NULL_HANDLE};
 
@@ -62,7 +53,6 @@ namespace vkengine
         VkDescriptorBufferInfo bufferInfo{};
         VkBufferView texelBufferView = {VK_NULL_HANDLE};
 
-        shaderResourceType type;
         VKBarrierHelper barrierHelper;
     };
 }

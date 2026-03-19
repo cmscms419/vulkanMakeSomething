@@ -88,7 +88,7 @@ namespace vkengine
             const RenderPassNode &pass = passes[index];
 
             // 각 패스 실행 전에 필요한 배리어 삽입
-            insertBarriersBeforePass(cmd, frameIndex, imageindex, pass);
+            insertBarriersBeforePass(cmd, imageindex, pass);
 
             // 패스 실행
             pass.execute(cmd, frameIndex, imageindex);
@@ -200,99 +200,49 @@ namespace vkengine
         return sorted;
     }
 
-    void VKRenderGraph::insertBarriersBeforePass(VkCommandBuffer cmd, cUint32_t frameIndex, cUint32_t imageindex, const RenderPassNode &pass)
+    void VKRenderGraph::applyBarrier(VkCommandBuffer cmd, cUint32_t imageindex, const ResourceUsage &res, const cString &passName)
     {
-        // 패스의 입력 리소스들을 순회하면서 필요한 배리어 삽입
-        for (const ResourceUsage &res : pass.inputs)
+        ResourceEntry &entry = resources[res.handle];
+
+        if (entry.image == nullptr && entry.swapchain == nullptr)
         {
-            ResourceEntry &entry = resources[res.handle];
-
-            if (entry.image == nullptr && entry.swapchain == nullptr)
-            {
-                PRINT_TO_LOGGER("Error: Resource '%s' used in pass '%s' is not registered as either image or swapchain.", res.handle.c_str(), pass.name.c_str());
-                continue;
-            }
-
-            switch (res.access)
-            {
-            case ResourceAccess::ColorAttachmentWrite:
-                entry.image->transitionToColorAttachment(cmd);
-                break;
-            case ResourceAccess::DepthAttachmentWrite:
-                entry.image->transitionToDepthStencilAttachment(cmd);
-                break;
-            case ResourceAccess::ShaderReadOnly:
-                entry.image->transitionToShaderReadOnly(cmd);
-                break;
-            case ResourceAccess::ShaderReadWrite:
-                entry.image->transitionToShaderReadWrite(cmd);
-                break;
-            case ResourceAccess::Present: // 아직 VKimage2D로 출력하는 구문을 만들지 않음
-                entry.swapchain->transitionTo(cmd, frameIndex);
-                break;
-            default:
-                break;
-            }
+            PRINT_TO_LOGGER("Error: Resource '%s' used in pass '%s' is not registered as either image or swapchain.", res.handle.c_str(), passName.c_str());
+            return;
         }
 
-        // 패스의 출력 리소스들을 순회하면서 필요한 배리어 삽입
-        for (const ResourceUsage &res : pass.outputs)
+        switch (res.access)
         {
-            ResourceEntry &entry = resources[res.handle];
-
-            if (entry.image == nullptr && entry.swapchain == nullptr)
-            {
-                PRINT_TO_LOGGER("Error: Resource '%s' used in pass '%s' is not registered as either image or swapchain.", res.handle.c_str(), pass.name.c_str());
-                continue;
-            }
-
-            switch (res.access)
-            {
-            case ResourceAccess::ColorAttachmentWrite:
-                entry.image->transitionToColorAttachment(cmd);
-                break;
-            case ResourceAccess::DepthAttachmentWrite:
-                entry.image->transitionToDepthStencilAttachment(cmd);
-                break;
-            case ResourceAccess::ShaderReadOnly:
-                entry.image->transitionToShaderReadOnly(cmd);
-                break;
-            case ResourceAccess::ShaderReadWrite:
-                entry.image->transitionToShaderReadWrite(cmd);
-                break;
-            case ResourceAccess::Present:
-                entry.swapchain->transitionTo(cmd, imageindex);
-                break;
-            default:
-                break;
-            }
-        }
-
-        // 패스의 비스크립터 다인딩들을 순회하면서 필요한 배리어 삽입
-        for (const ResourceUsage &res : pass.shaderResources)
-        {
-            ResourceEntry &entry = resources[res.handle];
-
-            switch (res.access)
-            {
-            case ResourceAccess::ColorAttachmentWrite:
-                entry.image->transitionToColorAttachment(cmd);
-                break;
-            case ResourceAccess::DepthAttachmentWrite:
-                entry.image->transitionToDepthStencilAttachment(cmd);
-                break;
-            case ResourceAccess::ShaderReadOnly:
-                entry.image->transitionToShaderReadOnly(cmd);
-                break;
-            case ResourceAccess::ShaderReadWrite:
-                entry.image->transitionToShaderReadWrite(cmd);
-                break;
-            case ResourceAccess::Present:
-                entry.swapchain->transitionTo(cmd, imageindex);
-                break;
-            default:
-                break;
-            }
+        case ResourceAccess::ColorAttachmentWrite:
+            entry.image->transitionToColorAttachment(cmd);
+            break;
+        case ResourceAccess::DepthAttachmentWrite:
+            entry.image->transitionToDepthStencilAttachment(cmd);
+            break;
+        case ResourceAccess::ShaderReadOnly:
+            entry.image->transitionToShaderReadOnly(cmd);
+            break;
+        case ResourceAccess::ShaderReadWrite:
+            entry.image->transitionToShaderReadWrite(cmd);
+            break;
+        case ResourceAccess::ShaderWriteOnly:
+            entry.image->transitionToShaderWriteOnly(cmd);
+            break;
+        case ResourceAccess::Present:
+            entry.swapchain->transitionTo(cmd, imageindex);
+            break;
+        default:
+            break;
         }
     }
+
+    void VKRenderGraph::insertBarriersBeforePass(VkCommandBuffer cmd, cUint32_t imageindex, const RenderPassNode &pass)
+    {
+        for (const ResourceUsage &res : pass.inputs)
+            applyBarrier(cmd, imageindex, res, pass.name);
+        for (const ResourceUsage &res : pass.outputs)
+            applyBarrier(cmd, imageindex, res, pass.name);
+        for (const ResourceUsage &res : pass.shaderResources)
+            applyBarrier(cmd, imageindex, res, pass.name);
+    }
+
 }

@@ -51,7 +51,8 @@ namespace vkengine
 
         std::vector<std::vector<cSize>> buildAdjacency() const;
         std::vector<cSize> topologicalSort(const std::vector<std::vector<cSize>> &adj) const;
-        void insertBarriersBeforePass(VkCommandBuffer cmd, cUint32_t frameIndex, cUint32_t imageindex, const RenderPassNode &pass);
+        void insertBarriersBeforePass(VkCommandBuffer cmd, cUint32_t imageindex, const RenderPassNode &pass);
+        void applyBarrier(VkCommandBuffer cmd, cUint32_t imageindex, const ResourceUsage &res, const cString &passName);
         void printGraph() const;
     };
 

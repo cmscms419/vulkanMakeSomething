@@ -3,6 +3,26 @@
 
 #include "base_types.h"
 #include "math_types.h"
+#include <cstdint>
+#include <string>
+
+namespace vkHash
+{
+    // FNV-1a 64bit — 컴파일 타임 사용: constexpr auto key = vkHash::fnv1a("MyTexture");
+    constexpr cUint64_t fnv1a(const char* str, cUint64_t hash = 14695981039346656037ULL)
+    {
+        return *str ? fnv1a(str + 1, (hash ^ static_cast<cUint64_t>(*str)) * 1099511628211ULL) : hash;
+    }
+
+    // 런타임 사용: vkHash::fnv1a(name)
+    inline cUint64_t fnv1a(const std::string& str)
+    {
+        cUint64_t hash = 14695981039346656037ULL;
+        for (char c : str)
+            hash = (hash ^ static_cast<cUint64_t>(c)) * 1099511628211ULL;
+        return hash;
+    }
+}
 
 namespace vkMath
 {

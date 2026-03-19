@@ -29,7 +29,7 @@ namespace vkengine
         void createMsaaColorBuffer(cUint16_t width, cUint16_t height, VkSampleCountFlagBits sampleCount);
         void createGeneralStorage(cUint16_t width, cUint32_t height);
         void createShadowMap(cUint16_t width, cUint32_t height, VkFormat format = VK_FORMAT_D16_UNORM, VkSampleCountFlagBits sampleCount = VK_SAMPLE_COUNT_1_BIT);
-        void createDepthStencil(cUint32_t width, cUint32_t height, VkSampleCountFlagBits msaaSamples);
+        void createDepthStencil(cUint32_t width, cUint32_t height, VkSampleCountFlagBits msaaSamples, cBool onlyDepth = false);
         void updateResourceBindingAfterTransition();
         void cleanup() override;
 
@@ -40,6 +40,7 @@ namespace vkengine
         void transitionToTransferSrc(VkCommandBuffer commandBuffer);
         void transitionToShaderReadOnly(VkCommandBuffer commandBuffer);
         void transitionToShaderReadWrite(VkCommandBuffer commandBuffer);
+        void transitionToShaderWriteOnly(VkCommandBuffer commandBuffer);
         void transitionToPresent(VkCommandBuffer commandBuffer);
 
         virtual void updateBinding(VkDescriptorSetLayoutBinding &binding) override;
@@ -47,7 +48,6 @@ namespace vkengine
 
         VkImage getImage() { return this->image; }
         VkImageView getImageView() { return this->imageView; }
-        VkImageView getDepthStencilView_() { return this->depthStencilView; }
         VkFormat getImageFormat() { return this->imageFormat; }
         cUint32_t getHeight() { return this->height; }
         cUint32_t getWidth() { return this->width; }
