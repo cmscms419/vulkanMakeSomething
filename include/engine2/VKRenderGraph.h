@@ -27,7 +27,6 @@ namespace vkengine
         std::vector<ResourceUsage> inputs;  // 이 패스가 읽는 리소스
         std::vector<ResourceUsage> outputs; // 이 패스가 쓰는 리소스
         std::vector<ResourceUsage> shaderResources; // 디스크립터 바인딩 용
-        PassExecuteFunc execute;
     };
 
     class VKRenderGraph
@@ -37,14 +36,18 @@ namespace vkengine
 
         void registerResource(const cString &handle, VKImage2D &img);
         void registerSwapchainResource(const cString &handle, VKSwapChain &swapchain);
+        void registerPassFunction(const cString& name, PassExecuteFunc func);
         void addPass(RenderPassNode pass);
         bool compile(); // addPass 후 한 번만 호출 (위상 정렬 + 유효성 검사)
         void execute(VkCommandBuffer cmd, cUint32_t frameIndex, cUint32_t imageindex);
+        bool loadFromJson(const cString& filePath);
+
         VKSwapChain& getVKSwapChain();
 
     private:
         VKcontext &ctx;
         std::unordered_map<cString, ResourceEntry> resources;
+        std::unordered_map<cString, PassExecuteFunc> passRegistry;
         cString swapchainHandle;
         std::vector<RenderPassNode> passes;
         std::vector<cSize> sortedOrder; // compile()이 채워넣음

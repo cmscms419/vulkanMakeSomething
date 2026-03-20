@@ -1,9 +1,11 @@
 #include "VKRenderGraph.h"
 #include "log.h"
 
+#include "../../external/tinygltf/json.hpp"
 #include <queue>
 
 using namespace vkengine::Log;
+using json = nlohmann::json;
 
 namespace vkengine
 {
@@ -40,6 +42,17 @@ namespace vkengine
         resources.emplace(handle, entry);
 
         swapchainHandle = handle;
+    }
+
+    void VKRenderGraph::registerPassFunction(const cString &name, PassExecuteFunc func)
+    {
+        if (this->passRegistry.find(name) != this->passRegistry.end())
+        {
+            PRINT_TO_LOGGER("Warning: function '%s' is already registered in RenderGraph. Overwriting.", name.c_str());
+            return;
+        }
+
+        passRegistry.emplace(name, func);
     }
 
     void VKRenderGraph::addPass(RenderPassNode pass)
@@ -91,7 +104,12 @@ namespace vkengine
             insertBarriersBeforePass(cmd, imageindex, pass);
 
             // 패스 실행
-            pass.execute(cmd, frameIndex, imageindex);
+
+            if (this->passRegistry.find(pass.name) != this->passRegistry.end())
+            {
+                this->passRegistry[pass.name](cmd, frameIndex, imageindex);
+            }
+
         }
     }
 
@@ -243,6 +261,55 @@ namespace vkengine
             applyBarrier(cmd, imageindex, res, pass.name);
         for (const ResourceUsage &res : pass.shaderResources)
             applyBarrier(cmd, imageindex, res, pass.name);
+    }
+
+    bool VKRenderGraph::loadFromJson(const cString &filePath)
+    {
+        std::ifstream file(filePath);
+        if (!file.is_open())
+        {
+            return false;
+        }
+
+        json root;
+        root = json::parse(file);
+
+        for (const auto &passJson : root["passes"])
+        {
+            RenderPassNode node;
+            cString name = passJson["name"];
+
+            // name, inputs, outputs, shaderResources 파싱
+            node.name = name;
+
+            for (const auto &item : passJson["inputs"])
+            {
+                cString handle = item["handle"];
+                cString access = item["access"];
+
+                node.inputs.push_back({handle, getResourceAccess(access)});
+            }
+
+            for (const auto &item : passJson["outputs"])
+            {
+                cString handle = item["handle"];
+                cString access = item["access"];
+
+                node.outputs.push_back({handle, getResourceAccess(access)});
+            }
+
+            for (const auto &item : passJson["shaderResources"])
+            {
+                cString handle = item["handle"];
+                cString access = item["access"];
+
+                node.shaderResources.push_back({handle, getResourceAccess(access)});
+            }
+
+            this->passes.push_back(std::move(node));
+        }
+
+        return true;
     }
 
 }

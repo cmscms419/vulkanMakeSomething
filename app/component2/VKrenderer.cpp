@@ -61,6 +61,7 @@ namespace vkengine
         this->renderGraph.registerResource("forwardToCompute", forwardToCompute); // 포워드 패스 출력 등록
         this->renderGraph.registerResource("computeToPost", computeToPost);       // 컴퓨트 패스 출력 등록
         this->renderGraph.registerResource("depthStencil", depthStencil);         // depthstencil 리소스 등록
+#if 0
 
         RenderPassNode shadowPass{
             "shadow",
@@ -71,6 +72,7 @@ namespace vkengine
             {
                 this->makeShadowMap(cmd, frameIndex, imageIndex);
             }};
+
         RenderPassNode forwardPass{
             "pbrForward",
             {{"shadowDepth", ResourceAccess::ShaderReadOnly}},
@@ -100,11 +102,39 @@ namespace vkengine
             {
                 this->makePostProcessPass(cmd, frameIndex, imageIndex);
             }};
+            
+            this->renderGraph.addPass(shadowPass);
+            this->renderGraph.addPass(forwardPass);
+            this->renderGraph.addPass(postProcessPass);
+            this->renderGraph.addPass(ssaoPass);
+#else
+        this->renderGraph.loadFromJson(this->assetsPath + "/renderGraph.json");
 
-        this->renderGraph.addPass(shadowPass);
-        this->renderGraph.addPass(forwardPass);
-        this->renderGraph.addPass(postProcessPass);
-        this->renderGraph.addPass(ssaoPass);
+        this->renderGraph.registerPassFunction("shadow",
+                                               [this](VkCommandBuffer cmd, cUint32_t frameIndex, cUint32_t imageIndex)
+                                               {
+                                                   this->makeShadowMap(cmd, frameIndex, imageIndex);
+                                               });
+
+        this->renderGraph.registerPassFunction("pbrForward",
+                                               [this](VkCommandBuffer cmd, cUint32_t frameIndex, cUint32_t imageIndex)
+                                               {
+                                                   this->makeForwardPBRPass(cmd, frameIndex, imageIndex);
+                                               });
+
+        this->renderGraph.registerPassFunction("ssao",
+                                               [this](VkCommandBuffer cmd, cUint32_t frameIndex, cUint32_t imageIndex)
+                                               {
+                                                   this->makeSSAOPass(cmd, frameIndex, imageIndex);
+                                               });
+
+        this->renderGraph.registerPassFunction("postProcess",
+                                               [this](VkCommandBuffer cmd, cUint32_t frameIndex, cUint32_t imageIndex)
+                                               {
+                                                   this->makePostProcessPass(cmd, frameIndex, imageIndex);
+                                               });
+
+#endif
 
         this->renderGraph.compile();
     }
@@ -146,7 +176,7 @@ namespace vkengine
         pipelines.emplace("shadowMap", VKPipeLineHandle(ctx, shaderManager, "shadowMap", VK_FORMAT_D16_UNORM,
                                                         VK_FORMAT_D16_UNORM, VK_SAMPLE_COUNT_1_BIT));
         pipelines.emplace("ssao", VKPipeLineHandle(ctx, shaderManager, "ssao", VK_FORMAT_D16_UNORM,
-                                                        VK_FORMAT_D16_UNORM, VK_SAMPLE_COUNT_1_BIT));
+                                                   VK_FORMAT_D16_UNORM, VK_SAMPLE_COUNT_1_BIT));
     }
 
     void VKRenderer::createTextures(cUint32_t swapchainWidth, cUint32_t swapchainHeight, VkSampleCountFlagBits msaaSamples)

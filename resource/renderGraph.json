@@ -1,0 +1,68 @@
+{
+    "passes": [
+        {
+            "name": "shadow",
+            "inputs": [],
+            "outputs": [
+                {
+                    "handle": "shadowDepth",
+                    "access": "DepthAttachmentWrite"
+                }
+            ],
+            "shaderResources": []
+        },
+        {
+            "name": "pbrForward",
+            "inputs": [
+                {
+                    "handle": "shadowDepth",
+                    "access": "ShaderReadOnly"
+                }
+            ],
+            "outputs": [
+                {
+                    "handle": "forwardToCompute",
+                    "access": "ColorAttachmentWrite"
+                }
+            ],
+            "shaderResources": []
+        },
+        {
+            "name": "ssao",
+            "inputs": [
+                {
+                    "handle": "forwardToCompute",
+                    "access": "NOTHING"
+                }
+            ],
+            "outputs": [
+                {
+                    "handle": "computeToPost",
+                    "access": "NOTHING"
+                }
+            ],
+            "shaderResources": [
+                {
+                    "handle": "depthStencil",
+                    "access": "ShaderReadOnly"
+                }
+            ]
+        },
+        {
+            "name": "postProcess",
+            "inputs": [
+                {
+                    "handle": "computeToPost",
+                    "access": "ShaderReadOnly"
+                }
+            ],
+            "outputs": [
+                {
+                    "handle": "swapchain",
+                    "access": "Present"
+                }
+            ],
+            "shaderResources": []
+        }
+    ]
+}

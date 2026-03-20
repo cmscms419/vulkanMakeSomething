@@ -241,4 +241,40 @@ static inline cString getStringResourceAccess(ResourceAccess access)
     }
 }
 
+static inline ResourceAccess getResourceAccess(cString access)
+{
+    ResourceAccess result = ResourceAccess::NOTTHING;
+
+    if (access == "ColorAttachmentWrite")
+    {
+        result = ResourceAccess::ColorAttachmentWrite;
+    }
+    else if (access == "DepthAttachmentWrite")
+    {
+        result = ResourceAccess::DepthAttachmentWrite;
+    }
+    else if (access == "ShaderReadOnly")
+    {
+        result = ResourceAccess::ShaderReadOnly;
+    }
+    else if (access == "ShaderWriteOnly")
+    {
+        result = ResourceAccess::ShaderWriteOnly;
+    }
+    else if (access == "ShaderReadWrite")
+    {
+        result = ResourceAccess::ShaderReadWrite;
+    }
+    else if (access == "Present")
+    {
+        result = ResourceAccess::Present;
+    }
+    else
+    {
+        result = ResourceAccess::NOTTHING;
+    }
+
+    return result;
+}
+
 #endif // !INCLUDE_CONFIG_TYPE_H_
