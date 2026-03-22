@@ -30,18 +30,7 @@ namespace vkengine
         void createGeneralStorage(cUint16_t width, cUint32_t height);
         void createShadowMap(cUint16_t width, cUint32_t height, VkFormat format = VK_FORMAT_D16_UNORM, VkSampleCountFlagBits sampleCount = VK_SAMPLE_COUNT_1_BIT);
         void createDepthStencil(cUint32_t width, cUint32_t height, VkSampleCountFlagBits msaaSamples, cBool onlyDepth = false);
-        void updateResourceBindingAfterTransition();
         void cleanup() override;
-
-        void transitionTo(VkCommandBuffer commandBuffer, VkImageLayout newLayout, VkAccessFlags2 newAccess, VkPipelineStageFlags2 newStage);
-        void transitionToColorAttachment(VkCommandBuffer commandBuffer);
-        void transitionToDepthStencilAttachment(VkCommandBuffer commandBuffer);
-        void transitionToTransferDst(VkCommandBuffer commandBuffer);
-        void transitionToTransferSrc(VkCommandBuffer commandBuffer);
-        void transitionToShaderReadOnly(VkCommandBuffer commandBuffer);
-        void transitionToShaderReadWrite(VkCommandBuffer commandBuffer);
-        void transitionToShaderWriteOnly(VkCommandBuffer commandBuffer);
-        void transitionToPresent(VkCommandBuffer commandBuffer);
 
         virtual void updateBinding(VkDescriptorSetLayoutBinding &binding) override;
         virtual void updateWrite(VkWriteDescriptorSet &write) override;

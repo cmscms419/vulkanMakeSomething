@@ -149,42 +149,13 @@ namespace vkengine
         this->descriptorCount = 1;
         this->descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
         VkDevice device = this->ctx.getDevice()->logicaldevice;
-#if 0
-        this->hostVisible = hostVisible;
 
-        if (this->hostVisible)
-        {
-            this->create(VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | additionalUsage,
-                         VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-                         size, nullptr);
-        }
-        else
-        {
-            this->usageFlags = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT | additionalUsage;
-            this->memoryPropertyFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
-            this->bufferSize = size;
-
-            helper::resource::createBuffer2(
-                this->ctx.getDevice()->logicaldevice,
-                this->ctx.getDevice()->physicalDevice,
-                this->bufferSize,
-                this->usageFlags,
-                this->memoryPropertyFlags,
-                this->buffer,
-                this->memory,
-                &this->allocatedSize,
-                &this->alignment);
-
-            _VK_CHECK_RESULT_(vkBindBufferMemory(ctx.getDevice()->logicaldevice, this->buffer, this->memory, 0));
-            this->update();
-        }
-#else
         this->bufferSize = size;
 
         // 버퍼 생성 정보를 담은 구조체를 초기화한다.
         VkBufferCreateInfo bufferInfo{VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO};
         bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO; // 구조체 타입을 지정한다.
-        bufferInfo.size = this->bufferSize;                                  // 생성할 버퍼의 크기를 설정한다.
+        bufferInfo.size = this->bufferSize;                      // 생성할 버퍼의 크기를 설정한다.
         bufferInfo.usage = additionalUsage;                      // 버퍼 사용 목적을 지정한다 (예: vertex, index 등).
         bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;      // 버퍼의 공유 모드를 독점으로 설정한다.
 
@@ -211,7 +182,6 @@ namespace vkengine
         _VK_CHECK_RESULT_(vkBindBufferMemory(device, buffer, memory, 0));
 
         this->update();
-#endif
     }
 
     void VKBaseBuffer2::updateData(const void *data, VkDeviceSize size, VkDeviceSize offset)

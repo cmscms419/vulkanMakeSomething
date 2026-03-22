@@ -34,8 +34,8 @@ namespace vkengine
         void createModelIndexBuffer(VkDeviceSize size, void *data);
         void createStorageBuffer(VkDeviceSize size, VkBufferUsageFlags additionalUsage = 0);
 
-        void VKBaseBuffer2::updateBinding(VkDescriptorSetLayoutBinding &binding) override;
-        void VKBaseBuffer2::updateWrite(VkWriteDescriptorSet &write) override;
+        void updateBinding(VkDescriptorSetLayoutBinding &binding) override;
+        void updateWrite(VkWriteDescriptorSet &write) override;
 
         void updateData(const void *data, VkDeviceSize size, VkDeviceSize offset);
         void copyData(const void *data, VkDeviceSize size, VkDeviceSize offset = 0);
@@ -43,15 +43,8 @@ namespace vkengine
         void *map();
         void unmap();
 
-        VkBuffer &Buffer()
-        {
-            return this->buffer;
-        }
-
-        void *Mapped()
-        {
-            return this->mapped;
-        }
+        VkBuffer &Buffer() { return this->buffer; }
+        void *Mapped() { return this->mapped; }
 
     private:
         void create(VkBufferUsageFlags usageFlags, VkMemoryPropertyFlags memoryPropertyFlags,

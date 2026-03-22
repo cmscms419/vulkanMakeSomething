@@ -83,9 +83,9 @@ namespace vkengine
 
         cString name;
         // std::vector<VkDescriptorSetLayout> layouts_{};
-        // std::vector<std::vector<std::reference_wrapper<DescriptorSetHander>>> descriptorSets_; // [frameNumber][setIndex]
-        // std::vector<std::vector<VkDescriptorSet>> descriptorSetHandles_;            // [frameNumber][setIndex]
-        // std::vector<std::vector<BindingInfo>> bindingInfos_;
+        // std::vector<std::vector<std::reference_wrapper<DescriptorSetHander>>> descriptorSets; // [frameNumber][setIndex]
+        // std::vector<std::vector<VkDescriptorSet>> descriptorSetHandles; // [frameNumber][setIndex]
+        // std::vector<std::vector<BindingInfo>> bindingInfos;
     };
 }
 

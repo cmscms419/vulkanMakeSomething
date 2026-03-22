@@ -29,6 +29,18 @@ namespace vkengine
         void updateImageInfo(VkDescriptorImageInfo& imageInfo);
         void updateBufferInfo(VkDescriptorBufferInfo& bufferInfo);
 
+        void transitionTo(VkCommandBuffer commandBuffer, VkImageLayout newLayout, VkAccessFlags2 newAccess, VkPipelineStageFlags2 newStage);
+        void transitionToColorAttachment(VkCommandBuffer commandBuffer);
+        void transitionToDepthStencilAttachment(VkCommandBuffer commandBuffer);
+        void transitionToTransferDst(VkCommandBuffer commandBuffer);
+        void transitionToTransferSrc(VkCommandBuffer commandBuffer);
+        void transitionToShaderReadOnly(VkCommandBuffer commandBuffer);
+        void transitionToShaderReadWrite(VkCommandBuffer commandBuffer);
+        void transitionToShaderWriteOnly(VkCommandBuffer commandBuffer);
+        void transitionToPresent(VkCommandBuffer commandBuffer);
+        
+        void updateResourceBindingAfterTransition();
+
     protected:
         cString name;
 
