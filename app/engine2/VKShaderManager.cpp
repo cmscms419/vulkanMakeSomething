@@ -378,6 +378,11 @@ namespace vkengine
         return pipelineShaders;
     }
 
+    const std::unordered_map<cString, ShaderResourceLayout> &VKShaderManager::getResourceLayouts() const
+    {
+        return Resourcelayouts;
+    }
+
     const std::vector<LayoutInfo> &VKShaderManager::getLayoutInfos() const
     {
         return layoutInfos;

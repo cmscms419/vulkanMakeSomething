@@ -19,6 +19,8 @@
 #include "VKRenderGraph.h"
 #include "VKswapchain.h"
 
+#include <unordered_map>
+
 namespace vkengine
 {
 
@@ -159,6 +161,7 @@ namespace vkengine
         ViewFrustum viewFrustum{};
         cBool frustumCullingEnabled{true};
         CullingStats cullingStats;
+        std::unordered_map<cString, std::unique_ptr<VKImage2D>> images;
 
         // 랜더링을 위한 리소스 생성 함수들
         // PBR, 스카이박스, 포스트 프로세싱, 쉐도우 맵 파이프라인 생성
@@ -197,6 +200,9 @@ namespace vkengine
         createRenderingInfo(const VkRect2D &renderArea,
                             const VkRenderingAttachmentInfo *colorAttachment,
                             const VkRenderingAttachmentInfo *depthAttachment = nullptr) const;
+
+        VkFormat selectOptimalHDRFormat(cBool needsAlpha, cBool fullPrecision);
+        cBool isFormatSuitableForHDR(VkFormat format);
     };
 }
 

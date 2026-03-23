@@ -32,6 +32,8 @@ namespace vkengine {
 
         const std::unordered_map<cString, std::vector<VKshader>>& getPipelineShaders() const;
 
+        const std::unordered_map<cString, ShaderResourceLayout>& getResourceLayouts() const;
+
         const std::vector<LayoutInfo>& getLayoutInfos() const;
 
         const ShaderResourceLayout& getShaderResourceLayout(cString pipelineName) const;

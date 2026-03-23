@@ -26,7 +26,7 @@ PipelineConfig PipelineConfig::createPbrForward()
 PipelineConfig PipelineConfig::createPbrDeferred()
 {
     PipelineConfig config;
-    config.name = "pbrDeferred";
+    config.name = "pbrdeferred";
     config.requiredFormats = {true, true, true}; // color, depth, msaa
     config.vertexInput.type = PipelineConfig::VertexInput::Type::Standard;
     config.depthStencil = {true, true, VK_COMPARE_OP_LESS_OR_EQUAL};
@@ -86,7 +86,7 @@ PipelineConfig PipelineConfig::createSsao()
 PipelineConfig PipelineConfig::createDeferredLighting()
 {
     PipelineConfig config;
-    config.name = "deferredLighting";
+    config.name = "lightdeferred";
     config.type = PipelineConfig::Type::Compute;
     return config;
 }

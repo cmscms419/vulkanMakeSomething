@@ -110,6 +110,7 @@ struct Vertex2 {
     // 어트리뷰트 설명을 반환하는 함수
     static std::array<VkVertexInputAttributeDescription, 4> getAttributeDescriptionsBasic();
     static std::array<VkVertexInputAttributeDescription, 7> getAttributeDescriptionsAnimated();
+    static std::vector<VkVertexInputAttributeDescription> getAttributeDescriptionsAnimatedVec();
 
     void addBoneData(cUint32_t boneIndex, cFloat weight);
     void normalizeBoneWeights();

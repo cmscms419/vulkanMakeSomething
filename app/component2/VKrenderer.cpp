@@ -1,7 +1,9 @@
 #include "VKrenderer.h"
 
 #include "log.h"
+#include "vkconfig.h"
 #include "resourseload.h"
+#include "helper.h"
 
 using namespace vkengine::Log;
 
@@ -56,11 +58,11 @@ namespace vkengine
 
     void VKRenderer::buildRenderGraph(VKSwapChain &swapchain)
     {
-        this->renderGraph.registerSwapchainResource("swapchain", swapchain);      // swapchain 리소스 등록
-        this->renderGraph.registerResource("shadowDepth", shadowMap);             // 쉐도우 맵 리소스 등록
+        this->renderGraph.registerSwapchainResource("swapchain", swapchain);        // swapchain 리소스 등록
+        this->renderGraph.registerResource("shadowDepth", shadowMap);               // 쉐도우 맵 리소스 등록
         this->renderGraph.registerResource("DeferredToCompute", DeferredToCompute); // 포워드 패스 출력 등록
-        this->renderGraph.registerResource("LightDeferred", LightDeferred);       // 컴퓨트 패스 출력 등록
-        this->renderGraph.registerResource("depthStencil", depthStencil);         // depthstencil 리소스 등록
+        this->renderGraph.registerResource("LightDeferred", LightDeferred);         // 컴퓨트 패스 출력 등록
+        this->renderGraph.registerResource("depthStencil", depthStencil);           // depthstencil 리소스 등록
 
         this->renderGraph.loadFromJson(this->assetsPath + "/renderGraph.json");
 
@@ -118,17 +120,20 @@ namespace vkengine
 
     void VKRenderer::createPipelines(const VkFormat colorFormat, const VkFormat depthFormat, VkSampleCountFlagBits msaaSamples)
     {
+        VkFormat selectedHDRFormat = selectOptimalHDRFormat(false, true); // No alpha, moderate precision
         pipelines.emplace("pbrdeferred",
-                          VKPipeLineHandle(ctx, shaderManager, "pbrdeferred", VK_FORMAT_R16G16B16A16_SFLOAT,
+                          VKPipeLineHandle(ctx, shaderManager, PipelineConfig::createPbrDeferred(),
+                                           std::vector<VkFormat>{selectedHDRFormat, VK_FORMAT_R8G8B8A8_UNORM, VK_FORMAT_R16G16B16A16_SFLOAT,
+                                                                 VK_FORMAT_R32G32B32A32_SFLOAT, VK_FORMAT_R8G8B8A8_UNORM},
                                            depthFormat, msaaSamples));
-        pipelines.emplace("sky", VKPipeLineHandle(ctx, shaderManager, "sky", VK_FORMAT_R16G16B16A16_SFLOAT,
+        pipelines.emplace("sky", VKPipeLineHandle(ctx, shaderManager, PipelineConfig::createSky(), std::vector<VkFormat>{selectedHDRFormat},
                                                   depthFormat, msaaSamples));
-        pipelines.emplace("post", VKPipeLineHandle(ctx, shaderManager, "post", colorFormat,
+        pipelines.emplace("post", VKPipeLineHandle(ctx, shaderManager, PipelineConfig::createPost(), std::vector<VkFormat>{colorFormat},
                                                    depthFormat, VK_SAMPLE_COUNT_1_BIT));
-        pipelines.emplace("shadowMap", VKPipeLineHandle(ctx, shaderManager, "shadowMap", VK_FORMAT_D16_UNORM,
+        pipelines.emplace("shadowMap", VKPipeLineHandle(ctx, shaderManager, PipelineConfig::createShadowMap(), std::vector<VkFormat>{},
                                                         VK_FORMAT_D16_UNORM, VK_SAMPLE_COUNT_1_BIT));
-        pipelines.emplace("lightdeferred", VKPipeLineHandle(ctx, shaderManager, "lightdeferred", VK_FORMAT_D16_UNORM,
-                                                   VK_FORMAT_D16_UNORM, VK_SAMPLE_COUNT_1_BIT));
+        pipelines.emplace("lightdeferred", VKPipeLineHandle(ctx, shaderManager, PipelineConfig::createDeferredLighting(), std::vector<VkFormat>{},
+                                                            VK_FORMAT_D16_UNORM, VK_SAMPLE_COUNT_1_BIT));
     }
 
     void VKRenderer::createTextures(cUint32_t swapchainWidth, cUint32_t swapchainHeight, VkSampleCountFlagBits msaaSamples)
@@ -187,6 +192,74 @@ namespace vkengine
 
         // Create descriptor set for shadow mapping
         shadowMapSet.create(ctx, {std::ref(this->shadowMap)});
+
+        // Initialize image buffers (simplified - no MSAA)
+        const std::vector<cString> imageNames = {"gAlbedo", "gNormal", "gPosition", "gMaterial"};
+
+        for (const auto &name : imageNames)
+        {
+            this->images[name] = std::make_unique<VKImage2D>(ctx);
+        }
+
+        // Create G-buffer textures for deferred rendering
+        PRINT_TO_LOGGER("Creating G-buffer textures for deferred rendering:");
+
+        // G-Buffer format selection for optimal memory usage and precision
+        VkFormat albedoFormat = VK_FORMAT_R8G8B8A8_UNORM;        // Albedo + Metallic (4 bytes)
+        VkFormat normalFormat = VK_FORMAT_R16G16B16A16_SFLOAT;   // Normal + Roughness (8 bytes, needs precision)
+        VkFormat positionFormat = VK_FORMAT_R32G32B32A32_SFLOAT; // Position + Depth (16 bytes, needs high precision)
+        VkFormat materialFormat = VK_FORMAT_R8G8B8A8_UNORM;      // AO + Emissive + Material ID (4 bytes)
+
+        // G-buffer usage flags (similar to floatColor but without storage bit since they're render targets)
+        VkImageUsageFlags gBufferUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT |
+                                         VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT |
+                                         VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+
+        VkDevice logicaldevice = ctx.getDevice()->logicaldevice;
+        VkPhysicalDevice physicalDevice = ctx.getDevice()->physicalDevice;
+
+        // Create gAlbedo buffer (Albedo RGB + Metallic A)
+        // images["gAlbedo"]->createImage(
+        images["gAlbedo"]->createImage(
+            swapchainWidth,
+            swapchainHeight,
+            albedoFormat,
+            VK_SAMPLE_COUNT_1_BIT,
+            gBufferUsage,
+            VK_IMAGE_ASPECT_COLOR_BIT, 1, 1, (VkImageCreateFlagBits)0);
+        images["gAlbedo"]->setSampler(samplerLinearRepeat.getSampler());
+
+        // Create gNormal buffer (World Normal RGB + Roughness A)
+        images["gNormal"]->createImage(
+            swapchainWidth,
+            swapchainHeight,
+            normalFormat,
+            VK_SAMPLE_COUNT_1_BIT,
+            gBufferUsage,
+            VK_IMAGE_ASPECT_COLOR_BIT, 1, 1, (VkImageCreateFlagBits)0);
+        images["gNormal"]->setSampler(samplerLinearRepeat.getSampler());
+
+        // Create gPosition buffer (World Position RGB + Depth A)
+        images["gPosition"]->createImage(
+            swapchainWidth,
+            swapchainHeight,
+            positionFormat,
+            VK_SAMPLE_COUNT_1_BIT,
+            gBufferUsage,
+            VK_IMAGE_ASPECT_COLOR_BIT, 1, 1, (VkImageCreateFlagBits)0);
+        images["gPosition"]->setSampler(samplerLinearRepeat.getSampler());
+
+        // Create gMaterial buffer (AO R + Emissive Intensity G + Material ID B + Unused A)
+        images["gMaterial"]->createImage(
+            swapchainWidth,
+            swapchainHeight,
+            materialFormat,
+            VK_SAMPLE_COUNT_1_BIT,
+            gBufferUsage,
+            VK_IMAGE_ASPECT_COLOR_BIT, 1, 1, (VkImageCreateFlagBits)0);
+        images["gMaterial"]->setSampler(samplerLinearRepeat.getSampler());
+
+        PRINT_TO_LOGGER("G-buffer creation complete");
     }
 
     void VKRenderer::resize(cUint32_t width, cUint32_t height, VkSampleCountFlagBits msaaSamples)
@@ -408,12 +481,12 @@ namespace vkengine
         VkRect2D renderArea = {0, 0, this->currentScissor.extent.width, this->currentScissor.extent.height};
 
         auto colorAttachment = createColorAttachment(
-            msaaColorBuffer.getImageView(), VK_ATTACHMENT_LOAD_OP_CLEAR, {0.0f, 0.0f, 0.5f, 0.0f},
+            msaaColorBuffer.getImageView(), VK_ATTACHMENT_LOAD_OP_LOAD, {0.0f, 0.0f, 0.5f, 0.0f},
             DeferredToCompute.getImageView(), VK_RESOLVE_MODE_AVERAGE_BIT);
 
         auto depthAttachment =
             createDepthAttachment(
-                msaaDepthStencil.getImageView(), VK_ATTACHMENT_LOAD_OP_CLEAR, 1.0f,
+                msaaDepthStencil.getImageView(), VK_ATTACHMENT_LOAD_OP_DONT_CARE, 1.0f,
                 depthStencil.getImageView(), VK_RESOLVE_MODE_SAMPLE_ZERO_BIT);
 
         auto renderingInfo = createRenderingInfo(renderArea, &colorAttachment, &depthAttachment);
@@ -489,9 +562,9 @@ namespace vkengine
     void VKRenderer::makeLightDeferredPass(VkCommandBuffer cmd, cUint32_t currentFrame, cUint32_t imageIndex)
     {
         this->DeferredToCompute.transitionTo(cmd,
-                                            VK_IMAGE_LAYOUT_GENERAL,
-                                            VK_ACCESS_2_SHADER_READ_BIT,
-                                            VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT);
+                                             VK_IMAGE_LAYOUT_GENERAL,
+                                             VK_ACCESS_2_SHADER_READ_BIT,
+                                             VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT);
 
         // computeToPost_: Empty buffer → writeonly storage image for SSAO output
         this->LightDeferred.transitionTo(
@@ -563,9 +636,9 @@ namespace vkengine
     void VKRenderer::makeSSAOPass(VkCommandBuffer cmd, cUint32_t currentFrame, cUint32_t imageIndex)
     {
         this->DeferredToCompute.transitionTo(cmd,
-                                            VK_IMAGE_LAYOUT_GENERAL,
-                                            VK_ACCESS_2_SHADER_READ_BIT,
-                                            VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT);
+                                             VK_IMAGE_LAYOUT_GENERAL,
+                                             VK_ACCESS_2_SHADER_READ_BIT,
+                                             VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT);
 
         // computeToPost_: Empty buffer → writeonly storage image for SSAO output
         this->LightDeferred.transitionTo(
@@ -718,6 +791,97 @@ namespace vkengine
         renderingInfo.pDepthAttachment = depthAttachment;
         renderingInfo.pStencilAttachment = depthAttachment;
         return renderingInfo;
+    }
+
+    VkFormat VKRenderer::selectOptimalHDRFormat(cBool needsAlpha, cBool fullPrecision)
+    {
+        std::vector<VkFormat> candidateFormats;
+
+        if (!needsAlpha && !fullPrecision)
+        {
+            // Memory-efficient HDR formats (no alpha, moderate precision)
+            candidateFormats = {
+                VK_FORMAT_B10G11R11_UFLOAT_PACK32, // 4 bytes - 50% savings, packed float (correct
+                                                   // format)
+                VK_FORMAT_R16G16B16_SFLOAT,        // 6 bytes - 25% savings, half precision
+                VK_FORMAT_R16G16B16A16_SFLOAT,     // 8 bytes - standard HDR with alpha
+                VK_FORMAT_R32G32B32_SFLOAT,        // 12 bytes - full precision RGB
+                // R8G8B8A8_UNORM is LAST - not a float format, poor for HDR
+                VK_FORMAT_R8G8B8A8_UNORM // 4 bytes - NOT FLOAT, last resort
+            };
+        }
+        else if (!fullPrecision)
+        {
+            // Standard HDR with alpha channel
+            candidateFormats = {
+                VK_FORMAT_R16G16B16A16_SFLOAT, // 8 bytes - standard HDR
+                VK_FORMAT_R32G32B32A32_SFLOAT, // 16 bytes - full precision
+                // R8G8B8A8_UNORM is LAST - not suitable for HDR
+                VK_FORMAT_R8G8B8A8_UNORM // 4 bytes - NOT FLOAT, last resort
+            };
+        }
+        else
+        {
+            // Full precision required
+            candidateFormats = {
+                VK_FORMAT_R32G32B32A32_SFLOAT, // 16 bytes - full precision
+                VK_FORMAT_R32G32B32_SFLOAT,    // 12 bytes - full precision RGB
+                VK_FORMAT_R16G16B16A16_SFLOAT, // 8 bytes - half precision fallback
+                // R8G8B8A8_UNORM is LAST - inadequate for full precision HDR
+                VK_FORMAT_R8G8B8A8_UNORM // 4 bytes - NOT FLOAT, emergency fallback
+            };
+        }
+
+        // Test each format for compatibility (float formats first, R8G8B8A8 last)
+        for (size_t i = 0; i < candidateFormats.size(); ++i)
+        {
+            VkFormat format = candidateFormats[i];
+
+            if (isFormatSuitableForHDR(format))
+            {
+                cString formatType = (format == VK_FORMAT_R8G8B8A8_UNORM) ? "NON-FLOAT" : "FLOAT";
+                float memoryRatio = static_cast<float>(helper::shader::getFormatSize(format)) / 8.0f; // vs RGBA16F
+
+                // Warn if we fell back to non-float format
+                if (format == VK_FORMAT_R8G8B8A8_UNORM)
+                {
+                    PRINT_TO_LOGGER("⚠ WARNING: Using R8G8B8A8_UNORM for HDR - limited dynamic range!");
+                    PRINT_TO_LOGGER("  Consider using float formats for better HDR quality");
+                }
+
+                return format;
+            }
+            else
+            {
+                cString formatType = (format == VK_FORMAT_R8G8B8A8_UNORM) ? "NON-FLOAT" : "FLOAT";
+            }
+        }
+
+        // Emergency fallback - this should rarely happen
+        PRINT_TO_LOGGER("⚠ All candidate formats failed, using emergency fallback: VK_FORMAT_R16G16B16A16_SFLOAT");
+
+        return VK_FORMAT_R16G16B16A16_SFLOAT;
+    }
+
+    cBool VKRenderer::isFormatSuitableForHDR(VkFormat format)
+    {
+        // Check if format supports required features for HDR rendering
+        VkFormatProperties props;
+        vkGetPhysicalDeviceFormatProperties(ctx.getDevice()->physicalDevice, format, &props);
+
+        // Required features for HDR color attachments
+        VkFormatFeatureFlags requiredFeatures =
+            VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BIT | // Can render to it
+            VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT;     // Can sample from it
+
+        // Optional but preferred for HDR
+        VkFormatFeatureFlags preferredFeatures =
+            VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BLEND_BIT; // Can blend (for transparency)
+
+        bool hasRequired = (props.optimalTilingFeatures & requiredFeatures) == requiredFeatures;
+        bool hasPreferred = (props.optimalTilingFeatures & preferredFeatures) == preferredFeatures;
+
+        return hasRequired;
     }
 
     const CullingStats &VKRenderer::getCullingStats() const

@@ -14,13 +14,12 @@ namespace vkengine
     class VKPipeLineHandle
     {
     public:
-
-        VKPipeLineHandle(VKcontext& context, VKShaderManager& shaderManager);
-        VKPipeLineHandle(VKcontext& ctx, VKShaderManager& shaderManager, cString Name,VkFormat outColorFormat, VkFormat depthFormat, VkSampleCountFlagBits msaaSamples);
-        VKPipeLineHandle(VKPipeLineHandle&& other) noexcept;
-        VKPipeLineHandle& operator=(VKPipeLineHandle&& other) noexcept;
-        VKPipeLineHandle(const VKPipeLineHandle&) = delete;
-        VKPipeLineHandle& operator=(const VKPipeLineHandle&) = delete;
+        VKPipeLineHandle(VKcontext &context, VKShaderManager &shaderManager);
+        VKPipeLineHandle(VKcontext &ctx, VKShaderManager &shaderManager, cString Name, VkFormat outColorFormat, VkFormat depthFormat, VkSampleCountFlagBits msaaSamples);
+        VKPipeLineHandle(VKPipeLineHandle &&other) noexcept;
+        VKPipeLineHandle &operator=(VKPipeLineHandle &&other) noexcept;
+        VKPipeLineHandle(const VKPipeLineHandle &) = delete;
+        VKPipeLineHandle &operator=(const VKPipeLineHandle &) = delete;
         VKPipeLineHandle(VKcontext &ctx, VKShaderManager &shaderManager,
                          const PipelineConfig &pipelineCache,
                          std::vector<VkFormat> outColorFormats = {},
@@ -72,6 +71,11 @@ namespace vkengine
             VkFormat outColorFormat,
             VkFormat depthFormat,
             VkSampleCountFlagBits msaaSamples);
+        void createGraphicsFromConfig(
+            const PipelineConfig &config,
+            std::vector<VkFormat> outColorFormats,
+            std::optional<VkFormat> depthFormat,
+            std::optional<VkSampleCountFlagBits> msaaSamples);
 
         void dispatch(const VkCommandBuffer &cmd, uint32_t frameIndex);
 
@@ -79,8 +83,8 @@ namespace vkengine
         VkPipeline getPipeline() { return pipeline; }
 
     private:
-        VKcontext& ctx;
-        VKShaderManager& shaderManager;
+        VKcontext &ctx;
+        VKShaderManager &shaderManager;
 
         VkPipelineLayout pipelineLayout;
         VkPipeline pipeline;
