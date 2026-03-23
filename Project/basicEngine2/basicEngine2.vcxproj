@@ -38,6 +38,7 @@
     <ClCompile Include="..\..\app\engine2\VKShadowMapPiPipeline.cpp" />
     <ClCompile Include="..\..\app\engine2\VKSkyboxpiPipeline.cpp" />
     <ClCompile Include="..\..\app\engine2\VKSquarepiPipeline.cpp" />
+    <ClCompile Include="..\..\app\engine2\VKDeferredPBRPipeline.cpp" />
     <ClCompile Include="..\..\app\engine2\VKswapchain.cpp" />
     <ClCompile Include="..\..\app\engine2\VKViewFrustum.cpp" />
     <ClCompile Include="..\..\app\engine2\VKRenderGraph.cpp" />

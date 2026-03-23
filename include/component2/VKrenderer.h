@@ -140,8 +140,8 @@ namespace vkengine
         VKImage2D depthStencil;
         VKImage2D msaaDepthStencil;
 
-        VKImage2D forwardToCompute;
-        VKImage2D computeToPost;
+        VKImage2D DeferredToCompute;
+        VKImage2D LightDeferred;
 
         VKImage2D dummyTexture;
         VKskyTexture skyTextures;
@@ -170,6 +170,8 @@ namespace vkengine
 
         void makeShadowMap(VkCommandBuffer cmd, cUint32_t currentFrame, cUint32_t imageIndex);
         void makeForwardPBRPass(VkCommandBuffer cmd, cUint32_t currentFrame, cUint32_t imageIndex);
+        void makePBRDeferredPass(VkCommandBuffer cmd, cUint32_t currentFrame, cUint32_t imageIndex);
+        void makeLightDeferredPass(VkCommandBuffer cmd, cUint32_t currentFrame, cUint32_t imageIndex);
         void makePostProcessPass(VkCommandBuffer cmd, cUint32_t currentFrame, cUint32_t imageIndex);
         void makePresent(VkCommandBuffer cmd, cUint32_t currentFrame, cUint32_t imageIndex);
         void makeSSAOPass(VkCommandBuffer cmd, cUint32_t currentFrame, cUint32_t imageIndex);

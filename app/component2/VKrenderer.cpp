@@ -18,7 +18,7 @@ namespace vkengine
           MaxFramesFlight(MaxFramesFlight), assetsPath(assetsPath), shaderPath(shaderPath),
           dummyTexture(ctx), msaaColorBuffer(ctx), depthStencil(ctx), msaaDepthStencil(ctx),
           skyTextures(ctx), shadowMap(ctx), samplerLinearRepeat(ctx), samplerLinearClamp(ctx),
-          samplerAnisoRepeat(ctx), samplerAnisoClamp(ctx), forwardToCompute(ctx), computeToPost(ctx),
+          samplerAnisoRepeat(ctx), samplerAnisoClamp(ctx), DeferredToCompute(ctx), LightDeferred(ctx),
           samplerShadowMap(ctx), materialStorageBuffer(ctx), table(ctx)
     {
         PRINT_TO_LOGGER("Renderer2 created with MaxFramesFlight: %d assetsPath: %s shaderPath: %s",
@@ -58,56 +58,10 @@ namespace vkengine
     {
         this->renderGraph.registerSwapchainResource("swapchain", swapchain);      // swapchain 리소스 등록
         this->renderGraph.registerResource("shadowDepth", shadowMap);             // 쉐도우 맵 리소스 등록
-        this->renderGraph.registerResource("forwardToCompute", forwardToCompute); // 포워드 패스 출력 등록
-        this->renderGraph.registerResource("computeToPost", computeToPost);       // 컴퓨트 패스 출력 등록
+        this->renderGraph.registerResource("DeferredToCompute", DeferredToCompute); // 포워드 패스 출력 등록
+        this->renderGraph.registerResource("LightDeferred", LightDeferred);       // 컴퓨트 패스 출력 등록
         this->renderGraph.registerResource("depthStencil", depthStencil);         // depthstencil 리소스 등록
-#if 0
 
-        RenderPassNode shadowPass{
-            "shadow",
-            {},
-            {{"shadowDepth", ResourceAccess::DepthAttachmentWrite}},
-            {},
-            [this](VkCommandBuffer cmd, cUint32_t frameIndex, cUint32_t imageIndex)
-            {
-                this->makeShadowMap(cmd, frameIndex, imageIndex);
-            }};
-
-        RenderPassNode forwardPass{
-            "pbrForward",
-            {{"shadowDepth", ResourceAccess::ShaderReadOnly}},
-            {{"forwardToCompute", ResourceAccess::ColorAttachmentWrite}},
-            {},
-            [this](VkCommandBuffer cmd, cUint32_t frameIndex, cUint32_t imageIndex)
-            {
-                this->makeForwardPBRPass(cmd, frameIndex, imageIndex);
-            }};
-
-        RenderPassNode ssaoPass{
-            "ssao",
-            {{"forwardToCompute", ResourceAccess::NOTTHING}},
-            {{"computeToPost", ResourceAccess::NOTTHING}},
-            {{"depthStencil", ResourceAccess::ShaderReadOnly}},
-            [this](VkCommandBuffer cmd, cUint32_t frameIndex, cUint32_t imageIndex)
-            {
-                this->makeSSAOPass(cmd, frameIndex, imageIndex);
-            }};
-
-        RenderPassNode postProcessPass{
-            "postProcess",
-            {{"computeToPost", ResourceAccess::ShaderReadOnly}},
-            {{"swapchain", ResourceAccess::Present}},
-            {},
-            [this](VkCommandBuffer cmd, cUint32_t frameIndex, cUint32_t imageIndex)
-            {
-                this->makePostProcessPass(cmd, frameIndex, imageIndex);
-            }};
-            
-            this->renderGraph.addPass(shadowPass);
-            this->renderGraph.addPass(forwardPass);
-            this->renderGraph.addPass(postProcessPass);
-            this->renderGraph.addPass(ssaoPass);
-#else
         this->renderGraph.loadFromJson(this->assetsPath + "/renderGraph.json");
 
         this->renderGraph.registerPassFunction("shadow",
@@ -116,16 +70,16 @@ namespace vkengine
                                                    this->makeShadowMap(cmd, frameIndex, imageIndex);
                                                });
 
-        this->renderGraph.registerPassFunction("pbrForward",
+        this->renderGraph.registerPassFunction("pbrdeferred",
                                                [this](VkCommandBuffer cmd, cUint32_t frameIndex, cUint32_t imageIndex)
                                                {
-                                                   this->makeForwardPBRPass(cmd, frameIndex, imageIndex);
+                                                   this->makePBRDeferredPass(cmd, frameIndex, imageIndex);
                                                });
 
-        this->renderGraph.registerPassFunction("ssao",
+        this->renderGraph.registerPassFunction("lightdeferred",
                                                [this](VkCommandBuffer cmd, cUint32_t frameIndex, cUint32_t imageIndex)
                                                {
-                                                   this->makeSSAOPass(cmd, frameIndex, imageIndex);
+                                                   this->makeLightDeferredPass(cmd, frameIndex, imageIndex);
                                                });
 
         this->renderGraph.registerPassFunction("postProcess",
@@ -133,8 +87,6 @@ namespace vkengine
                                                {
                                                    this->makePostProcessPass(cmd, frameIndex, imageIndex);
                                                });
-
-#endif
 
         this->renderGraph.compile();
     }
@@ -166,8 +118,8 @@ namespace vkengine
 
     void VKRenderer::createPipelines(const VkFormat colorFormat, const VkFormat depthFormat, VkSampleCountFlagBits msaaSamples)
     {
-        pipelines.emplace("pbrForward",
-                          VKPipeLineHandle(ctx, shaderManager, "pbrForward", VK_FORMAT_R16G16B16A16_SFLOAT,
+        pipelines.emplace("pbrdeferred",
+                          VKPipeLineHandle(ctx, shaderManager, "pbrdeferred", VK_FORMAT_R16G16B16A16_SFLOAT,
                                            depthFormat, msaaSamples));
         pipelines.emplace("sky", VKPipeLineHandle(ctx, shaderManager, "sky", VK_FORMAT_R16G16B16A16_SFLOAT,
                                                   depthFormat, msaaSamples));
@@ -175,7 +127,7 @@ namespace vkengine
                                                    depthFormat, VK_SAMPLE_COUNT_1_BIT));
         pipelines.emplace("shadowMap", VKPipeLineHandle(ctx, shaderManager, "shadowMap", VK_FORMAT_D16_UNORM,
                                                         VK_FORMAT_D16_UNORM, VK_SAMPLE_COUNT_1_BIT));
-        pipelines.emplace("ssao", VKPipeLineHandle(ctx, shaderManager, "ssao", VK_FORMAT_D16_UNORM,
+        pipelines.emplace("lightdeferred", VKPipeLineHandle(ctx, shaderManager, "lightdeferred", VK_FORMAT_D16_UNORM,
                                                    VK_FORMAT_D16_UNORM, VK_SAMPLE_COUNT_1_BIT));
     }
 
@@ -220,13 +172,13 @@ namespace vkengine
         this->msaaColorBuffer.createMsaaColorBuffer(swapchainWidth, swapchainHeight, msaaSamples);
         this->msaaDepthStencil.createDepthStencil(swapchainWidth, swapchainHeight, msaaSamples);
         this->depthStencil.createDepthStencil(swapchainWidth, swapchainHeight, VK_SAMPLE_COUNT_1_BIT, true);
-        this->forwardToCompute.createGeneralStorage(swapchainWidth, swapchainHeight);
-        this->computeToPost.createGeneralStorage(swapchainWidth, swapchainHeight);
+        this->DeferredToCompute.createGeneralStorage(swapchainWidth, swapchainHeight);
+        this->LightDeferred.createGeneralStorage(swapchainWidth, swapchainHeight);
 
         // Set samplers
-        forwardToCompute.setSampler(samplerLinearRepeat.getSampler());
+        DeferredToCompute.setSampler(samplerLinearRepeat.getSampler());
         depthStencil.setSampler(samplerLinearRepeat.getSampler());
-        computeToPost.setSampler(samplerLinearRepeat.getSampler());
+        LightDeferred.setSampler(samplerLinearRepeat.getSampler());
 
         // Create descriptor sets for sky textures (set 1 for sky pipeline)
         skyDescriptorSet.create(ctx, {std::ref(this->skyTextures.Prefiltered()),
@@ -243,23 +195,23 @@ namespace vkengine
         this->msaaColorBuffer.cleanup();
         this->msaaDepthStencil.cleanup();
         this->depthStencil.cleanup();
-        this->forwardToCompute.cleanup();
-        this->computeToPost.cleanup();
+        this->DeferredToCompute.cleanup();
+        this->LightDeferred.cleanup();
 
         // 새 크기로 재생성
         this->msaaColorBuffer.createMsaaColorBuffer(width, height, msaaSamples);
         this->msaaDepthStencil.createDepthStencil(width, height, msaaSamples);
         this->depthStencil.createDepthStencil(width, height, VK_SAMPLE_COUNT_1_BIT);
-        this->forwardToCompute.createGeneralStorage(width, height);
-        this->computeToPost.createGeneralStorage(width, height);
+        this->DeferredToCompute.createGeneralStorage(width, height);
+        this->LightDeferred.createGeneralStorage(width, height);
 
-        this->forwardToCompute.setSampler(this->samplerLinearRepeat.getSampler());
+        this->DeferredToCompute.setSampler(this->samplerLinearRepeat.getSampler());
 
         // PostDescriptorSets는 forwardToCompute를 참조하므로 재생성
         for (size_t i = 0; i < this->MaxFramesFlight; i++)
         {
             PostDescriptorSets[i].create(
-                this->ctx, {std::ref(forwardToCompute),
+                this->ctx, {std::ref(DeferredToCompute),
                             std::ref(postOptionsUniform[i].Buffer())});
         }
     }
@@ -323,7 +275,7 @@ namespace vkengine
         for (size_t i = 0; i < this->MaxFramesFlight; i++)
         {
             PostDescriptorSets[i].create(
-                this->ctx, {std::ref(computeToPost), std::ref(postOptionsUniform[i].Buffer())});
+                this->ctx, {std::ref(LightDeferred), std::ref(postOptionsUniform[i].Buffer())});
         }
 
         SceneOptionsBoneDataSets.resize(this->MaxFramesFlight);
@@ -342,13 +294,13 @@ namespace vkengine
         // set을 만들기 위해서 변환
         VKCommandBufferHander cmd = ctx.createGrapicsCommandBufferHander(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
 
-        this->forwardToCompute.transitionTo(
+        this->DeferredToCompute.transitionTo(
             cmd.getCommandBuffer(),
             VK_IMAGE_LAYOUT_GENERAL,
             VK_ACCESS_2_SHADER_READ_BIT,
             VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT);
 
-        this->computeToPost.transitionTo(
+        this->LightDeferred.transitionTo(
             cmd.getCommandBuffer(),
             VK_IMAGE_LAYOUT_GENERAL,
             VK_ACCESS_2_SHADER_WRITE_BIT,
@@ -361,8 +313,8 @@ namespace vkengine
             ssaoDescriptorSets[i].create(this->ctx, {
                                                         std::ref(sceneDataUniform[i].Buffer()),
                                                         std::ref(ssaoParamsUniform[i].Buffer()),
-                                                        std::ref(this->forwardToCompute),
-                                                        std::ref(this->computeToPost),
+                                                        std::ref(this->DeferredToCompute),
+                                                        std::ref(this->LightDeferred),
                                                         std::ref(this->depthStencil),
                                                     });
         }
@@ -374,7 +326,7 @@ namespace vkengine
 
         auto colorAttachment = createColorAttachment(
             msaaColorBuffer.getImageView(), VK_ATTACHMENT_LOAD_OP_CLEAR, {0.0f, 0.0f, 0.5f, 0.0f},
-            forwardToCompute.getImageView(), VK_RESOLVE_MODE_AVERAGE_BIT);
+            DeferredToCompute.getImageView(), VK_RESOLVE_MODE_AVERAGE_BIT);
 
         auto depthAttachment =
             createDepthAttachment(
@@ -451,6 +403,131 @@ namespace vkengine
         vkCmdEndRendering(cmd);
     }
 
+    void VKRenderer::makePBRDeferredPass(VkCommandBuffer cmd, cUint32_t currentFrame, cUint32_t imageIndex)
+    {
+        VkRect2D renderArea = {0, 0, this->currentScissor.extent.width, this->currentScissor.extent.height};
+
+        auto colorAttachment = createColorAttachment(
+            msaaColorBuffer.getImageView(), VK_ATTACHMENT_LOAD_OP_CLEAR, {0.0f, 0.0f, 0.5f, 0.0f},
+            DeferredToCompute.getImageView(), VK_RESOLVE_MODE_AVERAGE_BIT);
+
+        auto depthAttachment =
+            createDepthAttachment(
+                msaaDepthStencil.getImageView(), VK_ATTACHMENT_LOAD_OP_CLEAR, 1.0f,
+                depthStencil.getImageView(), VK_RESOLVE_MODE_SAMPLE_ZERO_BIT);
+
+        auto renderingInfo = createRenderingInfo(renderArea, &colorAttachment, &depthAttachment);
+
+        vkCmdBeginRendering(cmd, &renderingInfo);
+        vkCmdSetViewport(cmd, 0, 1, &this->currentViewport);
+        vkCmdSetScissor(cmd, 0, 1, &this->currentScissor);
+
+        VkDeviceSize offsets[1]{0};
+
+        // Render models
+        vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
+                          pipelines.at("pbrdeferred").getPipeline());
+
+        const auto descriptorSets =
+            std::vector{
+                this->SceneOptionsBoneDataSets[currentFrame].get(),
+                this->materialDescriptorSet.get(),
+                skyDescriptorSet.get(),
+                shadowMapSet.get()};
+
+        vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
+                                pipelines.at("pbrdeferred").getPipelineLayout(), 0,
+                                static_cast<cUint32_t>(descriptorSets.size()),
+                                descriptorSets.data(), 0, nullptr);
+
+        for (size_t j = 0; j < this->currentModels->size(); j++)
+        {
+            if (!this->currentModels->at(j).Visible())
+            {
+                continue;
+            }
+
+            for (size_t i = 0; i < this->currentModels->at(j).Meshes().size(); i++)
+            {
+
+                auto &mesh = this->currentModels->at(j).Meshes()[i];
+
+                // Skip culled meshes
+                if (mesh.isCulled)
+                {
+                    continue;
+                }
+
+                cUint32_t matIndex = mesh.materialIndex;
+                this->currentModels->at(j).ModelResource().materialIndex = matIndex;
+
+                vkCmdPushConstants(cmd, pipelines.at("pbrdeferred").getPipelineLayout(),
+                                   VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0,
+                                   sizeof(this->currentModels->at(j).ModelResource()), &this->currentModels->at(j).ModelResource());
+
+                vkCmdBindVertexBuffers(cmd, 0, 1, &mesh.vertex->Buffer(), offsets);
+                vkCmdBindIndexBuffer(cmd, mesh.index->Buffer(), 0, VK_INDEX_TYPE_UINT32);
+                vkCmdDrawIndexed(cmd, static_cast<cUint32_t>(mesh.indices.size()), 1, 0, 0, 0);
+            }
+        }
+
+        // Sky rendering pass
+        vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelines.at("sky").getPipeline());
+
+        const auto skyDescriptorSets = std::vector{
+            SceneSkyOptionsStates[currentFrame].get(), // Set 0: scene + sky options
+            skyDescriptorSet.get()                     // Set 1: sky textures
+        };
+
+        vkCmdBindDescriptorSets(
+            cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelines.at("sky").getPipelineLayout(), 0,
+            static_cast<cUint32_t>(skyDescriptorSets.size()), skyDescriptorSets.data(), 0, nullptr);
+        vkCmdDraw(cmd, 36, 1, 0, 0);
+        vkCmdEndRendering(cmd);
+    }
+
+    void VKRenderer::makeLightDeferredPass(VkCommandBuffer cmd, cUint32_t currentFrame, cUint32_t imageIndex)
+    {
+        this->DeferredToCompute.transitionTo(cmd,
+                                            VK_IMAGE_LAYOUT_GENERAL,
+                                            VK_ACCESS_2_SHADER_READ_BIT,
+                                            VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT);
+
+        // computeToPost_: Empty buffer → writeonly storage image for SSAO output
+        this->LightDeferred.transitionTo(
+            cmd,
+            VK_IMAGE_LAYOUT_GENERAL,
+            VK_ACCESS_2_SHADER_WRITE_BIT,
+            VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT);
+
+        // Bind SSAO compute pipeline
+        vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_COMPUTE, pipelines.at("lightdeferred").getPipeline());
+
+        // Bind descriptor sets for SSAO
+        const auto ssaoDescriptorSets = std::vector{this->ssaoDescriptorSets[currentFrame].get()};
+        vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_COMPUTE,
+                                pipelines.at("lightdeferred").getPipelineLayout(), 0,
+                                static_cast<cUint32_t>(ssaoDescriptorSets.size()),
+                                ssaoDescriptorSets.data(), 0, nullptr);
+
+        // Dispatch compute shader
+        // Calculate dispatch size based on image dimensions and local work group size (16x16)
+        cUint32_t groupCountX = (currentScissor.extent.width + 15) / 16;  // Round up division
+        cUint32_t groupCountY = (currentScissor.extent.height + 15) / 16; // Round up division
+        vkCmdDispatch(cmd, groupCountX, groupCountY, 1);
+
+        VkMemoryBarrier2 memoryBarrier{VK_STRUCTURE_TYPE_MEMORY_BARRIER_2};
+        memoryBarrier.srcStageMask = VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT;
+        memoryBarrier.dstStageMask = VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT;
+        memoryBarrier.srcAccessMask = VK_ACCESS_2_SHADER_WRITE_BIT;
+        memoryBarrier.dstAccessMask = VK_ACCESS_2_SHADER_READ_BIT;
+
+        VkDependencyInfo dependencyInfo{VK_STRUCTURE_TYPE_DEPENDENCY_INFO};
+        dependencyInfo.memoryBarrierCount = 1;
+        dependencyInfo.pMemoryBarriers = &memoryBarrier;
+        vkCmdPipelineBarrier2(cmd, &dependencyInfo);
+    }
+
     void VKRenderer::makePostProcessPass(VkCommandBuffer cmd, cUint32_t currentFrame, cUint32_t imageIndex)
     {
         VkRect2D renderArea = {0, 0, this->currentScissor.extent.width, this->currentScissor.extent.height};
@@ -485,13 +562,13 @@ namespace vkengine
 
     void VKRenderer::makeSSAOPass(VkCommandBuffer cmd, cUint32_t currentFrame, cUint32_t imageIndex)
     {
-        this->forwardToCompute.transitionTo(cmd,
+        this->DeferredToCompute.transitionTo(cmd,
                                             VK_IMAGE_LAYOUT_GENERAL,
                                             VK_ACCESS_2_SHADER_READ_BIT,
                                             VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT);
 
         // computeToPost_: Empty buffer → writeonly storage image for SSAO output
-        this->computeToPost.transitionTo(
+        this->LightDeferred.transitionTo(
             cmd,
             VK_IMAGE_LAYOUT_GENERAL,
             VK_ACCESS_2_SHADER_WRITE_BIT,

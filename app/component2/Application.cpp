@@ -24,11 +24,11 @@ namespace vkengine
                         RootPath + SHADER_PATH,
                         {
                             {"shadowMap", {"vertshadowMap.spv", "fragshadowMap.spv"}},
-                            {"pbrForward", {"vertpbrForward.spv", "fragpbrForward.spv"}},
+                            {"pbrdeferred", {"vertpbrdeferred.spv", "fragpbrdeferred.spv"}},
                             {"gui", {"vertimgui.spv", "fragimgui.spv"}},
                             {"sky", {"vertskybox2.spv", "fragskybox2.spv"}},
                             {"post", {"vertpost.spv", "fragpost.spv"}},
-                            {"ssao", {"compssao.spv"}},
+                            {"lightdeferred", {"complightdeferred.spv"}},
                         }},
           guiRenderer{*this->cxt, shaderManager, swapChain->getSwapChainImageFormat(), RootPath + this->AssetsPath},
           Renderer(*this->cxt, shaderManager, this->kMaxFramesInFlight, RootPath + this->AssetsPath, RootPath + this->ShaderPath)

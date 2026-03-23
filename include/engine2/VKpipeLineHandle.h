@@ -68,6 +68,10 @@ namespace vkengine
             VkFormat outColorFormat,
             VkFormat depthFormat,
             VkSampleCountFlagBits msaaSamples);
+        void createDeferredPBRPipeline(
+            VkFormat outColorFormat,
+            VkFormat depthFormat,
+            VkSampleCountFlagBits msaaSamples);
 
         void dispatch(const VkCommandBuffer &cmd, uint32_t frameIndex);
 

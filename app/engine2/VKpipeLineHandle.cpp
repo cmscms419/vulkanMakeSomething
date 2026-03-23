@@ -116,7 +116,7 @@ namespace vkengine
         {
             this->createPostProcessingPipeLine(outColorFormat.value(), depthFormat.value(), msaaSamples.value());
         }
-        else if (name == "ssao")
+        else if (name == "ssao" || name == "lightdeferred")
         {
             this->createComputePipeline();
         }
@@ -127,6 +127,10 @@ namespace vkengine
         else if (name == "pbrForward")
         {
             this->createForwardPBRPipeline(outColorFormat.value(), depthFormat.value(), msaaSamples.value());
+        }
+        else if (name == "pbrdeferred")
+        {
+            this->createDeferredPBRPipeline(outColorFormat.value(), depthFormat.value(), msaaSamples.value());
         }
         else
         {

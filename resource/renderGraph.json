@@ -10,31 +10,31 @@
             ]
         },
         {
-            "name": "pbrForward",
+            "name": "pbrdeferred",
             "shaderResources": [
                 {
                     "handle": "shadowDepth",
                     "access": "ShaderReadOnly"
                 },
                 {
-                    "handle": "forwardToCompute",
+                    "handle": "DeferredToCompute",
                     "access": "ColorAttachmentWrite"
                 }
             ]
         },
         {
-            "name": "ssao",
+            "name": "lightdeferred",
             "shaderResources": [
                 {
                     "handle": "depthStencil",
                     "access": "ShaderReadOnly"
                 },
                 {
-                    "handle": "computeToPost",
+                    "handle": "LightDeferred",
                     "access": "NOTHING"
                 },
                 {
-                    "handle": "forwardToCompute",
+                    "handle": "DeferredToCompute",
                     "access": "NOTHING"
                 }
             ]
@@ -43,7 +43,7 @@
             "name": "postProcess",
             "shaderResources": [
                 {
-                    "handle": "computeToPost",
+                    "handle": "LightDeferred",
                     "access": "ShaderReadOnly"
                 },
                 {
