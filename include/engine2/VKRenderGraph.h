@@ -24,9 +24,7 @@ namespace vkengine
     struct RenderPassNode
     {
         cString name;
-        std::vector<ResourceUsage> inputs;  // 이 패스가 읽는 리소스
-        std::vector<ResourceUsage> outputs; // 이 패스가 쓰는 리소스
-        std::vector<ResourceUsage> shaderResources; // 디스크립터 바인딩 용
+        std::vector<ResourceUsage> shaderResources;
     };
 
     class VKRenderGraph
@@ -38,7 +36,7 @@ namespace vkengine
         void registerSwapchainResource(const cString &handle, VKSwapChain &swapchain);
         void registerPassFunction(const cString& name, PassExecuteFunc func);
         void addPass(RenderPassNode pass);
-        bool compile(); // addPass 후 한 번만 호출 (위상 정렬 + 유효성 검사)
+        bool compile(); // addPass 후 한 번만 호출 (유효성 검사)
         void execute(VkCommandBuffer cmd, cUint32_t frameIndex, cUint32_t imageindex);
         bool loadFromJson(const cString& filePath);
 
@@ -50,10 +48,7 @@ namespace vkengine
         std::unordered_map<cString, PassExecuteFunc> passRegistry;
         cString swapchainHandle;
         std::vector<RenderPassNode> passes;
-        std::vector<cSize> sortedOrder; // compile()이 채워넣음
 
-        std::vector<std::vector<cSize>> buildAdjacency() const;
-        std::vector<cSize> topologicalSort(const std::vector<std::vector<cSize>> &adj) const;
         void insertBarriersBeforePass(VkCommandBuffer cmd, cUint32_t imageindex, const RenderPassNode &pass);
         void applyBarrier(VkCommandBuffer cmd, cUint32_t imageindex, const ResourceUsage &res, const cString &passName);
         void printGraph() const;
