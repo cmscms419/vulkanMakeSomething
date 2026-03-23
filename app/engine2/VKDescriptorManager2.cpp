@@ -379,12 +379,12 @@ namespace vkengine {
 
             if (file.is_open())
             {
-                file << "NumSets " << this->remainingSets << "";
+                file << "NumSets " << this->allocatedSets << "\n";
 
-                // 남아있는 descriptor type과 개수를 스크립트 파일에 기록한다.
-                for (const auto& [type, count] : this->remainingTypeCounts)
+                // 사용하고 있는 descriptor type과 개수를 스크립트 파일에 기록한다.
+                for (const auto& [type, count] : this->allocatedTypeCounts)
                 {
-                    file << helper::descriptor::descriptorTypeToString(type) << " " << count << "";
+                    file << helper::descriptor::descriptorTypeToString(type) << " " << count << "\n";
                 }
                 file.close();
                 PRINT_TO_LOGGER("Saved remaining descriptor pool capacity to %s", this->kScriptFilename.c_str());
