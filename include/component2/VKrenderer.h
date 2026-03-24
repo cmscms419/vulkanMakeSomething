@@ -51,13 +51,12 @@ namespace vkengine
             VkRect2D scissor);
 
         void buildRenderGraph(VKSwapChain &swapchain);
-        void resize(uint32_t width, uint32_t height, VkSampleCountFlagBits msaaSamples);
+        void resize(uint32_t width, uint32_t height);
 
         void prepareForModels(
             std::vector<VKModel> &models,
             VkFormat outColorFormat,
             VkFormat depthFormat,
-            VkSampleCountFlagBits msaaSamples,
             cUint32_t swapChainWidth,
             cUint32_t swapChainHeight);
 
@@ -136,10 +135,7 @@ namespace vkengine
         std::vector<DescriptorSetHander> PostDescriptorSets{};
         std::vector<DescriptorSetHander> ssaoDescriptorSets{};
 
-        VKImage2D msaaColorBuffer;
         VKImage2D depthStencil;
-        VKImage2D msaaDepthStencil;
-
         VKImage2D DeferredToCompute;
         VKImage2D LightDeferred;
 
@@ -164,20 +160,17 @@ namespace vkengine
         // PBR, 스카이박스, 포스트 프로세싱, 쉐도우 맵 파이프라인 생성
         // 렌더 타겟, 텍스처, 샘플러, 스카이박스 IBL 텍스처 생성
         // Scene, Sky, Options, BoneData, PostProcessing 유니폼 버퍼 및 디스크립터 셋 생성
-        void createPipelines(const VkFormat colorFormat, const VkFormat depthFormat, VkSampleCountFlagBits msaaSamples);
-        void createTextures(cUint32_t swapchainWidth, cUint32_t swapchainHeight, VkSampleCountFlagBits msaaSamples);
+        void createPipelines(const VkFormat colorFormat, const VkFormat depthFormat);
+        void createTextures(cUint32_t swapchainWidth, cUint32_t swapchainHeight);
         void createUniformBuffers();
 
         void makeShadowMap(VkCommandBuffer cmd, cUint32_t currentFrame, cUint32_t imageIndex);
-        void makeForwardPBRPass(VkCommandBuffer cmd, cUint32_t currentFrame, cUint32_t imageIndex);
         void makePBRDeferredPass(VkCommandBuffer cmd, cUint32_t currentFrame, cUint32_t imageIndex);
         void makeLightDeferredPass(VkCommandBuffer cmd, cUint32_t currentFrame, cUint32_t imageIndex);
         void makePostProcessPass(VkCommandBuffer cmd, cUint32_t currentFrame, cUint32_t imageIndex);
-        void makePresent(VkCommandBuffer cmd, cUint32_t currentFrame, cUint32_t imageIndex);
-        void makeSSAOPass(VkCommandBuffer cmd, cUint32_t currentFrame, cUint32_t imageIndex);
 
         // Helper functions for creating rendering structures
-        // 컬러 어태치먼트 정보 생성 - MSAA resolve 지원
+        // 컬러 어태치먼트 정보 생성
         VkRenderingAttachmentInfo
         createColorAttachment(VkImageView imageView,
                               VkAttachmentLoadOp loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
@@ -185,18 +178,12 @@ namespace vkengine
                               VkImageView resolveImageView = VK_NULL_HANDLE,
                               VkResolveModeFlagBits resolveMode = VK_RESOLVE_MODE_NONE) const;
 
-        // 깊이 어태치먼트 정보 생성 - MSAA resolve 지원
+        // 깊이 어태치먼트 정보 생성
         VkRenderingAttachmentInfo
         createDepthAttachment(VkImageView imageView,
                               VkAttachmentLoadOp loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
                               float clearDepth = 1.0f, VkImageView resolveImageView = VK_NULL_HANDLE,
                               VkResolveModeFlagBits resolveMode = VK_RESOLVE_MODE_NONE) const;
-
-        // 렌더링 정보 구조체 생성 - 동적 렌더링에 사용
-        VkRenderingInfo
-        createRenderingInfo(const VkRect2D &renderArea,
-                            const VkRenderingAttachmentInfo *colorAttachment,
-                            const VkRenderingAttachmentInfo *depthAttachment = nullptr) const;
     };
 }
 

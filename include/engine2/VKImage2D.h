@@ -26,10 +26,9 @@ namespace vkengine
         void createTextureFromKtx2(cString filepath, cBool usCubemap);
         void createTextureFromImage(cString filepath, cBool usCubemap, cBool sRGB);
         void createTextureFromPixelData(cUChar *pixelData, cUint32_t width, cUint32_t height, cUint32_t channels, cBool sRGB);
-        void createMsaaColorBuffer(cUint16_t width, cUint16_t height, VkSampleCountFlagBits sampleCount);
         void createGeneralStorage(cUint16_t width, cUint32_t height);
         void createShadowMap(cUint16_t width, cUint32_t height, VkFormat format = VK_FORMAT_D16_UNORM, VkSampleCountFlagBits sampleCount = VK_SAMPLE_COUNT_1_BIT);
-        void createDepthStencil(cUint32_t width, cUint32_t height, VkSampleCountFlagBits msaaSamples, cBool onlyDepth = false);
+        void createDepthStencil(cUint32_t width, cUint32_t height, cBool onlyDepth = false);
         void cleanup() override;
 
         virtual void updateBinding(VkDescriptorSetLayoutBinding &binding) override;

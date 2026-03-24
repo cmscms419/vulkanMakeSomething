@@ -16,7 +16,7 @@ namespace vkengine
         const cString &shaderPath)
         : ctx(ctx), renderGraph(ctx), shaderManager(shadermanager),
           MaxFramesFlight(MaxFramesFlight), assetsPath(assetsPath), shaderPath(shaderPath),
-          dummyTexture(ctx), msaaColorBuffer(ctx), depthStencil(ctx), msaaDepthStencil(ctx),
+          dummyTexture(ctx), depthStencil(ctx),
           skyTextures(ctx), shadowMap(ctx), samplerLinearRepeat(ctx), samplerLinearClamp(ctx),
           samplerAnisoRepeat(ctx), samplerAnisoClamp(ctx), DeferredToCompute(ctx), LightDeferred(ctx),
           samplerShadowMap(ctx), materialStorageBuffer(ctx), table(ctx)
@@ -56,11 +56,11 @@ namespace vkengine
 
     void VKRenderer::buildRenderGraph(VKSwapChain &swapchain)
     {
-        this->renderGraph.registerSwapchainResource("swapchain", swapchain);      // swapchain 리소스 등록
-        this->renderGraph.registerResource("shadowDepth", shadowMap);             // 쉐도우 맵 리소스 등록
+        this->renderGraph.registerSwapchainResource("swapchain", swapchain);        // swapchain 리소스 등록
+        this->renderGraph.registerResource("shadowDepth", shadowMap);               // 쉐도우 맵 리소스 등록
         this->renderGraph.registerResource("DeferredToCompute", DeferredToCompute); // 포워드 패스 출력 등록
-        this->renderGraph.registerResource("LightDeferred", LightDeferred);       // 컴퓨트 패스 출력 등록
-        this->renderGraph.registerResource("depthStencil", depthStencil);         // depthstencil 리소스 등록
+        this->renderGraph.registerResource("LightDeferred", LightDeferred);         // 컴퓨트 패스 출력 등록
+        this->renderGraph.registerResource("depthStencil", depthStencil);           // depthstencil 리소스 등록
 
         this->renderGraph.loadFromJson(this->assetsPath + "/renderGraph.json");
 
@@ -91,10 +91,10 @@ namespace vkengine
         this->renderGraph.compile();
     }
 
-    void VKRenderer::prepareForModels(std::vector<VKModel> &models, VkFormat outColorFormat, VkFormat depthFormat, VkSampleCountFlagBits msaaSamples, cUint32_t swapChainWidth, cUint32_t swapChainHeight)
+    void VKRenderer::prepareForModels(std::vector<VKModel> &models, VkFormat outColorFormat, VkFormat depthFormat, cUint32_t swapChainWidth, cUint32_t swapChainHeight)
     {
-        this->createPipelines(outColorFormat, depthFormat, msaaSamples);
-        this->createTextures(swapChainWidth, swapChainHeight, msaaSamples);
+        this->createPipelines(outColorFormat, depthFormat);
+        this->createTextures(swapChainWidth, swapChainHeight);
         this->createUniformBuffers();
 
         std::vector<cMaterial> allMaterials;
@@ -116,22 +116,22 @@ namespace vkengine
                                            std::ref(this->table)});
     }
 
-    void VKRenderer::createPipelines(const VkFormat colorFormat, const VkFormat depthFormat, VkSampleCountFlagBits msaaSamples)
+    void VKRenderer::createPipelines(const VkFormat colorFormat, const VkFormat depthFormat)
     {
         pipelines.emplace("pbrdeferred",
                           VKPipeLineHandle(ctx, shaderManager, "pbrdeferred", VK_FORMAT_R16G16B16A16_SFLOAT,
-                                           depthFormat, msaaSamples));
+                                           depthFormat, VK_SAMPLE_COUNT_1_BIT));
         pipelines.emplace("sky", VKPipeLineHandle(ctx, shaderManager, "sky", VK_FORMAT_R16G16B16A16_SFLOAT,
-                                                  depthFormat, msaaSamples));
+                                                  depthFormat, VK_SAMPLE_COUNT_1_BIT));
         pipelines.emplace("post", VKPipeLineHandle(ctx, shaderManager, "post", colorFormat,
                                                    depthFormat, VK_SAMPLE_COUNT_1_BIT));
         pipelines.emplace("shadowMap", VKPipeLineHandle(ctx, shaderManager, "shadowMap", VK_FORMAT_D16_UNORM,
                                                         VK_FORMAT_D16_UNORM, VK_SAMPLE_COUNT_1_BIT));
         pipelines.emplace("lightdeferred", VKPipeLineHandle(ctx, shaderManager, "lightdeferred", VK_FORMAT_D16_UNORM,
-                                                   VK_FORMAT_D16_UNORM, VK_SAMPLE_COUNT_1_BIT));
+                                                            VK_FORMAT_D16_UNORM, VK_SAMPLE_COUNT_1_BIT));
     }
 
-    void VKRenderer::createTextures(cUint32_t swapchainWidth, cUint32_t swapchainHeight, VkSampleCountFlagBits msaaSamples)
+    void VKRenderer::createTextures(cUint32_t swapchainWidth, cUint32_t swapchainHeight)
     {
         this->samplerLinearRepeat.createLinearRepeat();
         this->samplerLinearClamp.createLinearClamp();
@@ -169,9 +169,7 @@ namespace vkengine
             path + "outputLUT.png");
 
         // Create render targets
-        this->msaaColorBuffer.createMsaaColorBuffer(swapchainWidth, swapchainHeight, msaaSamples);
-        this->msaaDepthStencil.createDepthStencil(swapchainWidth, swapchainHeight, msaaSamples);
-        this->depthStencil.createDepthStencil(swapchainWidth, swapchainHeight, VK_SAMPLE_COUNT_1_BIT, true);
+        this->depthStencil.createDepthStencil(swapchainWidth, swapchainHeight, true);
         this->DeferredToCompute.createGeneralStorage(swapchainWidth, swapchainHeight);
         this->LightDeferred.createGeneralStorage(swapchainWidth, swapchainHeight);
 
@@ -189,18 +187,14 @@ namespace vkengine
         shadowMapSet.create(ctx, {std::ref(this->shadowMap)});
     }
 
-    void VKRenderer::resize(cUint32_t width, cUint32_t height, VkSampleCountFlagBits msaaSamples)
+    void VKRenderer::resize(cUint32_t width, cUint32_t height)
     {
         // 크기에 의존하는 이미지 정리
-        this->msaaColorBuffer.cleanup();
-        this->msaaDepthStencil.cleanup();
         this->depthStencil.cleanup();
         this->DeferredToCompute.cleanup();
         this->LightDeferred.cleanup();
 
         // 새 크기로 재생성
-        this->msaaColorBuffer.createMsaaColorBuffer(width, height, msaaSamples);
-        this->msaaDepthStencil.createDepthStencil(width, height, msaaSamples);
         this->depthStencil.createDepthStencil(width, height, VK_SAMPLE_COUNT_1_BIT);
         this->DeferredToCompute.createGeneralStorage(width, height);
         this->LightDeferred.createGeneralStorage(width, height);
@@ -320,103 +314,22 @@ namespace vkengine
         }
     }
 
-    void VKRenderer::makeForwardPBRPass(VkCommandBuffer cmd, cUint32_t currentFrame, cUint32_t imageIndex)
-    {
-        VkRect2D renderArea = {0, 0, this->currentScissor.extent.width, this->currentScissor.extent.height};
-
-        auto colorAttachment = createColorAttachment(
-            msaaColorBuffer.getImageView(), VK_ATTACHMENT_LOAD_OP_CLEAR, {0.0f, 0.0f, 0.5f, 0.0f},
-            DeferredToCompute.getImageView(), VK_RESOLVE_MODE_AVERAGE_BIT);
-
-        auto depthAttachment =
-            createDepthAttachment(
-                msaaDepthStencil.getImageView(), VK_ATTACHMENT_LOAD_OP_CLEAR, 1.0f,
-                depthStencil.getImageView(), VK_RESOLVE_MODE_SAMPLE_ZERO_BIT);
-
-        auto renderingInfo = createRenderingInfo(renderArea, &colorAttachment, &depthAttachment);
-
-        vkCmdBeginRendering(cmd, &renderingInfo);
-        vkCmdSetViewport(cmd, 0, 1, &this->currentViewport);
-        vkCmdSetScissor(cmd, 0, 1, &this->currentScissor);
-
-        VkDeviceSize offsets[1]{0};
-
-        // Render models
-        vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
-                          pipelines.at("pbrForward").getPipeline());
-
-        const auto descriptorSets =
-            std::vector{
-                this->SceneOptionsBoneDataSets[currentFrame].get(),
-                this->materialDescriptorSet.get(),
-                skyDescriptorSet.get(),
-                shadowMapSet.get()};
-
-        vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS,
-                                pipelines.at("pbrForward").getPipelineLayout(), 0,
-                                static_cast<cUint32_t>(descriptorSets.size()),
-                                descriptorSets.data(), 0, nullptr);
-
-        for (size_t j = 0; j < this->currentModels->size(); j++)
-        {
-            if (!this->currentModels->at(j).Visible())
-            {
-                continue;
-            }
-
-            for (size_t i = 0; i < this->currentModels->at(j).Meshes().size(); i++)
-            {
-
-                auto &mesh = this->currentModels->at(j).Meshes()[i];
-
-                // Skip culled meshes
-                if (mesh.isCulled)
-                {
-                    continue;
-                }
-
-                cUint32_t matIndex = mesh.materialIndex;
-                this->currentModels->at(j).ModelResource().materialIndex = matIndex;
-
-                vkCmdPushConstants(cmd, pipelines.at("pbrForward").getPipelineLayout(),
-                                   VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0,
-                                   sizeof(this->currentModels->at(j).ModelResource()), &this->currentModels->at(j).ModelResource());
-
-                vkCmdBindVertexBuffers(cmd, 0, 1, &mesh.vertex->Buffer(), offsets);
-                vkCmdBindIndexBuffer(cmd, mesh.index->Buffer(), 0, VK_INDEX_TYPE_UINT32);
-                vkCmdDrawIndexed(cmd, static_cast<cUint32_t>(mesh.indices.size()), 1, 0, 0, 0);
-            }
-        }
-
-        // Sky rendering pass
-        vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelines.at("sky").getPipeline());
-
-        const auto skyDescriptorSets = std::vector{
-            SceneSkyOptionsStates[currentFrame].get(), // Set 0: scene + sky options
-            skyDescriptorSet.get()                     // Set 1: sky textures
-        };
-
-        vkCmdBindDescriptorSets(
-            cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelines.at("sky").getPipelineLayout(), 0,
-            static_cast<cUint32_t>(skyDescriptorSets.size()), skyDescriptorSets.data(), 0, nullptr);
-        vkCmdDraw(cmd, 36, 1, 0, 0);
-        vkCmdEndRendering(cmd);
-    }
-
     void VKRenderer::makePBRDeferredPass(VkCommandBuffer cmd, cUint32_t currentFrame, cUint32_t imageIndex)
     {
         VkRect2D renderArea = {0, 0, this->currentScissor.extent.width, this->currentScissor.extent.height};
 
-        auto colorAttachment = createColorAttachment(
-            msaaColorBuffer.getImageView(), VK_ATTACHMENT_LOAD_OP_CLEAR, {0.0f, 0.0f, 0.5f, 0.0f},
-            DeferredToCompute.getImageView(), VK_RESOLVE_MODE_AVERAGE_BIT);
+        auto colorAttachment = createColorAttachment(DeferredToCompute.getImageView(), VK_ATTACHMENT_LOAD_OP_CLEAR, {0.0f, 0.0f, 0.5f, 0.0f});
+        auto depthAttachment = createDepthAttachment(depthStencil.getImageView(), VK_ATTACHMENT_LOAD_OP_CLEAR, 1.0f);
 
-        auto depthAttachment =
-            createDepthAttachment(
-                msaaDepthStencil.getImageView(), VK_ATTACHMENT_LOAD_OP_CLEAR, 1.0f,
-                depthStencil.getImageView(), VK_RESOLVE_MODE_SAMPLE_ZERO_BIT);
+        // auto renderingInfo = createRenderingInfo(renderArea, &colorAttachment, &depthAttachment);
 
-        auto renderingInfo = createRenderingInfo(renderArea, &colorAttachment, &depthAttachment);
+        VkRenderingInfo renderingInfo{VK_STRUCTURE_TYPE_RENDERING_INFO_KHR};
+        renderingInfo.renderArea = renderArea;
+        renderingInfo.layerCount = 1;
+        renderingInfo.colorAttachmentCount = 1;
+        renderingInfo.pColorAttachments = &colorAttachment;
+        renderingInfo.pDepthAttachment = &depthAttachment;
+        // renderingInfo.pStencilAttachment = &depthAttachment;
 
         vkCmdBeginRendering(cmd, &renderingInfo);
         vkCmdSetViewport(cmd, 0, 1, &this->currentViewport);
@@ -489,9 +402,9 @@ namespace vkengine
     void VKRenderer::makeLightDeferredPass(VkCommandBuffer cmd, cUint32_t currentFrame, cUint32_t imageIndex)
     {
         this->DeferredToCompute.transitionTo(cmd,
-                                            VK_IMAGE_LAYOUT_GENERAL,
-                                            VK_ACCESS_2_SHADER_READ_BIT,
-                                            VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT);
+                                             VK_IMAGE_LAYOUT_GENERAL,
+                                             VK_ACCESS_2_SHADER_READ_BIT,
+                                             VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT);
 
         // computeToPost_: Empty buffer → writeonly storage image for SSAO output
         this->LightDeferred.transitionTo(
@@ -542,7 +455,15 @@ namespace vkengine
             swapchainImageView, VK_ATTACHMENT_LOAD_OP_CLEAR, {0.0f, 0.0f, 1.0f, 0.0f});
 
         // No depth attachment needed for post-processing
-        auto renderingInfo = createRenderingInfo(renderArea, &colorAttachment, nullptr);
+        // auto renderingInfo = createRenderingInfo(renderArea, &colorAttachment, nullptr);
+
+        VkRenderingInfo renderingInfo{VK_STRUCTURE_TYPE_RENDERING_INFO_KHR};
+        renderingInfo.renderArea = renderArea;
+        renderingInfo.layerCount = 1;
+        renderingInfo.colorAttachmentCount = 1;
+        renderingInfo.pColorAttachments = &colorAttachment;
+        renderingInfo.pDepthAttachment = nullptr;
+        renderingInfo.pStencilAttachment = nullptr;
 
         vkCmdBeginRendering(cmd, &renderingInfo);
         vkCmdSetViewport(cmd, 0, 1, &this->currentViewport);
@@ -558,48 +479,6 @@ namespace vkengine
 
         vkCmdDraw(cmd, 6, 1, 0, 0);
         vkCmdEndRendering(cmd);
-    }
-
-    void VKRenderer::makeSSAOPass(VkCommandBuffer cmd, cUint32_t currentFrame, cUint32_t imageIndex)
-    {
-        this->DeferredToCompute.transitionTo(cmd,
-                                            VK_IMAGE_LAYOUT_GENERAL,
-                                            VK_ACCESS_2_SHADER_READ_BIT,
-                                            VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT);
-
-        // computeToPost_: Empty buffer → writeonly storage image for SSAO output
-        this->LightDeferred.transitionTo(
-            cmd,
-            VK_IMAGE_LAYOUT_GENERAL,
-            VK_ACCESS_2_SHADER_WRITE_BIT,
-            VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT);
-
-        // Bind SSAO compute pipeline
-        vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_COMPUTE, pipelines.at("ssao").getPipeline());
-
-        // Bind descriptor sets for SSAO
-        const auto ssaoDescriptorSets = std::vector{this->ssaoDescriptorSets[currentFrame].get()};
-        vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_COMPUTE,
-                                pipelines.at("ssao").getPipelineLayout(), 0,
-                                static_cast<cUint32_t>(ssaoDescriptorSets.size()),
-                                ssaoDescriptorSets.data(), 0, nullptr);
-
-        // Dispatch compute shader
-        // Calculate dispatch size based on image dimensions and local work group size (16x16)
-        cUint32_t groupCountX = (currentScissor.extent.width + 15) / 16;  // Round up division
-        cUint32_t groupCountY = (currentScissor.extent.height + 15) / 16; // Round up division
-        vkCmdDispatch(cmd, groupCountX, groupCountY, 1);
-
-        VkMemoryBarrier2 memoryBarrier{VK_STRUCTURE_TYPE_MEMORY_BARRIER_2};
-        memoryBarrier.srcStageMask = VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT;
-        memoryBarrier.dstStageMask = VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT;
-        memoryBarrier.srcAccessMask = VK_ACCESS_2_SHADER_WRITE_BIT;
-        memoryBarrier.dstAccessMask = VK_ACCESS_2_SHADER_READ_BIT;
-
-        VkDependencyInfo dependencyInfo{VK_STRUCTURE_TYPE_DEPENDENCY_INFO};
-        dependencyInfo.memoryBarrierCount = 1;
-        dependencyInfo.pMemoryBarriers = &memoryBarrier;
-        vkCmdPipelineBarrier2(cmd, &dependencyInfo);
     }
 
     void VKRenderer::makeShadowMap(VkCommandBuffer cmd, cUint32_t currentFrame, cUint32_t imageIndex)
@@ -707,7 +586,7 @@ namespace vkengine
         attachment.resolveImageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
         return attachment;
     }
-
+#if 0
     VkRenderingInfo VKRenderer::createRenderingInfo(const VkRect2D &renderArea, const VkRenderingAttachmentInfo *colorAttachment, const VkRenderingAttachmentInfo *depthAttachment) const
     {
         VkRenderingInfo renderingInfo{VK_STRUCTURE_TYPE_RENDERING_INFO_KHR};
@@ -719,7 +598,7 @@ namespace vkengine
         renderingInfo.pStencilAttachment = depthAttachment;
         return renderingInfo;
     }
-
+#endif
     const CullingStats &VKRenderer::getCullingStats() const
     {
         return this->cullingStats;

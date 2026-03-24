@@ -319,13 +319,6 @@ namespace vkengine
             cmb);
     }
 
-    void VKImage2D::createMsaaColorBuffer(cUint16_t width, cUint16_t height, VkSampleCountFlagBits sampleCount)
-    {
-        this->createImage(static_cast<cUint32_t>(width), static_cast<cUint32_t>(height),
-                          VK_FORMAT_R16G16B16A16_SFLOAT, sampleCount, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
-                          VK_IMAGE_ASPECT_COLOR_BIT, 1, 1, static_cast<VkImageCreateFlagBits>(0));
-    }
-
     void VKImage2D::createGeneralStorage(cUint16_t width, cUint32_t height)
     {
         VkImageUsageFlags usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT |
@@ -346,7 +339,7 @@ namespace vkengine
                     VK_IMAGE_ASPECT_DEPTH_BIT, 1, 1, static_cast<VkImageCreateFlagBits>(0));
     }
 
-    void VKImage2D::createDepthStencil(cUint32_t width, cUint32_t height, VkSampleCountFlagBits msaaSamples, cBool onlyDepth)
+    void VKImage2D::createDepthStencil(cUint32_t width, cUint32_t height, cBool onlyDepth)
     {
         this->usageFlags = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
         this->imageFormat = ctx.getDepthStencil()->depthFormat;
@@ -365,7 +358,7 @@ namespace vkengine
             this->width,
             this->height,
             1,
-            msaaSamples,
+            VK_SAMPLE_COUNT_1_BIT, //  Always use 1x samples (no MSAA)
             this->imageFormat,
             VK_IMAGE_TILING_OPTIMAL,
             this->usageFlags,

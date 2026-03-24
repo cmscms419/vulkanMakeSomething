@@ -51,7 +51,6 @@ namespace vkengine
             this->models,
             this->swapChain->getSwapChainImageFormat(),
             this->cxt->getDepthStencil()->depthFormat,
-            this->msaaSamples,
             this->extent.width,
             this->extent.height);
     }
@@ -109,7 +108,6 @@ namespace vkengine
     
     void Application::initializeVulkanResources()
     {
-        this->msaaSamples = helper::device::getMaxUsableSampleCount(this->cxt->getDevice()->physicalDevice);
         this->commandBuffers = this->cxt->createGrapicsCommandBufferHanders(this->kMaxFramesInFlight);
         this->camera = std::make_shared<vkengine::object::Camera2>();
 

@@ -31,8 +31,6 @@ namespace vkengine {
         const cString ShaderPath = SHADER_PATH;
         VKShaderManager shaderManager;
 
-        VkSampleCountFlagBits msaaSamples = VK_SAMPLE_COUNT_FLAG_BITS_MAX_ENUM;
-
         std::shared_ptr<object::Camera2> camera;
         std::vector<VKModel> models;
 
