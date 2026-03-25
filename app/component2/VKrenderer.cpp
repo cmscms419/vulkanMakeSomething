@@ -406,15 +406,13 @@ namespace vkengine
         VkRect2D renderArea = {0, 0, this->currentScissor.extent.width, this->currentScissor.extent.height};
 
         std::vector<VkRenderingAttachmentInfo> colorAttachments{};
-
-        // VkRenderingAttachmentInfo colorAttachment = createColorAttachment(DeferredToCompute.getImageView(), VK_ATTACHMENT_LOAD_OP_CLEAR, {0.0f, 0.0f, 0.5f, 0.0f});
         VkRenderingAttachmentInfo depthAttachment = createDepthAttachment(depthStencil.getImageView(), VK_ATTACHMENT_LOAD_OP_CLEAR, 1.0f);
+        depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
         
-        // colorAttachments.push_back(colorAttachment);
-        colorAttachments.push_back(createColorAttachment(this->images["gAlbedo"]->getImageView(), VK_ATTACHMENT_LOAD_OP_CLEAR, {0.0f, 0.0f, 0.5f, 0.0f}));
-        colorAttachments.push_back(createColorAttachment(this->images["gNormal"]->getImageView(), VK_ATTACHMENT_LOAD_OP_CLEAR, {0.0f, 0.0f, 0.5f, 0.0f}));
-        colorAttachments.push_back(createColorAttachment(this->images["gPosition"]->getImageView(), VK_ATTACHMENT_LOAD_OP_CLEAR, {0.0f, 0.0f, 0.5f, 0.0f}));
-        colorAttachments.push_back(createColorAttachment(this->images["gMaterial"]->getImageView(), VK_ATTACHMENT_LOAD_OP_CLEAR, {0.0f, 0.0f, 0.5f, 0.0f}));
+        colorAttachments.push_back(createColorAttachment(this->images["gAlbedo"]->getImageView(), VK_ATTACHMENT_LOAD_OP_CLEAR, {0.0f, 0.0f, 0.0f, 0.0f}));
+        colorAttachments.push_back(createColorAttachment(this->images["gNormal"]->getImageView(), VK_ATTACHMENT_LOAD_OP_CLEAR, {0.0f, 0.0f, 0.0f, 0.0f}));
+        colorAttachments.push_back(createColorAttachment(this->images["gPosition"]->getImageView(), VK_ATTACHMENT_LOAD_OP_CLEAR, {0.0f, 0.0f, 0.0f, 0.0f}));
+        colorAttachments.push_back(createColorAttachment(this->images["gMaterial"]->getImageView(), VK_ATTACHMENT_LOAD_OP_CLEAR, {0.0f, 0.0f, 0.0f, 0.0f}));
         
         VkRenderingInfo renderingInfo{VK_STRUCTURE_TYPE_RENDERING_INFO_KHR};
         renderingInfo.renderArea = renderArea;
@@ -482,7 +480,7 @@ namespace vkengine
         vkCmdEndRendering(cmd);
         // LOAD: G-buffer 위에 sky 추가
         // VK_ATTACHMENT_LOAD_OP_LOAD는 Vulkan VkAttachmentLoadOp 열거형 값(숫자 0)으로, 첨부 파일의 기존 콘텐츠를 보존하고 렌더링 패스 시작 시 사용할 수 있도록 해야 함을 의미합니다.
-        VkRenderingAttachmentInfo skyColorAttachment = createColorAttachment(DeferredToCompute.getImageView(), VK_ATTACHMENT_LOAD_OP_LOAD, {0.0f, 0.0f, 0.5f, 0.0f});
+        VkRenderingAttachmentInfo skyColorAttachment = createColorAttachment(DeferredToCompute.getImageView(), VK_ATTACHMENT_LOAD_OP_CLEAR, {0.0f, 0.0f, 0.0f, 0.0f});
         VkRenderingAttachmentInfo skyDepthAttachment = createDepthAttachment(depthStencil.getImageView(), VK_ATTACHMENT_LOAD_OP_LOAD, 1.0f);
 
         VkRenderingInfo skyRenderingInfo{VK_STRUCTURE_TYPE_RENDERING_INFO_KHR};

@@ -17,6 +17,10 @@
                     "access": "ShaderReadOnly"
                 },
                 {
+                    "handle": "depthStencil",
+                    "access": "DepthAttachmentWrite"
+                },
+                {
                     "handle": "gAlbedo",
                     "access": "NOTHING"
                 },
