@@ -17,8 +17,20 @@
                     "access": "ShaderReadOnly"
                 },
                 {
-                    "handle": "DeferredToCompute",
-                    "access": "ColorAttachmentWrite"
+                    "handle": "gAlbedo",
+                    "access": "NOTHING"
+                },
+                {
+                    "handle": "gNormal",
+                    "access": "NOTHING"
+                },
+                {
+                    "handle": "gPosition",
+                    "access": "NOTHING"
+                },
+                {
+                    "handle": "gMaterial",
+                    "access": "NOTHING"
                 }
             ]
         },
@@ -35,6 +47,22 @@
                 },
                 {
                     "handle": "DeferredToCompute",
+                    "access": "NOTHING"
+                },
+                {
+                    "handle": "gAlbedo",
+                    "access": "NOTHING"
+                },
+                {
+                    "handle": "gNormal",
+                    "access": "NOTHING"
+                },
+                {
+                    "handle": "gPosition",
+                    "access": "NOTHING"
+                },
+                {
+                    "handle": "gMaterial",
                     "access": "NOTHING"
                 }
             ]

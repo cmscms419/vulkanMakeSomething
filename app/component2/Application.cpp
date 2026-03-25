@@ -372,7 +372,7 @@ namespace vkengine
         ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0);
         ImGui::SetNextWindowPos(ImVec2(10 * scale, 10 * scale), ImGuiCond_FirstUseEver);
         ImGui::SetNextWindowSize(ImVec2(0, 0), ImGuiCond_FirstUseEver);
-        ImGui::Begin("벌컨 실시간 렌더링 예제", nullptr, ImGuiWindowFlags_None);
+        ImGui::Begin("Vulkan realtime Rendering Example", nullptr, ImGuiWindowFlags_None);
 
         static cVec3 lightColor = cVec3(1.0f);
         static cFloat lightIntensity = 28.454f;

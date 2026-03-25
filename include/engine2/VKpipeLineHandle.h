@@ -14,13 +14,12 @@ namespace vkengine
     class VKPipeLineHandle
     {
     public:
-
-        VKPipeLineHandle(VKcontext& context, VKShaderManager& shaderManager);
-        VKPipeLineHandle(VKcontext& ctx, VKShaderManager& shaderManager, cString Name,VkFormat outColorFormat, VkFormat depthFormat, VkSampleCountFlagBits msaaSamples);
-        VKPipeLineHandle(VKPipeLineHandle&& other) noexcept;
-        VKPipeLineHandle& operator=(VKPipeLineHandle&& other) noexcept;
-        VKPipeLineHandle(const VKPipeLineHandle&) = delete;
-        VKPipeLineHandle& operator=(const VKPipeLineHandle&) = delete;
+        VKPipeLineHandle(VKcontext &context, VKShaderManager &shaderManager);
+        VKPipeLineHandle(VKcontext &ctx, VKShaderManager &shaderManager, cString Name, VkFormat outColorFormat, VkFormat depthFormat, VkSampleCountFlagBits msaaSamples);
+        VKPipeLineHandle(VKPipeLineHandle &&other) noexcept;
+        VKPipeLineHandle &operator=(VKPipeLineHandle &&other) noexcept;
+        VKPipeLineHandle(const VKPipeLineHandle &) = delete;
+        VKPipeLineHandle &operator=(const VKPipeLineHandle &) = delete;
         VKPipeLineHandle(VKcontext &ctx, VKShaderManager &shaderManager,
                          const PipelineConfig &pipelineCache,
                          std::vector<VkFormat> outColorFormats = {},
@@ -40,6 +39,12 @@ namespace vkengine
             std::vector<VkFormat> outColorFormats = {},
             std::optional<VkFormat> depthFormat = std::nullopt,
             std::optional<VkSampleCountFlagBits> msaaSamples = std::nullopt);
+        
+        void createGraphicsFromConfig(
+            const PipelineConfig &config,
+            std::vector<VkFormat> outColorFormats,
+            std::optional<VkFormat> depthFormat,
+            std::optional<VkSampleCountFlagBits> msaaSamples);
 
         void createByName(cString name,
                           std::optional<VkFormat> outColorFormat = VK_FORMAT_UNDEFINED,
@@ -57,17 +62,20 @@ namespace vkengine
             VkSampleCountFlagBits msaaSamples);
 
         void createGuiPipeline(VkFormat outColorFormat = VK_FORMAT_UNDEFINED);
+
         void createPostProcessingPipeLine(
             VkFormat outColorFormat = VK_FORMAT_UNDEFINED,
             VkFormat depthFormat = VK_FORMAT_UNDEFINED,
             VkSampleCountFlagBits msaaSamples = VK_SAMPLE_COUNT_FLAG_BITS_MAX_ENUM);
-        void createSSAOPipeline();
+
         void createShadowMapPipeline(
             VkFormat depthFormat = VK_FORMAT_UNDEFINED);
+
         void createForwardPBRPipeline(
             VkFormat outColorFormat,
             VkFormat depthFormat,
             VkSampleCountFlagBits msaaSamples);
+
         void createDeferredPBRPipeline(
             VkFormat outColorFormat,
             VkFormat depthFormat,
@@ -79,8 +87,8 @@ namespace vkengine
         VkPipeline getPipeline() { return pipeline; }
 
     private:
-        VKcontext& ctx;
-        VKShaderManager& shaderManager;
+        VKcontext &ctx;
+        VKShaderManager &shaderManager;
 
         VkPipelineLayout pipelineLayout;
         VkPipeline pipeline;

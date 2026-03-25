@@ -50,6 +50,10 @@ struct OptionsUniform
     alignas(4) cInt shadowOn = 1;    // Use int instead of bool, 1 = true, 0 = false
     alignas(4) cInt discardOn = 1;   // Use int instead of bool, 1 = true, 0 = false
     alignas(4) cInt animationOn = 1; // Use int instead of bool, 1 = true, 0 = false
+    alignas(4) cFloat specularWeight = 0.05f; // PBR specular weight - reduced default
+    alignas(4) cFloat diffuseWeight = 1.0f;   // PBR diffuse weight
+    alignas(4) cFloat emissiveWeight = 1.0f;  // PBR emissive weight
+    alignas(4) cFloat shadowOffset = 0.0f;    // Shadow bias offset
 };
 
 struct SSAOParamsUBO
