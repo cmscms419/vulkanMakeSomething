@@ -9,7 +9,6 @@
 #include "VKContext.h"
 #include "VKImage2D.h"
 #include "VKSamplerHandler.h"
-#include "VKSkyTexture.h"
 #include "VKpipeLineHandle.h"
 #include "VKViewFrustum.h"
 #include "VKModel.h"
@@ -142,7 +141,9 @@ namespace vkengine
         VKImage2D LightDeferred;
 
         VKImage2D dummyTexture;
-        VKskyTexture skyTextures;
+        VKImage2D prefiltered;
+        VKImage2D irradiance;
+        VKImage2D brdfLUT;
         VKImage2D shadowMap;
 
         VKSamplerHandler samplerLinearRepeat;

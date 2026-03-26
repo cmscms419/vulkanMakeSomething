@@ -12,7 +12,6 @@
 #include "VKCommandBufferHander.h"
 #include "VKbuffer2.h"
 #include "VKswapchain.h"
-#include "VKSkyTexture.h"
 #include "VKUniformBuffer2.h"
 #include "VKDescriptorSet.h"
 

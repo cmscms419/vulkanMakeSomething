@@ -218,7 +218,6 @@ namespace vkengine
                 ctx.getDevice()->transferCommandPool,
                 ctx.getDevice()->transferVKQueue,
                 cmb);
-
             delete resource;
         }
     }

@@ -54,7 +54,6 @@
     <ClCompile Include="..\..\app\engine2\VKPushConstants.cpp">
       <Filter>source2</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\app\engine2\VKSkyTexture.cpp">
       <Filter>source2</Filter>
     </ClCompile>
     <ClCompile Include="..\..\app\engine2\VKAnimation.cpp">
@@ -144,7 +143,6 @@
     <ClInclude Include="..\..\include\engine2\VKPushConstants.h">
       <Filter>source2</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\engine2\VKSkyTexture.h">
       <Filter>source2</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\engine2\VKUniformBuffer2.h">

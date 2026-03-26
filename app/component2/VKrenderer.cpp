@@ -18,8 +18,8 @@ namespace vkengine
         const cString &shaderPath)
         : ctx(ctx), renderGraph(ctx), shaderManager(shadermanager),
           MaxFramesFlight(MaxFramesFlight), assetsPath(assetsPath), shaderPath(shaderPath),
-          dummyTexture(ctx), depthStencil(ctx),
-          skyTextures(ctx), shadowMap(ctx), samplerLinearRepeat(ctx), samplerLinearClamp(ctx),
+          dummyTexture(ctx), depthStencil(ctx), shadowMap(ctx), samplerLinearRepeat(ctx), samplerLinearClamp(ctx),
+          prefiltered(ctx), irradiance(ctx), brdfLUT(ctx),
           samplerAnisoRepeat(ctx), samplerAnisoClamp(ctx), DeferredToCompute(ctx), LightDeferred(ctx),
           samplerShadowMap(ctx), materialStorageBuffer(ctx), table(ctx)
     {
@@ -175,10 +175,13 @@ namespace vkengine
 
         // Initialize IBL textures for PBR
         cString path = this->assetsPath + "cubeMap/";
-        this->skyTextures.LoadKTXMap(
-            path + "specular_out.ktx2",
-            path + "diffuse_out.ktx2",
-            path + "outputLUT.png");
+        this->prefiltered.createTextureFromKtx2(path + "specular_out.ktx2", true);
+        this->irradiance.createTextureFromKtx2(path + "diffuse_out.ktx2", true);
+        this->brdfLUT.createTextureFromImage(path + "outputLUT.png", false, true);
+        
+        this->prefiltered.setSampler(this->samplerLinearRepeat.getSampler());
+        this->irradiance.setSampler(this->samplerLinearRepeat.getSampler());
+        this->brdfLUT.setSampler(this->samplerLinearClamp.getSampler());
 
         // Create render targets
         this->depthStencil.createDepthStencil(swapchainWidth, swapchainHeight, true);
@@ -191,9 +194,9 @@ namespace vkengine
         LightDeferred.setSampler(samplerLinearRepeat.getSampler());
 
         // Create descriptor sets for sky textures (set 1 for sky pipeline)
-        skyDescriptorSet.create(ctx, {std::ref(this->skyTextures.Prefiltered()),
-                                      std::ref(this->skyTextures.Irradiance()),
-                                      std::ref(this->skyTextures.BrdfLUT())});
+        skyDescriptorSet.create(ctx, {std::ref(this->prefiltered),
+                                      std::ref(this->irradiance),
+                                      std::ref(this->brdfLUT)});
 
         // Create descriptor set for shadow mapping
         shadowMapSet.create(ctx, {std::ref(this->shadowMap)});
@@ -401,9 +404,9 @@ namespace vkengine
                                                      std::ref(*this->images["gPosition"]),
                                                      std::ref(*this->images["gMaterial"]),
                                                      std::ref(this->shadowMap),
-                                                     std::ref(this->skyTextures.Prefiltered()),
-                                                     std::ref(this->skyTextures.Irradiance()),
-                                                     std::ref(this->skyTextures.BrdfLUT())});
+                                                     std::ref(this->prefiltered),
+                                                     std::ref(this->irradiance),
+                                                     std::ref(this->brdfLUT)});
         }
     }
 

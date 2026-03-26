@@ -24,7 +24,6 @@
     <ClCompile Include="..\..\app\component2\VKgui.cpp" />
     <ClCompile Include="..\..\app\component2\VKrenderer.cpp" />
     <ClCompile Include="..\..\app\component2\VKwindow.cpp" />
-    <ClCompile Include="..\..\app\component2\VKSkyTexture.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\include\component2\Application.h" />
@@ -33,7 +32,6 @@
     <ClInclude Include="..\..\include\component2\VKgui.h" />
     <ClInclude Include="..\..\include\component2\VKrenderer.h" />
     <ClInclude Include="..\..\include\component2\VKwindow.h" />
-    <ClInclude Include="..\..\include\component2\VKSkyTexture.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{672262a0-f3e9-4795-8a7f-3fed16c55bd1}</ProjectGuid>
