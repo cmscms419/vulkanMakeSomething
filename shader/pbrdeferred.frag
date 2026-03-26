@@ -115,17 +115,16 @@ void main() {
         emissive *= texture(materialTextures[nonuniformEXT(material.emissiveTextureIndex)], fragTexCoord).rgb;
     }
 
-    vec3 V = normalize(fragCameraPos - fragPos);
-   
+    // Calculate world-space normal with normal mapping
     vec3 N = normalize(fragNormal);
-    vec3 T = normalize(fragTangent);
-    vec3 B = normalize(fragBitangent);
-    mat3 TBN = mat3(T, B, N);
-
     if(options.textureOn != 0 && material.normalTextureIndex >= 0) {
-      vec3 tangentNormal = texture(materialTextures[nonuniformEXT(material.normalTextureIndex)], fragTexCoord).xyz * 2.0 - 1.0;
-      if (length(tangentNormal) > 0.5)
-        N = normalize(TBN * tangentNormal);
+        vec3 T = normalize(fragTangent);
+        vec3 B = normalize(fragBitangent);
+        mat3 TBN = mat3(T, B, N);
+        
+        vec3 tangentNormal = texture(materialTextures[nonuniformEXT(material.normalTextureIndex)], fragTexCoord).xyz * 2.0 - 1.0;
+        if (length(tangentNormal) > 0.5)
+            N = normalize(TBN * tangentNormal);
     }
 
     // Output to G-Buffer
