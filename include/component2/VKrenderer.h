@@ -140,7 +140,6 @@ namespace vkengine
         VKImage2D DeferredToCompute;
         VKImage2D LightDeferred;
 
-        VKImage2D dummyTexture;
         VKImage2D prefiltered;
         VKImage2D irradiance;
         VKImage2D brdfLUT;

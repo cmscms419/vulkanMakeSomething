@@ -18,7 +18,7 @@ namespace vkengine
         const cString &shaderPath)
         : ctx(ctx), renderGraph(ctx), shaderManager(shadermanager),
           MaxFramesFlight(MaxFramesFlight), assetsPath(assetsPath), shaderPath(shaderPath),
-          dummyTexture(ctx), depthStencil(ctx), shadowMap(ctx), samplerLinearRepeat(ctx), samplerLinearClamp(ctx),
+          depthStencil(ctx), shadowMap(ctx), samplerLinearRepeat(ctx), samplerLinearClamp(ctx),
           prefiltered(ctx), irradiance(ctx), brdfLUT(ctx),
           samplerAnisoRepeat(ctx), samplerAnisoClamp(ctx), DeferredToCompute(ctx), LightDeferred(ctx),
           samplerShadowMap(ctx), materialStorageBuffer(ctx), table(ctx)
@@ -160,14 +160,10 @@ namespace vkengine
             EXIT_TO_LOGGER("Failed to load texture image : %s", dummyImagePath.c_str());
         }
 
-        this->dummyTexture.createTextureFromPixelData(pixels, width, height, TextureType::Texture_rgb_alpha, true);
-
         if (pixels != nullptr && dummyImagePath.find(".png") != std::string::npos)
         {
             free(pixels);
         }
-
-        this->dummyTexture.setSampler(this->samplerLinearRepeat.getSampler());
 
         // Initialize shadow map texture
         this->shadowMap.createShadowMap(2048 * 2, 2048 * 2);
