@@ -450,6 +450,10 @@ namespace vkengine
             this->Renderer.getOptionsUniform().discardOn = discardOn ? 1 : 0;
         }
 
+        ImGui::SliderFloat("Specular",      &this->Renderer.getOptionsUniform().specularWeight, 0.0f, 1.0f);
+        ImGui::SliderFloat("Diffuse",       &this->Renderer.getOptionsUniform().diffuseWeight,  0.0f, 5.0f);
+        ImGui::SliderFloat("Shadow Offset", &this->Renderer.getOptionsUniform().shadowOffset,   0.0f, 1.0f);
+
         ImGui::Separator();
 
         for (uint32_t i = 0; i < models.size(); i++)
