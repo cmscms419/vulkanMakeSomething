@@ -33,6 +33,12 @@ struct ModelConfig
     }
 
     // Fluent interface for easy configuration
+    ModelConfig &setScale(cFloat scale)
+    {
+        transform = glm::scale(transform, cVec3(scale));
+        return *this;
+    }
+
     ModelConfig &setName(const cString &name)
     {
         displayName = name;

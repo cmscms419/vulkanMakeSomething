@@ -151,20 +151,6 @@ namespace vkengine
         this->samplerAnisoClamp.createAnisoClamp();
         this->samplerShadowMap.createShadowMapSampler();
 
-        cString dummyImagePath = this->assetsPath + "CustomUVChecker_byValle_2K.png";
-        cUint32_t width, height;
-        cUChar *pixels = load_png_rgba(dummyImagePath.c_str(), &width, &height, TextureType::Texture_rgb_alpha);
-
-        if (!pixels)
-        {
-            EXIT_TO_LOGGER("Failed to load texture image : %s", dummyImagePath.c_str());
-        }
-
-        if (pixels != nullptr && dummyImagePath.find(".png") != std::string::npos)
-        {
-            free(pixels);
-        }
-
         // Initialize shadow map texture
         this->shadowMap.createShadowMap(2048 * 2, 2048 * 2);
         this->shadowMap.setSampler(this->samplerShadowMap.getSampler());
@@ -223,7 +209,6 @@ namespace vkengine
         VkPhysicalDevice physicalDevice = ctx.getDevice()->physicalDevice;
 
         // Create gAlbedo buffer (Albedo RGB + Metallic A)
-        // images["gAlbedo"]->createImage(
         images["gAlbedo"]->createImage(
             swapchainWidth,
             swapchainHeight,
