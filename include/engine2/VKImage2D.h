@@ -33,13 +33,11 @@ namespace vkengine
 
         VkImage getImage() { return this->image; }
         VkImageView getImageView() { return this->imageView; }
-        VkFormat getImageFormat() { return this->imageFormat; }
         cUint32_t getHeight() { return this->height; }
         cUint32_t getWidth() { return this->width; }
 
     private:
         VKcontext &ctx;
-        VkFormat imageFormat{VK_FORMAT_UNDEFINED};
 
         cUint32_t width{0};
         cUint32_t height{0};

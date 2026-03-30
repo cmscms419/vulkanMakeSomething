@@ -42,7 +42,6 @@ namespace vkengine
     {
         this->cleanup();
 
-        this->imageFormat = format;
         this->width = width;
         this->height = height;
         this->usageFlags = usage;
@@ -70,14 +69,13 @@ namespace vkengine
 
         this->descriptorCount = 1;
         this->update();
-        this->barrierHelper.update(this->imageFormat, mipLevels, arrayLayers);
+        this->barrierHelper.update(format, mipLevels, arrayLayers);
     }
 
     void VKImage2D::createCubeImage(cUint32_t width, cUint32_t height, VkFormat format, VkSampleCountFlagBits sampleCount, VkImageUsageFlags usage, VkImageAspectFlags aspectMask, cUint32_t mipLevels, cUint32_t arrayLayers, VkImageCreateFlagBits flags)
     {
         this->cleanup();
 
-        this->imageFormat = format;
         this->width = width;
         this->height = height;
         this->usageFlags = usage;
@@ -105,7 +103,7 @@ namespace vkengine
 
         this->descriptorCount = 1;
         this->update();
-        this->barrierHelper.update(this->imageFormat, mipLevels, arrayLayers);
+        this->barrierHelper.update(format, mipLevels, arrayLayers);
     }
 
     void VKImage2D::createTextureFromKtx2(cString filepath, cBool usCubemap)
@@ -341,14 +339,15 @@ namespace vkengine
     void VKImage2D::createDepthStencil(cUint32_t width, cUint32_t height, cBool onlyDepth)
     {
         this->usageFlags = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
-        this->imageFormat = ctx.getDepthStencil()->depthFormat;
         this->width = width;
         this->height = height;
         this->aspectFlags = VK_IMAGE_ASPECT_DEPTH_BIT;
+
+        VkFormat format = ctx.getDepthStencil()->depthFormat;
         
         if (!onlyDepth)
         {
-            this->aspectFlags |= ((this->imageFormat >= VK_FORMAT_D16_UNORM_S8_UINT) ? VK_IMAGE_ASPECT_STENCIL_BIT : 0);
+            this->aspectFlags |= ((format >= VK_FORMAT_D16_UNORM_S8_UINT) ? VK_IMAGE_ASPECT_STENCIL_BIT : 0);
         }
 
         helper::resource::createImage(
@@ -358,7 +357,7 @@ namespace vkengine
             this->height,
             1,
             VK_SAMPLE_COUNT_1_BIT, //  Always use 1x samples (no MSAA)
-            this->imageFormat,
+            format,
             VK_IMAGE_TILING_OPTIMAL,
             this->usageFlags,
             VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
@@ -368,14 +367,14 @@ namespace vkengine
         this->imageView = vkengine::helper::resource::createImageView(
             ctx.getDevice()->logicaldevice,
             this->image,
-            this->imageFormat,
+            format,
             this->aspectFlags,
             1,
             1);
 
         this->descriptorCount = 1;
         this->update();
-        this->barrierHelper.update(this->imageFormat, 1, 1);
+        this->barrierHelper.update(format, 1, 1);
     }
 
     void VKImage2D::cleanup()
