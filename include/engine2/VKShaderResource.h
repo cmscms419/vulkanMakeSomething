@@ -20,14 +20,48 @@ namespace vkengine
         // dstSet / dstBinding 은 DescriptorSetHander::create() 가 덮어씀
         virtual void updateWrite(VkWriteDescriptorSet &write);
 
-        virtual void cleanup() = 0;
+        virtual void cleanup();
+        virtual void update();
 
-        void update();
+    protected:
+        cString name;
+
+        VkDeviceMemory memory{VK_NULL_HANDLE};
+        VkDescriptorType descriptorType{};
+        cUint32_t descriptorCount{};
+        VkShaderStageFlags stageFlags{};
+
+        VkDescriptorImageInfo imageInfo{};
+        VkDescriptorBufferInfo bufferInfo{};
+    };
+
+    class VKBufferShaderResource : public VKShaderResource
+    {
+    public:
+        virtual void update() override;
+        virtual void updateWrite(VkWriteDescriptorSet &write) override;
+        
+        void updateBufferInfo(VkDescriptorBufferInfo &bufferInfo);
+
+    protected:
+        VkBuffer buffer{VK_NULL_HANDLE};
+        VkDeviceSize bufferSize{0};
+        VkDeviceSize offset;        ///< 버퍼 간격
+        VkDeviceSize allocatedSize; ///< createBuffer 할 때, 만들어지는 버퍼의 크기
+        VkDeviceSize alignment;     ///< 버퍼 정렬
+        void *mapped;               //< 매핑된 메모리 포인터
+    };
+
+    class VKImageShaderResource : public VKShaderResource
+    {
+    public:
+        virtual void update() override;
+        virtual void updateWrite(VkWriteDescriptorSet &write) override;
+        
         void setSampler(VkSampler sampler);
-        VKBarrierHelper &getBarrierHelper();
+        void updateImageInfo(VkDescriptorImageInfo &imageInfo);
 
-        void updateImageInfo(VkDescriptorImageInfo& imageInfo);
-        void updateBufferInfo(VkDescriptorBufferInfo& bufferInfo);
+        VKBarrierHelper &getBarrierHelper();
 
         void transitionTo(VkCommandBuffer commandBuffer, VkImageLayout newLayout, VkAccessFlags2 newAccess, VkPipelineStageFlags2 newStage);
         void transitionToColorAttachment(VkCommandBuffer commandBuffer);
@@ -42,28 +76,9 @@ namespace vkengine
         void updateResourceBindingAfterTransition();
 
     protected:
-        cString name;
-
         VkImage image{VK_NULL_HANDLE};
         VkImageView imageView{VK_NULL_HANDLE};
-        VkImageLayout imageLayout{VK_IMAGE_LAYOUT_UNDEFINED};
         VkSampler sampler{VK_NULL_HANDLE};
-
-        VkBuffer buffer{VK_NULL_HANDLE};
-        VkDeviceSize bufferSize{0};
-        VkDeviceSize offset;        ///< 버퍼 간격
-        VkDeviceSize allocatedSize; ///< createBuffer 할 때, 만들어지는 버퍼의 크기
-        VkDeviceSize alignment;     ///< 버퍼 정렬
-        void *mapped; //< 매핑된 메모리 포인터
-        
-        VkDeviceMemory memory{VK_NULL_HANDLE};
-        VkDescriptorType descriptorType{};
-        cUint32_t descriptorCount{};
-        VkShaderStageFlags stageFlags{};
-
-        VkDescriptorImageInfo imageInfo{};
-        VkDescriptorBufferInfo bufferInfo{};
-        VkBufferView texelBufferView = {VK_NULL_HANDLE};
 
         VKBarrierHelper barrierHelper;
     };

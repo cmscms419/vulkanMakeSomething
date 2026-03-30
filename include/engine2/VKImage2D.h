@@ -7,7 +7,7 @@
 
 namespace vkengine
 {
-    class VKImage2D : public VKShaderResource
+    class VKImage2D : public VKImageShaderResource
     {
     public:
         VKImage2D(VKcontext &context);
@@ -30,9 +30,6 @@ namespace vkengine
         void createShadowMap(cUint16_t width, cUint32_t height, VkFormat format = VK_FORMAT_D16_UNORM, VkSampleCountFlagBits sampleCount = VK_SAMPLE_COUNT_1_BIT);
         void createDepthStencil(cUint32_t width, cUint32_t height, cBool onlyDepth = false);
         void cleanup() override;
-
-        virtual void updateBinding(VkDescriptorSetLayoutBinding &binding) override;
-        virtual void updateWrite(VkWriteDescriptorSet &write) override;
 
         VkImage getImage() { return this->image; }
         VkImageView getImageView() { return this->imageView; }

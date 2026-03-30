@@ -9,7 +9,7 @@
 namespace vkengine
 {
 
-    class VKBaseBuffer2 : public VKShaderResource
+    class VKBaseBuffer2 : public VKBufferShaderResource
     {
     public:
         VKBaseBuffer2(VKcontext &ctx);
@@ -33,9 +33,6 @@ namespace vkengine
         void createModelVertexBuffer(VkDeviceSize size, void *data);
         void createModelIndexBuffer(VkDeviceSize size, void *data);
         void createStorageBuffer(VkDeviceSize size, VkBufferUsageFlags additionalUsage = 0);
-
-        void updateBinding(VkDescriptorSetLayoutBinding &binding) override;
-        void updateWrite(VkWriteDescriptorSet &write) override;
 
         void updateData(const void *data, VkDeviceSize size, VkDeviceSize offset);
         void copyData(const void *data, VkDeviceSize size, VkDeviceSize offset = 0);

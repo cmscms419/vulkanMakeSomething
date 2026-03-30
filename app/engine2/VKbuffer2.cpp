@@ -296,42 +296,6 @@ namespace vkengine
         _VK_CHECK_RESULT_(vkFlushMappedMemoryRanges(ctx.getDevice()->logicaldevice, 1, &mappedRange));
     }
 
-    void VKBaseBuffer2::updateBinding(VkDescriptorSetLayoutBinding &binding)
-    {
-        switch (this->descriptorType)
-        {
-        case VK_DESCRIPTOR_TYPE_SAMPLER:
-        case VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER:
-        case VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER:
-        case VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER:
-        case VK_DESCRIPTOR_TYPE_STORAGE_BUFFER:
-        case VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC:
-        case VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC:
-            binding.descriptorType = this->descriptorType;
-            binding.descriptorCount = this->descriptorCount;
-            binding.pImmutableSamplers = nullptr;
-            binding.stageFlags = this->stageFlags;
-            break;
-        default:
-            EXIT_TO_LOGGER("Descriptor Type Buffer");
-            break;
-        }
-    }
-
-    void VKBaseBuffer2::updateWrite(VkWriteDescriptorSet &write)
-    {
-        write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-        write.pNext = nullptr;
-        write.dstSet = VK_NULL_HANDLE; // Will be set by DescriptorSet::create()
-        write.dstBinding = 0;          // Will be set by DescriptorSet::create()
-        write.dstArrayElement = 0;
-        write.descriptorType = this->descriptorType;
-        write.descriptorCount = this->descriptorCount;
-        write.pBufferInfo = &this->bufferInfo;
-        write.pImageInfo = nullptr;
-        write.pTexelBufferView = nullptr;
-    }
-
     VKBaseBuffer2::VKBaseBuffer2(VKcontext &ctx) : ctx(ctx)
     {
         name = "Default";

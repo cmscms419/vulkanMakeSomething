@@ -378,42 +378,6 @@ namespace vkengine
         this->barrierHelper.update(this->imageFormat, 1, 1);
     }
 
-    void VKImage2D::updateBinding(VkDescriptorSetLayoutBinding &binding)
-    {
-        switch (this->descriptorType)
-        {
-        case VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT:
-        case VK_DESCRIPTOR_TYPE_SAMPLER:
-        case VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER:
-        case VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE:
-        case VK_DESCRIPTOR_TYPE_STORAGE_IMAGE:
-        case VK_DESCRIPTOR_TYPE_SAMPLE_WEIGHT_IMAGE_QCOM:
-        case VK_DESCRIPTOR_TYPE_BLOCK_MATCH_IMAGE_QCOM:
-            binding.descriptorType = this->descriptorType;
-            binding.descriptorCount = this->descriptorCount;
-            binding.pImmutableSamplers = nullptr;
-            binding.stageFlags = this->stageFlags;
-            break;
-        default:
-            EXIT_TO_LOGGER("Descriptor Type Image");
-            break;
-        }
-    }
-
-    void VKImage2D::updateWrite(VkWriteDescriptorSet &write)
-    {
-        write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-        write.pNext = nullptr;
-        write.dstSet = VK_NULL_HANDLE; // Will be set by DescriptorSet::create()
-        write.dstBinding = 0;          // Will be set by DescriptorSet::create()
-        write.dstArrayElement = 0;
-        write.descriptorType = this->descriptorType;
-        write.descriptorCount = this->descriptorCount;
-        write.pImageInfo = &this->imageInfo;
-        write.pBufferInfo = nullptr;
-        write.pTexelBufferView = nullptr;
-    }
-
     void VKImage2D::cleanup()
     {
         if (imageView != VK_NULL_HANDLE)

@@ -5,35 +5,12 @@ using namespace vkengine::Log;
 
 namespace vkengine
 {
-    void VKShaderResource::update()
-    {
-        if (buffer)
-        {
-            bufferInfo.buffer = buffer;
-            bufferInfo.offset = 0;
-            bufferInfo.range = bufferSize;
-        }
-        else if (image && sampler)
-        {
-            descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER; // 이미지와 셈플러가 결합된 형태
-            imageInfo.imageView = imageView;
-            imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-            imageInfo.sampler = sampler;
-        }
-        else if (image)
-        {
-            descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE; // 이미지와 셈플러가 서로 분리된 형태
-            imageInfo.imageView = imageView;
-        }
-        else
-        {
-            EXIT_TO_LOGGER("Neither image is ready");
-        }
-    }
-
     void VKShaderResource::updateBinding(VkDescriptorSetLayoutBinding &binding)
     {
-        PRINT_TO_LOGGER("Nothing updateBinding %s", this->name.c_str());
+        binding.descriptorType = this->descriptorType;
+        binding.descriptorCount = this->descriptorCount;
+        binding.pImmutableSamplers = nullptr;
+        binding.stageFlags = this->stageFlags;
     }
 
     void VKShaderResource::updateWrite(VkWriteDescriptorSet &write)
@@ -41,38 +18,28 @@ namespace vkengine
         PRINT_TO_LOGGER("Nothing updateWrite %s", this->name.c_str());
     }
 
-    void VKShaderResource::setSampler(VkSampler sampler)
+    void VKShaderResource::cleanup()
     {
-        this->sampler = sampler;
-        update();
+        PRINT_TO_LOGGER("cleanup");
     }
-    VKBarrierHelper &VKShaderResource::getBarrierHelper()
+
+    void VKShaderResource::update()
+    {
+        PRINT_TO_LOGGER("update");
+    }
+
+    VKBarrierHelper &VKImageShaderResource::getBarrierHelper()
     {
         return this->barrierHelper;
     }
 
-    void VKShaderResource::updateImageInfo(VkDescriptorImageInfo &imageInfo)
+    void VKImageShaderResource::transitionTo(VkCommandBuffer commandBuffer, VkImageLayout newLayout, VkAccessFlags2 newAccess, VkPipelineStageFlags2 newStage)
     {
-        imageInfo.sampler = this->imageInfo.sampler;
-        imageInfo.imageView = this->imageInfo.imageView;
-        imageInfo.imageLayout = this->imageInfo.imageLayout;
-    }
-
-    void VKShaderResource::updateBufferInfo(VkDescriptorBufferInfo &bufferInfo)
-    {
-        bufferInfo.buffer = this->bufferInfo.buffer;
-        bufferInfo.offset = this->bufferInfo.offset;
-        bufferInfo.range = this->bufferInfo.range;
-    }
-
-    void VKShaderResource::transitionTo(VkCommandBuffer commandBuffer, VkImageLayout newLayout, VkAccessFlags2 newAccess, VkPipelineStageFlags2 newStage)
-    {
-        this->barrierHelper.transitionImageLayout2(
-            commandBuffer, this->image, newLayout, newAccess, newStage);
+        this->barrierHelper.transitionImageLayout2(commandBuffer, this->image, newLayout, newAccess, newStage);
         updateResourceBindingAfterTransition();
     }
 
-    void VKShaderResource::transitionToColorAttachment(VkCommandBuffer commandBuffer)
+    void VKImageShaderResource::transitionToColorAttachment(VkCommandBuffer commandBuffer)
     {
         transitionTo(commandBuffer,
                      VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
@@ -80,7 +47,7 @@ namespace vkengine
                      VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT);
     }
 
-    void VKShaderResource::transitionToDepthStencilAttachment(VkCommandBuffer commandBuffer)
+    void VKImageShaderResource::transitionToDepthStencilAttachment(VkCommandBuffer commandBuffer)
     {
         transitionTo(commandBuffer,
                      VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
@@ -88,7 +55,7 @@ namespace vkengine
                      VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT);
     }
 
-    void VKShaderResource::transitionToTransferDst(VkCommandBuffer commandBuffer)
+    void VKImageShaderResource::transitionToTransferDst(VkCommandBuffer commandBuffer)
     {
         transitionTo(commandBuffer,
                      VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
@@ -96,7 +63,7 @@ namespace vkengine
                      VK_PIPELINE_STAGE_2_TRANSFER_BIT);
     }
 
-    void VKShaderResource::transitionToShaderReadOnly(VkCommandBuffer commandBuffer)
+    void VKImageShaderResource::transitionToShaderReadOnly(VkCommandBuffer commandBuffer)
     {
         transitionTo(commandBuffer,
                      VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
@@ -104,7 +71,7 @@ namespace vkengine
                      VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT);
     }
 
-    void VKShaderResource::transitionToShaderReadWrite(VkCommandBuffer commandBuffer)
+    void VKImageShaderResource::transitionToShaderReadWrite(VkCommandBuffer commandBuffer)
     {
         transitionTo(commandBuffer,
                      VK_IMAGE_LAYOUT_GENERAL,
@@ -112,12 +79,12 @@ namespace vkengine
                      VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT | VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT);
     }
 
-    void VKShaderResource::transitionToShaderWriteOnly(VkCommandBuffer commandBuffer)
+    void VKImageShaderResource::transitionToShaderWriteOnly(VkCommandBuffer commandBuffer)
     {
         EXIT_TO_LOGGER("TODO: 아직 만들지 않음");
     }
 
-    void VKShaderResource::transitionToPresent(VkCommandBuffer commandBuffer)
+    void VKImageShaderResource::transitionToPresent(VkCommandBuffer commandBuffer)
     {
         transitionTo(commandBuffer,
                      VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
@@ -125,7 +92,7 @@ namespace vkengine
                      VK_PIPELINE_STAGE_2_BOTTOM_OF_PIPE_BIT);
     }
 
-    void VKShaderResource::transitionToTransferSrc(VkCommandBuffer commandBuffer)
+    void VKImageShaderResource::transitionToTransferSrc(VkCommandBuffer commandBuffer)
     {
         transitionTo(commandBuffer,
                      VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
@@ -133,7 +100,7 @@ namespace vkengine
                      VK_PIPELINE_STAGE_2_TRANSFER_BIT);
     }
 
-    void VKShaderResource::updateResourceBindingAfterTransition()
+    void VKImageShaderResource::updateResourceBindingAfterTransition()
     {
         VkImageLayout currentLayout = this->barrierHelper.Currentlayout();
 
@@ -162,4 +129,85 @@ namespace vkengine
         }
     }
 
+    void VKImageShaderResource::update()
+    {
+        if (image && sampler)
+        {
+            descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER; // 이미지와 셈플러가 결합된 형태
+            imageInfo.imageView = imageView;
+            imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+            imageInfo.sampler = sampler;
+        }
+        else if (image)
+        {
+            descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE; // 이미지와 셈플러가 서로 분리된 형태
+            imageInfo.imageView = imageView;
+        }
+        else
+        {
+            EXIT_TO_LOGGER("Neither image is ready");
+        }
+    }
+
+    void VKImageShaderResource::setSampler(VkSampler sampler)
+    {
+        this->sampler = sampler;
+        update();
+    }
+
+    void VKImageShaderResource::updateImageInfo(VkDescriptorImageInfo &imageInfo)
+    {
+        imageInfo.sampler = this->imageInfo.sampler;
+        imageInfo.imageView = this->imageInfo.imageView;
+        imageInfo.imageLayout = this->imageInfo.imageLayout;
+    }
+
+    void VKImageShaderResource::updateWrite(VkWriteDescriptorSet &write)
+    {
+        write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        write.pNext = nullptr;
+        write.dstSet = VK_NULL_HANDLE; // Will be set by DescriptorSet::create()
+        write.dstBinding = 0;          // Will be set by DescriptorSet::create()
+        write.dstArrayElement = 0;
+        write.descriptorType = this->descriptorType;
+        write.descriptorCount = this->descriptorCount;
+        write.pImageInfo = &this->imageInfo;
+        write.pBufferInfo = nullptr;
+        write.pTexelBufferView = nullptr;
+    }
+    
+    void VKBufferShaderResource::updateWrite(VkWriteDescriptorSet &write)
+    {
+        write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        write.pNext = nullptr;
+        write.dstSet = VK_NULL_HANDLE; // Will be set by DescriptorSet::create()
+        write.dstBinding = 0;          // Will be set by DescriptorSet::create()
+        write.dstArrayElement = 0;
+        write.descriptorType = this->descriptorType;
+        write.descriptorCount = this->descriptorCount;
+        write.pBufferInfo = &this->bufferInfo;
+        write.pImageInfo = nullptr;
+        write.pTexelBufferView = nullptr;
+    }
+
+    void VKBufferShaderResource::update()
+    {
+        if (buffer)
+        {
+            bufferInfo.buffer = buffer;
+            bufferInfo.offset = 0;
+            bufferInfo.range = bufferSize;
+        }
+        else
+        {
+            EXIT_TO_LOGGER("Neither image is ready");
+        }
+    }
+
+    void VKBufferShaderResource::updateBufferInfo(VkDescriptorBufferInfo &bufferInfo)
+    {
+        bufferInfo.buffer = this->bufferInfo.buffer;
+        bufferInfo.offset = this->bufferInfo.offset;
+        bufferInfo.range = this->bufferInfo.range;
+    }
 }
