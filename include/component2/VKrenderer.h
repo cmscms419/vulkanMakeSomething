@@ -35,6 +35,7 @@ namespace vkengine
     public:
         // 렌더러 생성자 - Vulkan 컨텍스트, 셰이더 매니저, 프레임 수, 리소스 경로 초기화
         VKRenderer(VKcontext &ctx, VKShaderManager &shadermanager,
+                    VKSwapChain &swapchain,
                     const cUint32_t &MaxFramesFlight,
                     const cString &assetsPath,
                     const cString &shaderPath);
@@ -51,7 +52,7 @@ namespace vkengine
             VkViewport viewport,
             VkRect2D scissor);
 
-        void buildRenderGraph(VKSwapChain &swapchain);
+        void buildRenderGraph();
         void resize(uint32_t width, uint32_t height);
 
         void prepareForModels(
@@ -136,15 +137,6 @@ namespace vkengine
         std::vector<DescriptorSetHander> PostDescriptorSets{};
         std::vector<DescriptorSetHander> lightDeferredDescriptorSets{};
 
-        VKImage2D depthStencil;
-        VKImage2D DeferredToCompute;
-        VKImage2D LightDeferred;
-
-        VKImage2D prefiltered;
-        VKImage2D irradiance;
-        VKImage2D brdfLUT;
-        VKImage2D shadowMap;
-
         VKSamplerHandler samplerLinearRepeat;
         VKSamplerHandler samplerLinearClamp;
         VKSamplerHandler samplerAnisoRepeat;
@@ -157,7 +149,7 @@ namespace vkengine
         ViewFrustum viewFrustum{};
         cBool frustumCullingEnabled{true};
         CullingStats cullingStats;
-        std::unordered_map<cString, std::unique_ptr<VKImage2D>> images;
+        std::unordered_map<cString, std::shared_ptr<VKImage2D>> images;
 
         // 랜더링을 위한 리소스 생성 함수들
         // PBR, 스카이박스, 포스트 프로세싱, 쉐도우 맵 파이프라인 생성

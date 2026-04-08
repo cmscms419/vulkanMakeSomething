@@ -13,14 +13,13 @@ namespace vkengine
     VKRenderer::VKRenderer(
         VKcontext &ctx,
         VKShaderManager &shadermanager,
+        VKSwapChain &swapchain,
         const cUint32_t &MaxFramesFlight,
         const cString &assetsPath,
         const cString &shaderPath)
-        : ctx(ctx), renderGraph(ctx), shaderManager(shadermanager),
+        : ctx(ctx), renderGraph(ctx, swapchain), shaderManager(shadermanager),
           MaxFramesFlight(MaxFramesFlight), assetsPath(assetsPath), shaderPath(shaderPath),
-          depthStencil(ctx), shadowMap(ctx), samplerLinearRepeat(ctx), samplerLinearClamp(ctx),
-          prefiltered(ctx), irradiance(ctx), brdfLUT(ctx),
-          samplerAnisoRepeat(ctx), samplerAnisoClamp(ctx), DeferredToCompute(ctx), LightDeferred(ctx),
+          samplerLinearRepeat(ctx), samplerLinearClamp(ctx), samplerAnisoRepeat(ctx), samplerAnisoClamp(ctx),
           samplerShadowMap(ctx), materialStorageBuffer(ctx), table(ctx)
     {
         PRINT_TO_LOGGER("Renderer2 created with MaxFramesFlight: %d assetsPath: %s shaderPath: %s",
@@ -56,13 +55,12 @@ namespace vkengine
         this->currentModels = nullptr;
     }
 
-    void VKRenderer::buildRenderGraph(VKSwapChain &swapchain)
+    void VKRenderer::buildRenderGraph()
     {
-        this->renderGraph.registerSwapchainResource("swapchain", swapchain);        // swapchain 리소스 등록
-        this->renderGraph.registerResource("shadowDepth", shadowMap);               // 쉐도우 맵 리소스 등록
-        this->renderGraph.registerResource("DeferredToCompute", DeferredToCompute); // 포워드 패스 출력 등록
-        this->renderGraph.registerResource("LightDeferred", LightDeferred);         // 컴퓨트 패스 출력 등록
-        this->renderGraph.registerResource("depthStencil", depthStencil);           // depthstencil 리소스 등록
+        this->renderGraph.registerResource("shadowDepth", this->images["shadowMap"]);               // 쉐도우 맵 리소스 등록
+        this->renderGraph.registerResource("DeferredToCompute", this->images["DeferredToCompute"]); // 포워드 패스 출력 등록
+        this->renderGraph.registerResource("LightDeferred", this->images["LightDeferred"]);         // 컴퓨트 패스 출력 등록
+        this->renderGraph.registerResource("depthStencil", this->images["depthStencil"]);           // depthstencil 리소스 등록
 
         this->renderGraph.loadFromJson(this->assetsPath + "/renderGraph.json");
 
@@ -151,45 +149,49 @@ namespace vkengine
         this->samplerAnisoClamp.createAnisoClamp();
         this->samplerShadowMap.createShadowMapSampler();
 
-        // Initialize shadow map texture
-        this->shadowMap.createShadowMap(2048 * 2, 2048 * 2);
-        this->shadowMap.setSampler(this->samplerShadowMap.getSampler());
-
-        // Initialize IBL textures for PBR
-        cString path = this->assetsPath + "cubeMap/";
-        this->prefiltered.createTextureFromKtx2(path + "specular_out.ktx2", true);
-        this->irradiance.createTextureFromKtx2(path + "diffuse_out.ktx2", true);
-        this->brdfLUT.createTextureFromImage(path + "outputLUT.png", false, true);
-        
-        this->prefiltered.setSampler(this->samplerLinearRepeat.getSampler());
-        this->irradiance.setSampler(this->samplerLinearRepeat.getSampler());
-        this->brdfLUT.setSampler(this->samplerLinearClamp.getSampler());
-
-        // Create render targets
-        this->depthStencil.createDepthStencil(swapchainWidth, swapchainHeight, true);
-        this->DeferredToCompute.createGeneralStorage(swapchainWidth, swapchainHeight);
-        this->LightDeferred.createGeneralStorage(swapchainWidth, swapchainHeight);
-
-        // Set samplers
-        DeferredToCompute.setSampler(samplerLinearRepeat.getSampler());
-        depthStencil.setSampler(samplerLinearClamp.getSampler());
-        LightDeferred.setSampler(samplerLinearRepeat.getSampler());
-
-        // Create descriptor sets for sky textures (set 1 for sky pipeline)
-        skyDescriptorSet.create(ctx, {std::ref(this->prefiltered),
-                                      std::ref(this->irradiance),
-                                      std::ref(this->brdfLUT)});
-
-        // Create descriptor set for shadow mapping
-        shadowMapSet.create(ctx, {std::ref(this->shadowMap)});
-
         // Initialize image buffers (simplified - no MSAA)
-        const std::vector<cString> imageNames = {"gAlbedo", "gNormal", "gPosition", "gMaterial"};
+        const std::vector<cString> imageNames = {
+            "gAlbedo", "gNormal", "gPosition",
+            "gMaterial", "shadowMap", "prefiltered",
+            "irradiance", "brdfLUT", "depthStencil",
+            "DeferredToCompute", "LightDeferred"};
 
         for (const auto &name : imageNames)
         {
-            this->images[name] = std::make_unique<VKImage2D>(ctx);
+            this->images[name] = std::make_shared<VKImage2D>(ctx);
         }
+
+        // Initialize shadow map texture
+        this->images["shadowMap"]->createShadowMap(2048 * 2, 2048 * 2);
+        this->images["shadowMap"]->setSampler(this->samplerShadowMap.getSampler());
+
+        // Initialize IBL textures for PBR
+        cString path = this->assetsPath + "cubeMap/";
+        this->images["prefiltered"]->createTextureFromKtx2(path + "specular_out.ktx2", true);
+        this->images["irradiance"]->createTextureFromKtx2(path + "diffuse_out.ktx2", true);
+        this->images["brdfLUT"]->createTextureFromImage(path + "outputLUT.png", false, true);
+
+        this->images["prefiltered"]->setSampler(this->samplerLinearRepeat.getSampler());
+        this->images["irradiance"]->setSampler(this->samplerLinearRepeat.getSampler());
+        this->images["brdfLUT"]->setSampler(this->samplerLinearClamp.getSampler());
+
+        // Create render targets
+        this->images["depthStencil"]->createDepthStencil(swapchainWidth, swapchainHeight, true);
+        this->images["DeferredToCompute"]->createGeneralStorage(swapchainWidth, swapchainHeight);
+        this->images["LightDeferred"]->createGeneralStorage(swapchainWidth, swapchainHeight);
+
+        // Set samplers
+        this->images["DeferredToCompute"]->setSampler(samplerLinearRepeat.getSampler());
+        this->images["depthStencil"]->setSampler(samplerLinearClamp.getSampler());
+        this->images["LightDeferred"]->setSampler(samplerLinearRepeat.getSampler());
+
+        // Create descriptor sets for sky textures (set 1 for sky pipeline)
+        skyDescriptorSet.create(ctx, {std::ref(*this->images["prefiltered"]),
+                                      std::ref(*this->images["irradiance"]),
+                                      std::ref(*this->images["brdfLUT"])});
+
+        // Create descriptor set for shadow mapping
+        shadowMapSet.create(ctx, {std::ref(*this->images["shadowMap"])});
 
         // Create G-buffer textures for deferred rendering
         PRINT_TO_LOGGER("Creating G-buffer textures for deferred rendering:");
@@ -251,7 +253,7 @@ namespace vkengine
         // Register G-buffer images in renderGraph for automatic layout transitions
         for (const auto &name : {"gAlbedo", "gNormal", "gPosition", "gMaterial"})
         {
-            this->renderGraph.registerResource(name, *this->images.at(name));
+            this->renderGraph.registerResource(name, this->images.at(name));
         }
 
         PRINT_TO_LOGGER("G-buffer creation complete");
@@ -260,22 +262,22 @@ namespace vkengine
     void VKRenderer::resize(cUint32_t width, cUint32_t height)
     {
         // 크기에 의존하는 이미지 정리
-        this->depthStencil.cleanup();
-        this->DeferredToCompute.cleanup();
-        this->LightDeferred.cleanup();
+        this->images["depthStencil"]->cleanup();
+        this->images["DeferredToCompute"]->cleanup();
+        this->images["LightDeferred"]->cleanup();
 
         // 새 크기로 재생성
-        this->depthStencil.createDepthStencil(width, height, VK_SAMPLE_COUNT_1_BIT);
-        this->DeferredToCompute.createGeneralStorage(width, height);
-        this->LightDeferred.createGeneralStorage(width, height);
+        this->images["depthStencil"]->createDepthStencil(width, height, VK_SAMPLE_COUNT_1_BIT);
+        this->images["DeferredToCompute"]->createGeneralStorage(width, height);
+        this->images["LightDeferred"]->createGeneralStorage(width, height);
 
-        this->DeferredToCompute.setSampler(this->samplerLinearRepeat.getSampler());
+        this->images["DeferredToCompute"]->setSampler(this->samplerLinearRepeat.getSampler());
 
         // PostDescriptorSets는 forwardToCompute를 참조하므로 재생성
         for (size_t i = 0; i < this->MaxFramesFlight; i++)
         {
             PostDescriptorSets[i].create(
-                this->ctx, {std::ref(DeferredToCompute),
+                this->ctx, {std::ref(*this->images["DeferredToCompute"]),
                             std::ref(postOptionsUniform[i].Buffer())});
         }
     }
@@ -339,7 +341,7 @@ namespace vkengine
         for (size_t i = 0; i < this->MaxFramesFlight; i++)
         {
             PostDescriptorSets[i].create(
-                this->ctx, {std::ref(LightDeferred), std::ref(postOptionsUniform[i].Buffer())});
+                this->ctx, {std::ref(*this->images["LightDeferred"]), std::ref(postOptionsUniform[i].Buffer())});
         }
 
         SceneOptionsBoneDataSets.resize(this->MaxFramesFlight);
@@ -358,13 +360,13 @@ namespace vkengine
         // set을 만들기 위해서 변환
         VKCommandBufferHander cmd = ctx.createGrapicsCommandBufferHander(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
 
-        this->DeferredToCompute.transitionTo(
+        this->images["DeferredToCompute"]->transitionTo(
             cmd.getCommandBuffer(),
             VK_IMAGE_LAYOUT_GENERAL,
             VK_ACCESS_2_SHADER_READ_BIT,
             VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT);
 
-        this->LightDeferred.transitionTo(
+        this->images["LightDeferred"]->transitionTo(
             cmd.getCommandBuffer(),
             VK_IMAGE_LAYOUT_GENERAL,
             VK_ACCESS_2_SHADER_WRITE_BIT,
@@ -375,19 +377,19 @@ namespace vkengine
         for (size_t i = 0; i < this->MaxFramesFlight; i++)
         {
             lightDeferredDescriptorSets[i].create(this->ctx, {std::ref(sceneDataUniform[i].Buffer()),
-                                                     std::ref(optionsUniform[i].Buffer()),
-                                                     std::ref(ssaoParamsUniform[i].Buffer()),
-                                                     std::ref(this->DeferredToCompute),
-                                                     std::ref(this->LightDeferred),
-                                                     std::ref(this->depthStencil),
-                                                     std::ref(*this->images["gAlbedo"]),
-                                                     std::ref(*this->images["gNormal"]),
-                                                     std::ref(*this->images["gPosition"]),
-                                                     std::ref(*this->images["gMaterial"]),
-                                                     std::ref(this->shadowMap),
-                                                     std::ref(this->prefiltered),
-                                                     std::ref(this->irradiance),
-                                                     std::ref(this->brdfLUT)});
+                                                              std::ref(optionsUniform[i].Buffer()),
+                                                              std::ref(ssaoParamsUniform[i].Buffer()),
+                                                              std::ref(*this->images["DeferredToCompute"]),
+                                                              std::ref(*this->images["LightDeferred"]),
+                                                              std::ref(*this->images["depthStencil"]),
+                                                              std::ref(*this->images["gAlbedo"]),
+                                                              std::ref(*this->images["gNormal"]),
+                                                              std::ref(*this->images["gPosition"]),
+                                                              std::ref(*this->images["gMaterial"]),
+                                                              std::ref(*this->images["shadowMap"]),
+                                                              std::ref(*this->images["prefiltered"]),
+                                                              std::ref(*this->images["irradiance"]),
+                                                              std::ref(*this->images["brdfLUT"])});
         }
     }
 
@@ -396,7 +398,7 @@ namespace vkengine
         VkRect2D renderArea = {0, 0, this->currentScissor.extent.width, this->currentScissor.extent.height};
 
         std::vector<VkRenderingAttachmentInfo> colorAttachments{};
-        VkRenderingAttachmentInfo depthAttachment = createDepthAttachment(depthStencil.getImageView(), VK_ATTACHMENT_LOAD_OP_CLEAR, 1.0f);
+        VkRenderingAttachmentInfo depthAttachment = createDepthAttachment(this->images["depthStencil"]->getImageView(), VK_ATTACHMENT_LOAD_OP_CLEAR, 1.0f);
         colorAttachments.push_back(createColorAttachment(this->images["gAlbedo"]->getImageView(), VK_ATTACHMENT_LOAD_OP_CLEAR));
         colorAttachments.push_back(createColorAttachment(this->images["gNormal"]->getImageView(), VK_ATTACHMENT_LOAD_OP_CLEAR));
         colorAttachments.push_back(createColorAttachment(this->images["gPosition"]->getImageView(), VK_ATTACHMENT_LOAD_OP_CLEAR));
@@ -468,13 +470,13 @@ namespace vkengine
 
     void VKRenderer::makeLightDeferredPass(VkCommandBuffer cmd, cUint32_t currentFrame, cUint32_t imageIndex)
     {
-        this->DeferredToCompute.transitionTo(cmd,
-                                             VK_IMAGE_LAYOUT_GENERAL,
-                                             VK_ACCESS_2_SHADER_READ_BIT,
-                                             VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT);
+        this->images["DeferredToCompute"]->transitionTo(cmd,
+                                                        VK_IMAGE_LAYOUT_GENERAL,
+                                                        VK_ACCESS_2_SHADER_READ_BIT,
+                                                        VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT);
 
         // computeToPost_: Empty buffer → writeonly storage image for SSAO output
-        this->LightDeferred.transitionTo(
+        this->images["LightDeferred"]->transitionTo(
             cmd,
             VK_IMAGE_LAYOUT_GENERAL,
             VK_ACCESS_2_SHADER_WRITE_BIT,
@@ -489,16 +491,15 @@ namespace vkengine
                                                 VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT);
         }
 
-        this->depthStencil.transitionTo(cmd,
-                                        VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-                                        VK_ACCESS_2_SHADER_READ_BIT,
-                                        VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT);
-        
-        this->shadowMap.transitionTo(cmd,
-                                        VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-                                        VK_ACCESS_2_SHADER_READ_BIT,
-                                        VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT);
-        
+        this->images["depthStencil"]->transitionTo(cmd,
+                                                   VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+                                                   VK_ACCESS_2_SHADER_READ_BIT,
+                                                   VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT);
+
+        this->images["shadowMap"]->transitionTo(cmd,
+                                                VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+                                                VK_ACCESS_2_SHADER_READ_BIT,
+                                                VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT);
 
         // Bind SSAO compute pipeline
         vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_COMPUTE, pipelines.at("lightdeferred").getPipeline());
@@ -574,8 +575,8 @@ namespace vkengine
 
         // LOAD: G-buffer 위에 sky 추가
         // VK_ATTACHMENT_LOAD_OP_LOAD는 Vulkan VkAttachmentLoadOp 열거형 값(숫자 0)으로, 첨부 파일의 기존 콘텐츠를 보존하고 렌더링 패스 시작 시 사용할 수 있도록 해야 함을 의미합니다.
-        VkRenderingAttachmentInfo skyColorAttachment = createColorAttachment(DeferredToCompute.getImageView(), VK_ATTACHMENT_LOAD_OP_LOAD);
-        VkRenderingAttachmentInfo skyDepthAttachment = createDepthAttachment(depthStencil.getImageView(), VK_ATTACHMENT_LOAD_OP_LOAD);
+        VkRenderingAttachmentInfo skyColorAttachment = createColorAttachment(this->images["DeferredToCompute"]->getImageView(), VK_ATTACHMENT_LOAD_OP_LOAD);
+        VkRenderingAttachmentInfo skyDepthAttachment = createDepthAttachment(this->images["depthStencil"]->getImageView(), VK_ATTACHMENT_LOAD_OP_LOAD);
 
         VkRenderingInfo skyRenderingInfo{VK_STRUCTURE_TYPE_RENDERING_INFO_KHR};
         skyRenderingInfo.renderArea = renderArea;
@@ -608,21 +609,21 @@ namespace vkengine
 #if 1
         // 그림자 맵 렌더링 시작
         VkRenderingAttachmentInfo shadowDepthAttachment{VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO};
-        shadowDepthAttachment.imageView = this->shadowMap.getImageView();
+        shadowDepthAttachment.imageView = this->images["shadowMap"]->getImageView();
         shadowDepthAttachment.imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
         shadowDepthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
         shadowDepthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
         shadowDepthAttachment.clearValue.depthStencil = {1.0f, 0};
 
         VkRenderingInfo shadowRenderingInfo{VK_STRUCTURE_TYPE_RENDERING_INFO_KHR};
-        shadowRenderingInfo.renderArea = {0, 0, this->shadowMap.getWidth(), this->shadowMap.getHeight()};
+        shadowRenderingInfo.renderArea = {0, 0, this->images["shadowMap"]->getWidth(), this->images["shadowMap"]->getHeight()};
         shadowRenderingInfo.layerCount = 1;
         shadowRenderingInfo.colorAttachmentCount = 0;
         shadowRenderingInfo.pDepthAttachment = &shadowDepthAttachment;
 
-        VkViewport shadowViewport{0.0f, 0.0f, (float)this->shadowMap.getWidth(), (float)this->shadowMap.getHeight(),
+        VkViewport shadowViewport{0.0f, 0.0f, (float)this->images["shadowMap"]->getWidth(), (float)this->images["shadowMap"]->getHeight(),
                                   0.0f, 1.0f};
-        VkRect2D shadowScissor{0, 0, this->shadowMap.getWidth(), this->shadowMap.getHeight()};
+        VkRect2D shadowScissor{0, 0, this->images["shadowMap"]->getWidth(), this->images["shadowMap"]->getHeight()};
 
         vkCmdBeginRendering(cmd, &shadowRenderingInfo);
         vkCmdSetViewport(cmd, 0, 1, &shadowViewport);

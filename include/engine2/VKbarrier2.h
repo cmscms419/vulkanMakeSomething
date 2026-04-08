@@ -3,6 +3,9 @@
 
 #include "common.h"
 
+#include <optional>
+#include <vector>
+
 namespace vkengine {
 
     class VKBarrierHelper
@@ -120,6 +123,8 @@ namespace vkengine {
         cUint32_t& MipLevels() { return this->mipLevels; }
         cUint32_t& ArrayLayers() { return this->arrayLayers; }
 
+        VkImageAspectFlags getAspectFlags() { return getAspectFlagsFromLayout(this->format); }
+
     private:
         VkImageAspectFlags getAspectFlagsFromLayout(VkFormat format)
         {
@@ -162,6 +167,31 @@ namespace vkengine {
 
     };
 
+    // 여러 이미지 배리어를 수집 후 vkCmdPipelineBarrier2 한 번으로 배치 제출
+    class VKBarrierHelperFunction {
+    public:
+        // ResourceAccess → Vulkan 파라미터 매핑 결과
+        struct BarrierParams {
+            VkImageLayout         layout;
+            VkAccessFlags2        access;
+            VkPipelineStageFlags2 stage;
+        };
+
+        // 배치 처리 요청 단위
+        struct TransitionRequest {
+            VkImage          image;
+            VKBarrierHelper* helper;  // 비소유 포인터 (VKImageShaderResource 소유)
+            BarrierParams    desired;
+        };
+
+        // 단일 배리어 구조체 생성 — 전환 불필요 시 nullopt, vkCmdPipelineBarrier2 호출 안 함
+        static std::optional<VkImageMemoryBarrier2> buildBarrier(
+            VkImage image, VKBarrierHelper& helper, const BarrierParams& desired);
+
+        // 여러 요청 수집 → vkCmdPipelineBarrier2 한 번 제출 → 상태 일괄 확정
+        static void batchTransition(VkCommandBuffer cmd,
+                                    std::vector<TransitionRequest>& requests);
+    };
 }
 
 #endif // ! _VK_BARRIER_H_

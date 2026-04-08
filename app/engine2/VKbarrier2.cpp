@@ -144,4 +144,64 @@ namespace vkengine
         }
     }
 
+    std::optional<VkImageMemoryBarrier2> VKBarrierHelperFunction::buildBarrier(VkImage image, VKBarrierHelper &helper, const BarrierParams &desired)
+    {
+        if (image == VK_NULL_HANDLE)
+            return std::nullopt;
+
+        // 레이아웃과 접근 모두 동일하면 전환 불필요
+        if (helper.Currentlayout() == desired.layout && helper.Currentaccess() == desired.access)
+            return std::nullopt;
+
+        VkImageMemoryBarrier2 barrier{VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2};
+        barrier.image = image;
+        barrier.srcStageMask = (helper.Currentstage() != VK_PIPELINE_STAGE_2_NONE)
+                                   ? helper.Currentstage()
+                                   : VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT;
+        barrier.dstStageMask = desired.stage;
+        barrier.srcAccessMask = helper.Currentaccess();
+        barrier.dstAccessMask = desired.access;
+        barrier.oldLayout = helper.Currentlayout();
+        barrier.newLayout = desired.layout;
+        barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        barrier.subresourceRange = {helper.getAspectFlags(), 0, VK_REMAINING_MIP_LEVELS, 0, VK_REMAINING_ARRAY_LAYERS};
+
+        return barrier;
+    }
+
+    void VKBarrierHelperFunction::batchTransition(VkCommandBuffer cmd, std::vector<TransitionRequest> &requests)
+    {
+        std::vector<VkImageMemoryBarrier2> barriers;
+        std::vector<size_t> updatedIndices;
+
+        for (size_t i = 0; i < requests.size(); ++i)
+        {
+            auto &req = requests[i];
+            auto barrier = buildBarrier(req.image, *req.helper, req.desired);
+            if (barrier.has_value())
+            {
+                barriers.push_back(*barrier);
+                updatedIndices.push_back(i);
+            }
+        }
+
+        if (barriers.empty())
+            return;
+
+        VkDependencyInfo depInfo{VK_STRUCTURE_TYPE_DEPENDENCY_INFO};
+        depInfo.imageMemoryBarrierCount = static_cast<uint32_t>(barriers.size());
+        depInfo.pImageMemoryBarriers = barriers.data();
+
+        vkCmdPipelineBarrier2(cmd, &depInfo);
+
+        // 제출 완료 후 상태 일괄 확정
+        for (size_t idx : updatedIndices)
+        {
+            requests[idx].helper->Currentaccess() = requests[idx].desired.access;
+            requests[idx].helper->Currentlayout() = requests[idx].desired.layout;
+            requests[idx].helper->Currentstage() = requests[idx].desired.stage;
+        }
+    }
+
 }

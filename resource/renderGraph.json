@@ -90,10 +90,6 @@
                 {
                     "handle": "LightDeferred",
                     "access": "ShaderReadOnly"
-                },
-                {
-                    "handle": "swapchain",
-                    "access": "Present"
                 }
             ]
         }

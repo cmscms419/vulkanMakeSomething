@@ -31,7 +31,7 @@ namespace vkengine
                             {"lightdeferred", {"complightdeferred.spv"}},
                         }},
           guiRenderer{*this->cxt, shaderManager, swapChain->getSwapChainImageFormat(), RootPath + this->AssetsPath},
-          Renderer(*this->cxt, shaderManager, this->kMaxFramesInFlight, RootPath + this->AssetsPath, RootPath + this->ShaderPath)
+          Renderer(*this->cxt, shaderManager, *this->swapChain, this->kMaxFramesInFlight, RootPath + this->AssetsPath, RootPath + this->ShaderPath)
     {
         initializeVulkanResources();
         setupCallbacks();
@@ -122,7 +122,7 @@ namespace vkengine
 
     void Application::initializeRenderGraph()
     {
-        this->Renderer.buildRenderGraph(*this->swapChain);
+        this->Renderer.buildRenderGraph();
     }
 
     void Application::run()

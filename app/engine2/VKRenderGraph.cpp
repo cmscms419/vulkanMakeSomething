@@ -8,39 +8,23 @@ using json = nlohmann::json;
 
 namespace vkengine
 {
-    VKRenderGraph::VKRenderGraph(VKcontext &ctx) : ctx(ctx)
+    VKRenderGraph::VKRenderGraph(VKcontext &ctx, VKSwapChain &swapchain)
+     : ctx(ctx), swapchain(swapchain)
     {
     }
-    void VKRenderGraph::registerResource(const cString &handle, VKImage2D &img)
+
+    void VKRenderGraph::registerResource(const cString &handle, std::shared_ptr<VKImage2D> image)
     {
         if (resources.find(handle) != resources.end())
         {
             PRINT_TO_LOGGER("Warning: Resource '%s' is already registered in RenderGraph. Overwriting.", handle.c_str());
             return;
         }
-        ResourceEntry entry;
 
-        entry.image = &img;
-        entry.swapchain = nullptr;
+        ResourceEntry entry;
+        entry.image = image;
 
         resources.emplace(handle, entry);
-    }
-
-    void VKRenderGraph::registerSwapchainResource(const cString &handle, VKSwapChain &swapchain)
-    {
-        if (resources.find(handle) != resources.end())
-        {
-            PRINT_TO_LOGGER("Warning: Resource '%s' is already registered in RenderGraph. Overwriting.", handle.c_str());
-            return;
-        }
-        ResourceEntry entry;
-
-        entry.image = nullptr;
-        entry.swapchain = &swapchain;
-
-        resources.emplace(handle, entry);
-
-        swapchainHandle = handle;
     }
 
     void VKRenderGraph::registerPassFunction(const cString &name, PassExecuteFunc func)
@@ -87,15 +71,8 @@ namespace vkengine
             if (this->passRegistry.find(pass.name) != this->passRegistry.end())
             {
                 this->passRegistry[pass.name](cmd, frameIndex, imageindex);
-            }
+            }   
         }
-    }
-
-    VKSwapChain &VKRenderGraph::getVKSwapChain()
-    {
-        auto result = this->resources.find(this->swapchainHandle);
-
-        return *result->second.swapchain;
     }
 
     void VKRenderGraph::printGraph() const
@@ -111,45 +88,63 @@ namespace vkengine
         }
     }
 
-    void VKRenderGraph::applyBarrier(VkCommandBuffer cmd, cUint32_t imageindex, const ResourceUsage &res, const cString &passName)
+    // ResourceAccess enum → VKBarrierHelperFunction::BarrierParams 변환
+    // transitionToXxx()에 하드코딩됐던 값들을 한 곳에 집중
+    static VKBarrierHelperFunction::BarrierParams toBarrierParams(ResourceAccess access)
     {
-        ResourceEntry &entry = resources[res.handle];
-
-        if (entry.image == nullptr && entry.swapchain == nullptr)
-        {
-            PRINT_TO_LOGGER("Error: Resource '%s' used in pass '%s' is not registered as either image or swapchain.", res.handle.c_str(), passName.c_str());
-            return;
-        }
-
-        switch (res.access)
+        switch (access)
         {
         case ResourceAccess::ColorAttachmentWrite:
-            entry.image->transitionToColorAttachment(cmd);
-            break;
+            return { VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+                     VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT,
+                     VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT };
         case ResourceAccess::DepthAttachmentWrite:
-            entry.image->transitionToDepthStencilAttachment(cmd);
-            break;
+            return { VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+                     VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
+                     VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT };
         case ResourceAccess::ShaderReadOnly:
-            entry.image->transitionToShaderReadOnly(cmd);
-            break;
-        case ResourceAccess::ShaderReadWrite:
-            entry.image->transitionToShaderReadWrite(cmd);
-            break;
+            return { VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+                     VK_ACCESS_2_SHADER_READ_BIT,
+                     VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT };
         case ResourceAccess::ShaderWriteOnly:
-            entry.image->transitionToShaderWriteOnly(cmd);
-            break;
+            return { VK_IMAGE_LAYOUT_GENERAL,
+                     VK_ACCESS_2_SHADER_WRITE_BIT,
+                     VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT };
+        case ResourceAccess::ShaderReadWrite:
+            return { VK_IMAGE_LAYOUT_GENERAL,
+                     VK_ACCESS_2_SHADER_READ_BIT | VK_ACCESS_2_SHADER_WRITE_BIT,
+                     VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT | VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT };
         case ResourceAccess::Present:
-            entry.swapchain->transitionTo(cmd, imageindex);
-            break;
+            return { VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+                     VK_ACCESS_2_NONE,
+                     VK_PIPELINE_STAGE_2_BOTTOM_OF_PIPE_BIT };
         default:
-            break;
+            return { VK_IMAGE_LAYOUT_UNDEFINED, VK_ACCESS_2_NONE, VK_PIPELINE_STAGE_2_NONE };
         }
     }
 
     void VKRenderGraph::insertBarriersBeforePass(VkCommandBuffer cmd, cUint32_t imageindex, const RenderPassNode &pass)
     {
-        for (const ResourceUsage &res : pass.shaderResources)
-            applyBarrier(cmd, imageindex, res, pass.name);
+        std::vector<VKBarrierHelperFunction::TransitionRequest> requests;
+
+        for (const ResourceUsage& res : pass.shaderResources)
+        {
+            auto it = resources.find(res.handle);
+            if (it == resources.end()) continue;
+
+            ResourceEntry& entry = it->second;
+            if (entry.image == nullptr) continue;
+
+            if (res.access == ResourceAccess::NOTTHING) continue;
+
+            requests.push_back({
+                entry.image->getImage(),
+                &entry.image->getBarrierHelper(),
+                toBarrierParams(res.access)
+            });
+        }
+
+        VKBarrierHelperFunction::batchTransition(cmd, requests);
     }
 
     bool VKRenderGraph::loadFromJson(const cString &filePath)
@@ -184,4 +179,8 @@ namespace vkengine
         return true;
     }
 
+    VKSwapChain &VKRenderGraph::getVKSwapChain()
+    {
+        return this->swapchain;
+    }
 }
