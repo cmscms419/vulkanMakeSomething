@@ -56,31 +56,31 @@
             "shaderResources": [
                 {
                     "handle": "depthStencil",
-                    "access": "NOTHING"
+                    "access": "NOTTHING"
                 },
                 {
                     "handle": "LightDeferred",
-                    "access": "NOTHING"
+                    "access": "NOTTHING"
                 },
                 {
                     "handle": "DeferredToCompute",
-                    "access": "NOTHING"
+                    "access": "NOTTHING"
                 },
                 {
                     "handle": "gAlbedo",
-                    "access": "NOTHING"
+                    "access": "NOTTHING"
                 },
                 {
                     "handle": "gNormal",
-                    "access": "NOTHING"
+                    "access": "NOTTHING"
                 },
                 {
                     "handle": "gPosition",
-                    "access": "NOTHING"
+                    "access": "NOTTHING"
                 },
                 {
                     "handle": "gMaterial",
-                    "access": "NOTHING"
+                    "access": "NOTTHING"
                 }
             ]
         },
