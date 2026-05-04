@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(Get-ChildItem -Path \"c:\\\\cmscms419\\\\vulkanMakeSomething\" -Force | Select-Object Name, @{Label=\"Type\";Expression={if\\($_.PSIsContainer\\){\"Dir\"}else{\"File\"}}})"
+    ]
+  }
+}
