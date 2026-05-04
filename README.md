@@ -95,10 +95,6 @@ common (정적 라이브러리)
 
 [GLTF - GLTF 모델 로딩 및 렌더링](app/source/GLTF/)
 
-[ResumeDemo - 3D 캐릭터 이동 및 애니메이션 데모](app/source/sampleDemo/)
-
-
-
 ## 셰이더 컴파일
 
 `shader/` 디렉토리에서 배치 파일 실행:
