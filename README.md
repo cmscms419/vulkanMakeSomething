@@ -11,10 +11,6 @@ RenderDoc을 이용한 셰이더 디버깅도 지원합니다.
 - [Vulkan SDK](https://www.lunarg.com/vulkan-sdk/)
 - Windows 11 (Windows 11에서만 실행됨)
 
-## 정리한 개인자료
-
-https://www.notion.so/Vulkan-Tutorial-18118a41dc6f80c7adc7d7ba3f95542e?pvs=4
-
 
 ## 프로젝트 구조
 
@@ -60,9 +56,9 @@ common (정적 라이브러리)
 | tinygltf | GLTF/GLB 포맷 지원 |
 | KTX | Khronos Texture Format |
 | libpng / zlib | PNG 이미지 처리 |
-| CUDA Toolkit 12.6 | GPU 컴퓨팅 |
 | SPIRV-Reflect | SPIR-V 셰이더 리플렉션 |
 | STB | 이미지 로딩 (stb_image.h) |
+| CUDA Toolkit 12.6 | GPU 컴퓨팅(프로젝트만 cuda 설정이 되어 있음, 아직 cuda로 무엇을 하지 않음) | 
 
 
 ## 렌더링 기능
@@ -105,78 +101,6 @@ compile_debug.bat    # 디버그 모드 컴파일
 ```
 
 GLSL 소스(`.vert`, `.frag`, `.comp`)를 SPIR-V 바이너리(`.spv`)로 컴파일합니다.
-
-
-## 외부 에셋 (Git 미포함)
-
-용량이 큰 에셋은 저장소에 포함되지 않습니다. 아래 안내에 따라 직접 다운로드 후 지정 경로에 배치하세요.
-
----
-
-### Amazon Lumberyard Bistro
-
-데모 씬의 배경 환경으로 사용됩니다.
-
-**다운로드:** [Morgan McGuire's Computer Graphics Archive](https://casual-effects.com/data/)  
-→ 페이지에서 **Bistro** 검색 후 다운로드
-
-**설치 경로:**
-```
-resource/
-└── AmazonLumberyardBistroMorganMcGuire/
-    ├── exterior.obj
-    ├── exterior.mtl
-    ├── interior.obj
-    ├── interior.mtl
-    └── ... (텍스처 파일들)
-```
-
----
-
-### Leonard 캐릭터 (Mixamo)
-
-골격 애니메이션 캐릭터입니다. [Mixamo](https://www.mixamo.com) 계정 생성 후 무료 다운로드 가능합니다.
-
-**다운로드 방법:**
-1. [Mixamo](https://www.mixamo.com) 접속 → 로그인
-2. Characters 탭에서 **Leonard** 검색 → 선택
-3. Animations 탭에서 아래 목록의 애니메이션 각각 선택
-4. **Download** → Format: **FBX**, Skin: **With Skin** → 다운로드
-
-**필요한 애니메이션 목록:**
-
-| 파일명 | Mixamo 검색어 |
-|---|---|
-| `Idle.fbx` | Idle |
-| `Walking.fbx` | Walking |
-| `Standard Walk.fbx` | Standard Walk |
-| `Start Walking.fbx` | Start Walking |
-| `Stop Walking.fbx` | Stop Walking |
-| `Bboy Hip Hop Move.fbx` | Bboy Hip Hop Move |
-| `Gangnam Style.fbx` | Gangnam Style |
-| `Tut Hip Hop Dance.fbx` | Tut Hip Hop Dance |
-| `CatwalkIdle.fbx` | Catwalk Idle |
-| `Listening To Music.fbx` | Listening To Music |
-
-**설치 경로:**
-```
-resource/
-└── characters/
-    └── Leonard/
-        ├── Leonard.fbx          ← 캐릭터 메시 (Skin 포함)
-        ├── Idle.fbx
-        ├── Walking.fbx
-        ├── Standard Walk.fbx
-        ├── Start Walking.fbx
-        ├── Stop Walking.fbx
-        ├── Bboy Hip Hop Move.fbx
-        ├── Gangnam Style.fbx
-        ├── Tut Hip Hop Dance.fbx
-        ├── CatwalkIdle.fbx
-        └── Listening To Music.fbx
-```
-
----
 
 ## 외부 에셋 (Git 미포함)
 
