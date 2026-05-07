@@ -2,9 +2,9 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClCompile Include="..\..\app\source\sampleDemo\main.cpp" />
-    <ClCompile Include="..\..\app\source\sampleDemo\ResumeDemo.cpp" />
+    <ClCompile Include="..\..\app\source\sampleDemo\moveDemo.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\app\source\sampleDemo\ResumeDemo.h" />
+    <ClInclude Include="..\..\app\source\sampleDemo\moveDemo.h" />
   </ItemGroup>
 </Project>
