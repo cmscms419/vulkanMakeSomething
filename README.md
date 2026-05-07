@@ -11,10 +11,6 @@ RenderDoc을 이용한 셰이더 디버깅도 지원합니다.
 - [Vulkan SDK](https://www.lunarg.com/vulkan-sdk/)
 - Windows 11 (Windows 11에서만 실행됨)
 
-## 정리한 개인자료
-
-https://www.notion.so/Vulkan-Tutorial-18118a41dc6f80c7adc7d7ba3f95542e?pvs=4
-
 
 ## 프로젝트 구조
 
@@ -60,9 +56,9 @@ common (정적 라이브러리)
 | tinygltf | GLTF/GLB 포맷 지원 |
 | KTX | Khronos Texture Format |
 | libpng / zlib | PNG 이미지 처리 |
-| CUDA Toolkit 12.6 | GPU 컴퓨팅 |
 | SPIRV-Reflect | SPIR-V 셰이더 리플렉션 |
 | STB | 이미지 로딩 (stb_image.h) |
+| CUDA Toolkit 12.6 | GPU 컴퓨팅(프로젝트만 cuda 설정이 되어 있음, 아직 cuda로 무엇을 하지 않음) | 
 
 
 ## 렌더링 기능
@@ -95,10 +91,6 @@ common (정적 라이브러리)
 
 [GLTF - GLTF 모델 로딩 및 렌더링](app/source/GLTF/)
 
-[ResumeDemo - 3D 캐릭터 이동 및 애니메이션 데모](app/source/sampleDemo/)
-
-
-
 ## 셰이더 컴파일
 
 `shader/` 디렉토리에서 배치 파일 실행:
@@ -109,8 +101,6 @@ compile_debug.bat    # 디버그 모드 컴파일
 ```
 
 GLSL 소스(`.vert`, `.frag`, `.comp`)를 SPIR-V 바이너리(`.spv`)로 컴파일합니다.
-
-
 
 ## 외부 에셋 (Git 미포함)
 
