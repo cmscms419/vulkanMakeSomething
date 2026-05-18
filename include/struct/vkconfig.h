@@ -75,13 +75,9 @@ struct ApplicationConfig
         ApplicationConfig config;
 
         // Character model
-        ModelConfig character("characters/Leonard/Bboy Hip Hop Move.fbx", "character");
+        ModelConfig character("characters/demoModel.fbx", "character");
         character.transform = glm::rotate(
-            glm::scale(
-                glm::translate(
-                    glm::mat4(1.0f),
-                    glm::vec3(-6.719f, 0.375f, -1.860f)),
-                glm::vec3(0.012f)),
+            glm::scale(glm::translate(glm::mat4(1.0f), glm::vec3(-6.719f, 0.0f, -1.860f)), glm::vec3(0.012f)),
             glm::radians(-90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
         character.autoPlayAnimation = true;
 

@@ -91,6 +91,9 @@ common (정적 라이브러리)
 
 [GLTF - GLTF 모델 로딩 및 렌더링](app/source/GLTF/)
 
+[Sample - 맵 위에 캐릭터가 움직이는 샘플](app/source/sampleDemo)
+
+
 ## 셰이더 컴파일
 
 `shader/` 디렉토리에서 배치 파일 실행:
@@ -182,8 +185,6 @@ resource/
 [skymap 텍스처 출처](https://learnopengl.com/Advanced-OpenGL/Cubemaps)
 
 [GLTF-Sample](https://github.com/KhronosGroup/glTF-Sample-Models/tree/main)
-
-
 
 ## 코드 출처
 
