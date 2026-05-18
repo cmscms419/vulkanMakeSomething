@@ -476,6 +476,7 @@ resource/DamagedHelmet.glb
 
 .clang-format
 
+/docs
 
 ### VisualStudio Patch ###
 # Additional files built by Visual Studio
