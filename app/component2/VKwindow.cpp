@@ -240,19 +240,6 @@ namespace vkengine {
                 return this->keyState;
             }
 
-            object::Camera2* glfwWindow::getCamera()
-            {
-                if (this->camera != nullptr)
-                    return this->camera.get();
-                else
-                    return nullptr;
-            }
-
-            void glfwWindow::setCamera(std::shared_ptr<object::Camera2> camera)
-            {
-                this->camera = camera;
-            }
-
             GLFWwindow* glfwWindow::getGLFWwindow()
             {
                 return this->m_window;
@@ -361,12 +348,7 @@ namespace vkengine {
                                 cFloat xoffset = instance->mouseState.position.x - static_cast<cFloat>(xpos);
                                 cFloat yoffset = instance->mouseState.position.y - static_cast<cFloat>(ypos);
 
-                                cVec3 force = cVec3(xoffset, yoffset, 0.0f);
-
-                                if (object::Camera2* cam = instance->getCamera())
-                                {
-                                    cam->RotateDeltaRotation(force);
-                                }
+                                instance->mouseState.mouseDelta = cVec3(xoffset, yoffset, 0.0f);
 
                                 instance->mouseState.position.x = static_cast<cFloat>(xpos);
                                 instance->mouseState.position.y = static_cast<cFloat>(ypos);
@@ -376,6 +358,7 @@ namespace vkengine {
                         {
                             instance->mouseState.position.x = static_cast<cFloat>(xpos);
                             instance->mouseState.position.y = static_cast<cFloat>(ypos);
+                            instance->mouseState.mouseDelta = cVec3(0.0f, 0.0f, 0.0f);
                         }
                     }
                 }
@@ -392,12 +375,12 @@ namespace vkengine {
                     if (instance->mouseState.scrolled)
                     {
                         if (yoffset > 0) {
-                            cFloat fov = instance->getCamera()->getFov() - 1.0f;
-                            instance->getCamera()->setFov(fov);
+                            cFloat fov = instance->mouseState.Fov - 1.0f;
+                            instance->mouseState.Fov = fov;
                         }
                         else if (yoffset < 0) {
-                            cFloat fov = instance->getCamera()->getFov() + 1.0f;
-                            instance->getCamera()->setFov(fov);
+                            cFloat fov = instance->mouseState.Fov + 1.0f;
+                            instance->mouseState.Fov = fov;
                         }
                     }
                 }

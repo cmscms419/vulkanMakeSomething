@@ -14,6 +14,12 @@
 
 namespace vkengine {
     namespace object {
+
+        enum CameraType {
+            FreeCamera,
+            OrbitCamera
+        };
+
         class Camera2 {
 
         public:
@@ -22,6 +28,7 @@ namespace vkengine {
             ~Camera2() {}
 
             void update();
+            void updateOrbit(cVec3 target, cFloat deltaAzimuth, cFloat deltaElevation);
 
             const cVec3 getTarget() { return this->target; }
             const cVec3 getDir() { return this->dir; }
@@ -69,7 +76,17 @@ namespace vkengine {
             void setViewTarget(cVec3 pos, cVec3 target, cVec3 up = cVec3(0.f, 1.f, 0.f));
             void setViewXYZ(cVec3 pos, cVec3 rot);
 
+            void setCameraType(CameraType type) { this->cameraType = type; }
+            CameraType getCameraType() { return this->cameraType; }
+
         private:
+            void setFreeCameraRotateScreenStandard(cFloat xpos, cFloat ypos, int windowWidth, int windowHeight);
+            void setOrbitCameraRotateScreenStandard(cFloat xpos, cFloat ypos, int windowWidth, int windowHeight);
+
+            void setFreeCameraRotateDeltaRotation(const cVec3& force, bool constrainPitch);
+            void setOrbitCameraRotateDeltaRotation(const cVec3& force, bool constrainPitch);
+            
+        // normal camera parameters
             cVec3 pos{ cVec3(0.0f, 0.0f, -3.0f) };
             cVec3 up{ cVec3(0.0f, -1.0f, 0.0f) };
             cVec3 target{ cVec3(0.0f) };
@@ -95,6 +112,14 @@ namespace vkengine {
 
             cMat4 viewMatrix{ 1.f };
             cMat4 projectionMatrix{ 1.f };
+            CameraType cameraType{ FreeCamera };
+
+            // orbit camera parameters
+            cVec3 orbitTarget = {0.0f, 0.0f, 0.0f}; // 중심 (캐릭터 위치)
+            cFloat orbitRadius = 7.0f;  // 반지름
+            cFloat orbitAzimuth = 0.0f; // 수평각 (라디안)
+            cFloat orbitElevation = 0.4f; // 수직각 (라디안, 0~π/2)
+
         };
     }
 }

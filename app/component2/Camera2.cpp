@@ -50,7 +50,27 @@ namespace vkengine
             PRINT_TO_LOGGER("Camera2 Right: %f %f %f", this->right.x, this->right.y, this->right.z);
         }
 
-        void Camera2::update() {
+        void Camera2::update()
+        {
+            this->setViewDirection(pos, dir, up);
+        }
+
+        void Camera2::updateOrbit(cVec3 target, cFloat deltaAzimuth, cFloat deltaElevation)
+        {
+            orbitTarget = target;
+            orbitAzimuth += deltaAzimuth;
+            orbitElevation = glm::clamp(orbitElevation + deltaElevation,
+                                        glm::radians(5.0f),   // 최소 앙각
+                                        glm::radians(80.0f)); // 최대 앙각
+
+            // 구면 좌표 → 카메라 위치
+            pos.x = target.x + orbitRadius * cos(orbitElevation) * sin(orbitAzimuth);
+            pos.y = target.y + orbitRadius * sin(orbitElevation);
+            pos.z = target.z + orbitRadius * cos(orbitElevation) * cos(orbitAzimuth);
+
+            dir = glm::normalize(pos - target);
+            right = glm::normalize(glm::cross(dir, Yaxis));
+
             this->setViewDirection(pos, dir, up);
         }
 
@@ -87,30 +107,20 @@ namespace vkengine
 #endif
 
         }
-    
+
         void Camera2::RotateDeltaRotation(const cVec3& force, bool constrainPitch)
         {
-            cFloat yawDelta = force.x * this->sensitivity;
-            cFloat pitchDelta = force.y * this->sensitivity;
-
-            this->yaw += yawDelta;
-            this->pitch += pitchDelta;
-
-            // 제한된 피치 각도
-            if (constrainPitch)
+            switch (this->cameraType)
             {
-                this->pitch = glm::clamp(this->pitch, -MAX_PITCH_VALUE, MAX_PITCH_VALUE);
+            case FreeCamera:
+                this->setFreeCameraRotateDeltaRotation(force, constrainPitch);
+                break;
+            case OrbitCamera:
+                this->setOrbitCameraRotateDeltaRotation(force, constrainPitch);
+                break;
+            default:
+                break;
             }
-
-            cQuat qYaw = glm::angleAxis(this->yaw, this->Yaxis); // Y축
-            cQuat qPitch = glm::angleAxis(this->pitch, this->Xaxis); // X축
-            cVec3 zVec = this->Zaxis;
-
-            cQuat Result = qYaw * qPitch;
-            zVec = vkMath::RotationQuat(Result, zVec);
-
-            this->dir = glm::normalize(zVec);
-            this->right = glm::normalize(glm::cross(this->dir, this->up));
         }
 
         void Camera2::setPerspectiveProjection(cFloat fov, cFloat aspect, cFloat nearP, cFloat farP)
@@ -223,6 +233,39 @@ namespace vkengine
             viewMatrix[3][0] = -glm::dot(u, pos);
             viewMatrix[3][1] = -glm::dot(v, pos);
             viewMatrix[3][2] = -glm::dot(w, pos);
+        }
+        void Camera2::setFreeCameraRotateScreenStandard(cFloat xpos, cFloat ypos, int windowWidth, int windowHeight)
+        {
+        }
+        void Camera2::setOrbitCameraRotateScreenStandard(cFloat xpos, cFloat ypos, int windowWidth, int windowHeight)
+        {
+        }
+        void Camera2::setFreeCameraRotateDeltaRotation(const cVec3 &force, bool constrainPitch)
+        {
+            cFloat yawDelta = force.x * this->sensitivity;
+            cFloat pitchDelta = force.y * this->sensitivity;
+
+            this->yaw += yawDelta;
+            this->pitch += pitchDelta;
+
+            // 제한된 피치 각도
+            if (constrainPitch)
+            {
+                this->pitch = glm::clamp(this->pitch, -MAX_PITCH_VALUE, MAX_PITCH_VALUE);
+            }
+
+            cQuat qYaw = glm::angleAxis(this->yaw, this->Yaxis);     // Y축
+            cQuat qPitch = glm::angleAxis(this->pitch, this->Xaxis); // X축
+            cVec3 zVec = this->Zaxis;
+
+            cQuat Result = qYaw * qPitch;
+            zVec = vkMath::RotationQuat(Result, zVec);
+
+            this->dir = glm::normalize(zVec);
+            this->right = glm::normalize(glm::cross(this->dir, this->up));
+        }
+        void Camera2::setOrbitCameraRotateDeltaRotation(const cVec3 &force, bool constrainPitch)
+        {
         }
     }
 }

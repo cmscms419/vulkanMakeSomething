@@ -20,11 +20,14 @@ namespace vkengine {
         Application(const cString& configFile, cString root_path);        // Load from file (future feature)
         ~Application();
 
-        void run();
-        void update();
-        void updateGui();
+        virtual void run();
+        virtual void update();
+        virtual void updateGui();
 
-    private:
+    protected:
+        std::vector<VKModel> models;
+        virtual void updateAnimation(cFloat deltaTime);
+        
         cString RootPath{};
         const cUint32_t kMaxFramesInFlight = MAX_FRAMES_IN_FLIGHT;
         const cString AssetsPath = RESOURSE_PATH;
@@ -32,7 +35,6 @@ namespace vkengine {
         VKShaderManager shaderManager;
 
         std::shared_ptr<object::Camera2> camera;
-        std::vector<VKModel> models;
 
         gui::VKimguiRenderer guiRenderer;
         VKRenderer Renderer;
@@ -42,9 +44,9 @@ namespace vkengine {
         cUint32_t currentSemaphore = 0; // For GPU semaphores (swapchain sync)
 
         // NEW: Configuration loading methods
-        void initializeWithConfig(const ApplicationConfig& config);
-        //void setupCamera(const CameraConfig& cameraConfig);
-        void loadModels(const std::vector<ModelConfig>& modelConfigs);
+        void initializeWithConfig(const ApplicationConfig &config);
+        // void setupCamera(const CameraConfig& cameraConfig);
+        void loadModels(const std::vector<ModelConfig> &modelConfigs);
         void setupCallbacks();
         void initializeVulkanResources();
         void initializeRenderGraph();

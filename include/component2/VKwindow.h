@@ -4,12 +4,12 @@
 #include "common.h"
 #include "data.h"
 
-#include "Camera2.h"
-
 #include <functional>
 #include <vector>
 
 #include <GLFW/glfw3.h>
+
+#include "log.h"
 
 #define KEYBOARD_COUNT_MAX 256
 
@@ -30,7 +30,9 @@ namespace vkengine {
                 cBool middle = false;
             } buttons;
             cBool move = false;
+            cFloat Fov = 45.0f;
             cVec2 position{ 0.0f, 0.0f };
+            cVec3 mouseDelta{ 0.0f, 0.0f, 0.0f };
         };
 
         struct KeyboardState
@@ -94,8 +96,6 @@ namespace vkengine {
 
             virtual MouseState& getmouseState() = 0;
             virtual KeyboardState& getKeyBoardState() = 0;
-            virtual object::Camera2* getCamera() = 0;
-            virtual void setCamera(std::shared_ptr<object::Camera2> camera) = 0;
             virtual GLFWwindow* getGLFWwindow() = 0;
         };
 
@@ -192,15 +192,12 @@ namespace vkengine {
 
                 MouseState& getmouseState() override;
                 KeyboardState& getKeyBoardState() override;
-                object::Camera2* getCamera() override;
-                void setCamera(std::shared_ptr<object::Camera2> camera) override;
                 virtual GLFWwindow* getGLFWwindow() override;
 
             private:
                 GLFWwindow* m_window = nullptr;
                 MouseState mouseState;
                 KeyboardState keyState;
-                std::shared_ptr<object::Camera2> camera;
 
                 static void framebufferSizeCallback(GLFWwindow* window, cInt width, cInt height);
                 static void windowCloseCallback(GLFWwindow* window);
