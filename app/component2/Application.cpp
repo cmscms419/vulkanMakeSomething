@@ -131,7 +131,7 @@ namespace vkengine
         _VK_CHECK_RESULT_(vkResetFences(this->cxt->getDevice()->logicaldevice, 1, &this->inFlightFences[currentFrame]));
 
         Renderer.update(*camera.get(), currentFrame, (float)glfwGetTime() * 0.5f);
-        // Renderer.updateBoneData(models, currentFrame);
+        Renderer.updateBoneData(models, currentFrame);
 
         cMat4 viewProjection = this->camera->getProjectionMatrix() * this->camera->getViewMatrix();
         Renderer.updateViewFrustum(viewProjection);
@@ -546,6 +546,11 @@ namespace vkengine
         renderPostProcessingControlWindow();
 
         ImGui::Render();
+    }
+
+    // 애니메이션 업데이트를 위한 가상 함수, 필요에 따라 오버라이드 가능
+    void Application::updateAnimation(cFloat deltaTime)
+    {
     }
 
     void Application::renderHDRControlWindow()

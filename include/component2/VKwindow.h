@@ -11,7 +11,7 @@
 
 #include "log.h"
 
-#define KEYBOARD_COUNT_MAX 256
+#define KEYBOARD_COUNT_MAX 512
 
 namespace vkengine {
     namespace platform {

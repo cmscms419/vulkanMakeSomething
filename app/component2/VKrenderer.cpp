@@ -770,4 +770,51 @@ namespace vkengine
         }
     }
 
+    void VKRenderer::updateBoneData(const std::vector<VKModel>& models, uint32_t currentFrame)
+    {
+        PRINT_TO_LOGGER("Updating bone data for %zu models", models.size());
+
+        // Reset bone data
+        boneDataUBO.animationData.x = 0.0f;
+        for (int i = 0; i < MAX_BONES; ++i)
+        {
+            boneDataUBO.boneMatrices[i] = glm::mat4(1.0f);
+        }
+
+        // Check if any model has animation data
+        bool hasAnyAnimation = false;
+        for (const auto &model : models)
+        {
+            if (model.hasAnimations() && model.hasBones())
+            {
+                hasAnyAnimation = true;
+
+                // Get bone matrices from the first animated model
+                const auto &boneMatrices = model.getBoneMatrices();
+
+                // Copy bone matrices (up to data.h MAX_BONES) to UBO
+                const size_t maxBones = MAX_BONES;
+                size_t bonesToCopy = (boneMatrices.size() < maxBones) ? boneMatrices.size() : maxBones;
+                for (size_t i = 0; i < bonesToCopy; ++i)
+                {
+                    boneDataUBO.boneMatrices[i] = boneMatrices[i];
+                }
+
+                break; // For now, use the first animated model
+            }
+        }
+
+        boneDataUBO.animationData.x = float(hasAnyAnimation);
+
+        // DEBUG: Log hasAnimation state
+        static bool lastHasAnimation = false;
+        if (lastHasAnimation != hasAnyAnimation)
+        {
+            PRINT_TO_LOGGER("hasAnimation changed to: %d", hasAnyAnimation);
+            lastHasAnimation = hasAnyAnimation;
+        }
+
+        // Update the GPU buffer using the consolidated map structure
+        boneDataUniform[currentFrame].updateData();
+    }
 }

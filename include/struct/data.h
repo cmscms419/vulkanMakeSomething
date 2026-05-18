@@ -10,6 +10,7 @@ constexpr cInt MAX_FRAMES = 4;
 constexpr cInt MAX_FRAMES_IN_FLIGHT = 2;
 constexpr cInt MAX_FRAMES_IN_FLIGHT_UI_VERSION = 3;
 constexpr cInt CREATESURFACE_VKWIN32SURFACECREATEINFOKHR = 0;
+constexpr cInt MAX_BONES = 256; // 이 bone 수는 PC 기준으로 임시로 지정, 모바일 이나 다른 확경에서는 또 다르게 설정해야 한다
 
 extern const std::vector<const char *> validationLayers;
 extern const std::vector<const char *> coreDeviceExtensions;

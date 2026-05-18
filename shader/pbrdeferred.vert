@@ -59,8 +59,6 @@ void main() {
     vec3 tangent = inTangent;
     vec3 bitangent = inBitangent;
     
-    bool animationApplied = false;
-
     // UPDATED: Check animation flag from animationData.x
     bool hasAnimationEnabled = (boneData.animationData.x > 0.5);
     
@@ -91,8 +89,6 @@ void main() {
                 animatedNormal += weight * (boneNormalMatrix * inNormal);
                 animatedTangent += weight * (boneNormalMatrix * inTangent);
                 animatedBitangent += weight * (boneNormalMatrix * inBitangent);
-
-                animationApplied = true; // DEBUG: Track if any bone transformation was applied
             }
         }
         
@@ -105,11 +101,6 @@ void main() {
         }
     }
     
-    // DEBUG: Apply a small offset if animation was applied (for visual debugging)
-    if (animationApplied && hasAnimationEnabled) {
-        position.y += sin(gl_VertexIndex * 0.1) * 0.01; // Small visual indicator
-    }
-
     // Transform vertex position to world space
     vec4 worldPos = pushConstants.model * vec4(position, 1.0);
     fragPos = worldPos.xyz;

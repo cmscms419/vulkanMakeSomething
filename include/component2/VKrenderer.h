@@ -74,6 +74,8 @@ namespace vkengine
         // 뷰 프로젝션 행렬로부터 프러스텀 평면 추출 및 업데이트
         void updateViewFrustum(const cMat4& viewProjection);
         
+        // 본 데이터 업데이트 - 애니메이션 모델의 본 트랜스폼 계산 및 유니폼 버퍼에 업데이트
+        void updateBoneData(const std::vector<VKModel>& models, uint32_t currentFrame);
 
         // UBO getter 함수들 - 각 유니폼 버퍼 오브젝트의 현재 데이터 반환
         SceneDataUBO &getSceneDataUBO()
