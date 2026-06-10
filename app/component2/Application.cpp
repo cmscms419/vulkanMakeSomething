@@ -103,7 +103,6 @@ namespace vkengine
     void Application::setupCallbacks()
     {
         // engine에서 제공하는 카메라 컨트롤 윈도우 사용
-        this->window->setCamera(this->camera);
     }
     
     void Application::initializeVulkanResources()
@@ -265,7 +264,11 @@ namespace vkengine
 
             updateGui();
 
+            auto &mouse = window->getmouseState();
+
+            this->camera->RotateDeltaRotation(mouse.mouseDelta); // 마우스 이동에 따른 회전, 감도 조절
             this->camera->update();
+
             this->Renderer.getSceneDataUBO().projection = this->camera->getProjectionMatrix();
             this->Renderer.getSceneDataUBO().view = this->camera->getViewMatrix();
             this->Renderer.getSceneDataUBO().cameraPos = camera->getPos();
