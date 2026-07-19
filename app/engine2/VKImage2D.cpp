@@ -316,14 +316,14 @@ namespace vkengine
             cmb);
     }
 
-    void VKImage2D::createGeneralStorage(cUint16_t width, cUint32_t height)
+    void VKImage2D::createGeneralStorage(cUint16_t width, cUint32_t height, VkFormat format)
     {
         VkImageUsageFlags usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT |
                                   VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT |
                                   VK_IMAGE_USAGE_TRANSFER_DST_BIT;
 
         this->createImage(static_cast<cUint32_t>(width), static_cast<cUint32_t>(height),
-                    VK_FORMAT_R16G16B16A16_SFLOAT, VK_SAMPLE_COUNT_1_BIT, usage,
+                    format, VK_SAMPLE_COUNT_1_BIT, usage,
                     VK_IMAGE_ASPECT_COLOR_BIT, 1, 1, static_cast<VkImageCreateFlagBits>(0));
     }
 

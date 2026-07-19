@@ -61,6 +61,8 @@ namespace vkengine
         this->renderGraph.registerResource("DeferredToCompute", this->images["DeferredToCompute"]); // 포워드 패스 출력 등록
         this->renderGraph.registerResource("LightDeferred", this->images["LightDeferred"]);         // 컴퓨트 패스 출력 등록
         this->renderGraph.registerResource("depthStencil", this->images["depthStencil"]);           // depthstencil 리소스 등록
+        this->renderGraph.registerResource("ssaoRaw", this->images["ssaoRaw"]);                     // SSAO 원본 출력 등록
+        this->renderGraph.registerResource("ssaoBlur", this->images["ssaoBlur"]);                   // SSAO 블러 출력 등록
 
         this->renderGraph.loadFromJson(this->assetsPath + "/renderGraph.json");
 
@@ -92,6 +94,17 @@ namespace vkengine
                                                [this](VkCommandBuffer cmd, cUint32_t frameIndex, cUint32_t imageIndex)
                                                {
                                                    this->makePostProcessPass(cmd, frameIndex, imageIndex);
+                                               });
+        this->renderGraph.registerPassFunction("ssao",
+                                               [this](VkCommandBuffer cmd, cUint32_t frameIndex, cUint32_t imageIndex)
+                                               {
+                                                   this->makeSSAOPass(cmd, frameIndex, imageIndex);
+                                               });
+
+        this->renderGraph.registerPassFunction("ssaoBlur",
+                                               [this](VkCommandBuffer cmd, cUint32_t frameIndex, cUint32_t imageIndex)
+                                               {
+                                                   this->makeSSAOBlurPass(cmd, frameIndex, imageIndex);
                                                });
 
         this->renderGraph.compile();
@@ -139,6 +152,10 @@ namespace vkengine
                                                         VK_FORMAT_D16_UNORM, VK_SAMPLE_COUNT_1_BIT));
         pipelines.emplace("lightdeferred", VKPipeLineHandle(ctx, shaderManager, PipelineConfig::createDeferredLighting(), std::vector<VkFormat>{},
                                                             std::nullopt, VK_SAMPLE_COUNT_1_BIT));
+        pipelines.emplace("ssao", VKPipeLineHandle(ctx, shaderManager, PipelineConfig::createSsao(), std::vector<VkFormat>{},
+                                                   std::nullopt, VK_SAMPLE_COUNT_1_BIT));
+        pipelines.emplace("ssaoBlur", VKPipeLineHandle(ctx, shaderManager, PipelineConfig::createSsaoBlur(), std::vector<VkFormat>{},
+                                                       std::nullopt, VK_SAMPLE_COUNT_1_BIT));
     }
 
     void VKRenderer::createTextures(cUint32_t swapchainWidth, cUint32_t swapchainHeight)
@@ -154,7 +171,8 @@ namespace vkengine
             "gAlbedo", "gNormal", "gPosition",
             "gMaterial", "shadowMap", "prefiltered",
             "irradiance", "brdfLUT", "depthStencil",
-            "DeferredToCompute", "LightDeferred"};
+            "DeferredToCompute", "LightDeferred",
+            "ssaoRaw", "ssaoBlur"};
 
         for (const auto &name : imageNames)
         {
@@ -179,6 +197,10 @@ namespace vkengine
         this->images["depthStencil"]->createDepthStencil(swapchainWidth, swapchainHeight, true);
         this->images["DeferredToCompute"]->createGeneralStorage(swapchainWidth, swapchainHeight);
         this->images["LightDeferred"]->createGeneralStorage(swapchainWidth, swapchainHeight);
+
+        // SSAO 결과는 0~1 스칼라이므로 R8 단일 채널로 충분 (storage image, imageLoad로만 접근)
+        this->images["ssaoRaw"]->createGeneralStorage(swapchainWidth, swapchainHeight, VK_FORMAT_R8_UNORM);
+        this->images["ssaoBlur"]->createGeneralStorage(swapchainWidth, swapchainHeight, VK_FORMAT_R8_UNORM);
 
         // Set samplers
         this->images["DeferredToCompute"]->setSampler(samplerLinearRepeat.getSampler());
@@ -265,11 +287,15 @@ namespace vkengine
         this->images["depthStencil"]->cleanup();
         this->images["DeferredToCompute"]->cleanup();
         this->images["LightDeferred"]->cleanup();
+        this->images["ssaoRaw"]->cleanup();
+        this->images["ssaoBlur"]->cleanup();
 
         // 새 크기로 재생성
         this->images["depthStencil"]->createDepthStencil(width, height, VK_SAMPLE_COUNT_1_BIT);
         this->images["DeferredToCompute"]->createGeneralStorage(width, height);
         this->images["LightDeferred"]->createGeneralStorage(width, height);
+        this->images["ssaoRaw"]->createGeneralStorage(width, height, VK_FORMAT_R8_UNORM);
+        this->images["ssaoBlur"]->createGeneralStorage(width, height, VK_FORMAT_R8_UNORM);
 
         this->images["DeferredToCompute"]->setSampler(this->samplerLinearRepeat.getSampler());
 
@@ -372,6 +398,19 @@ namespace vkengine
             VK_ACCESS_2_SHADER_WRITE_BIT,
             VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT);
 
+        // SSAO 이미지들은 storage image(imageLoad/imageStore)로만 사용하므로 GENERAL 레이아웃 유지
+        this->images["ssaoRaw"]->transitionTo(
+            cmd.getCommandBuffer(),
+            VK_IMAGE_LAYOUT_GENERAL,
+            VK_ACCESS_2_SHADER_WRITE_BIT,
+            VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT);
+
+        this->images["ssaoBlur"]->transitionTo(
+            cmd.getCommandBuffer(),
+            VK_IMAGE_LAYOUT_GENERAL,
+            VK_ACCESS_2_SHADER_WRITE_BIT,
+            VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT);
+
         cmd.submitAndWait();
         lightDeferredDescriptorSets.resize(this->MaxFramesFlight);
         for (size_t i = 0; i < this->MaxFramesFlight; i++)
@@ -389,8 +428,24 @@ namespace vkengine
                                                               std::ref(*this->images["shadowMap"]),
                                                               std::ref(*this->images["prefiltered"]),
                                                               std::ref(*this->images["irradiance"]),
-                                                              std::ref(*this->images["brdfLUT"])});
+                                                              std::ref(*this->images["brdfLUT"]),
+                                                              std::ref(*this->images["ssaoBlur"])});
         }
+
+        // SSAO 패스 디스크립터 세트 (binding 순서 = ssao.comp의 binding 0~4)
+        ssaoDescriptorSets.resize(this->MaxFramesFlight);
+        for (size_t i = 0; i < this->MaxFramesFlight; i++)
+        {
+            ssaoDescriptorSets[i].create(this->ctx, {std::ref(sceneDataUniform[i].Buffer()),
+                                                     std::ref(ssaoParamsUniform[i].Buffer()),
+                                                     std::ref(*this->images["depthStencil"]),
+                                                     std::ref(*this->images["gNormal"]),
+                                                     std::ref(*this->images["ssaoRaw"])});
+        }
+
+        // SSAO 블러 디스크립터 세트 (binding 순서 = ssaoBlur.comp의 binding 0~1)
+        ssaoBlurDescriptorSet.create(this->ctx, {std::ref(*this->images["ssaoRaw"]),
+                                                 std::ref(*this->images["ssaoBlur"])});
     }
 
     void VKRenderer::makePBRDeferredPass(VkCommandBuffer cmd, cUint32_t currentFrame, cUint32_t imageIndex)
@@ -468,6 +523,64 @@ namespace vkengine
         vkCmdEndRendering(cmd);
     }
 
+    void VKRenderer::makeSSAOPass(VkCommandBuffer cmd, cUint32_t currentFrame, cUint32_t imageIndex)
+    {
+        // 입력: depth + gNormal (G-buffer 기록 완료 후 샘플링 가능 상태로 전환)
+        this->images["depthStencil"]->transitionTo(cmd,
+                                                   VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+                                                   VK_ACCESS_2_SHADER_READ_BIT,
+                                                   VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT);
+
+        this->images["gNormal"]->transitionTo(cmd,
+                                              VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+                                              VK_ACCESS_2_SHADER_READ_BIT,
+                                              VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT);
+
+        // 출력: ssaoRaw (이전 프레임의 blur 읽기와의 해저드는 access 전환 배리어가 처리)
+        this->images["ssaoRaw"]->transitionTo(cmd,
+                                              VK_IMAGE_LAYOUT_GENERAL,
+                                              VK_ACCESS_2_SHADER_WRITE_BIT,
+                                              VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT);
+
+        vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_COMPUTE, pipelines.at("ssao").getPipeline());
+
+        const auto descriptorSets = std::vector{this->ssaoDescriptorSets[currentFrame].get()};
+        vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_COMPUTE,
+                                pipelines.at("ssao").getPipelineLayout(), 0,
+                                static_cast<cUint32_t>(descriptorSets.size()),
+                                descriptorSets.data(), 0, nullptr);
+
+        cUint32_t groupCountX = (currentScissor.extent.width + 15) / 16;
+        cUint32_t groupCountY = (currentScissor.extent.height + 15) / 16;
+        vkCmdDispatch(cmd, groupCountX, groupCountY, 1);
+    }
+
+    void VKRenderer::makeSSAOBlurPass(VkCommandBuffer cmd, cUint32_t currentFrame, cUint32_t imageIndex)
+    {
+        // ssaoRaw: write → read 전환 (compute 간 배리어 발행)
+        this->images["ssaoRaw"]->transitionTo(cmd,
+                                              VK_IMAGE_LAYOUT_GENERAL,
+                                              VK_ACCESS_2_SHADER_READ_BIT,
+                                              VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT);
+
+        this->images["ssaoBlur"]->transitionTo(cmd,
+                                               VK_IMAGE_LAYOUT_GENERAL,
+                                               VK_ACCESS_2_SHADER_WRITE_BIT,
+                                               VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT);
+
+        vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_COMPUTE, pipelines.at("ssaoBlur").getPipeline());
+
+        const auto descriptorSets = std::vector{this->ssaoBlurDescriptorSet.get()};
+        vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_COMPUTE,
+                                pipelines.at("ssaoBlur").getPipelineLayout(), 0,
+                                static_cast<cUint32_t>(descriptorSets.size()),
+                                descriptorSets.data(), 0, nullptr);
+
+        cUint32_t groupCountX = (currentScissor.extent.width + 15) / 16;
+        cUint32_t groupCountY = (currentScissor.extent.height + 15) / 16;
+        vkCmdDispatch(cmd, groupCountX, groupCountY, 1);
+    }
+
     void VKRenderer::makeLightDeferredPass(VkCommandBuffer cmd, cUint32_t currentFrame, cUint32_t imageIndex)
     {
         this->images["DeferredToCompute"]->transitionTo(cmd,
@@ -500,6 +613,12 @@ namespace vkengine
                                                 VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
                                                 VK_ACCESS_2_SHADER_READ_BIT,
                                                 VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT);
+
+        // ssaoBlur: write → read 전환 (SSAO blur 결과를 라이팅에서 읽음)
+        this->images["ssaoBlur"]->transitionTo(cmd,
+                                               VK_IMAGE_LAYOUT_GENERAL,
+                                               VK_ACCESS_2_SHADER_READ_BIT,
+                                               VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT);
 
         // Bind SSAO compute pipeline
         vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_COMPUTE, pipelines.at("lightdeferred").getPipeline());
@@ -770,7 +889,7 @@ namespace vkengine
         }
     }
 
-    void VKRenderer::updateBoneData(const std::vector<VKModel>& models, uint32_t currentFrame)
+    void VKRenderer::updateBoneData(const std::vector<VKModel> &models, uint32_t currentFrame)
     {
         PRINT_TO_LOGGER("Updating bone data for %zu models", models.size());
 

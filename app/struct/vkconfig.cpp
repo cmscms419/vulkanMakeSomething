@@ -83,6 +83,14 @@ PipelineConfig PipelineConfig::createSsao()
     return config;
 }
 
+PipelineConfig PipelineConfig::createSsaoBlur()
+{
+    PipelineConfig config;
+    config.name = "ssaoBlur";
+    config.type = PipelineConfig::Type::Compute;
+    return config;
+}
+
 PipelineConfig PipelineConfig::createDeferredLighting()
 {
     PipelineConfig config;

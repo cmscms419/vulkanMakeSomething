@@ -52,6 +52,36 @@
             ]
         },
         {
+            "name": "ssao",
+            "shaderResources": [
+                {
+                    "handle": "depthStencil",
+                    "access": "NOTTHING"
+                },
+                {
+                    "handle": "gNormal",
+                    "access": "NOTTHING"
+                },
+                {
+                    "handle": "ssaoRaw",
+                    "access": "NOTTHING"
+                }
+            ]
+        },
+        {
+            "name": "ssaoBlur",
+            "shaderResources": [
+                {
+                    "handle": "ssaoRaw",
+                    "access": "NOTTHING"
+                },
+                {
+                    "handle": "ssaoBlur",
+                    "access": "NOTTHING"
+                }
+            ]
+        },
+        {
             "name": "lightdeferred",
             "shaderResources": [
                 {

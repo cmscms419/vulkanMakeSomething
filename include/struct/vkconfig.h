@@ -198,6 +198,7 @@ struct PipelineConfig
     static PipelineConfig createSky();
     static PipelineConfig createCompute();
     static PipelineConfig createSsao();
+    static PipelineConfig createSsaoBlur();
     static PipelineConfig createDeferredLighting();
     static PipelineConfig createTriangle();
 };

@@ -1,0 +1,29 @@
+#version 450
+#extension GL_KHR_vulkan_glsl : enable
+
+layout (local_size_x = 16, local_size_y = 16) in;
+
+layout(set = 0, binding = 0, r8) uniform readonly image2D inputSSAO;
+layout(set = 0, binding = 1, r8) uniform writeonly image2D outputSSAO;
+
+// 4x4 box blur - SSAO 노이즈 패턴이 픽셀 단위 랜덤이므로 박스 블러로 충분함
+void main()
+{
+    ivec2 imageCoords = ivec2(gl_GlobalInvocationID.xy);
+    ivec2 outSize = imageSize(outputSSAO);
+
+    if (imageCoords.x >= outSize.x || imageCoords.y >= outSize.y) {
+        return;
+    }
+
+    float result = 0.0;
+    for (int x = -2; x < 2; ++x) {
+        for (int y = -2; y < 2; ++y) {
+            ivec2 sampleCoords = clamp(imageCoords + ivec2(x, y), ivec2(0), outSize - 1);
+            result += imageLoad(inputSSAO, sampleCoords).r;
+        }
+    }
+    result /= 16.0;
+
+    imageStore(outputSSAO, imageCoords, vec4(result));
+}

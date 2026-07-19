@@ -167,6 +167,8 @@ namespace vkengine {
         }
 
         // 4. 만약에, 어떤 binding이 descriptor count를 가지고 있는지 확인한다.
+        // vulkan spec에 따르면, variable descriptor count는 마지막 binding에서만 허용된다.
+        // 따라서, 마지막 binding이 variable descriptor count를 가지고 있는지 확인한다.
         cBool hasVariableDescriptorCount = false;
         cUint32_t variableDescriptorCount = 0;
         cUint32_t highestBinding = 0;

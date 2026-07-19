@@ -138,6 +138,8 @@ namespace vkengine
         std::vector<DescriptorSetHander> SceneOptionsBoneDataSets{};
         std::vector<DescriptorSetHander> PostDescriptorSets{};
         std::vector<DescriptorSetHander> lightDeferredDescriptorSets{};
+        std::vector<DescriptorSetHander> ssaoDescriptorSets{};
+        DescriptorSetHander ssaoBlurDescriptorSet;
 
         VKSamplerHandler samplerLinearRepeat;
         VKSamplerHandler samplerLinearClamp;
@@ -163,6 +165,8 @@ namespace vkengine
 
         void makeShadowMap(VkCommandBuffer cmd, cUint32_t currentFrame, cUint32_t imageIndex);
         void makePBRDeferredPass(VkCommandBuffer cmd, cUint32_t currentFrame, cUint32_t imageIndex);
+        void makeSSAOPass(VkCommandBuffer cmd, cUint32_t currentFrame, cUint32_t imageIndex);
+        void makeSSAOBlurPass(VkCommandBuffer cmd, cUint32_t currentFrame, cUint32_t imageIndex);
         void makeLightDeferredPass(VkCommandBuffer cmd, cUint32_t currentFrame, cUint32_t imageIndex);
         void makePostProcessPass(VkCommandBuffer cmd, cUint32_t currentFrame, cUint32_t imageIndex);
         void makeSkyboxProcessPass(VkCommandBuffer cmd, cUint32_t currentFrame, cUint32_t imageIndex);

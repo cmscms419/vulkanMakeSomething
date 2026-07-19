@@ -29,6 +29,8 @@ namespace vkengine
                             {"sky", {"vertskybox2.spv", "fragskybox2.spv"}},
                             {"post", {"vertpost.spv", "fragpost.spv"}},
                             {"lightdeferred", {"complightdeferred.spv"}},
+                            {"ssao", {"compssao.spv"}},
+                            {"ssaoBlur", {"compssaoBlur.spv"}},
                         }},
           guiRenderer{*this->cxt, shaderManager, swapChain->getSwapChainImageFormat(), RootPath + this->AssetsPath},
           Renderer(*this->cxt, shaderManager, *this->swapChain, this->kMaxFramesInFlight, RootPath + this->AssetsPath, RootPath + this->ShaderPath)
