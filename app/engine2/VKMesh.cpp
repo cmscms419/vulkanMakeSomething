@@ -44,53 +44,11 @@ namespace vkengine
         VkDeviceSize vertexBufferSize = sizeof(vertices[0]) * vertices.size();
         VkDeviceSize indexBufferSize = sizeof(indices[0]) * indices.size();
 
-        VkDeviceMemory stagingBufferMemory;
-        VkBuffer stagingBuffer;
-
-        VkBufferCreateInfo bufferInfo{VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO};
-        bufferInfo.size = vertexBufferSize + indexBufferSize;
-        bufferInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
-        bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-
-        _VK_CHECK_RESULT_(vkCreateBuffer(ctx.getDevice()->logicaldevice, &bufferInfo, nullptr, &stagingBuffer));
-
-        VkMemoryRequirements memRequirements;
-        vkGetBufferMemoryRequirements(ctx.getDevice()->logicaldevice, stagingBuffer, &memRequirements);
-
-        VkMemoryAllocateInfo allocInfo{VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO};
-        allocInfo.allocationSize = memRequirements.size;
-        allocInfo.memoryTypeIndex = ctx.getMemoryTypeIndex(memRequirements.memoryTypeBits,
-                                                           VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
-                                                               VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-
-        _VK_CHECK_RESULT_(vkAllocateMemory(ctx.getDevice()->logicaldevice, &allocInfo, nullptr, &stagingBufferMemory));
-        _VK_CHECK_RESULT_(vkBindBufferMemory(ctx.getDevice()->logicaldevice, stagingBuffer, stagingBufferMemory, 0));
-
-        void *data;
-        _VK_CHECK_RESULT_(vkMapMemory(ctx.getDevice()->logicaldevice, stagingBufferMemory, 0, vertexBufferSize + indexBufferSize, 0, &data));
-        memcpy(data, vertices.data(), static_cast<size_t>(vertexBufferSize));
-        memcpy(static_cast<char *>(data) + vertexBufferSize, indices.data(),
-               static_cast<size_t>(indexBufferSize));
-        vkUnmapMemory(ctx.getDevice()->logicaldevice, stagingBufferMemory);
-
         this->vertex->createModelVertexBuffer(vertexBufferSize, nullptr);
         this->index->createModelIndexBuffer(indexBufferSize, nullptr);
 
-        VKCommandBufferHander cmd = ctx.createGrapicsCommandBufferHander(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
-
-        VkBufferCopy copyRegion{};
-        copyRegion.size = vertexBufferSize;
-        vkCmdCopyBuffer(cmd.getCommandBuffer(), stagingBuffer, this->vertex->Buffer(), 1, &copyRegion);
-
-        copyRegion.srcOffset = vertexBufferSize;
-        copyRegion.dstOffset = 0;
-        copyRegion.size = indexBufferSize;
-        vkCmdCopyBuffer(cmd.getCommandBuffer(), stagingBuffer, this->index->Buffer(), 1, &copyRegion);
-
-        cmd.submitAndWait();
-
-        vkDestroyBuffer(ctx.getDevice()->logicaldevice, stagingBuffer, nullptr);
-        vkFreeMemory(ctx.getDevice()->logicaldevice, stagingBufferMemory, nullptr);
+        this->vertex->copyData(vertices.data(), vertexBufferSize);
+        this->index->copyData(indices.data(), indexBufferSize);
 
         calculateBounds();
     }
