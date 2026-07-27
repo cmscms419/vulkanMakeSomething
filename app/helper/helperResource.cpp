@@ -115,34 +115,6 @@ namespace vkengine
                 _VK_CHECK_RESULT_(vkBindImageMemory(VKdevice, image, imageMemory, 0));
             }
 
-            void createBuffer(VkDevice device, VkPhysicalDevice physicalDevice, VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer &buffer, VkDeviceMemory &bufferMemory)
-            {
-                // 버퍼 생성 정보를 담은 구조체를 초기화한다.
-                VkBufferCreateInfo bufferInfo{};
-
-                bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO; // 구조체 타입을 지정한다.
-                bufferInfo.size = size;                                  // 생성할 버퍼의 크기를 설정한다.
-                bufferInfo.usage = usage;                                // 버퍼 사용 목적을 지정한다 (예: vertex, index 등).
-                bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;      // 버퍼의 공유 모드를 독점으로 설정한다.
-
-                // 지정된 정보를 바탕으로 버퍼를 생성
-                _VK_CHECK_RESULT_(vkCreateBuffer(device, &bufferInfo, nullptr, &buffer));
-
-                // 생성된 버퍼에 필요한 메모리 요구사항 정보를 가져온다.
-                VkMemoryRequirements memRequirements;
-                vkGetBufferMemoryRequirements(device, buffer, &memRequirements);
-
-                // 메모리 할당 정보를 담은 구조체를 초기화한다.
-                VkMemoryAllocateInfo allocInfo{};
-
-                allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;                                                                         // 구조체 타입을 지정한다.
-                allocInfo.allocationSize = memRequirements.size;                                                                                  // 버퍼를 위한 메모리 크기를 설정한다.
-                allocInfo.memoryTypeIndex = vkengine::helper::device::findMemoryType(physicalDevice, memRequirements.memoryTypeBits, properties); // 요구사항에 맞는 메모리 타입 인덱스를 찾아서 지정한다.
-
-                _VK_CHECK_RESULT_(vkAllocateMemory(device, &allocInfo, nullptr, &bufferMemory)); // 위 정보를 바탕으로 메모리를 할당하고 성공 여부를 검사한다.
-                _VK_CHECK_RESULT_(vkBindBufferMemory(device, buffer, bufferMemory, 0));          // 할당된 메모리를 버퍼와 바인딩하여 GPU에서 사용할 수 있게 한다.
-            }
-
             void createBuffer2(VkDevice device, VkPhysicalDevice physicalDevice, VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer &buffer, VkDeviceMemory &bufferMemory, VkDeviceSize *allocatedSize, VkDeviceSize *alignment)
             {
                 // 버퍼 생성 정보를 담은 구조체를 초기화한다.

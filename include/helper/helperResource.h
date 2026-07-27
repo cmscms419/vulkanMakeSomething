@@ -54,16 +54,6 @@ namespace vkengine
                 cUint32_t arrayLayer,
                 VkImageCreateFlagBits flag);
 
-            // buffer를 생성하는 함수
-            void createBuffer(
-                VkDevice device,
-                VkPhysicalDevice physicalDevice,
-                VkDeviceSize size,
-                VkBufferUsageFlags usage,
-                VkMemoryPropertyFlags properties,
-                VkBuffer &buffer,
-                VkDeviceMemory &bufferMemory);
-
             // buffer를 생성하는 함수 2
             void createBuffer2(
                 VkDevice device,
