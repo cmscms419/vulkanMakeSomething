@@ -40,6 +40,18 @@
             "environment": [],
             "console": "externalTerminal",
             "preLaunchTask": "Build: ResumeDemo (Debug)"
+        },
+        {
+            "name": "Physical_Simulation",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/exe/PhysicalSimulation/x64/Debug/PhysicalSimulation.exe",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}/exe/PhysicalSimulation/x64/Debug",
+            "environment": [],
+            "console": "externalTerminal",
+            "preLaunchTask": "Build: PhysicalSimulation (Debug)"
         }
     ]
 }
