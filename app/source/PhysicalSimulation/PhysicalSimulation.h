@@ -9,6 +9,7 @@ namespace vkengine
     {
         public:
         PhysicalSimulation(cString root_path);
+        PhysicalSimulation(const ApplicationConfig& config, cString root_path);
         ~PhysicalSimulation();
 
         virtual void update() override;

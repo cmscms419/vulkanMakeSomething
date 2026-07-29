@@ -14,7 +14,19 @@ int main(int argc, char* argv[]) {
         EXIT_TO_LOGGER("경로를 가져오는 데 실패했습니다.");
     }
 
-    std::unique_ptr<PhysicalSimulation> app3 = std::make_unique<PhysicalSimulation>(root_path);
+    ApplicationConfig config;
+
+    config.models.push_back(ModelConfig("3D_models/Box.obj", "Box")
+        .setTransform(
+                glm::rotate(glm::mat4(1.0f), glm::radians(0.0f), glm::vec3(1.0f, 0.0f, 0.0f))
+        ).setScale(0.2f));
+    
+    config.models.push_back(ModelConfig("3D_models/sphere.obj", "Sphere")
+        .setTransform(
+                glm::translate(glm::mat4(1.0f), glm::vec3(1.0f, 0.0f, 0.0f))
+        ).setScale(0.2f));
+
+    std::unique_ptr<PhysicalSimulation> app3 = std::make_unique<PhysicalSimulation>(config, root_path);
 
     app3->update();
     
