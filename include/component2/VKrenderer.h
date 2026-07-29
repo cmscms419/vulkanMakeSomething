@@ -17,6 +17,7 @@
 
 #include "VKRenderGraph.h"
 #include "VKswapchain.h"
+#include "geometry.h"
 
 #include <unordered_map>
 
@@ -76,6 +77,12 @@ namespace vkengine
         
         // 본 데이터 업데이트 - 애니메이션 모델의 본 트랜스폼 계산 및 유니폼 버퍼에 업데이트
         void updateBoneData(const std::vector<VKModel>& models, uint32_t currentFrame);
+
+        // 디버그 라인(AABB 와이어프레임 등) - 매 프레임 그리고 싶은 라인을 addDebug*로 쌓은 뒤 rendering()을 호출하면
+        // debugLine 패스에서 한 번에 그려지고, 다음 clearDebugLines() 전까지는 그대로 유지됨
+        void clearDebugLines();
+        void addDebugLine(const cVec3 &a, const cVec3 &b, const cVec3 &color);
+        void addDebugAABB(const AABB &box, const cVec3 &color);
 
         // UBO getter 함수들 - 각 유니폼 버퍼 오브젝트의 현재 데이터 반환
         SceneDataUBO &getSceneDataUBO()
@@ -150,6 +157,12 @@ namespace vkengine
         DescriptorSetHander skyDescriptorSet;
         DescriptorSetHander shadowMapSet;
 
+        // 디버그 라인 렌더링 (AABB 와이어프레임 등)
+        static constexpr cUint32_t kMaxDebugLineVertices = 65536;
+        std::vector<LineVertex> debugLineVertices;
+        std::vector<VKBaseBuffer2> debugLineVertexBuffers; // per frame-in-flight, host-visible + mapped
+        std::vector<DescriptorSetHander> debugLineDescriptorSets;
+
         ViewFrustum viewFrustum{};
         cBool frustumCullingEnabled{true};
         CullingStats cullingStats;
@@ -170,6 +183,7 @@ namespace vkengine
         void makeLightDeferredPass(VkCommandBuffer cmd, cUint32_t currentFrame, cUint32_t imageIndex);
         void makePostProcessPass(VkCommandBuffer cmd, cUint32_t currentFrame, cUint32_t imageIndex);
         void makeSkyboxProcessPass(VkCommandBuffer cmd, cUint32_t currentFrame, cUint32_t imageIndex);
+        void makeDebugLinePass(VkCommandBuffer cmd, cUint32_t currentFrame, cUint32_t imageIndex);
 
         // Helper functions for creating rendering structures
         // 컬러 어태치먼트 정보 생성

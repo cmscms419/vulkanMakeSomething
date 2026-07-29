@@ -68,6 +68,8 @@ namespace vkengine
             this->Renderer.getSceneDataUBO().view = this->camera->getViewMatrix();
             this->Renderer.getSceneDataUBO().cameraPos = camera->getPos();
 
+            this->Renderer.clearDebugLines();
+            this->Renderer.addDebugAABB(models[0].Meshes()[0].worldBounds, cVec3(1,1,0)); // 박스 경계
             this->updateGui();
 
             this->run();

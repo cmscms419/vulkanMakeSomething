@@ -84,6 +84,12 @@ namespace vkengine
                                                    this->makeSkyboxProcessPass(cmd, frameIndex, imageIndex);
                                                });
 
+        this->renderGraph.registerPassFunction("debugLine",
+                                               [this](VkCommandBuffer cmd, cUint32_t frameIndex, cUint32_t imageIndex)
+                                               {
+                                                   this->makeDebugLinePass(cmd, frameIndex, imageIndex);
+                                               });
+
         this->renderGraph.registerPassFunction("lightdeferred",
                                                [this](VkCommandBuffer cmd, cUint32_t frameIndex, cUint32_t imageIndex)
                                                {
@@ -146,6 +152,8 @@ namespace vkengine
                                            depthFormat, VK_SAMPLE_COUNT_1_BIT));
         pipelines.emplace("sky", VKPipeLineHandle(ctx, shaderManager, PipelineConfig::createSky(), std::vector<VkFormat>{selectedHDRFormat},
                                                   depthFormat, VK_SAMPLE_COUNT_1_BIT));
+        pipelines.emplace("debugLine", VKPipeLineHandle(ctx, shaderManager, PipelineConfig::createDebugLine(), std::vector<VkFormat>{selectedHDRFormat},
+                                                        depthFormat, VK_SAMPLE_COUNT_1_BIT));
         pipelines.emplace("post", VKPipeLineHandle(ctx, shaderManager, PipelineConfig::createPost(), std::vector<VkFormat>{colorFormat},
                                                    depthFormat, VK_SAMPLE_COUNT_1_BIT));
         pipelines.emplace("shadowMap", VKPipeLineHandle(ctx, shaderManager, PipelineConfig::createShadowMap(), std::vector<VkFormat>{},
@@ -361,6 +369,18 @@ namespace vkengine
         {
             SceneSkyOptionsStates[i].create(
                 this->ctx, {std::ref(sceneDataUniform[i].Buffer()), std::ref(skyOptionsUniform[i].Buffer())});
+        }
+
+        // 디버그 라인 버텍스 버퍼(프레임별, host-visible + mapped) + 디스크립터 셋(SceneDataUBO만 필요)
+        debugLineVertexBuffers.clear();
+        debugLineVertexBuffers.reserve(this->MaxFramesFlight);
+        debugLineDescriptorSets.resize(this->MaxFramesFlight);
+        for (size_t i = 0; i < this->MaxFramesFlight; i++)
+        {
+            debugLineVertexBuffers.emplace_back(this->ctx);
+            debugLineVertexBuffers.back().createVertexBuffer(sizeof(LineVertex) * kMaxDebugLineVertices, nullptr);
+
+            debugLineDescriptorSets[i].create(this->ctx, {std::ref(sceneDataUniform[i].Buffer())});
         }
 
         PostDescriptorSets.resize(this->MaxFramesFlight);
@@ -720,6 +740,78 @@ namespace vkengine
             cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelines.at("sky").getPipelineLayout(), 0,
             static_cast<cUint32_t>(skyDescriptorSets.size()), skyDescriptorSets.data(), 0, nullptr);
         vkCmdDraw(cmd, 36, 1, 0, 0);
+        vkCmdEndRendering(cmd);
+    }
+
+    void VKRenderer::clearDebugLines()
+    {
+        debugLineVertices.clear();
+    }
+
+    void VKRenderer::addDebugLine(const cVec3 &a, const cVec3 &b, const cVec3 &color)
+    {
+        if (debugLineVertices.size() + 2 > kMaxDebugLineVertices)
+            return;
+
+        debugLineVertices.push_back({a, color});
+        debugLineVertices.push_back({b, color});
+    }
+
+    void VKRenderer::addDebugAABB(const AABB &box, const cVec3 &color)
+    {
+        const cVec3 corners[8] = {
+            {box.min.x, box.min.y, box.min.z}, {box.max.x, box.min.y, box.min.z},
+            {box.min.x, box.max.y, box.min.z}, {box.max.x, box.max.y, box.min.z},
+            {box.min.x, box.min.y, box.max.z}, {box.max.x, box.min.y, box.max.z},
+            {box.min.x, box.max.y, box.max.z}, {box.max.x, box.max.y, box.max.z}};
+
+        static constexpr cUint32_t edges[12][2] = {
+            {0, 1}, {1, 3}, {3, 2}, {2, 0}, // 아랫면
+            {4, 5}, {5, 7}, {7, 6}, {6, 4}, // 윗면
+            {0, 4}, {1, 5}, {2, 6}, {3, 7}  // 기둥
+        };
+
+        for (const auto &edge : edges)
+        {
+            addDebugLine(corners[edge[0]], corners[edge[1]], color);
+        }
+    }
+
+    void VKRenderer::makeDebugLinePass(VkCommandBuffer cmd, cUint32_t currentFrame, cUint32_t imageIndex)
+    {
+        if (debugLineVertices.empty())
+            return;
+
+        VkDeviceSize uploadSize = sizeof(LineVertex) * debugLineVertices.size();
+        debugLineVertexBuffers[currentFrame].updateData(debugLineVertices.data(), uploadSize, 0);
+
+        VkRect2D renderArea = {0, 0, this->currentScissor.extent.width, this->currentScissor.extent.height};
+
+        VkRenderingAttachmentInfo colorAttachment = createColorAttachment(this->images["DeferredToCompute"]->getImageView(), VK_ATTACHMENT_LOAD_OP_LOAD);
+        VkRenderingAttachmentInfo depthAttachment = createDepthAttachment(this->images["depthStencil"]->getImageView(), VK_ATTACHMENT_LOAD_OP_LOAD);
+
+        VkRenderingInfo renderingInfo{VK_STRUCTURE_TYPE_RENDERING_INFO_KHR};
+        renderingInfo.renderArea = renderArea;
+        renderingInfo.layerCount = 1;
+        renderingInfo.colorAttachmentCount = 1;
+        renderingInfo.pColorAttachments = &colorAttachment;
+        renderingInfo.pDepthAttachment = &depthAttachment;
+
+        vkCmdBeginRendering(cmd, &renderingInfo);
+        vkCmdSetViewport(cmd, 0, 1, &this->currentViewport);
+        vkCmdSetScissor(cmd, 0, 1, &this->currentScissor);
+
+        vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelines.at("debugLine").getPipeline());
+
+        const auto descriptorSets = std::vector{debugLineDescriptorSets[currentFrame].get()};
+        vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelines.at("debugLine").getPipelineLayout(), 0,
+                                static_cast<cUint32_t>(descriptorSets.size()), descriptorSets.data(), 0, nullptr);
+
+        VkBuffer vertexBuffers[] = {debugLineVertexBuffers[currentFrame].Buffer()};
+        VkDeviceSize offsets[] = {0};
+        vkCmdBindVertexBuffers(cmd, 0, 1, vertexBuffers, offsets);
+
+        vkCmdDraw(cmd, static_cast<cUint32_t>(debugLineVertices.size()), 1, 0, 0);
         vkCmdEndRendering(cmd);
     }
 

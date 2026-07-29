@@ -171,6 +171,11 @@ struct Particle {
     }
 };
 
+struct LineVertex {
+    cVec3 pos;
+    cVec3 color;
+};
+
 // Hash function for vector<VkDescriptorSetLayoutBinding>
 struct BindingHash
 {

@@ -107,3 +107,15 @@ PipelineConfig PipelineConfig::createTriangle()
     config.specialConfig.isScreenSpace = true;
     return config;
 }
+
+PipelineConfig PipelineConfig::createDebugLine()
+{
+    PipelineConfig config;
+    config.name = "debugLine";
+    config.requiredFormats = {true, true, true};                      // color, depth, msaa
+    config.vertexInput.type = PipelineConfig::VertexInput::Type::Line;
+    config.topology = VK_PRIMITIVE_TOPOLOGY_LINE_LIST;
+    config.depthStencil = {true, false, VK_COMPARE_OP_LESS_OR_EQUAL}; // test but no write — 씬을 가리지 않음
+    config.multisample.type = PipelineConfig::Multisample::Type::Variable;
+    return config;
+}

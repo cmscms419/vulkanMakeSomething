@@ -27,6 +27,7 @@ namespace vkengine
                             {"pbrdeferred", {"vertpbrdeferred.spv", "fragpbrdeferred.spv"}},
                             {"gui", {"vertimgui.spv", "fragimgui.spv"}},
                             {"sky", {"vertskybox2.spv", "fragskybox2.spv"}},
+                            {"debugLine", {"vertdebugLine.spv", "fragdebugLine.spv"}},
                             {"post", {"vertpost.spv", "fragpost.spv"}},
                             {"lightdeferred", {"complightdeferred.spv"}},
                             {"ssao", {"compssao.spv"}},
@@ -285,7 +286,6 @@ namespace vkengine
 
             if (models.size() > 0)
             {
-
                 cMat4 lightView = glm::lookAt(cVec3(0.0f), -Renderer.getSceneDataUBO().directionalLightDir, cVec3(0.0f, 0.0f, 1.0f));
 
                 // Transform the first model's bounding box to find the initial light bounding box

@@ -208,6 +208,25 @@ namespace vkengine
             vertexInputAttributes[2].format = VK_FORMAT_R8G8B8A8_UNORM;
             vertexInputAttributes[2].offset = offsetof(ImDrawVert, ImDrawVert::col);
         }
+        else if (config.vertexInput.type == PipelineConfig::VertexInput::Type::Line)
+        {
+            // Debug line vertex input (pos + color)
+            vertexInputBindings.resize(1);
+            vertexInputBindings[0].binding = 0;
+            vertexInputBindings[0].stride = sizeof(LineVertex);
+            vertexInputBindings[0].inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+
+            vertexInputAttributes.resize(2);
+            vertexInputAttributes[0].binding = 0;
+            vertexInputAttributes[0].location = 0;
+            vertexInputAttributes[0].format = VK_FORMAT_R32G32B32_SFLOAT;
+            vertexInputAttributes[0].offset = offsetof(LineVertex, pos);
+
+            vertexInputAttributes[1].binding = 0;
+            vertexInputAttributes[1].location = 1;
+            vertexInputAttributes[1].format = VK_FORMAT_R32G32B32_SFLOAT;
+            vertexInputAttributes[1].offset = offsetof(LineVertex, color);
+        }
 
         std::vector<VkPipelineShaderStageCreateInfo> shaderStagesCI =
             shaderManager.createPipelineShaderStageCIs(this->name);
@@ -224,7 +243,7 @@ namespace vkengine
         // ========================================================================
         VkPipelineInputAssemblyStateCreateInfo inputAssemblyStateCI{};
         inputAssemblyStateCI.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
-        inputAssemblyStateCI.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+        inputAssemblyStateCI.topology = config.topology;
         inputAssemblyStateCI.primitiveRestartEnable = VK_FALSE;
 
         // ========================================================================

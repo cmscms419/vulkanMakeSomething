@@ -120,12 +120,17 @@ struct PipelineConfig
         {
             None,
             ImGui,
-            Standard
+            Standard,
+            Line
         } type = Type::None;
         // None: No vertex input (shader-generated geometry)
         // ImGui: Custom ImGui vertex format
         // Standard: Standard 3D vertex with Vertex::getAttributeDescriptions()
+        // Line: LineVertex (pos+color) — debug line rendering
     } vertexInput;
+
+    // Primitive topology (default TRIANGLE_LIST — 대부분의 파이프라인이 이 값 사용)
+    VkPrimitiveTopology topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 
     // Depth/Stencil configuration
     struct DepthStencil
@@ -201,6 +206,7 @@ struct PipelineConfig
     static PipelineConfig createSsaoBlur();
     static PipelineConfig createDeferredLighting();
     static PipelineConfig createTriangle();
+    static PipelineConfig createDebugLine();
 };
 
 enum class ResourceAccess : cUint16_t
