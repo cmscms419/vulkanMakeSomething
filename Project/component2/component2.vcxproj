@@ -12,6 +12,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\app\component2\Application.cpp" />
+    <ClCompile Include="..\..\app\component2\CalculatePhysicsSimulation.cpp" />
     <ClCompile Include="..\..\app\component2\Camera2.cpp" />
     <ClCompile Include="..\..\app\component2\imgui\imgui.cpp" />
     <ClCompile Include="..\..\app\component2\imgui\imgui_demo.cpp" />
@@ -27,6 +28,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\include\component2\Application.h" />
+    <ClInclude Include="..\..\include\component2\CalculatePhysicsSimulation.h" />
     <ClInclude Include="..\..\include\component2\Camera2.h" />
     <ClInclude Include="..\..\include\component2\VKengine2.h" />
     <ClInclude Include="..\..\include\component2\VKgui.h" />

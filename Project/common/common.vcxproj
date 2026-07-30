@@ -18,7 +18,8 @@
     <ClInclude Include="..\..\include\common\log.h" />
     <ClInclude Include="..\..\include\common\macros.h" />
     <ClInclude Include="..\..\include\common\vkmath.h" />
-    <ClInclude Include="..\..\include\common\VectorCMS.h">
+    <ClInclude Include="..\..\include\common\VectorCMS.h" />
+    <ClInclude Include="..\..\include\common\random.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClInclude>

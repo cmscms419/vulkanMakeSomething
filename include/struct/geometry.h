@@ -3,6 +3,16 @@
 
 #include "common.h"
 
+enum class AABBType
+{
+    None,
+    Plane,
+    Box,
+    Sphere
+};
+
+
+
 struct Plane
 {
     cVec3 normal;
@@ -36,6 +46,29 @@ struct AABB
 
     // Transform AABB by matrix
     AABB transform(const cMat4& matrix) const;
+
+    static AABB fromCenterExtents(const cVec3& center, const cVec3& halfExtents) {
+        return AABB(center - halfExtents, center + halfExtents);
+    }
+
+    cBool intersects(const AABB& other) const {
+        return (min.x <= other.max.x && max.x >= other.min.x) &&
+               (min.y <= other.max.y && max.y >= other.min.y) &&
+               (min.z <= other.max.z && max.z >= other.min.z);
+    }
+};
+
+struct Sphere
+{
+    cVec3 center;
+    cFloat radius;
+
+    Sphere() = default;
+    Sphere(const cVec3& center, cFloat radius) : center(center), radius(radius) {}
+
+    cBool intersects(const Sphere& other) const;
+    cBool intersects(const cVec3& min, const cVec3& max) const;
+    
 };
 
 #endif // !INCLUDE_GEOMETRY_H_

@@ -9,6 +9,8 @@
 typedef glm::vec2 cVec2;
 typedef glm::vec3 cVec3;
 typedef glm::vec4 cVec4;
+typedef glm::ivec2 cIvec2;
+typedef glm::ivec3 cIvec3;
 typedef glm::ivec4 cIvec4;
 typedef glm::mat4 cMat4;
 typedef glm::quat cQuat;

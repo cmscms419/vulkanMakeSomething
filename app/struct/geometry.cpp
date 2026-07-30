@@ -39,3 +39,24 @@ AABB AABB::transform(const cMat4& matrix) const
 
     return AABB(newMin, newMax);
 }
+
+cBool Sphere::intersects(const Sphere &other) const
+{
+    cFloat distanceSquared = glm::length(center - other.center);
+
+    cFloat radiusSum = radius + other.radius;
+    
+    return distanceSquared <= (radiusSum * radiusSum);
+}
+
+cBool Sphere::intersects(const cVec3& min, const cVec3& max) const
+{
+    // Find the closest point on the AABB to the sphere's center
+    cVec3 closestPoint = glm::clamp(center, min, max);
+
+    // Calculate the distance from the sphere's center to this closest point
+    cFloat distanceSquared = glm::length(closestPoint - center);
+
+    // If the distance is less than or equal to the radius squared, they intersect
+    return distanceSquared <= (radius * radius);
+}
