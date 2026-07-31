@@ -327,6 +327,7 @@ namespace vkengine
         this->allocatedSize = other.allocatedSize;
         this->bufferInfo = other.bufferInfo;
         this->descriptorType = other.descriptorType;
+        this->descriptorCount = other.descriptorCount;
 
         other.buffer = VK_NULL_HANDLE;
         other.memory = VK_NULL_HANDLE;
