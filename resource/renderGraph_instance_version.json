@@ -1,0 +1,139 @@
+{
+    "passes": [
+        {
+            "name": "shadow",
+            "shaderResources": [
+                {
+                    "handle": "shadowDepth",
+                    "access": "DepthAttachmentWrite"
+                }
+            ]
+        },
+        {
+            "name": "pbrdeferred",
+            "shaderResources": [
+                {
+                    "handle": "shadowDepth",
+                    "access": "ShaderReadOnly"
+                },
+                {
+                    "handle": "depthStencil",
+                    "access": "DepthAttachmentWrite"
+                },
+                {
+                    "handle": "gAlbedo",
+                    "access": "ColorAttachmentWrite"
+                },
+                {
+                    "handle": "gNormal",
+                    "access": "ColorAttachmentWrite"
+                },
+                {
+                    "handle": "gPosition",
+                    "access": "ColorAttachmentWrite"
+                },
+                {
+                    "handle": "gMaterial",
+                    "access": "ColorAttachmentWrite"
+                }
+            ]
+        },
+        {
+            "name": "instanced",
+            "shaderResources": [
+                {
+                    "handle": "shadowDepth",
+                    "access": "ShaderReadOnly"
+                },
+                {
+                    "handle": "depthStencil",
+                    "access": "DepthAttachmentWrite"
+                },
+                {
+                    "handle": "gAlbedo",
+                    "access": "ColorAttachmentWrite"
+                },
+                {
+                    "handle": "gNormal",
+                    "access": "ColorAttachmentWrite"
+                },
+                {
+                    "handle": "gPosition",
+                    "access": "ColorAttachmentWrite"
+                },
+                {
+                    "handle": "gMaterial",
+                    "access": "ColorAttachmentWrite"
+                }
+            ]
+        },
+        {
+            "name": "skybox",
+            "shaderResources": [
+                {
+                    "handle": "depthStencil",
+                    "access": "DepthAttachmentWrite"
+                },
+                {
+                    "handle": "DeferredToCompute",
+                    "access": "ColorAttachmentWrite"
+                }
+            ]
+        },
+        {
+            "name": "debugLine",
+            "shaderResources": [
+                {
+                    "handle": "depthStencil",
+                    "access": "DepthAttachmentWrite"
+                },
+                {
+                    "handle": "DeferredToCompute",
+                    "access": "ColorAttachmentWrite"
+                }
+            ]
+        },
+        {
+            "name": "lightdeferred",
+            "shaderResources": [
+                {
+                    "handle": "depthStencil",
+                    "access": "NOTTHING"
+                },
+                {
+                    "handle": "LightDeferred",
+                    "access": "NOTTHING"
+                },
+                {
+                    "handle": "DeferredToCompute",
+                    "access": "NOTTHING"
+                },
+                {
+                    "handle": "gAlbedo",
+                    "access": "NOTTHING"
+                },
+                {
+                    "handle": "gNormal",
+                    "access": "NOTTHING"
+                },
+                {
+                    "handle": "gPosition",
+                    "access": "NOTTHING"
+                },
+                {
+                    "handle": "gMaterial",
+                    "access": "NOTTHING"
+                }
+            ]
+        },
+        {
+            "name": "postProcess",
+            "shaderResources": [
+                {
+                    "handle": "LightDeferred",
+                    "access": "ShaderReadOnly"
+                }
+            ]
+        }
+    ]
+}
