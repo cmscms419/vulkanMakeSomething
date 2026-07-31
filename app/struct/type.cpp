@@ -215,3 +215,14 @@ bool Vertex2::hasValidBoneData() const
         this->BoneIndices.z >= 0 || 
         this->BoneIndices.w >= 0);
 }
+
+VkVertexInputAttributeDescription InstanceData::getAttributeDescriptionsBasic()
+{
+    VkVertexInputAttributeDescription attributeDescription{};
+    attributeDescription.binding = 0;
+    attributeDescription.location = 0;
+    attributeDescription.format = VK_FORMAT_R32G32B32A32_SFLOAT;
+    attributeDescription.offset = offsetof(InstanceData, TRS);
+
+    return attributeDescription;
+}

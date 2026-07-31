@@ -171,6 +171,36 @@ struct Particle {
     }
 };
 
+struct InstanceData {
+    alignas(16) cMat4 TRS; // Transformation matrix (Translation, Rotation, Scale)
+
+    InstanceData() : TRS(1.0f) {} // Default constructor initializes to identity matrix
+    InstanceData(const cMat4& trs) : TRS(trs) {} // Constructor with transformation matrix
+    InstanceData(const cVec3& pos, const cVec3& rot, const cVec3& scale) {
+        cMat4 translation = glm::translate(cMat4(1.0f), pos);
+        
+        cMat4 rotationX = glm::rotate(cMat4(1.0f), glm::radians(rot.x), cVec3(1.0f, 0.0f, 0.0f));
+        cMat4 rotationY = glm::rotate(cMat4(1.0f), glm::radians(rot.y), cVec3(0.0f, 1.0f, 0.0f));
+        cMat4 rotationZ = glm::rotate(cMat4(1.0f), glm::radians(rot.z), cVec3(0.0f, 0.0f, 1.0f));
+        cMat4 rotation = rotationZ * rotationY * rotationX; // Note: Order of rotations matters
+        cMat4 scaling = glm::scale(cMat4(1.0f), scale);
+
+        TRS = translation * rotation * scaling;
+    }
+
+    static VkVertexInputBindingDescription getBindingDescription() {
+        VkVertexInputBindingDescription bindingDescription{};
+        bindingDescription.binding = 0;
+        bindingDescription.stride = sizeof(InstanceData);
+        bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_INSTANCE;
+
+        return bindingDescription;
+    }
+
+    static VkVertexInputAttributeDescription getAttributeDescriptionsBasic();
+
+};
+
 struct LineVertex {
     cVec3 pos;
     cVec3 color;

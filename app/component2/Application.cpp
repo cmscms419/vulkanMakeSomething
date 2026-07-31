@@ -26,6 +26,7 @@ namespace vkengine
                             {"shadowMap", {"vertshadowMap.spv", "fragshadowMap.spv"}},
                             {"pbrdeferred", {"vertpbrdeferred.spv", "fragpbrdeferred.spv"}},
                             {"gui", {"vertimgui.spv", "fragimgui.spv"}},
+                            {"instanced", {"vertphysicsInstance.spv", "fragphysicsInstance.spv"}},
                             {"sky", {"vertskybox2.spv", "fragskybox2.spv"}},
                             {"debugLine", {"vertdebugLine.spv", "fragdebugLine.spv"}},
                             {"post", {"vertpost.spv", "fragpost.spv"}},

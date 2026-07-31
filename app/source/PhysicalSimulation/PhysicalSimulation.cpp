@@ -31,11 +31,19 @@ namespace vkengine
         cFloat sphereRadius = glm::length(sMax - sMin) * 0.5f * sphereScale;
 
         CalculatePhysicsSimulation::Config cfg;
-        cfg.objectCount = static_cast<cUint32_t>(models.size() - 1); // Box 제외
+        // cfg.objectCount = static_cast<cUint32_t>(models.size() - 1); // Box 제외
+        cfg.objectCount = this->instanceCount; // Sphere 개수
         cfg.objectRadius = sphereRadius;
         cfg.worldBounds = boxBounds;
 
         physics = std::make_unique<CalculatePhysicsSimulation>(cfg);
+
+        this->Renderer.createInstanceBuffers(this->instanceCount);
+        
+        this->sphereInstanceData.reserve(instanceCount);
+        this->sphereInstanceData.resize(instanceCount);
+
+
     }
     void PhysicalSimulation::update()
     {
@@ -95,26 +103,23 @@ namespace vkengine
             this->Renderer.getSceneDataUBO().cameraPos = camera->getPos();
 
             this->Renderer.clearDebugLines();
-            this->Renderer.addDebugAABB(models[0].Meshes()[0].worldBounds, cVec3(1,1,0)); // 박스 경계
+            this->Renderer.addDebugAABB(models[0].Meshes()[0].worldBounds, cVec3(1, 1, 0)); // 박스 경계
 
             if (physics)
             {
                 physics->update(deltaTime);
-
+                sphereInstanceData.clear();
                 for (cUint32_t i = 0; i < physics->ObjectCount(); ++i)
                 {
-                    VKModel &sphere = models[i + 1];
-                    cMat4 m = glm::translate(cMat4(1.0f), physics->Position(i));
-                    m = glm::scale(m, cVec3(sphereScale));
-                    sphere.ModelResource().modelMatrix = m;
-                    sphere.Visible() = physics->IsVisible(i); // 패턴B로 사라진 프레임엔 렌더 스킵
+                    cFloat r = physics->Radius(i);
 
-                    if (physics->IsVisible(i))
-                    {
-                        AABB sphereBox = AABB::fromCenterExtents(physics->Position(i), cVec3(physics->Radius(i)));
-                        this->Renderer.addDebugAABB(sphereBox, cVec3(0, 1, 0)); // 충돌 판정에 실제 쓰이는 AABB
-                    }
+                    cMat4 m = glm::translate(cMat4(1.0f), physics->Position(i));
+                    m = glm::scale(m, cVec3(r * 2.0f));
+                    cFloat visible = physics->IsVisible(i) ? 1.0f : 0.0f; // 패턴B로 재생성 대기 중이면 숨김
+                    sphereInstanceData.push_back(InstanceData(m));
                 }
+                // 테스트를 위해 지우는 것은 일부러 제거
+                this->Renderer.getSphereinstanceBuffer(currentFrame).updateData(sphereInstanceData.data(), sizeof(InstanceData) * sphereInstanceData.size(), 0);
             }
 
             this->updateGui();

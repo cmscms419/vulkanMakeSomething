@@ -119,3 +119,16 @@ PipelineConfig PipelineConfig::createDebugLine()
     config.multisample.type = PipelineConfig::Multisample::Type::Variable;
     return config;
 }
+
+PipelineConfig PipelineConfig::createInstanced()
+{
+    PipelineConfig config;
+    config.name = "instanced";
+    config.requiredFormats = {true, true, true};
+    config.vertexInput.type = PipelineConfig::VertexInput::Type::Standard;
+    config.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+    config.depthStencil = {true, true, VK_COMPARE_OP_LESS_OR_EQUAL}; // pbrdeferred와 동일
+    config.multisample.type = PipelineConfig::Multisample::Type::Variable;
+    config.rasterization.frontFace = VK_FRONT_FACE_CLOCKWISE;
+    return config;
+}

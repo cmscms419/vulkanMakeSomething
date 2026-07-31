@@ -84,6 +84,8 @@ namespace vkengine
         void addDebugLine(const cVec3 &a, const cVec3 &b, const cVec3 &color);
         void addDebugAABB(const AABB &box, const cVec3 &color);
 
+        void createInstanceBuffers(cUint32_t instanceCount);
+
         // UBO getter 함수들 - 각 유니폼 버퍼 오브젝트의 현재 데이터 반환
         SceneDataUBO &getSceneDataUBO()
         {
@@ -105,6 +107,10 @@ namespace vkengine
         {
             return this->postOptionsUBO;
         }
+        VKBaseBuffer2 &getSphereinstanceBuffer(cUint32_t frameIndex)
+        {
+            return this->sphereinstanceBuffers[frameIndex];
+        }
 
     private:
         const cUint32_t MaxFramesFlight;
@@ -124,28 +130,31 @@ namespace vkengine
         VkViewport currentViewport;
         VkRect2D currentScissor;
         VKBaseBuffer2 materialStorageBuffer;
+        std::vector<VKBaseBuffer2> sphereinstanceBuffers; // Sphere 인스턴스 데이터용 버퍼
+
         VKtexturesTable table;
         DescriptorSetHander materialDescriptorSet;
-
+        
         SceneDataUBO sceneDataUBO;
         SkyOptionsUBO skyOptionsUBO;
         OptionsUniform optionsUBO;
         BoneDataUniform boneDataUBO;
         PostProcessingOptionsUBO postOptionsUBO;
         SSAOParamsUBO ssaoParamsUBO;
-
+        
         std::vector<VKUniformBuffer2<SceneDataUBO>> sceneDataUniform;
         std::vector<VKUniformBuffer2<SkyOptionsUBO>> skyOptionsUniform;
         std::vector<VKUniformBuffer2<OptionsUniform>> optionsUniform;
         std::vector<VKUniformBuffer2<BoneDataUniform>> boneDataUniform;
         std::vector<VKUniformBuffer2<PostProcessingOptionsUBO>> postOptionsUniform;
         std::vector<VKUniformBuffer2<SSAOParamsUBO>> ssaoParamsUniform;
-
+        
         std::vector<DescriptorSetHander> SceneSkyOptionsStates{};
         std::vector<DescriptorSetHander> SceneOptionsBoneDataSets{};
         std::vector<DescriptorSetHander> PostDescriptorSets{};
         std::vector<DescriptorSetHander> lightDeferredDescriptorSets{};
         std::vector<DescriptorSetHander> ssaoDescriptorSets{};
+        std::vector<DescriptorSetHander> physicsInstanceDescriptorSets; // Sphere 인스턴스 데이터용 디스크립터셋
         DescriptorSetHander ssaoBlurDescriptorSet;
 
         VKSamplerHandler samplerLinearRepeat;
@@ -184,6 +193,7 @@ namespace vkengine
         void makePostProcessPass(VkCommandBuffer cmd, cUint32_t currentFrame, cUint32_t imageIndex);
         void makeSkyboxProcessPass(VkCommandBuffer cmd, cUint32_t currentFrame, cUint32_t imageIndex);
         void makeDebugLinePass(VkCommandBuffer cmd, cUint32_t currentFrame, cUint32_t imageIndex);
+        void makeInstancePass(VkCommandBuffer cmd, cUint32_t currentFrame, cUint32_t imageIndex);
 
         // Helper functions for creating rendering structures
         // 컬러 어태치먼트 정보 생성

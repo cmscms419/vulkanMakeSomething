@@ -121,12 +121,14 @@ struct PipelineConfig
             None,
             ImGui,
             Standard,
-            Line
+            Line,
+            InstanceData
         } type = Type::None;
         // None: No vertex input (shader-generated geometry)
         // ImGui: Custom ImGui vertex format
         // Standard: Standard 3D vertex with Vertex::getAttributeDescriptions()
         // Line: LineVertex (pos+color) — debug line rendering
+        // InstanceData: InstanceData (TRS matrix) — instanced rendering
     } vertexInput;
 
     // Primitive topology (default TRIANGLE_LIST — 대부분의 파이프라인이 이 값 사용)
@@ -207,6 +209,7 @@ struct PipelineConfig
     static PipelineConfig createDeferredLighting();
     static PipelineConfig createTriangle();
     static PipelineConfig createDebugLine();
+    static PipelineConfig createInstanced();
 };
 
 enum class ResourceAccess : cUint16_t

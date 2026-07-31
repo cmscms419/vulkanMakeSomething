@@ -184,6 +184,19 @@ namespace vkengine
         this->update();
     }
 
+    void VKBaseBuffer2::createDynamicStorageBuffer(VkDeviceSize size, VkBufferUsageFlags additionalUsage)
+    {
+        this->descriptorCount = 1;
+        this->descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+        this->hostVisible = true;
+
+        this->create(VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | additionalUsage,
+                     VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+                     size, nullptr);
+
+        this->update();
+    }
+
     void VKBaseBuffer2::updateData(const void *data, VkDeviceSize size, VkDeviceSize offset)
     {
         bool check = true;

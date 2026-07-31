@@ -43,6 +43,12 @@ namespace vkengine
         this->skyOptionsUniform[currentFrame].updateData();
         this->postOptionsUniform[currentFrame].updateData();
         this->ssaoParamsUniform[currentFrame].updateData();
+
+        // instance만 업데이트
+        if (this->currentModels && this->currentModels->at(1).Visible())
+        {
+            this->currentModels->at(1).Visible() = false;
+        }
     }
     void VKRenderer::rendering(VkCommandBuffer cmd, cUint32_t currentFrame, cUint32_t imageIndex, std::vector<VKModel> &models, VkViewport viewport, VkRect2D scissor)
     {
@@ -64,7 +70,7 @@ namespace vkengine
         this->renderGraph.registerResource("ssaoRaw", this->images["ssaoRaw"]);                     // SSAO 원본 출력 등록
         this->renderGraph.registerResource("ssaoBlur", this->images["ssaoBlur"]);                   // SSAO 블러 출력 등록
 
-        this->renderGraph.loadFromJson(this->assetsPath + "/renderGraph.json");
+        this->renderGraph.loadFromJson(this->assetsPath + "/renderGraph_instance_version.json");
 
         this->renderGraph.registerPassFunction("shadow",
                                                [this](VkCommandBuffer cmd, cUint32_t frameIndex, cUint32_t imageIndex)
@@ -111,6 +117,11 @@ namespace vkengine
                                                [this](VkCommandBuffer cmd, cUint32_t frameIndex, cUint32_t imageIndex)
                                                {
                                                    this->makeSSAOBlurPass(cmd, frameIndex, imageIndex);
+                                               });
+        this->renderGraph.registerPassFunction("instanced",
+                                               [this](VkCommandBuffer cmd, cUint32_t frameIndex, cUint32_t imageIndex)
+                                               {
+                                                   this->makeInstancePass(cmd, frameIndex, imageIndex);
                                                });
 
         this->renderGraph.compile();
@@ -164,6 +175,10 @@ namespace vkengine
                                                    std::nullopt, VK_SAMPLE_COUNT_1_BIT));
         pipelines.emplace("ssaoBlur", VKPipeLineHandle(ctx, shaderManager, PipelineConfig::createSsaoBlur(), std::vector<VkFormat>{},
                                                        std::nullopt, VK_SAMPLE_COUNT_1_BIT));
+        pipelines.emplace("instanced", VKPipeLineHandle(ctx, shaderManager, PipelineConfig::createInstanced(),
+                                                        std::vector<VkFormat>{VK_FORMAT_R8G8B8A8_UNORM, VK_FORMAT_R16G16B16A16_SFLOAT,
+                                                                              VK_FORMAT_R32G32B32A32_SFLOAT, VK_FORMAT_R16G16B16A16_SFLOAT},
+                                                        depthFormat, VK_SAMPLE_COUNT_1_BIT));
     }
 
     void VKRenderer::createTextures(cUint32_t swapchainWidth, cUint32_t swapchainHeight)
@@ -777,6 +792,24 @@ namespace vkengine
         }
     }
 
+    void VKRenderer::createInstanceBuffers(cUint32_t instanceCount)
+    {
+        for (cUint32_t i = 0; i < MAX_FRAMES_IN_FLIGHT; ++i)
+        {
+            this->sphereinstanceBuffers.emplace_back(this->ctx);
+            this->sphereinstanceBuffers.back().createDynamicStorageBuffer(sizeof(InstanceData) * instanceCount, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
+            this->sphereinstanceBuffers.back().map();
+        }
+
+        this->physicsInstanceDescriptorSets.resize(MAX_FRAMES_IN_FLIGHT);
+
+        for (cUint32_t i = 0; i < MAX_FRAMES_IN_FLIGHT; ++i)
+        {
+            this->physicsInstanceDescriptorSets[i].create(this->ctx, {std::ref(this->sceneDataUniform[i].Buffer()),
+                                                                      std::ref(this->sphereinstanceBuffers[i])});
+        }
+    }
+
     void VKRenderer::makeDebugLinePass(VkCommandBuffer cmd, cUint32_t currentFrame, cUint32_t imageIndex)
     {
         if (debugLineVertices.empty())
@@ -812,6 +845,48 @@ namespace vkengine
         vkCmdBindVertexBuffers(cmd, 0, 1, vertexBuffers, offsets);
 
         vkCmdDraw(cmd, static_cast<cUint32_t>(debugLineVertices.size()), 1, 0, 0);
+        vkCmdEndRendering(cmd);
+    }
+
+    void VKRenderer::makeInstancePass(VkCommandBuffer cmd, cUint32_t currentFrame, cUint32_t imageIndex)
+    {
+        VkRect2D renderArea = {0, 0, this->currentScissor.extent.width, this->currentScissor.extent.height};
+
+        std::vector<VkRenderingAttachmentInfo> colorAttachments{};
+        VkRenderingAttachmentInfo depthAttachment = createDepthAttachment(this->images["depthStencil"]->getImageView(), VK_ATTACHMENT_LOAD_OP_LOAD);
+        
+        colorAttachments.push_back(createColorAttachment(this->images["gAlbedo"]->getImageView(), VK_ATTACHMENT_LOAD_OP_LOAD));
+        colorAttachments.push_back(createColorAttachment(this->images["gNormal"]->getImageView(), VK_ATTACHMENT_LOAD_OP_LOAD));
+        colorAttachments.push_back(createColorAttachment(this->images["gPosition"]->getImageView(), VK_ATTACHMENT_LOAD_OP_LOAD));
+        colorAttachments.push_back(createColorAttachment(this->images["gMaterial"]->getImageView(), VK_ATTACHMENT_LOAD_OP_LOAD));
+
+        VkRenderingInfo renderingInfo{VK_STRUCTURE_TYPE_RENDERING_INFO_KHR};
+        renderingInfo.renderArea = renderArea;
+        renderingInfo.layerCount = 1;
+        renderingInfo.colorAttachmentCount = static_cast<cUint32_t>(colorAttachments.size());
+        renderingInfo.pColorAttachments = colorAttachments.data();
+        renderingInfo.pDepthAttachment = &depthAttachment;
+
+        vkCmdBeginRendering(cmd, &renderingInfo);
+        vkCmdSetViewport(cmd, 0, 1, &this->currentViewport);
+        vkCmdSetScissor(cmd, 0, 1, &this->currentScissor);
+
+        vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelines.at("instanced").getPipeline());
+
+        VkBuffer vertexBuffers[] = {this->currentModels->at(1).Meshes()[0].vertex->Buffer()};
+        VkDeviceSize offsets[] = {0};
+        vkCmdBindVertexBuffers(cmd, 0, 1, vertexBuffers, offsets); // 바인딩 0 (메쉬)만 — 바인딩 1 없음
+        vkCmdBindIndexBuffer(cmd, this->currentModels->at(1).Meshes()[0].index->Buffer(), 0, VK_INDEX_TYPE_UINT32);
+
+        const auto sets = std::vector{physicsInstanceDescriptorSets[currentFrame].get(), materialDescriptorSet.get()};
+        vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelines.at("instanced").getPipelineLayout(),
+                                0, sets.size(), sets.data(), 0, nullptr);
+
+        cUint32_t materialIndex = this->currentModels->at(1).Meshes()[0].materialIndex;
+        vkCmdPushConstants(cmd, pipelines.at("instanced").getPipelineLayout(),
+                           VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(materialIndex), &materialIndex);
+
+        vkCmdDrawIndexed(cmd, static_cast<cUint32_t>(this->currentModels->at(1).Meshes()[0].indices.size()), static_cast<cUint32_t>(10000), 0, 0, 0);
         vkCmdEndRendering(cmd);
     }
 
