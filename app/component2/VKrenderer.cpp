@@ -1058,8 +1058,6 @@ namespace vkengine
 
     void VKRenderer::updateBoneData(const std::vector<VKModel> &models, uint32_t currentFrame)
     {
-        PRINT_TO_LOGGER("Updating bone data for %zu models", models.size());
-
         // Reset bone data
         boneDataUBO.animationData.x = 0.0f;
         for (int i = 0; i < MAX_BONES; ++i)
