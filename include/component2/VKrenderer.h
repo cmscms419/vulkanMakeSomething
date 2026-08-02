@@ -31,6 +31,14 @@ namespace vkengine
         cUint32_t renderedMeshes = 0;
     };
 
+    struct InstanceConfig
+    {
+        cUint32_t maxInstances = 0;             // 최대 인스턴스 수
+        cUint32_t currentInstanceCount = 0;     // 현재 인스턴스 수
+        cUint32_t currentModelIndex = 0;        // 현재 모델 인덱스
+        cBool isInstanced = false;              // 인스턴싱 활성화 여부
+    };
+
     class VKRenderer
     {
     public:
@@ -84,7 +92,9 @@ namespace vkengine
         void addDebugLine(const cVec3 &a, const cVec3 &b, const cVec3 &color);
         void addDebugAABB(const AABB &box, const cVec3 &color);
 
-        void createInstanceBuffers(cUint32_t instanceCount);
+        void createInstanceBuffers(cUint32_t maxInstanceCount);
+        void createInstanceConfig(cUint32_t modelIndex);
+        void updateInstance(cUint32_t instanceCount);
 
         // UBO getter 함수들 - 각 유니폼 버퍼 오브젝트의 현재 데이터 반환
         SceneDataUBO &getSceneDataUBO()
@@ -111,6 +121,10 @@ namespace vkengine
         {
             return this->sphereinstanceBuffers[frameIndex];
         }
+        DrawModelResource &getDrawInstanceResource()
+        {
+            return this->instanceData;
+        }
 
     private:
         const cUint32_t MaxFramesFlight;
@@ -131,6 +145,8 @@ namespace vkengine
         VkRect2D currentScissor;
         VKBaseBuffer2 materialStorageBuffer;
         std::vector<VKBaseBuffer2> sphereinstanceBuffers; // Sphere 인스턴스 데이터용 버퍼
+        InstanceConfig instanceConfig;
+        DrawModelResource instanceData;      // 인스턴스 데이터 구조체
 
         VKtexturesTable table;
         DescriptorSetHander materialDescriptorSet;

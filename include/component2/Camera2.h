@@ -44,6 +44,7 @@ namespace vkengine {
             void setYaw(cFloat yaw) { this->yaw = yaw; }
             void setPitch(cFloat pitch) { this->pitch = pitch; }
             void setFov(cFloat fov) { this->fov = fov; }
+            void setSpeed(cFloat speed) { this->speed = speed; }
 
             void MoveForward(cFloat deltaTime)
             {

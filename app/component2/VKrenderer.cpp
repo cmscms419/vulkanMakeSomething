@@ -792,12 +792,12 @@ namespace vkengine
         }
     }
 
-    void VKRenderer::createInstanceBuffers(cUint32_t instanceCount)
+    void VKRenderer::createInstanceBuffers(cUint32_t maxInstanceCount)
     {
         for (cUint32_t i = 0; i < MAX_FRAMES_IN_FLIGHT; ++i)
         {
             this->sphereinstanceBuffers.emplace_back(this->ctx);
-            this->sphereinstanceBuffers.back().createDynamicStorageBuffer(sizeof(InstanceData) * instanceCount, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
+            this->sphereinstanceBuffers.back().createDynamicStorageBuffer(sizeof(InstanceData) * maxInstanceCount, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
             this->sphereinstanceBuffers.back().map();
         }
 
@@ -808,6 +808,15 @@ namespace vkengine
             this->physicsInstanceDescriptorSets[i].create(this->ctx, {std::ref(this->sceneDataUniform[i].Buffer()),
                                                                       std::ref(this->sphereinstanceBuffers[i])});
         }
+
+        this->instanceConfig.currentInstanceCount = maxInstanceCount;
+        this->instanceConfig.maxInstances = maxInstanceCount;
+        this->instanceConfig.isInstanced = (maxInstanceCount > 0);
+    }
+
+    void VKRenderer::updateInstance(cUint32_t instanceCount)
+    {
+        this->instanceConfig.currentInstanceCount = instanceCount;
     }
 
     void VKRenderer::makeDebugLinePass(VkCommandBuffer cmd, cUint32_t currentFrame, cUint32_t imageIndex)
@@ -850,6 +859,15 @@ namespace vkengine
 
     void VKRenderer::makeInstancePass(VkCommandBuffer cmd, cUint32_t currentFrame, cUint32_t imageIndex)
     {
+        if (!instanceConfig.isInstanced || instanceConfig.maxInstances == 0 || instanceConfig.currentInstanceCount > instanceConfig.maxInstances)
+        {
+            PRINT_TO_LOGGER("instanceConfig.isInstanced: " + std::to_string(instanceConfig.isInstanced));
+            PRINT_TO_LOGGER("instanceConfig.maxInstances: " + std::to_string(instanceConfig.maxInstances));
+            PRINT_TO_LOGGER("instanceConfig.currentInstanceCount: " + std::to_string(instanceConfig.currentInstanceCount));
+            PRINT_TO_LOGGER("instanceConfig.maxInstances: " + std::to_string(instanceConfig.maxInstances));
+            return;
+        }
+
         VkRect2D renderArea = {0, 0, this->currentScissor.extent.width, this->currentScissor.extent.height};
 
         std::vector<VkRenderingAttachmentInfo> colorAttachments{};
@@ -873,20 +891,20 @@ namespace vkengine
 
         vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelines.at("instanced").getPipeline());
 
-        VkBuffer vertexBuffers[] = {this->currentModels->at(1).Meshes()[0].vertex->Buffer()};
+        VkBuffer vertexBuffers[] = {this->currentModels->at(instanceConfig.currentModelIndex).Meshes()[0].vertex->Buffer()};
         VkDeviceSize offsets[] = {0};
         vkCmdBindVertexBuffers(cmd, 0, 1, vertexBuffers, offsets); // 바인딩 0 (메쉬)만 — 바인딩 1 없음
-        vkCmdBindIndexBuffer(cmd, this->currentModels->at(1).Meshes()[0].index->Buffer(), 0, VK_INDEX_TYPE_UINT32);
+        vkCmdBindIndexBuffer(cmd, this->currentModels->at(instanceConfig.currentModelIndex).Meshes()[0].index->Buffer(), 0, VK_INDEX_TYPE_UINT32);
 
         const auto sets = std::vector{physicsInstanceDescriptorSets[currentFrame].get(), materialDescriptorSet.get()};
         vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelines.at("instanced").getPipelineLayout(),
-                                0, sets.size(), sets.data(), 0, nullptr);
+                                0, static_cast<cUint32_t>(sets.size()), sets.data(), 0, nullptr);
 
-        cUint32_t materialIndex = this->currentModels->at(1).Meshes()[0].materialIndex;
         vkCmdPushConstants(cmd, pipelines.at("instanced").getPipelineLayout(),
-                           VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(materialIndex), &materialIndex);
+                           VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, 
+                           sizeof(instanceData), &instanceData);
 
-        vkCmdDrawIndexed(cmd, static_cast<cUint32_t>(this->currentModels->at(1).Meshes()[0].indices.size()), static_cast<cUint32_t>(10000), 0, 0, 0);
+        vkCmdDrawIndexed(cmd, static_cast<cUint32_t>(this->currentModels->at(instanceConfig.currentModelIndex).Meshes()[0].indices.size()), this->instanceConfig.currentInstanceCount, 0, 0, 0);
         vkCmdEndRendering(cmd);
     }
 

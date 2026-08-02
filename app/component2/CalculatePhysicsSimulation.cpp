@@ -9,15 +9,15 @@ namespace vkengine
     CalculatePhysicsSimulation::CalculatePhysicsSimulation(const Config &cfg)
         : config(cfg)
     {
-        cellSize = config.objectRadius * 1.5f;
 
-        positions.resize(config.objectCount);
-        velocities.resize(config.objectCount);
-        radii.assign(config.objectCount, config.objectRadius);
-        invisibleFramesLeft.assign(config.objectCount, 0);
-        collisionCooldown.assign(config.objectCount, 0);
+        this->positions.resize(config.objectCount);
+        this->velocities.resize(config.objectCount);
+        this->shaderData.resize(config.objectCount);
 
-        for (cUint32_t i = 0; i < config.objectCount; ++i)
+        this->invisibleFramesLeft.assign(config.objectCount, 0);
+        this->collisionCooldown.assign(config.objectCount, 0);
+
+        for (cUint32_t i = 0; i < config.objectCount; i++)
         {
             respawn(i);
             invisibleFramesLeft[i] = 0; // 시작할 때는 바로 보이게
@@ -36,9 +36,17 @@ namespace vkengine
         resolveCollisions(); // 4-b: 그리드 인접 셀만 검사 (기존 O(n^2) 전수비교 대체)
     }
 
+    void CalculatePhysicsSimulation::updateConfig(const Config &cfg)
+    {
+        config = cfg;
+    }
+
     void CalculatePhysicsSimulation::integrate(cFloat dt)
     {
-        for (cUint32_t i = 0; i < config.objectCount; ++i)
+        InstanceData buffer = InstanceData(cVec4(1.0f));
+        shaderData.clear();
+
+        for (cUint32_t i = 0; i < config.objectCount; i++)
         {
             if (collisionCooldown[i] > 0)
                 --collisionCooldown[i];
@@ -49,27 +57,33 @@ namespace vkengine
                 continue;
             }
             positions[i] += velocities[i] * dt;
+            
+            buffer.pos.x = positions[i].x;
+            buffer.pos.y = positions[i].y;
+            buffer.pos.z = positions[i].z;
+            buffer.pos.w = 1.0f;
+
+            shaderData.push_back(buffer);
         }
     }
 
     void CalculatePhysicsSimulation::resolveWorldBoundary()
     {
-        for (cUint32_t i = 0; i < config.objectCount; ++i)
+        for (cUint32_t i = 0; i < config.objectCount; i++)
         {
             if (invisibleFramesLeft[i] > 0)
                 continue;
 
-            cFloat r = radii[i];
             for (int axis = 0; axis < 3; ++axis)
             {
-                if (positions[i][axis] - r < config.worldBounds.min[axis])
+                if (positions[i][axis] - this->config.objectRadius < config.worldBounds.min[axis])
                 {
-                    positions[i][axis] = config.worldBounds.min[axis] + r;
+                    positions[i][axis] = config.worldBounds.min[axis] + this->config.objectRadius;
                     velocities[i][axis] = std::abs(velocities[i][axis]);
                 }
-                if (positions[i][axis] + r > config.worldBounds.max[axis])
+                if (positions[i][axis] + this->config.objectRadius > config.worldBounds.max[axis])
                 {
-                    positions[i][axis] = config.worldBounds.max[axis] - r;
+                    positions[i][axis] = config.worldBounds.max[axis] - this->config.objectRadius;
                     velocities[i][axis] = -std::abs(velocities[i][axis]);
                 }
             }
@@ -80,7 +94,7 @@ namespace vkengine
     {
         grid.clear();
 
-        for (cUint32_t i = 0; i < config.objectCount; ++i)
+        for (cUint32_t i = 0; i < config.objectCount; i++)
         {
             if (invisibleFramesLeft[i] > 0)
                 continue; // 재생성 대기 중인(안 보이는) 객체는 충돌 후보가 될 필요 없음
@@ -92,20 +106,20 @@ namespace vkengine
 
     void CalculatePhysicsSimulation::resolveCollisions()
     {
-        for (cUint32_t i = 0; i < config.objectCount; ++i)
+        for (cUint32_t i = 0; i < config.objectCount; i++)
         {
             if (invisibleFramesLeft[i] > 0 || collisionCooldown[i] > 0)
                 continue;
 
-            Sphere a = Sphere(positions[i], radii[i]);
+            Sphere a = Sphere(positions[i], this->config.objectRadius);
             cIvec3 cellOfI = worldToCell(positions[i]);
 
             cBool iConsumed = false;
-            for (int dz = -1; dz <= 1 && !iConsumed; ++dz)
+            for (int dz = -1; dz <= 1 && !iConsumed; dz++)
             {
-                for (int dy = -1; dy <= 1 && !iConsumed; ++dy)
+                for (int dy = -1; dy <= 1 && !iConsumed; dy++)
                 {
-                    for (int dx = -1; dx <= 1 && !iConsumed; ++dx)
+                    for (int dx = -1; dx <= 1 && !iConsumed; dx++)
                     {
                         auto it = grid.find(cellKey(cellOfI + cIvec3(dx, dy, dz)));
                         if (it == grid.end())
@@ -118,7 +132,7 @@ namespace vkengine
                             if (invisibleFramesLeft[j] > 0 || collisionCooldown[j] > 0)
                                 continue;
 
-                            Sphere b = Sphere(positions[j], radii[j]);
+                            Sphere b = Sphere(positions[j], this->config.objectRadius);
                             if (a.intersects(b))
                             {
                                 handleCollision(i, j);
@@ -129,7 +143,7 @@ namespace vkengine
                                     break;
                                 }
 
-                                a = Sphere(positions[i], radii[i]); // i가 반응으로 움직였을 수 있으니 갱신
+                                a = Sphere(positions[i], this->config.objectRadius); // i가 반응으로 움직였을 수 있으니 갱신
                             }
                         }
                     }
@@ -143,7 +157,6 @@ namespace vkengine
         // if (1)
         if (random::coinFlip())
         {
-
             // 패턴 C: 1차원 성분 분해 충격량 공식 (동일 질량 탄성 충돌)
             cVec3 distVec = positions[j] - positions[i];
             cFloat dist = glm::length(distVec);
@@ -178,19 +191,19 @@ namespace vkengine
         invisibleFramesLeft[i] = config.respawnInvisibleFrames;
 
         // 반지름만큼 안쪽으로 인셋해서, 재생성 직후 바로 벽에 겹치지 않게 함
-        cVec3 extents = glm::max(config.worldBounds.getExtents() - cVec3(radii[i]), cVec3(0.0f));
+        cVec3 extents = glm::max(config.worldBounds.getExtents() - cVec3(this->config.objectRadius), cVec3(0.0f));
         AABB spawnBounds = AABB::fromCenterExtents(config.worldBounds.getCenter(), extents);
 
         positions[i] = random::pointIn(spawnBounds);
-        velocities[i] = random::unitDirection() * random::randomFloat(config.minSpeed, config.maxSpeed);
+        velocities[i] = random::unitDirection() * random::randomFloat(this->config.minSpeed, this->config.maxSpeed);
     }
 
     cIvec3 CalculatePhysicsSimulation::worldToCell(const cVec3 &pos) const
     {
         return glm::ivec3(
-            static_cast<int>(std::floor(pos.x / cellSize)),
-            static_cast<int>(std::floor(pos.y / cellSize)),
-            static_cast<int>(std::floor(pos.z / cellSize)));
+            static_cast<int>(std::floor(pos.x / this->config.objectRadius)),
+            static_cast<int>(std::floor(pos.y / this->config.objectRadius)),
+            static_cast<int>(std::floor(pos.z / this->config.objectRadius)));
     }
 
     cInt64_t CalculatePhysicsSimulation::cellKey(const cIvec3 &cell) const
@@ -212,9 +225,9 @@ namespace vkengine
         return positions[i];
     }
 
-    cFloat CalculatePhysicsSimulation::Radius(cUint32_t i) const
+    cFloat CalculatePhysicsSimulation::Radius() const
     {
-        return radii[i];
+        return this->config.objectRadius;
     }
 
     cBool CalculatePhysicsSimulation::IsVisible(cUint32_t i) const

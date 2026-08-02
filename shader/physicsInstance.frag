@@ -4,9 +4,13 @@
 layout(location = 0) in vec3 fragPos;
 layout(location = 1) in vec3 fragNormal;
 layout(location = 2) in vec2 fragTexCoord;
+layout(location = 3) in vec3 fragTangent;
+layout(location = 4) in vec3 fragBitangent;
 
 // draw call당 1번만 전달 — 공유 sphere 메쉬는 머티리얼이 하나뿐이므로 인스턴스마다 다르지 않음
 layout(push_constant) uniform PushConstants {
+    mat4 model;
+    float coeffs[15];
     uint materialIndex;
 } pc;
 
@@ -43,20 +47,59 @@ vec3 encodeNormal(vec3 normal) {
 }
 
 void main() {
+
     MaterialUBO material = materialBuffer.materials[pc.materialIndex];
 
     vec4 baseColorRGBA = material.baseColorTextureIndex >= 0
         ? texture(materialTextures[nonuniformEXT(material.baseColorTextureIndex)], fragTexCoord)
         : vec4(1.0);
 
-    vec3 baseColor = material.baseColorFactor.rgb * baseColorRGBA.rgb;
-    float metallic = clamp(material.metallicFactor, 0.0, 1.0);
-    float roughness = clamp(material.roughnessFactor, 0.0, 1.0);
+    if(material.opacityTextureIndex >= 0)
+    {
+        float opacity = texture(materialTextures[nonuniformEXT(material.opacityTextureIndex)], fragTexCoord).r;
+        if(opacity < 0.08)
+            discard;
+    }
 
+    vec3 baseColor = material.baseColorFactor.rgb * baseColorRGBA.rgb;
+    float metallic = material.metallicFactor * pc.coeffs[4];
+    float roughness = material.roughnessFactor * pc.coeffs[5];
+
+    if(material.metallicRoughnessTextureIndex >= 0){
+        vec3 metallicRoughness = texture(materialTextures[nonuniformEXT(material.metallicRoughnessTextureIndex)], fragTexCoord).rgb;
+        metallic *= metallicRoughness.b; // Blue channel
+        roughness *= metallicRoughness.g; // Green channel
+    }
+
+    float ao = 1.0;
+    if(material.occlusionTextureIndex >= 0){
+        ao = texture(materialTextures[nonuniformEXT(material.occlusionTextureIndex)], fragTexCoord).r;
+    }
+
+    vec3 emissive = material.emissiveFactor.xyz;
+    if(material.emissiveTextureIndex >= 0){
+        emissive *= texture(materialTextures[nonuniformEXT(material.emissiveTextureIndex)], fragTexCoord).rgb;
+    }
+
+    // Calculate world-space normal with normal mapping
     vec3 N = normalize(fragNormal);
+    if(material.normalTextureIndex >= 0) {
+        vec3 T = normalize(fragTangent);
+        vec3 B = normalize(fragBitangent);
+        mat3 TBN = mat3(T, B, N);
+        
+        vec3 tangentNormal = texture(materialTextures[nonuniformEXT(material.normalTextureIndex)], fragTexCoord).xyz * 2.0 - 1.0;
+        if (length(tangentNormal) > 0.5)
+            N = normalize(TBN * tangentNormal);
+    }
+
+    // Output to G-Buffer
+    // Clamp material properties
+    roughness = clamp(roughness, 0.0, 1.0);
+    metallic = clamp(metallic, 0.0, 1.0);
 
     gAlbedo = vec4(baseColor, metallic);
     gNormal = vec4(encodeNormal(N), roughness);
     gPosition = vec4(fragPos, gl_FragCoord.z);
-    gMaterial = vec4(material.emissiveFactor.rgb, 1.0); // AO 텍스처 미사용 → 1.0 고정
+    gMaterial = vec4(emissive, ao);
 }

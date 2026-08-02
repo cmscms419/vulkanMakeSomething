@@ -16,16 +16,20 @@ namespace vkengine
         ~PhysicalSimulation();
 
         virtual void update() override;
+        virtual void run() override;
+        virtual void updateGui();
 
     private:
         void initializePhysics();
+        void createInstanceBuffers(cUint32_t maxInstanceCount, cUint32_t modelIndex);
+        void updateInstanceData(cUint32_t currentInstanceCount);
+
 
         std::unique_ptr<CalculatePhysicsSimulation> physics;
-        cFloat sphereScale = 0.2f; // main.cpp의 Sphere ModelConfig.setScale()과 동일한 값이어야 함
+        std::vector<InstanceData> sphereInstanceData; // Sphere 인스턴스 데이터
 
-        std::vector<InstanceData> sphereInstanceData;     // Sphere 인스턴스 데이터
-        cUint32_t instanceCount = 10000;                   // Sphere count
-
+        cUint32_t maxInstanceCount = 10000;           // 최대객수
+        cFloat speedCamera = 15.0f;                   // Camera 이동 속도
     };
 }
 
