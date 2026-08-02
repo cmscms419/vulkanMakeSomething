@@ -729,7 +729,7 @@ namespace vkengine
 
         // LOAD: G-buffer 위에 sky 추가
         // VK_ATTACHMENT_LOAD_OP_LOAD는 Vulkan VkAttachmentLoadOp 열거형 값(숫자 0)으로, 첨부 파일의 기존 콘텐츠를 보존하고 렌더링 패스 시작 시 사용할 수 있도록 해야 함을 의미합니다.
-        VkRenderingAttachmentInfo skyColorAttachment = createColorAttachment(this->images["DeferredToCompute"]->getImageView(), VK_ATTACHMENT_LOAD_OP_LOAD);
+        VkRenderingAttachmentInfo skyColorAttachment = createColorAttachment(this->images["DeferredToCompute"]->getImageView(), VK_ATTACHMENT_LOAD_OP_CLEAR);
         VkRenderingAttachmentInfo skyDepthAttachment = createDepthAttachment(this->images["depthStencil"]->getImageView(), VK_ATTACHMENT_LOAD_OP_LOAD);
 
         VkRenderingInfo skyRenderingInfo{VK_STRUCTURE_TYPE_RENDERING_INFO_KHR};
@@ -855,10 +855,10 @@ namespace vkengine
         std::vector<VkRenderingAttachmentInfo> colorAttachments{};
         VkRenderingAttachmentInfo depthAttachment = createDepthAttachment(this->images["depthStencil"]->getImageView(), VK_ATTACHMENT_LOAD_OP_LOAD);
         
-        colorAttachments.push_back(createColorAttachment(this->images["gAlbedo"]->getImageView(), VK_ATTACHMENT_LOAD_OP_LOAD));
-        colorAttachments.push_back(createColorAttachment(this->images["gNormal"]->getImageView(), VK_ATTACHMENT_LOAD_OP_LOAD));
-        colorAttachments.push_back(createColorAttachment(this->images["gPosition"]->getImageView(), VK_ATTACHMENT_LOAD_OP_LOAD));
-        colorAttachments.push_back(createColorAttachment(this->images["gMaterial"]->getImageView(), VK_ATTACHMENT_LOAD_OP_LOAD));
+        colorAttachments.push_back(createColorAttachment(this->images["gAlbedo"]->getImageView(), VK_ATTACHMENT_LOAD_OP_CLEAR));
+        colorAttachments.push_back(createColorAttachment(this->images["gNormal"]->getImageView(), VK_ATTACHMENT_LOAD_OP_CLEAR));
+        colorAttachments.push_back(createColorAttachment(this->images["gPosition"]->getImageView(), VK_ATTACHMENT_LOAD_OP_CLEAR));
+        colorAttachments.push_back(createColorAttachment(this->images["gMaterial"]->getImageView(), VK_ATTACHMENT_LOAD_OP_CLEAR));
 
         VkRenderingInfo renderingInfo{VK_STRUCTURE_TYPE_RENDERING_INFO_KHR};
         renderingInfo.renderArea = renderArea;
@@ -988,7 +988,7 @@ namespace vkengine
         attachment.imageView = imageView;
         attachment.imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
         attachment.loadOp = loadOp;
-        attachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
         attachment.clearValue.depthStencil = {clearDepth, 0};
         attachment.resolveMode = resolveMode;
         attachment.resolveImageView = resolveImageView;
