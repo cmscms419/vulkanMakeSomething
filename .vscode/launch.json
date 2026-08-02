@@ -42,7 +42,7 @@
             "preLaunchTask": "Build: ResumeDemo (Debug)"
         },
         {
-            "name": "Physical_Simulation",
+            "name": "Physical_Simulation (Debug)",
             "type": "cppvsdbg",
             "request": "launch",
             "program": "${workspaceFolder}/exe/PhysicalSimulation/x64/Debug/PhysicalSimulation.exe",
@@ -52,6 +52,19 @@
             "environment": [],
             "console": "externalTerminal",
             "preLaunchTask": "Build: PhysicalSimulation (Debug)"
+        },
+        {
+            "name": "Physical_Simulation (Release)",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/exe/PhysicalSimulation/x64/Release/PhysicalSimulation.exe",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}/exe/PhysicalSimulation/x64/Release",
+            "environment": [],
+            "console": "externalTerminal",
+            "preLaunchTask": "Build: PhysicalSimulation (Release)"
         }
+
     ]
 }

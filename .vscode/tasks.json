@@ -63,6 +63,31 @@
       }
     },
     {
+      "label": "Build: basicEngine2 (Release)",
+      "type": "shell",
+      "command": "C:/Program Files/Microsoft Visual Studio/2022/Community/MSBuild/Current/Bin/MSBuild.exe",
+      "args": [
+        "${workspaceFolder}/Project/basicEngine2/basicEngine2.vcxproj",
+        "/p:Configuration=Release",
+        "/p:Platform=x64",
+        "/p:SolutionDir=${workspaceFolder}/Project/",
+        "/v:minimal"
+      ],
+      "dependsOn": [
+        "Build: common (Release)"
+      ],
+      "dependsOrder": "sequence",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": "$msCompile",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      }
+    },
+    {
       "label": "Build: component2 (Debug)",
       "type": "shell",
       "command": "C:/Program Files/Microsoft Visual Studio/2022/Community/MSBuild/Current/Bin/MSBuild.exe",
@@ -75,6 +100,28 @@
       ],
       "dependsOn": [
         "Build: common (Debug)"
+      ],
+      "dependsOrder": "sequence",
+      "group": "build",
+      "problemMatcher": "$msCompile",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "Build: component2 (Release)",
+      "type": "shell",
+      "command": "C:/Program Files/Microsoft Visual Studio/2022/Community/MSBuild/Current/Bin/MSBuild.exe",
+      "args": [
+        "${workspaceFolder}/Project/component2/component2.vcxproj",
+        "/p:Configuration=Release",
+        "/p:Platform=x64",
+        "/p:SolutionDir=${workspaceFolder}/Project/",
+        "/v:minimal"
+      ],
+      "dependsOn": [
+        "Build: common (Release)"
       ],
       "dependsOrder": "sequence",
       "group": "build",
@@ -172,6 +219,30 @@
         "Build: common (Debug)",
         "Build: basicEngine2 (Debug)",
         "Build: component2 (Debug)"
+      ],
+      "group": "build",
+      "problemMatcher": "$msCompile",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "Build: PhysicalSimulation (Release)",
+      "type": "shell",
+      "command": "C:/Program Files/Microsoft Visual Studio/2022/Community/MSBuild/Current/Bin/MSBuild.exe",
+      "args": [
+        "${workspaceFolder}/Project/PhysicalSimulation/PhysicalSimulation.vcxproj",
+        "/p:Configuration=Release",
+        "/p:Platform=x64",
+        "/p:SolutionDir=${workspaceFolder}/Project/",
+        "/v:minimal"
+      ],
+      "dependsOrder": "sequence",
+      "dependsOn": [
+        "Build: common (Release)",
+        "Build: basicEngine2 (Release)",
+        "Build: component2 (Release)"
       ],
       "group": "build",
       "problemMatcher": "$msCompile",
