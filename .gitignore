@@ -482,3 +482,5 @@ Project/external/basicEngine2/x64/Debug/basicEngine2.lib
 Project/external/component2/x64/Debug/component2.idb
 Project/external/component2/x64/Debug/component2.lib
 Project/external/common/x64/Release/common.lib
+/external/common/x64/Debug/common.lib
+/external/common/x64/Release/common.lib
