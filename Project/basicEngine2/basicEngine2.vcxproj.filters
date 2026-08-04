@@ -1,176 +1,67 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="external">
-      <UniqueIdentifier>{6d4bdeae-2764-436e-ba73-fb09cc907caf}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="source2">
-      <UniqueIdentifier>{0aec74e1-ddb8-441c-a662-50ee17f74c58}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="pipeLine">
-      <UniqueIdentifier>{495e353b-4a29-4122-973b-9df01c5cb9c6}</UniqueIdentifier>
-    </Filter>
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="..\..\app\engine2\VKContext.cpp">
-      <Filter>source2</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\app\engine2\VKDescriptorManager2.cpp">
-      <Filter>source2</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\app\engine2\VKdescriptorPool.cpp">
-      <Filter>source2</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\app\engine2\VKdeviceHandler2.cpp">
-      <Filter>source2</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\app\engine2\VKImage2D.cpp">
-      <Filter>source2</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\app\engine2\VKpipeLineHandle.cpp">
-      <Filter>source2</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\app\engine2\VKshader.cpp">
-      <Filter>source2</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\app\engine2\VKShaderManager.cpp">
-      <Filter>source2</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\app\engine2\VKswapchain.cpp">
-      <Filter>source2</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\app\engine2\VKbarrier2.cpp">
-      <Filter>source2</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\app\engine2\VKbuffer2.cpp">
-      <Filter>source2</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\app\engine2\VKCommadBufferHander.cpp">
-      <Filter>source2</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\app\engine2\VKDescriptorSet.cpp">
-      <Filter>source2</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\app\engine2\VKPushConstants.cpp">
-      <Filter>source2</Filter>
-    </ClCompile>
-      <Filter>source2</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\app\engine2\VKAnimation.cpp">
-      <Filter>source2</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\app\engine2\VKMaterial.cpp">
-      <Filter>source2</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\app\engine2\VKMesh.cpp">
-      <Filter>source2</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\app\engine2\VKModel.cpp">
-      <Filter>source2</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\app\engine2\VKModelLoader.cpp">
-      <Filter>source2</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\app\engine2\VKModelNode.cpp">
-      <Filter>source2</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\app\engine2\VKViewFrustum.cpp">
-      <Filter>source2</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\app\engine2\VKComputepiPipeline.cpp">
-      <Filter>pipeLine</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\app\engine2\VKForwardPbrPipeline.cpp">
-      <Filter>pipeLine</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\app\engine2\VKGuipiPipeline.cpp">
-      <Filter>pipeLine</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\app\engine2\VKPostProcessingpiPipeline.cpp">
-      <Filter>pipeLine</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\app\engine2\VKShadowMapPiPipeline.cpp">
-      <Filter>pipeLine</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\app\engine2\VKSkyboxpiPipeline.cpp">
-      <Filter>pipeLine</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\app\engine2\VKSquarepiPipeline.cpp">
-      <Filter>pipeLine</Filter>
-    </ClCompile>
+    <ClCompile Include="..\..\app\engine2\VKComputePipeline.cpp" />
+    <ClCompile Include="..\..\app\engine2\VKDescriptorSet.cpp" />
+    <ClCompile Include="..\..\app\engine2\VKAnimation.cpp" />
+    <ClCompile Include="..\..\app\engine2\VKForwardPbrPipeline.cpp" />
+    <ClCompile Include="..\..\app\engine2\VKGuipiPipeline.cpp" />
+    <ClCompile Include="..\..\app\engine2\VKPostProcessingpiPipeline.cpp" />
+    <ClCompile Include="..\..\app\engine2\VKPushConstants.cpp" />
+    <ClCompile Include="..\..\app\engine2\VKbarrier2.cpp" />
+    <ClCompile Include="..\..\app\engine2\VKbuffer2.cpp" />
+    <ClCompile Include="..\..\app\engine2\VKCommandBufferHander.cpp" />
+    <ClCompile Include="..\..\app\engine2\VKContext.cpp" />
+    <ClCompile Include="..\..\app\engine2\VKDescriptorManager2.cpp" />
+    <ClCompile Include="..\..\app\engine2\VKdescriptorPool.cpp" />
+    <ClCompile Include="..\..\app\engine2\VKdeviceHandler2.cpp" />
+    <ClCompile Include="..\..\app\engine2\VKImage2D.cpp" />
+    <ClCompile Include="..\..\app\engine2\VKMaterial.cpp" />
+    <ClCompile Include="..\..\app\engine2\VKMesh.cpp" />
+    <ClCompile Include="..\..\app\engine2\VKModel.cpp" />
+    <ClCompile Include="..\..\app\engine2\VKModelLoader.cpp" />
+    <ClCompile Include="..\..\app\engine2\VKModelNode.cpp" />
+    <ClCompile Include="..\..\app\engine2\VKpipeLineHandle.cpp" />
     <ClCompile Include="..\..\app\engine2\VKSamplerHandler.cpp" />
+    <ClCompile Include="..\..\app\engine2\VKshader.cpp" />
+    <ClCompile Include="..\..\app\engine2\VKShaderManager.cpp" />
+    <ClCompile Include="..\..\app\engine2\VKShadowMapPiPipeline.cpp" />
+    <ClCompile Include="..\..\app\engine2\VKSkyboxpiPipeline.cpp" />
+    <ClCompile Include="..\..\app\engine2\VKSquarepiPipeline.cpp" />
+    <ClCompile Include="..\..\app\engine2\VKDeferredPBRPipeline.cpp" />
+    <ClCompile Include="..\..\app\engine2\VKswapchain.cpp" />
+    <ClCompile Include="..\..\app\engine2\VKViewFrustum.cpp" />
+    <ClCompile Include="..\..\app\engine2\VKRenderGraph.cpp" />
+    <ClCompile Include="..\..\app\engine2\VKShaderResource.cpp" />
+    <ClCompile Include="..\..\app\engine2\VKtexturesTable.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\include\engine2\VKdeviceHandler2.h">
-      <Filter>source2</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\engine2\VKImage2D.h">
-      <Filter>source2</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\engine2\pipeLineHandle.h">
-      <Filter>source2</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\engine2\VKshader.h">
-      <Filter>source2</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\engine2\VKShaderManager.h">
-      <Filter>source2</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\engine2\VKswapchain.h">
-      <Filter>source2</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\engine2\VKbarrier2.h">
-      <Filter>source2</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\engine2\VKbuffer2.h">
-      <Filter>source2</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\engine2\VKCommandBufferHander.h">
-      <Filter>source2</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\engine2\VKContext.h">
-      <Filter>source2</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\engine2\VKDescriptorManager2.h">
-      <Filter>source2</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\engine2\VKdescriptorPool.h">
-      <Filter>source2</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\engine2\VKSamplerHandler.h">
-      <Filter>source2</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\engine2\VKPushConstants.h">
-      <Filter>source2</Filter>
-    </ClInclude>
-      <Filter>source2</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\engine2\VKUniformBuffer2.h">
-      <Filter>source2</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\engine2\VKAnimation.h">
-      <Filter>source2</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\engine2\VKMaterial.h">
-      <Filter>source2</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\engine2\VKMesh.h">
-      <Filter>source2</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\engine2\VKModel.h">
-      <Filter>source2</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\engine2\VKModelLoader.h">
-      <Filter>source2</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\engine2\VKModelNode.h">
-      <Filter>source2</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\engine2\VKDescriptorSet.h">
-      <Filter>source2</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\engine2\VKViewFrustum.h">
-      <Filter>source2</Filter>
-    </ClInclude>
+    <ClInclude Include="..\..\include\engine2\VKDescriptorSet.h" />
+    <ClInclude Include="..\..\include\engine2\VKPushConstants.h" />
+    <ClInclude Include="..\..\include\engine2\VKAnimation.h" />
+    <ClInclude Include="..\..\include\engine2\VKbarrier2.h" />
+    <ClInclude Include="..\..\include\engine2\VKbuffer2.h" />
+    <ClInclude Include="..\..\include\engine2\VKCommandBufferHander.h" />
+    <ClInclude Include="..\..\include\engine2\VKContext.h" />
+    <ClInclude Include="..\..\include\engine2\VKDescriptorManager2.h" />
+    <ClInclude Include="..\..\include\engine2\VKdescriptorPool.h" />
+    <ClInclude Include="..\..\include\engine2\VKdeviceHandler2.h" />
+    <ClInclude Include="..\..\include\engine2\VKImage2D.h" />
+    <ClInclude Include="..\..\include\engine2\VKpipeLineHandle.h" />
+    <ClInclude Include="..\..\include\engine2\VKMaterial.h" />
+    <ClInclude Include="..\..\include\engine2\VKMesh.h" />
+    <ClInclude Include="..\..\include\engine2\VKModel.h" />
+    <ClInclude Include="..\..\include\engine2\VKModelLoader.h" />
+    <ClInclude Include="..\..\include\engine2\VKModelNode.h" />
+    <ClInclude Include="..\..\include\engine2\h" />
+    <ClInclude Include="..\..\include\engine2\VKSamplerHandler.h" />
+    <ClInclude Include="..\..\include\engine2\VKshader.h" />
+    <ClInclude Include="..\..\include\engine2\VKShaderManager.h" />
+    <ClInclude Include="..\..\include\engine2\VKswapchain.h" />
+    <ClInclude Include="..\..\include\engine2\VKUniformBuffer2.h" />
+    <ClInclude Include="..\..\include\engine2\VKViewFrustum.h" />
+    <ClInclude Include="..\..\include\engine2\VKShaderResource.h" />
+    <ClInclude Include="..\..\include\engine2\VKRenderGraph.h" />
+    <ClInclude Include="..\..\include\engine2\VKtexturesTable.h" />
   </ItemGroup>
 </Project>

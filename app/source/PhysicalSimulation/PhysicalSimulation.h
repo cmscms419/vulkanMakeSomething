@@ -28,8 +28,8 @@ namespace vkengine
         std::unique_ptr<CalculatePhysicsSimulation> physics;
         std::vector<InstanceData> sphereInstanceData; // Sphere 인스턴스 데이터
 
-        cUint32_t maxInstanceCount = 10000;           // 최대객수
-        cFloat speedCamera = 15.0f;                   // Camera 이동 속도
+        cUint32_t maxInstanceCount = 15000;           // 최대객수
+        cFloat speedCamera = 30.0f;                   // Camera 이동 속도
     };
 }
 

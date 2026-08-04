@@ -56,8 +56,16 @@ namespace vkengine
                 --invisibleFramesLeft[i];
                 continue;
             }
+
+            if (glm::length(velocities[i]) > config.maxSpeed)
+                velocities[i] = glm::normalize(velocities[i]) * config.maxSpeed;
+
+            if (glm::length(velocities[i]) < config.minSpeed)
+                velocities[i] = glm::normalize(velocities[i]) * config.minSpeed;
+
+
             positions[i] += velocities[i] * dt;
-            
+
             buffer.pos.x = positions[i].x;
             buffer.pos.y = positions[i].y;
             buffer.pos.z = positions[i].z;
@@ -201,9 +209,9 @@ namespace vkengine
     cIvec3 CalculatePhysicsSimulation::worldToCell(const cVec3 &pos) const
     {
         return glm::ivec3(
-            static_cast<int>(std::floor(pos.x / this->config.objectRadius)),
-            static_cast<int>(std::floor(pos.y / this->config.objectRadius)),
-            static_cast<int>(std::floor(pos.z / this->config.objectRadius)));
+            static_cast<int>(std::floor(pos.x / this->config.objectRadius * 2)),
+            static_cast<int>(std::floor(pos.y / this->config.objectRadius * 2)),
+            static_cast<int>(std::floor(pos.z / this->config.objectRadius * 2)));
     }
 
     cInt64_t CalculatePhysicsSimulation::cellKey(const cIvec3 &cell) const

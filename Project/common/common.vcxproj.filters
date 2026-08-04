@@ -66,7 +66,9 @@
       <Filter>helper</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\common\base_types.h" />
-    <ClInclude Include="..\..\include\struct\configtype.h" />
+    <ClInclude Include="..\..\include\common\random.h" />
+    <ClInclude Include="..\..\include\struct\vkconfig.h" />
+    <ClInclude Include="..\..\include\struct\descriptor.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\app\common\macros.cpp">
@@ -107,5 +109,7 @@
     <ClCompile Include="..\..\app\helper\helperShader.cpp">
       <Filter>helper</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\app\struct\vkconfig.cpp" />
+    <ClCompile Include="..\..\app\struct\descriptor.cpp" />
   </ItemGroup>
 </Project>

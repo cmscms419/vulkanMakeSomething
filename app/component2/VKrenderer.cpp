@@ -497,11 +497,8 @@ namespace vkengine
         VkRenderingInfo renderingInfo{VK_STRUCTURE_TYPE_RENDERING_INFO_KHR};
         renderingInfo.renderArea = renderArea;
         renderingInfo.layerCount = 1;
-        if (colorAttachments.size() > 1)
-        {
-            renderingInfo.colorAttachmentCount = static_cast<cUint32_t>(colorAttachments.size());
-            renderingInfo.pColorAttachments = colorAttachments.data();
-        }
+        renderingInfo.colorAttachmentCount = static_cast<cUint32_t>(colorAttachments.size());
+        renderingInfo.pColorAttachments = colorAttachments.data();
         renderingInfo.pDepthAttachment = &depthAttachment;
         // renderingInfo.pStencilAttachment = &depthAttachment;
 
@@ -871,8 +868,7 @@ namespace vkengine
         VkRect2D renderArea = {0, 0, this->currentScissor.extent.width, this->currentScissor.extent.height};
 
         std::vector<VkRenderingAttachmentInfo> colorAttachments{};
-        VkRenderingAttachmentInfo depthAttachment = createDepthAttachment(this->images["depthStencil"]->getImageView(), VK_ATTACHMENT_LOAD_OP_LOAD);
-        
+        VkRenderingAttachmentInfo depthAttachment = createDepthAttachment(this->images["depthStencil"]->getImageView(), VK_ATTACHMENT_LOAD_OP_CLEAR, 1.0f);
         colorAttachments.push_back(createColorAttachment(this->images["gAlbedo"]->getImageView(), VK_ATTACHMENT_LOAD_OP_CLEAR));
         colorAttachments.push_back(createColorAttachment(this->images["gNormal"]->getImageView(), VK_ATTACHMENT_LOAD_OP_CLEAR));
         colorAttachments.push_back(createColorAttachment(this->images["gPosition"]->getImageView(), VK_ATTACHMENT_LOAD_OP_CLEAR));

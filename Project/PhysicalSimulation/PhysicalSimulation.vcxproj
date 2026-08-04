@@ -38,9 +38,7 @@
     <PlatformToolset>v143</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
-  <ImportGroup Label="ExtensionSettings">
-    <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 12.6.props" />
-  </ImportGroup>
+  <ImportGroup Label="ExtensionSettings" />
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
@@ -72,7 +70,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>DEBUG_;WIN32;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>./;$(CudaToolkitDir)/include;$(VULKAN_SDK)/include;../../include/struct;../../include/common/;../../include/engine2/;../../include/component2;../../include/helper/;../../external/ktx/include;../../external/include;../../external/GLFW/include;../../external/imgui;../../external/assimp/include/</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(VULKAN_SDK)/include;../../include/struct;../../include/common/;../../include/engine2/;../../include/component2;../../include/helper/;../../external/ktx/include;../../external/include;../../external/GLFW/include;../../external/imgui;../../external/assimp/include/</AdditionalIncludeDirectories>
       <SDLCheck>true</SDLCheck>
       <LanguageStandard_C>stdc11</LanguageStandard_C>
       <LanguageStandard>stdcpp17</LanguageStandard>
@@ -86,6 +84,7 @@
     </Link>
     <CudaCompile>
       <TargetMachinePlatform>64</TargetMachinePlatform>
+      <CudaRuntime>None</CudaRuntime>
     </CudaCompile>
     <PostBuildEvent>
       <Command>xcopy /Y "$(SolutionDir)..\external\dll\$(Platform)\$(Configuration)\*.*" "$(OutDir)"</Command>
@@ -98,7 +97,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;WIN64;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>./;$(CudaToolkitDir)/include;$(VULKAN_SDK)/include;../../include/struct;../../include/common/;../../include/engine2/;../../include/component2;../../include/helper/;../../external/ktx/include;../../external/include;../../external/GLFW/include;../../external/imgui;../../external/assimp/include/</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(VULKAN_SDK)/include;../../include/struct;../../include/common/;../../include/engine2/;../../include/component2;../../include/helper/;../../external/ktx/include;../../external/include;../../external/GLFW/include;../../external/imgui;../../external/assimp/include/</AdditionalIncludeDirectories>
       <SDLCheck>true</SDLCheck>
       <LanguageStandard_C>stdc11</LanguageStandard_C>
       <LanguageStandard>stdcpp17</LanguageStandard>
@@ -114,13 +113,12 @@
     </Link>
     <CudaCompile>
       <TargetMachinePlatform>64</TargetMachinePlatform>
+      <CudaRuntime>None</CudaRuntime>
     </CudaCompile>
     <PostBuildEvent>
       <Command>xcopy /Y "$(SolutionDir)..\external\dll\$(Platform)\$(Configuration)\*.*" "$(OutDir)"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
-  <ImportGroup Label="ExtensionTargets">
-    <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 12.6.targets" />
-  </ImportGroup>
+  <ImportGroup Label="ExtensionTargets" />
 </Project>

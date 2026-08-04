@@ -25,8 +25,8 @@ namespace vkengine
 
         // Box의 AABB worldBounds — Box 모델의 minBounds/maxBounds를 world 좌표계로 변환한 값
         // obj를 가져오지 않고 임의의 값으로 넣음
-        cVec3 boxMin = cVec3(-98.0f, -4.0f, -67.2f);
-        cVec3 boxMax = cVec3(98.0f, 96.0f, 67.2f);
+        cVec3 boxMin = cVec3(-100.0f, -100.0f, -100.0f);
+        cVec3 boxMax = cVec3(100.0f, 100.0f, 100.0f);
         AABB boxBounds = AABB(boxMin, boxMax);
 
         // Sphere 모델 찾기
@@ -42,19 +42,19 @@ namespace vkengine
                 // Sphere의 반지름 — 로컬 바운드(minBounds/maxBounds)에 스케일을 곱해서 산출
                 const cVec3 &sMin = model.Meshes()[0].minBounds;
                 const cVec3 &sMax = model.Meshes()[0].maxBounds;
-                cFloat sphereRadius = glm::length(sMax - sMin) * 0.4f;
+                cFloat sphereRadius = glm::length(sMax - sMin) * 0.5f;
 
                 CalculatePhysicsSimulation::Config cfg;
 
                 // cfg.objectCount = static_cast<cUint32_t>(models.size() - 1); // Box 제외
-                cfg.objectCount = maxInstanceCount;    // Sphere 개수
+                cfg.objectCount = maxInstanceCount; // Sphere 개수
                 cfg.objectRadius = sphereRadius;
                 cfg.worldBounds = boxBounds;
                 cfg.restitution = 1.0f; // 완전 탄성 충돌
-                cfg.minSpeed = 1.0f;
-                cfg.maxSpeed = 3.0f;
+                cfg.minSpeed = 0.0f;
+                cfg.maxSpeed = 20.0f;
                 cfg.respawnInvisibleFrames = 1;
-                cfg.collisionCooldownFrames = 30;
+                cfg.collisionCooldownFrames = 3;
 
                 physics = std::make_unique<CalculatePhysicsSimulation>(cfg);
 
@@ -134,11 +134,7 @@ namespace vkengine
             if (physics)
             {
                 this->updateGui();
-
                 physics->update(deltaTime);
-                physics->updateInstanceData(sphereInstanceData);
-
-                updateInstanceData(sphereInstanceData.size());
             }
 
             this->run();
@@ -157,9 +153,14 @@ namespace vkengine
         _VK_CHECK_RESULT_(vkResetFences(this->cxt->getDevice()->logicaldevice, 1, &this->inFlightFences[currentFrame]));
 
         Renderer.update(*camera.get(), currentFrame, (float)glfwGetTime() * 0.5f);
-
         // Perform frustum culling on all models
         guiRenderer.update();
+
+        if (this->physics)
+        {
+            physics->updateInstanceData(sphereInstanceData);
+            updateInstanceData(sphereInstanceData.size());
+        }
 
         uint32_t imageIndex{0};
         VkResult result = this->swapChain->acquireNextImage(presentSemaphores[currentSemaphore], imageIndex);
@@ -275,6 +276,13 @@ namespace vkengine
                 cfg.objectCount = static_cast<cUint32_t>(objectCount);
             }
 
+            cFloat maxSpeed = cfg.maxSpeed;
+
+            if (ImGui::SliderFloat("instance max Speed", &maxSpeed, cfg.minSpeed, 20.0f))
+            {
+                cfg.maxSpeed = maxSpeed;
+            }
+
             static cVec3 lightColor = cVec3(1.0f);
             static cFloat lightIntensity = 28.454f;
             ImGui::SliderFloat("Light Intensity", &lightIntensity, 0.0f, 100.0f);
@@ -308,17 +316,7 @@ namespace vkengine
                         this->Renderer.getSceneDataUBO().directionalLightDir.y,
                         this->Renderer.getSceneDataUBO().directionalLightDir.z);
 
-            DrawModelResource &drawInstanceResource = this->Renderer.getDrawInstanceResource();
-
-            // // update DrawInstanceResource
-            // char sphereModelName[100] = "Sphere";
-            // float *coeffs = drawInstanceResource.coeffs;
-
-            // snprintf(sphereModelName, sizeof(sphereModelName), "Metallic##%u");
-            // ImGui::SliderFloat(sphereModelName, &coeffs[4], 0.0f, 1.0f);
-
-            // snprintf(sphereModelName, sizeof(sphereModelName), "Roughness##%u");
-            // ImGui::SliderFloat(sphereModelName, &coeffs[5], 0.0f, 1.0f);
+            ImGui::Text("Rendering Instance Count %d", static_cast<cInt>(this->sphereInstanceData.size()));
 
             ImGui::End();
             ImGui::PopStyleVar();
@@ -338,9 +336,18 @@ namespace vkengine
 
         this->Renderer.createInstanceBuffers(maxInstanceCount);
 
+        DrawModelResource resource = this->models[modelIndex].ModelResource();
+
         this->Renderer.getDrawInstanceResource().materialIndex = this->models[modelIndex].Meshes()[0].materialIndex;
         this->Renderer.getDrawInstanceResource().modelMatrix = glm::scale(cMat4(1.0f), cVec3(this->physics->Radius()));
-        std::fill(std::begin(this->Renderer.getDrawInstanceResource().coeffs), std::end(this->Renderer.getDrawInstanceResource().coeffs), 1.0f);
+        std::fill(std::begin(this->Renderer.getDrawInstanceResource().coeffs), std::end(this->Renderer.getDrawInstanceResource().coeffs), 0.0f);
+        
+        this->Renderer.getDrawInstanceResource().coeffs[0] = resource.coeffs[0];
+        this->Renderer.getDrawInstanceResource().coeffs[1] = resource.coeffs[1];
+        this->Renderer.getDrawInstanceResource().coeffs[2] = resource.coeffs[2];
+        this->Renderer.getDrawInstanceResource().coeffs[3] = resource.coeffs[3];
+        this->Renderer.getDrawInstanceResource().coeffs[4] = resource.coeffs[4];
+        this->Renderer.getDrawInstanceResource().coeffs[5] = resource.coeffs[5];
     }
 
     void PhysicalSimulation::updateInstanceData(cUint32_t currentInstanceCount)

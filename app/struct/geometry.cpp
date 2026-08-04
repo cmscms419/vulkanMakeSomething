@@ -46,7 +46,7 @@ cBool Sphere::intersects(const Sphere &other) const
 
     cFloat radiusSum = radius + other.radius;
     
-    return distanceSquared <= (radiusSum * radiusSum);
+    return distanceSquared <= radiusSum;
 }
 
 cBool Sphere::intersects(const cVec3& min, const cVec3& max) const
