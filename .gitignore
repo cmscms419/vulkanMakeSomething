@@ -484,3 +484,9 @@ Project/external/component2/x64/Debug/component2.lib
 Project/external/common/x64/Release/common.lib
 /external/common/x64/Debug/common.lib
 /external/common/x64/Release/common.lib
+resource/3D_models/box.mtl
+resource/3D_models/metallic_roughness.png
+resource/3D_models/sphere.bin
+resource/3D_models/sphere.gltf
+resource/3D_models/worn-painted-metal_albedo.png
+resource/3D_models/worn-painted-metal_normal.png
