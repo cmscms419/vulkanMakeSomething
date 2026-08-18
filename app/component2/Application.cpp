@@ -40,7 +40,7 @@ namespace vkengine
         initializeVulkanResources();
         setupCallbacks();
         initializeWithConfig(config);
-        initializeRenderGraph();
+        initializeRenderGraph(config.RanderGraphfilePath);
     }
 
     Application::~Application()
@@ -123,9 +123,9 @@ namespace vkengine
         // engine에서 이미 fence와 semaphore를 생성하므로 생략
     }
 
-    void Application::initializeRenderGraph()
+    void Application::initializeRenderGraph(cString buildRenderGraph)
     {
-        this->Renderer.buildRenderGraph();
+        this->Renderer.buildRenderGraph(buildRenderGraph);
     }
 
     void Application::run()

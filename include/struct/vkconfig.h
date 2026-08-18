@@ -69,6 +69,7 @@ struct ModelConfig
 struct ApplicationConfig
 {
     std::vector<ModelConfig> models;
+    cString RanderGraphfilePath;    // RanderGraph file path
 
     static ApplicationConfig createDefault()
     {
@@ -89,6 +90,7 @@ struct ApplicationConfig
         bistro.autoPlayAnimation = false;
 
         config.models = {character, bistro};
+        config.RanderGraphfilePath = "/renderGraph.json";
 
         return config;
     }

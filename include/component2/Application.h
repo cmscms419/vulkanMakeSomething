@@ -49,7 +49,7 @@ namespace vkengine {
         void loadModels(const std::vector<ModelConfig> &modelConfigs);
         void setupCallbacks();
         void initializeVulkanResources();
-        void initializeRenderGraph();
+        void initializeRenderGraph(cString buildRenderGraph);
 
         void renderHDRControlWindow();
         void renderPostProcessingControlWindow();

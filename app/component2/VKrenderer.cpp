@@ -56,7 +56,7 @@ namespace vkengine
         this->currentModels = nullptr;
     }
 
-    void VKRenderer::buildRenderGraph()
+    void VKRenderer::buildRenderGraph(cString RanderGraphfilePath)
     {
         this->renderGraph.registerResource("shadowDepth", this->images["shadowMap"]);               // 쉐도우 맵 리소스 등록
         this->renderGraph.registerResource("DeferredToCompute", this->images["DeferredToCompute"]); // 포워드 패스 출력 등록
@@ -65,7 +65,7 @@ namespace vkengine
         this->renderGraph.registerResource("ssaoRaw", this->images["ssaoRaw"]);                     // SSAO 원본 출력 등록
         this->renderGraph.registerResource("ssaoBlur", this->images["ssaoBlur"]);                   // SSAO 블러 출력 등록
 
-        this->renderGraph.loadFromJson(this->assetsPath + "/renderGraph.json");
+        this->renderGraph.loadFromJson(this->assetsPath + RanderGraphfilePath.c_str());
 
         this->renderGraph.registerPassFunction("shadow",
                                                [this](VkCommandBuffer cmd, cUint32_t frameIndex, cUint32_t imageIndex)
@@ -784,7 +784,7 @@ namespace vkengine
         }
     }
 
-    void VKRenderer::createInstanceBuffers(cUint32_t maxInstanceCount)
+    void VKRenderer::createInstanceBuffers(cUint32_t maxInstanceCount, cUint32_t modelIndex)
     {
         for (cUint32_t i = 0; i < MAX_FRAMES_IN_FLIGHT; ++i)
         {
@@ -803,6 +803,7 @@ namespace vkengine
 
         this->instanceConfig.currentInstanceCount = maxInstanceCount;
         this->instanceConfig.maxInstances = maxInstanceCount;
+        this->instanceConfig.currentModelIndex = modelIndex;
         this->instanceConfig.isInstanced = (maxInstanceCount > 0);
     }
 

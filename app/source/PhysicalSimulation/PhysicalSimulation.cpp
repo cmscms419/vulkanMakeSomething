@@ -35,10 +35,10 @@ namespace vkengine
 
         for (auto &model : models)
         {
+            // model.Visible() = false; // Sphere 모델은 물리 계산용으로만 사용, 렌더링은 인스턴스로 처리
+
             if (model.Name() == "Sphere")
             {
-                model.Visible() = false; // Sphere 모델은 물리 계산용으로만 사용, 렌더링은 인스턴스로 처리
-
                 // Sphere의 반지름 — 로컬 바운드(minBounds/maxBounds)에 스케일을 곱해서 산출
                 const cVec3 &sMin = model.Meshes()[0].minBounds;
                 const cVec3 &sMax = model.Meshes()[0].maxBounds;
@@ -334,7 +334,7 @@ namespace vkengine
             EXIT_TO_LOGGER("Models are not set or invalid model index. Cannot create instance buffers.");
         }
 
-        this->Renderer.createInstanceBuffers(maxInstanceCount);
+        this->Renderer.createInstanceBuffers(maxInstanceCount, modelIndex);
 
         DrawModelResource resource = this->models[modelIndex].ModelResource();
 

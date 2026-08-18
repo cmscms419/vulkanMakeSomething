@@ -21,10 +21,12 @@ int main(int argc, char* argv[]) {
                 glm::rotate(glm::mat4(1.0f), glm::radians(0.0f), glm::vec3(1.0f, 0.0f, 0.0f))
         ).setScale(0.2f));
     
-    config.models.push_back(ModelConfig("3D_models/sphere.obj", "Sphere")
+    config.models.push_back(ModelConfig("3D_models/sphere.gltf", "Sphere")
         .setTransform(
                 glm::translate(glm::mat4(1.0f), glm::vec3(1.0f, 0.0f, 0.0f))
         ).setScale(0.2f));
+
+    config.RanderGraphfilePath = "renderGraph_instance_version.json";
 
     std::unique_ptr<PhysicalSimulation> app3 = std::make_unique<PhysicalSimulation>(config, root_path);
 

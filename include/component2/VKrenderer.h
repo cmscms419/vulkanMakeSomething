@@ -61,7 +61,7 @@ namespace vkengine
             VkViewport viewport,
             VkRect2D scissor);
 
-        void buildRenderGraph();
+        void buildRenderGraph(cString RanderGraphfilePath);
         void resize(uint32_t width, uint32_t height);
 
         void prepareForModels(
@@ -92,8 +92,7 @@ namespace vkengine
         void addDebugLine(const cVec3 &a, const cVec3 &b, const cVec3 &color);
         void addDebugAABB(const AABB &box, const cVec3 &color);
 
-        void createInstanceBuffers(cUint32_t maxInstanceCount);
-        void createInstanceConfig(cUint32_t modelIndex);
+        void createInstanceBuffers(cUint32_t maxInstanceCount, cUint32_t modelIndex);
         void updateInstance(cUint32_t instanceCount);
 
         // UBO getter 함수들 - 각 유니폼 버퍼 오브젝트의 현재 데이터 반환
