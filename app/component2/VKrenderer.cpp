@@ -44,11 +44,6 @@ namespace vkengine
         this->postOptionsUniform[currentFrame].updateData();
         this->ssaoParamsUniform[currentFrame].updateData();
 
-        // instance만 업데이트
-        if (this->currentModels && this->currentModels->at(1).Visible())
-        {
-            this->currentModels->at(1).Visible() = false;
-        }
     }
     void VKRenderer::rendering(VkCommandBuffer cmd, cUint32_t currentFrame, cUint32_t imageIndex, std::vector<VKModel> &models, VkViewport viewport, VkRect2D scissor)
     {
@@ -70,7 +65,7 @@ namespace vkengine
         this->renderGraph.registerResource("ssaoRaw", this->images["ssaoRaw"]);                     // SSAO 원본 출력 등록
         this->renderGraph.registerResource("ssaoBlur", this->images["ssaoBlur"]);                   // SSAO 블러 출력 등록
 
-        this->renderGraph.loadFromJson(this->assetsPath + "/renderGraph_instance_version.json");
+        this->renderGraph.loadFromJson(this->assetsPath + "/renderGraph.json");
 
         this->renderGraph.registerPassFunction("shadow",
                                                [this](VkCommandBuffer cmd, cUint32_t frameIndex, cUint32_t imageIndex)
