@@ -551,12 +551,138 @@ namespace vkengine
 
         renderPostProcessingControlWindow();
 
+        renderSSAOControlWindow();
+
         ImGui::Render();
     }
 
     // 애니메이션 업데이트를 위한 가상 함수, 필요에 따라 오버라이드 가능
     void Application::updateAnimation(cFloat deltaTime)
     {
+    }
+
+    void Application::renderSSAOControlWindow()
+    {
+        ImGui::SetNextWindowPos(ImVec2(1090, 10), ImGuiCond_FirstUseEver);
+        ImGui::SetNextWindowSize(ImVec2(370, 400), ImGuiCond_FirstUseEver);
+
+        if (!ImGui::Begin("SSAO Controls"))
+        {
+            ImGui::End();
+            return;
+        }
+
+        SSAOParamsUBO &ssao = this->Renderer.getSSAOParamsUBO();
+
+        // ssaoSampleCount == 0 이면 ssao.comp / lightdeferred.comp 양쪽에서 SSAO를 건너뛴다.
+        // 토글로 껐다 켤 때 이전 샘플 수를 잃지 않도록 보관한다.
+        static cInt savedSampleCount = 16;
+
+        cBool enabled = ssao.ssaoSampleCount > 0;
+        if (ImGui::Checkbox("Enable SSAO", &enabled))
+        {
+            if (enabled)
+            {
+                ssao.ssaoSampleCount = (savedSampleCount > 0) ? savedSampleCount : 16;
+            }
+            else
+            {
+                savedSampleCount = ssao.ssaoSampleCount;
+                ssao.ssaoSampleCount = 0;
+            }
+        }
+        if (ImGui::IsItemHovered())
+        {
+            // SSAO에서 오는 아티팩트인지 디퍼드 조명에서 오는지 가르는 실험용 토글
+            ImGui::SetTooltip("Off: SSAO result is not applied to indirect lighting.");
+        }
+
+        ImGui::Separator();
+
+        ImGui::BeginDisabled(!enabled);
+
+        if (ImGui::CollapsingHeader("Parameters", ImGuiTreeNodeFlags_DefaultOpen))
+        {
+            ImGui::SliderInt("Sample Count", &ssao.ssaoSampleCount, 1, 64);
+            if (ImGui::IsItemHovered())
+            {
+                ImGui::SetTooltip("Samples per pixel. More = less noise, linearly more cost.");
+            }
+
+            ImGui::SliderFloat("Radius", &ssao.ssaoRadius, 0.01f, 5.0f, "%.3f",
+                               ImGuiSliderFlags_Logarithmic);
+            if (ImGui::IsItemHovered())
+            {
+                // 씬 스케일에 맞아야 한다. 너무 크면 접촉 그림자 대신 넓은 번짐이 생긴다.
+                ImGui::SetTooltip("World-space search radius. Must match scene scale.");
+            }
+
+            ImGui::SliderFloat("Bias", &ssao.ssaoBias, 0.0f, 0.2f, "%.4f");
+            if (ImGui::IsItemHovered())
+            {
+                // 너무 작으면 표면에 줄무늬, 너무 크면 접촉 그림자가 사라진다.
+                ImGui::SetTooltip("Depth offset preventing self-occlusion banding.");
+            }
+
+            ImGui::SliderFloat("Power", &ssao.ssaoPower, 0.1f, 8.0f, "%.2f");
+            if (ImGui::IsItemHovered())
+            {
+                ImGui::SetTooltip("Exponent applied to AO. Higher = stronger contrast.");
+            }
+        }
+
+        if (ImGui::CollapsingHeader("Presets", ImGuiTreeNodeFlags_DefaultOpen))
+        {
+            // 기준 구현(LearnOpenGL)의 값 — 현재 결과와 비교할 기준선
+            if (ImGui::Button("LearnOpenGL"))
+            {
+                ssao.ssaoRadius = 0.5f;
+                ssao.ssaoBias = 0.025f;
+                ssao.ssaoSampleCount = 64;
+                ssao.ssaoPower = 1.0f;
+                savedSampleCount = ssao.ssaoSampleCount;
+            }
+
+            ImGui::SameLine();
+            if (ImGui::Button("Engine Default"))
+            {
+                ssao.ssaoRadius = 0.5f;
+                ssao.ssaoBias = 0.025f;
+                ssao.ssaoSampleCount = 16;
+                ssao.ssaoPower = 2.0f;
+                savedSampleCount = ssao.ssaoSampleCount;
+            }
+
+            // 접촉 그림자 확인용 (좁은 반경)
+            if (ImGui::Button("Narrow (contact)"))
+            {
+                ssao.ssaoRadius = 0.1f;
+                ssao.ssaoBias = 0.01f;
+                ssao.ssaoSampleCount = 32;
+                ssao.ssaoPower = 2.0f;
+                savedSampleCount = ssao.ssaoSampleCount;
+            }
+
+            ImGui::SameLine();
+            // 넓은 환경 차폐 확인용
+            if (ImGui::Button("Wide (ambient)"))
+            {
+                ssao.ssaoRadius = 2.0f;
+                ssao.ssaoBias = 0.05f;
+                ssao.ssaoSampleCount = 32;
+                ssao.ssaoPower = 1.5f;
+                savedSampleCount = ssao.ssaoSampleCount;
+            }
+        }
+
+        ImGui::EndDisabled();
+
+        ImGui::Separator();
+        ImGui::TextDisabled("radius=%.3f  bias=%.4f  samples=%d  power=%.2f",
+                            ssao.ssaoRadius, ssao.ssaoBias,
+                            ssao.ssaoSampleCount, ssao.ssaoPower);
+
+        ImGui::End();
     }
 
     void Application::renderHDRControlWindow()

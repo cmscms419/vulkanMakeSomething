@@ -116,6 +116,10 @@ namespace vkengine
         {
             return this->postOptionsUBO;
         }
+        SSAOParamsUBO &getSSAOParamsUBO()
+        {
+            return this->ssaoParamsUBO;
+        }
         VKBaseBuffer2 &getSphereinstanceBuffer(cUint32_t frameIndex)
         {
             return this->sphereinstanceBuffers[frameIndex];

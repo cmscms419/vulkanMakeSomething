@@ -26,10 +26,10 @@ layout(set = 0, binding = 1) uniform OptionsUBO {
     bool shadowOn;
     bool discardOn;
     bool animationOn;
-    float ssaoRadius;
-    float ssaoBias;
-    int ssaoSampleCount;
-    float ssaoPower;
+    float specularWeight;
+    float diffuseWeight;
+    float emissiveWeight;
+    float shadowOffset;
 } options;
 
 layout(set = 0, binding = 2) uniform BoneDataUBO {

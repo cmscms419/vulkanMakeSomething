@@ -37,7 +37,7 @@ vec3 decodeNormal(vec3 encoded) {
 // Generate sampling kernel for SSAO
 vec3 generateSampleKernel(int index) {
     // Use a deterministic method to generate sample points
-    float angle = float(index) * 2.39996323; // Golden angle approximation
+    float angle = float(index) * 2.39996323; // 황금각 방위
     float z = float(index) / float(ssaoOptions.ssaoSampleCount);
     z = mix(0.1, 1.0, z * z); // Bias towards closer samples
 
@@ -60,9 +60,10 @@ vec3 generateNoise(vec2 coord) {
 vec3 screenToView(vec2 texCoord, float depth) {
     // Convert to NDC - account for flipped Y in projection matrix
     vec2 ndc = texCoord * 2.0 - 1.0;
-    ndc.y = -ndc.y; // Flip Y to match the camera's Y-flip
+    // ndc.y = -ndc.y; // Flip Y to match the camera's Y-flip
 
-    float ndcZ = depth * 2.0 - 1.0;
+    // float ndcZ = depth * 2.0 - 1.0;
+    float ndcZ = depth;
 
     vec4 clipPos = vec4(ndc, ndcZ, 1.0);
     vec4 viewPos = inverseProjection * clipPos;
@@ -105,7 +106,7 @@ float calculateSSAO(vec2 texCoord) {
         vec4 offset = sceneData.projection * vec4(samplePos, 1.0);
         offset.xyz /= offset.w;
         offset.xyz = offset.xyz * 0.5 + 0.5; // [-1,1] to [0,1]
-        offset.y = 1.0 - offset.y; // Flip Y back for texture sampling
+        // offset.y = 1.0 - offset.y; // Flip Y back for texture sampling
 
         if (offset.x < 0.0 || offset.x > 1.0 || offset.y < 0.0 || offset.y > 1.0) {
             continue;
@@ -152,6 +153,7 @@ void main()
     float ao = 1.0;
     if (ssaoOptions.ssaoSampleCount > 0) {
         ao = calculateSSAO(texCoords);
+        ao = pow(ao, ssaoOptions.ssaoPower);
     }
 
     imageStore(outputSSAO, imageCoords, vec4(ao));

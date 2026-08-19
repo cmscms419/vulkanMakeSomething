@@ -26,12 +26,6 @@ layout(set = 0, binding = 1) uniform OptionsUBO {
     float shadowOffset;
 } options;
 
-layout(set = 0, binding = 2) uniform SsaoOptionsUBO {
-    float ssaoRadius;
-    float ssaoBias;
-    int ssaoSampleCount;
-    float ssaoPower;
-} ssaoOptions;
 
 layout (set = 0, binding = 3, rgba16f) uniform readonly image2D inputForwardImage;
 layout (set = 0, binding = 4, rgba16f) uniform writeonly image2D outputComputeImage;
@@ -286,12 +280,6 @@ void main()
         // IBL (ambient) contribution - SSAO는 간접광에만 적용 (직접광은 그림자가 담당)
         vec3 iblColor = mix(f_dielectric_brdf_ibl, f_metal_brdf_ibl, metallic);
 
-        // Apply SSAO only if sample count > 0 (performance optimization)
-        if (ssaoOptions.ssaoSampleCount > 0) {
-            float ssaoValue = imageLoad(ssaoImage, imageCoords).r;
-            ssaoValue = pow(ssaoValue, ssaoOptions.ssaoPower);
-            iblColor *= ssaoValue;
-        }
 
         // Combine IBL and direct lighting
         vec3 finalColor = iblColor + l_light;

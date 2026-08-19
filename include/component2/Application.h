@@ -54,6 +54,7 @@ namespace vkengine {
         void renderHDRControlWindow();
         void renderPostProcessingControlWindow();
         void renderCameraControlWindow();
+        void renderSSAOControlWindow();
     };
 }
 
