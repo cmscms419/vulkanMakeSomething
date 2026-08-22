@@ -57,7 +57,7 @@ namespace vkengine {
             cInt width = WIDTH;
             cInt height = HEIGHT;
             cString title = "Vulkan Game Window";
-            cBool resizable = true;
+            cBool resizable = false;    // 아직 resize는 안된다
             cBool visible = true;
             cBool decorated = true;
             cBool focused = true;
