@@ -137,6 +137,9 @@ namespace vkengine
             EXIT_TO_LOGGER("지원하지 않는 이미지 형식입니다: " + extension);
         }
 
+        this->width = resource->texWidth;
+        this->height = resource->texHeight;
+        
         if (!resource)
         {
             EXIT_TO_LOGGER("리소스가 생성되지 않았습니다 ");
@@ -175,7 +178,7 @@ namespace vkengine
             if (usCubemap)
             {
                 this->createCubeImage(
-                    resource->texWidth, resource->texHeight, vkFormat,
+                    this->width, this->height, vkFormat,
                     VK_SAMPLE_COUNT_1_BIT,
                     VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
                     VK_IMAGE_ASPECT_COLOR_BIT, mipLevels, layCounter, flags);
@@ -183,7 +186,7 @@ namespace vkengine
             else
             {
                 this->createImage(
-                    resource->texWidth, resource->texHeight, vkFormat,
+                    this->width, this->height, vkFormat,
                     VK_SAMPLE_COUNT_1_BIT,
                     VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
                     VK_IMAGE_ASPECT_COLOR_BIT, mipLevels, layCounter, flags);
@@ -220,14 +223,184 @@ namespace vkengine
         }
     }
 
+    void VKImage2D::createTextureFromKtx1(cString filepath, cBool usCubemap)
+    {
+        filepath = fixPath(filepath);
+
+        size_t extensionPos = filepath.find_last_of('.');
+        cString extension = (extensionPos != cString::npos) ? filepath.substr(extensionPos) : "";
+        std::transform(extension.begin(), extension.end(), extension.begin(), ::tolower);
+
+        if (extensionPos == cString::npos || (extension != ".ktx"))
+        {
+            EXIT_TO_LOGGER("지원하지 않는 이미지 형식입니다: " + extension);
+        }
+
+        TextureResourceKTX *resource = new TextureResourceKTX();
+        resource->createResource(filepath);
+
+        if (!resource->texture)
+        {
+            delete resource;
+            EXIT_TO_LOGGER("KTX 텍스처 리소스가 유효하지 않습니다.");
+        }
+
+        ktxTexture *baseTexture = resource->texture;
+        cUint32_t mipLevels = baseTexture->numLevels;
+        cUint32_t layCounter = usCubemap ? 6 : 1;
+        VkFormat vkFormat = ktxTexture_GetVkFormat(baseTexture);
+        ktx_uint8_t *ktxTextureData = ktxTexture_GetData(baseTexture);
+        ktx_size_t ktxTextureSize = ktxTexture_GetDataSize(baseTexture);
+
+        if (mipLevels == 0)
+        {
+            delete resource;
+            EXIT_TO_LOGGER("KTX 텍스처의 mipLevels가 유효하지 않습니다.");
+        }
+
+        if (usCubemap && baseTexture->numFaces != 6)
+        {
+            delete resource;
+            EXIT_TO_LOGGER("큐브맵을 요청했지만 KTX 텍스처의 face 수가 6이 아닙니다.");
+        }
+
+        if (vkFormat == VK_FORMAT_UNDEFINED)
+        {
+            delete resource;
+            EXIT_TO_LOGGER("KTX 텍스처의 VkFormat을 확인할 수 없습니다.");
+        }
+
+        this->width = resource->texWidth;
+        this->height = resource->texHeight;
+
+        VkImageCreateFlagBits flags = static_cast<VkImageCreateFlagBits>(usCubemap ? VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT : 0);
+
+        VKBaseBuffer2 stagingBuffer(this->ctx);
+        stagingBuffer.createStagingBuffer(ktxTextureSize, ktxTextureData);
+
+        if (usCubemap)
+        {
+            this->createCubeImage(
+                this->width, this->height, vkFormat,
+                VK_SAMPLE_COUNT_1_BIT,
+                VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+                VK_IMAGE_ASPECT_COLOR_BIT, mipLevels, layCounter, flags);
+        }
+        else
+        {
+            this->createImage(
+                this->width, this->height, vkFormat,
+                VK_SAMPLE_COUNT_1_BIT,
+                VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+                VK_IMAGE_ASPECT_COLOR_BIT, mipLevels, layCounter, flags);
+        }
+
+        VkCommandBuffer cmb = this->barrierHelper.beginSingleTimeCommands2(
+            ctx.getDevice()->logicaldevice,
+            ctx.getDevice()->transferCommandPool,
+            VK_COMMAND_BUFFER_LEVEL_PRIMARY);
+
+        this->barrierHelper.transitionImageLayout2(
+            cmb, this->image,
+            VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+            VK_ACCESS_2_TRANSFER_WRITE_BIT,
+            VK_PIPELINE_STAGE_2_TRANSFER_BIT);
+
+        vkengine::helper::resource::copyBufferToImageKTX2(
+            cmb, stagingBuffer.Buffer(), this->image,
+            this->width, this->height,
+            mipLevels, baseTexture, usCubemap);
+
+        this->barrierHelper.transitionImageLayout2(
+            cmb, this->image,
+            VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+            VK_ACCESS_2_SHADER_READ_BIT,
+            VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT);
+
+        this->barrierHelper.endSingleTimeCommands2(
+            ctx.getDevice()->logicaldevice,
+            ctx.getDevice()->transferCommandPool,
+            ctx.getDevice()->transferVKQueue,
+            cmb);
+
+        delete resource;
+    }
+
+    void VKImage2D::createTextureFromPNG(cString filepath, cBool usCubemap, cBool sRGB)
+    {
+
+        TextureResourceBase *resource = nullptr;
+
+        resource = new TextureResourcePNG();
+        resource->createResource(filepath);
+
+        if (!resource->data)
+        {
+            EXIT_TO_LOGGER("pixelData is nullptr");
+        }
+
+        VkFormat imageFormat{};
+
+        switch (resource->texChannels)
+        {
+        case 4:
+            imageFormat = sRGB ? VK_FORMAT_R8G8B8A8_SRGB : VK_FORMAT_R8G8B8A8_UNORM;
+            break;
+        default:
+            EXIT_TO_LOGGER("지원하지 않는 이미지 채널 수입니다: " + std::to_string(resource->texChannels));
+            break;
+        }
+
+        this->width = resource->texWidth;
+        this->height = resource->texHeight;
+
+        VkDeviceSize imageSize = width * height * resource->texChannels * sizeof(cUChar);
+
+        VKBaseBuffer2 stagingBuffer(this->ctx);
+        stagingBuffer.createStagingBuffer(imageSize, resource->data);
+
+        this->createImage(
+            width, height, imageFormat,
+            VK_SAMPLE_COUNT_1_BIT,
+            VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+            VK_IMAGE_ASPECT_COLOR_BIT, 1, 1, (VkImageCreateFlagBits)0);
+
+        VkCommandBuffer cmb = this->barrierHelper.beginSingleTimeCommands2(
+            ctx.getDevice()->logicaldevice,
+            ctx.getDevice()->transferCommandPool,
+            VK_COMMAND_BUFFER_LEVEL_PRIMARY);
+
+        this->barrierHelper.transitionImageLayout2(
+            cmb, this->image,
+            VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+            VK_ACCESS_2_TRANSFER_WRITE_BIT,
+            VK_PIPELINE_STAGE_2_TRANSFER_BIT);
+
+        vkengine::helper::resource::copyBufferToImage3(
+            cmb, stagingBuffer.Buffer(), this->image, width, height);
+
+        this->barrierHelper.transitionImageLayout2(
+            cmb, this->image,
+            VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+            VK_ACCESS_2_SHADER_READ_BIT,
+            VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT);
+
+        this->barrierHelper.endSingleTimeCommands2(
+            ctx.getDevice()->logicaldevice,
+            ctx.getDevice()->transferCommandPool,
+            ctx.getDevice()->transferVKQueue,
+            cmb);
+    }
+
     void VKImage2D::createTextureFromImage(cString file, cBool usCubemap, cBool sRGB)
     {
+        // 추후 ktx 등 여러 파일 포맷을 로드할 수 있게 만들어야 함
         size_t extensionPos = file.find_last_of('.');
         cString extension = (extensionPos != cString::npos) ? file.substr(extensionPos) : "";
         std::transform(extension.begin(), extension.end(), extension.begin(), ::tolower);
 
         if (extensionPos == cString::npos ||
-            (extension != ".png" && extension != ".jpg" && extension != ".jpeg"))
+            (extension != ".png" && extension != ".jpg" && extension != ".jpeg" && extension != ".ktx"))
         {
             EXIT_TO_LOGGER("지원하지 않는 이미지 형식입니다: " + extension);
         }
@@ -237,21 +410,17 @@ namespace vkengine
             EXIT_TO_LOGGER("PNG, JPG는 큐브맵을 제공하지 않습니다.");
         }
 
-        TextureResourceBase *resource = nullptr;
-
         if (extension == ".png")
         {
-            resource = new TextureResourcePNG();
-            resource->createResource(file);
+            this->createTextureFromPNG(file, usCubemap, sRGB);
         }
-        else
+        else if (extension == ".ktx")
         {
-            EXIT_TO_LOGGER("지원하지 않는 이미지 형식입니다: " + extension);
+            this->createTextureFromKtx1(file, usCubemap);
         }
-
-        if (resource != nullptr)
+        else if (extension == ".ktx2")
         {
-            this->createTextureFromPixelData(resource->data, resource->texWidth, resource->texHeight, resource->texChannels, sRGB);
+            this->createTextureFromKtx2(file, usCubemap);
         }
         else
         {
@@ -323,8 +492,8 @@ namespace vkengine
                                   VK_IMAGE_USAGE_TRANSFER_DST_BIT;
 
         this->createImage(static_cast<cUint32_t>(width), static_cast<cUint32_t>(height),
-                    format, VK_SAMPLE_COUNT_1_BIT, usage,
-                    VK_IMAGE_ASPECT_COLOR_BIT, 1, 1, static_cast<VkImageCreateFlagBits>(0));
+                          format, VK_SAMPLE_COUNT_1_BIT, usage,
+                          VK_IMAGE_ASPECT_COLOR_BIT, 1, 1, static_cast<VkImageCreateFlagBits>(0));
     }
 
     void VKImage2D::createShadowMap(cUint16_t width, cUint32_t height, VkFormat format, VkSampleCountFlagBits sampleCount)
@@ -333,7 +502,7 @@ namespace vkengine
                                   VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
 
         this->createImage(width, height, format, sampleCount, usage,
-                    VK_IMAGE_ASPECT_DEPTH_BIT, 1, 1, static_cast<VkImageCreateFlagBits>(0));
+                          VK_IMAGE_ASPECT_DEPTH_BIT, 1, 1, static_cast<VkImageCreateFlagBits>(0));
     }
 
     void VKImage2D::createDepthStencil(cUint32_t width, cUint32_t height, cBool onlyDepth)
@@ -344,7 +513,7 @@ namespace vkengine
         this->aspectFlags = VK_IMAGE_ASPECT_DEPTH_BIT;
 
         VkFormat format = ctx.getDepthStencil()->depthFormat;
-        
+
         if (!onlyDepth)
         {
             this->aspectFlags |= ((format >= VK_FORMAT_D16_UNORM_S8_UINT) ? VK_IMAGE_ASPECT_STENCIL_BIT : 0);

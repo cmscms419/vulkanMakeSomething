@@ -24,6 +24,8 @@ namespace vkengine
                              VkImageAspectFlags aspectMask, uint32_t mipLevels, uint32_t arrayLayers, VkImageCreateFlagBits flags);
 
         void createTextureFromKtx2(cString filepath, cBool usCubemap);
+        void createTextureFromKtx1(cString filepath, cBool usCubemap);
+        void createTextureFromPNG(cString filepath, cBool usCubemap, cBool sRGB);
         void createTextureFromImage(cString filepath, cBool usCubemap, cBool sRGB);
         void createTextureFromPixelData(cUChar *pixelData, cUint32_t width, cUint32_t height, cUint32_t channels, cBool sRGB);
         void createGeneralStorage(cUint16_t width, cUint32_t height, VkFormat format = VK_FORMAT_R16G16B16A16_SFLOAT);

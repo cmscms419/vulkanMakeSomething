@@ -27,24 +27,24 @@ layout(set = 0, binding = 1) uniform OptionsUBO {
 } options;
 
 
-layout (set = 0, binding = 3, rgba16f) uniform readonly image2D inputForwardImage;
-layout (set = 0, binding = 4, rgba16f) uniform writeonly image2D outputComputeImage;
-layout (set = 0, binding = 5) uniform sampler2D depthTexture;
+layout (set = 0, binding = 2, rgba16f) uniform readonly image2D inputForwardImage;
+layout (set = 0, binding = 3, rgba16f) uniform writeonly image2D outputComputeImage;
+layout (set = 0, binding = 4) uniform sampler2D depthTexture;
 
 // G-buffer textures
-layout(set = 0, binding = 6) uniform sampler2D gAlbedo;    // Albedo RGB + Metallic A
-layout(set = 0, binding = 7) uniform sampler2D gNormal;   // World Normal RGB + Roughness A  
-layout(set = 0, binding = 8) uniform sampler2D gPosition; // World Position RGB + Depth A
-layout(set = 0, binding = 9) uniform sampler2D gMaterial; // RGB: emissive color, A: AO
-layout(set = 0, binding = 10) uniform sampler2DShadow shadowMap;
+layout(set = 0, binding = 5) uniform sampler2D gAlbedo;    // Albedo RGB + Metallic A
+layout(set = 0, binding = 6) uniform sampler2D gNormal;   // World Normal RGB + Roughness A  
+layout(set = 0, binding = 7) uniform sampler2D gPosition; // World Position RGB + Depth A
+layout(set = 0, binding = 8) uniform sampler2D gMaterial; // RGB: emissive color, A: AO
+layout(set = 0, binding = 9) uniform sampler2DShadow shadowMap;
 
 // IBL textures for PBR lighting
-layout(set = 0, binding = 11) uniform samplerCube prefilteredMap;
-layout(set = 0, binding = 12) uniform samplerCube irradianceMap;
-layout(set = 0, binding = 13) uniform sampler2D brdfLut;
+layout(set = 0, binding = 10) uniform samplerCube prefilteredMap;
+layout(set = 0, binding = 11) uniform samplerCube irradianceMap;
+layout(set = 0, binding = 12) uniform sampler2D brdfLut;
 
 // SSAO result (computed by ssao.comp + ssaoBlur.comp passes)
-layout(set = 0, binding = 14, r8) uniform readonly image2D ssaoImage;
+layout(set = 0, binding = 13, r8) uniform readonly image2D ssaoImage;
 
 const float PI = 3.14159265359;
 const float MAX_REFLECTION_LOD = 4.0;
@@ -280,6 +280,8 @@ void main()
         // IBL (ambient) contribution - SSAO는 간접광에만 적용 (직접광은 그림자가 담당)
         vec3 iblColor = mix(f_dielectric_brdf_ibl, f_metal_brdf_ibl, metallic);
 
+        // SSAO 적용 - pow(ssaoPower) 는 ssao.comp 에서 이미 적용되어 있다
+        iblColor *= imageLoad(ssaoImage, imageCoords).r;
 
         // Combine IBL and direct lighting
         vec3 finalColor = iblColor + l_light;

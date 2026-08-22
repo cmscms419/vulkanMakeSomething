@@ -447,7 +447,6 @@ namespace vkengine
         {
             lightDeferredDescriptorSets[i].create(this->ctx, {std::ref(sceneDataUniform[i].Buffer()),
                                                               std::ref(optionsUniform[i].Buffer()),
-                                                              std::ref(ssaoParamsUniform[i].Buffer()),
                                                               std::ref(*this->images["DeferredToCompute"]),
                                                               std::ref(*this->images["LightDeferred"]),
                                                               std::ref(*this->images["depthStencil"]),

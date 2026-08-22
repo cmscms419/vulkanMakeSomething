@@ -96,14 +96,20 @@ void main() {
     }
 
     vec3 baseColor = material.baseColorFactor.rgb * baseColorRGBA.rgb;
-    float metallic = material.metallicFactor * pushConstants.coeffs[4];
-    float roughness = material.roughnessFactor * pushConstants.coeffs[5];
+    float metallic = material.metallicFactor;
+    float roughness = material.roughnessFactor;
 
     if(options.textureOn != 0 && material.metallicRoughnessTextureIndex >= 0){
         vec3 metallicRoughness = texture(materialTextures[nonuniformEXT(material.metallicRoughnessTextureIndex)], fragTexCoord).rgb;
         metallic *= metallicRoughness.b; // Blue channel
         roughness *= metallicRoughness.g; // Green channel
     }
+
+    // GUI 디버그 오프셋. coeffs[4]/[5] 기본값 0 = 저작된 머티리얼 값 그대로.
+    // 곱셈이 아니라 덧셈인 이유: metallicFactor 가 0 인 머티리얼(예: sponza 전 머티리얼)에서는
+    // 곱셈으로는 슬라이더가 영원히 0 에 묶여 아무 효과가 없다.
+    metallic += pushConstants.coeffs[4];
+    roughness += pushConstants.coeffs[5];
 
     float ao = 1.0;
     if(options.textureOn != 0 && material.occlusionTextureIndex >= 0){
