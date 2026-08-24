@@ -90,7 +90,7 @@ struct ApplicationConfig
         bistro.autoPlayAnimation = false;
 
         config.models = {character, bistro};
-        config.RanderGraphfilePath = "/renderGraph.json";
+        config.RanderGraphfilePath = "renderGraph.json";
 
         return config;
     }

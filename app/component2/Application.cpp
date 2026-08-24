@@ -631,50 +631,6 @@ namespace vkengine
             }
         }
 
-        if (ImGui::CollapsingHeader("Presets", ImGuiTreeNodeFlags_DefaultOpen))
-        {
-            // 기준 구현(LearnOpenGL)의 값 — 현재 결과와 비교할 기준선
-            if (ImGui::Button("LearnOpenGL"))
-            {
-                ssao.ssaoRadius = 0.5f;
-                ssao.ssaoBias = 0.025f;
-                ssao.ssaoSampleCount = 64;
-                ssao.ssaoPower = 1.0f;
-                savedSampleCount = ssao.ssaoSampleCount;
-            }
-
-            ImGui::SameLine();
-            if (ImGui::Button("Engine Default"))
-            {
-                ssao.ssaoRadius = 0.5f;
-                ssao.ssaoBias = 0.025f;
-                ssao.ssaoSampleCount = 16;
-                ssao.ssaoPower = 2.0f;
-                savedSampleCount = ssao.ssaoSampleCount;
-            }
-
-            // 접촉 그림자 확인용 (좁은 반경)
-            if (ImGui::Button("Narrow (contact)"))
-            {
-                ssao.ssaoRadius = 0.1f;
-                ssao.ssaoBias = 0.01f;
-                ssao.ssaoSampleCount = 32;
-                ssao.ssaoPower = 2.0f;
-                savedSampleCount = ssao.ssaoSampleCount;
-            }
-
-            ImGui::SameLine();
-            // 넓은 환경 차폐 확인용
-            if (ImGui::Button("Wide (ambient)"))
-            {
-                ssao.ssaoRadius = 2.0f;
-                ssao.ssaoBias = 0.05f;
-                ssao.ssaoSampleCount = 32;
-                ssao.ssaoPower = 1.5f;
-                savedSampleCount = ssao.ssaoSampleCount;
-            }
-        }
-
         ImGui::EndDisabled();
 
         ImGui::Separator();
