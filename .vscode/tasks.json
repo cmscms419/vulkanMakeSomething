@@ -228,6 +228,54 @@
       }
     },
     {
+      "label": "Build: ResumeDemo2 (Debug)",
+      "type": "shell",
+      "command": "C:/Program Files/Microsoft Visual Studio/2022/Community/MSBuild/Current/Bin/MSBuild.exe",
+      "args": [
+        "${workspaceFolder}/Project/ResumeDemo2/ResumeDemo2.vcxproj",
+        "/p:Configuration=Debug",
+        "/p:Platform=x64",
+        "/p:SolutionDir=${workspaceFolder}/Project/",
+        "/v:minimal"
+      ],
+      "dependsOrder": "sequence",
+      "dependsOn": [
+        "Build: common (Debug)",
+        "Build: basicEngine2 (Debug)",
+        "Build: component2 (Debug)"
+      ],
+      "group": "build",
+      "problemMatcher": "$msCompile",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "Build: ResumeDemo2 (Release)",
+      "type": "shell",
+      "command": "C:/Program Files/Microsoft Visual Studio/2022/Community/MSBuild/Current/Bin/MSBuild.exe",
+      "args": [
+        "${workspaceFolder}/Project/ResumeDemo2/ResumeDemo2.vcxproj",
+        "/p:Configuration=Release",
+        "/p:Platform=x64",
+        "/p:SolutionDir=${workspaceFolder}/Project/",
+        "/v:minimal"
+      ],
+      "dependsOrder": "sequence",
+      "dependsOn": [
+        "Build: common (Release)",
+        "Build: basicEngine2 (Release)",
+        "Build: component2 (Release)"
+      ],
+      "group": "build",
+      "problemMatcher": "$msCompile",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      }
+    },
+    {
       "label": "Build: PhysicalSimulation (Debug)",
       "type": "shell",
       "command": "C:/Program Files/Microsoft Visual Studio/2022/Community/MSBuild/Current/Bin/MSBuild.exe",
