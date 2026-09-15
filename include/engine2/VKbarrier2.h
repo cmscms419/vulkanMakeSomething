@@ -8,6 +8,8 @@
 
 namespace vkengine {
 
+    class VKImageShaderResource;
+
     class VKBarrierHelper
     {
     public:
@@ -178,10 +180,12 @@ namespace vkengine {
         };
 
         // 배치 처리 요청 단위
+        // 이미지/배리어 상태를 따로 받지 않고 리소스 하나만 받는다.
+        // 전환 후 디스크립터 바인딩 정보(descriptorType, imageInfo.imageLayout)까지
+        // 함께 갱신해야 하므로 셋이 어긋날 여지를 없앤다.
         struct TransitionRequest {
-            VkImage          image;
-            VKBarrierHelper* helper;  // 비소유 포인터 (VKImageShaderResource 소유)
-            BarrierParams    desired;
+            VKImageShaderResource* resource; // 비소유 포인터
+            BarrierParams          desired;
         };
 
         // 단일 배리어 구조체 생성 — 전환 불필요 시 nullopt, vkCmdPipelineBarrier2 호출 안 함

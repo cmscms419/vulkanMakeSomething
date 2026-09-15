@@ -33,7 +33,6 @@ namespace vkengine
         void createDepthStencil(cUint32_t width, cUint32_t height, cBool onlyDepth = false);
         void cleanup() override;
 
-        VkImage getImage() { return this->image; }
         VkImageView getImageView() { return this->imageView; }
         cUint32_t getHeight() { return this->height; }
         cUint32_t getWidth() { return this->width; }

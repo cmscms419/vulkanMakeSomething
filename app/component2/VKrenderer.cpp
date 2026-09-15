@@ -551,23 +551,6 @@ namespace vkengine
 
     void VKRenderer::makeSSAOPass(VkCommandBuffer cmd, cUint32_t currentFrame, cUint32_t imageIndex)
     {
-        // 입력: depth + gNormal (G-buffer 기록 완료 후 샘플링 가능 상태로 전환)
-        this->images["depthStencil"]->transitionTo(cmd,
-                                                   VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-                                                   VK_ACCESS_2_SHADER_READ_BIT,
-                                                   VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT);
-
-        this->images["gNormal"]->transitionTo(cmd,
-                                              VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-                                              VK_ACCESS_2_SHADER_READ_BIT,
-                                              VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT);
-
-        // 출력: ssaoRaw (이전 프레임의 blur 읽기와의 해저드는 access 전환 배리어가 처리)
-        this->images["ssaoRaw"]->transitionTo(cmd,
-                                              VK_IMAGE_LAYOUT_GENERAL,
-                                              VK_ACCESS_2_SHADER_WRITE_BIT,
-                                              VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT);
-
         vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_COMPUTE, pipelines.at("ssao").getPipeline());
 
         const auto descriptorSets = std::vector{this->ssaoDescriptorSets[currentFrame].get()};
@@ -583,17 +566,6 @@ namespace vkengine
 
     void VKRenderer::makeSSAOBlurPass(VkCommandBuffer cmd, cUint32_t currentFrame, cUint32_t imageIndex)
     {
-        // ssaoRaw: write → read 전환 (compute 간 배리어 발행)
-        this->images["ssaoRaw"]->transitionTo(cmd,
-                                              VK_IMAGE_LAYOUT_GENERAL,
-                                              VK_ACCESS_2_SHADER_READ_BIT,
-                                              VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT);
-
-        this->images["ssaoBlur"]->transitionTo(cmd,
-                                               VK_IMAGE_LAYOUT_GENERAL,
-                                               VK_ACCESS_2_SHADER_WRITE_BIT,
-                                               VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT);
-
         vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_COMPUTE, pipelines.at("ssaoBlur").getPipeline());
 
         const auto descriptorSets = std::vector{this->ssaoBlurDescriptorSet.get()};
@@ -609,43 +581,6 @@ namespace vkengine
 
     void VKRenderer::makeLightDeferredPass(VkCommandBuffer cmd, cUint32_t currentFrame, cUint32_t imageIndex)
     {
-        this->images["DeferredToCompute"]->transitionTo(cmd,
-                                                        VK_IMAGE_LAYOUT_GENERAL,
-                                                        VK_ACCESS_2_SHADER_READ_BIT,
-                                                        VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT);
-
-        // computeToPost_: Empty buffer → writeonly storage image for SSAO output
-        this->images["LightDeferred"]->transitionTo(
-            cmd,
-            VK_IMAGE_LAYOUT_GENERAL,
-            VK_ACCESS_2_SHADER_WRITE_BIT,
-            VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT);
-
-        // G-buffer images: COLOR_ATTACHMENT_OPTIMAL → SHADER_READ_ONLY_OPTIMAL for compute shader sampling
-        for (const auto &name : {"gAlbedo", "gNormal", "gPosition", "gMaterial"})
-        {
-            this->images.at(name)->transitionTo(cmd,
-                                                VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-                                                VK_ACCESS_2_SHADER_READ_BIT,
-                                                VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT);
-        }
-
-        this->images["depthStencil"]->transitionTo(cmd,
-                                                   VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-                                                   VK_ACCESS_2_SHADER_READ_BIT,
-                                                   VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT);
-
-        this->images["shadowMap"]->transitionTo(cmd,
-                                                VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-                                                VK_ACCESS_2_SHADER_READ_BIT,
-                                                VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT);
-
-        // ssaoBlur: write → read 전환 (SSAO blur 결과를 라이팅에서 읽음)
-        this->images["ssaoBlur"]->transitionTo(cmd,
-                                               VK_IMAGE_LAYOUT_GENERAL,
-                                               VK_ACCESS_2_SHADER_READ_BIT,
-                                               VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT);
-
         // Bind SSAO compute pipeline
         vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_COMPUTE, pipelines.at("lightdeferred").getPipeline());
 
@@ -851,15 +786,6 @@ namespace vkengine
 
     void VKRenderer::makeInstancePass(VkCommandBuffer cmd, cUint32_t currentFrame, cUint32_t imageIndex)
     {
-        if (!instanceConfig.isInstanced || instanceConfig.maxInstances == 0 || instanceConfig.currentInstanceCount > instanceConfig.maxInstances)
-        {
-            PRINT_TO_LOGGER("instanceConfig.isInstanced: " + std::to_string(instanceConfig.isInstanced));
-            PRINT_TO_LOGGER("instanceConfig.maxInstances: " + std::to_string(instanceConfig.maxInstances));
-            PRINT_TO_LOGGER("instanceConfig.currentInstanceCount: " + std::to_string(instanceConfig.currentInstanceCount));
-            PRINT_TO_LOGGER("instanceConfig.maxInstances: " + std::to_string(instanceConfig.maxInstances));
-            return;
-        }
-
         VkRect2D renderArea = {0, 0, this->currentScissor.extent.width, this->currentScissor.extent.height};
 
         std::vector<VkRenderingAttachmentInfo> colorAttachments{};

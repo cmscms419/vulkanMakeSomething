@@ -62,6 +62,7 @@ namespace vkengine
         void updateImageInfo(VkDescriptorImageInfo &imageInfo);
 
         VKBarrierHelper &getBarrierHelper();
+        VkImage getImage();
 
         void transitionTo(VkCommandBuffer commandBuffer, VkImageLayout newLayout, VkAccessFlags2 newAccess, VkPipelineStageFlags2 newStage);
         void transitionToColorAttachment(VkCommandBuffer commandBuffer);

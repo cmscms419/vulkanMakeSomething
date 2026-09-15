@@ -33,6 +33,11 @@ namespace vkengine
         return this->barrierHelper;
     }
 
+    VkImage VKImageShaderResource::getImage()
+    {
+        return this->image;
+    }
+
     void VKImageShaderResource::transitionTo(VkCommandBuffer commandBuffer, VkImageLayout newLayout, VkAccessFlags2 newAccess, VkPipelineStageFlags2 newStage)
     {
         this->barrierHelper.transitionImageLayout2(commandBuffer, this->image, newLayout, newAccess, newStage);

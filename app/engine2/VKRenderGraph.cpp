@@ -88,8 +88,10 @@ namespace vkengine
         }
     }
 
-    // ResourceAccess enum → VKBarrierHelperFunction::BarrierParams 변환
-    // transitionToXxx()에 하드코딩됐던 값들을 한 곳에 집중
+    // 샘플링 읽기(ShaderReadOnly)는 그래픽 패스(FRAGMENT)와 컴퓨트 패스(COMPUTE) 양쪽에서 일어난다.
+    // dstStageMask 를 실제보다 넓게 잡는 것은 과동기화일 뿐 항상 안전하므로,
+    // 패스 종류를 따로 받지 않고 두 스테이지를 함께 준다.
+    // 다만 추후 문제가 발생시 각 패스 종류를 구분하여 dstStageMask 를 좁게 잡는 방법을 고려할 수 있다.
     static VKBarrierHelperFunction::BarrierParams toBarrierParams(ResourceAccess access)
     {
         switch (access)
@@ -105,7 +107,11 @@ namespace vkengine
         case ResourceAccess::ShaderReadOnly:
             return { VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
                      VK_ACCESS_2_SHADER_READ_BIT,
-                     VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT };
+                     VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT };
+        case ResourceAccess::StorageRead:
+            return { VK_IMAGE_LAYOUT_GENERAL,
+                     VK_ACCESS_2_SHADER_READ_BIT,
+                     VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT };
         case ResourceAccess::ShaderWriteOnly:
             return { VK_IMAGE_LAYOUT_GENERAL,
                      VK_ACCESS_2_SHADER_WRITE_BIT,
@@ -138,8 +144,7 @@ namespace vkengine
             if (res.access == ResourceAccess::NOTTHING) continue;
 
             requests.push_back({
-                entry.image->getImage(),
-                &entry.image->getBarrierHelper(),
+                entry.image.get(),
                 toBarrierParams(res.access)
             });
         }

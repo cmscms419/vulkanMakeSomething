@@ -1,4 +1,5 @@
 ﻿#include "VKbarrier2.h"
+#include "VKShaderResource.h"
 #include "helper.h"
 #include "log.h"
 using namespace vkengine::Log;
@@ -178,7 +179,10 @@ namespace vkengine
         for (size_t i = 0; i < requests.size(); ++i)
         {
             auto &req = requests[i];
-            auto barrier = buildBarrier(req.image, *req.helper, req.desired);
+            if (req.resource == nullptr)
+                continue;
+
+            auto barrier = buildBarrier(req.resource->getImage(), req.resource->getBarrierHelper(), req.desired);
             if (barrier.has_value())
             {
                 barriers.push_back(*barrier);
@@ -198,9 +202,15 @@ namespace vkengine
         // 제출 완료 후 상태 일괄 확정
         for (size_t idx : updatedIndices)
         {
-            requests[idx].helper->Currentaccess() = requests[idx].desired.access;
-            requests[idx].helper->Currentlayout() = requests[idx].desired.layout;
-            requests[idx].helper->Currentstage() = requests[idx].desired.stage;
+            VKImageShaderResource *resource = requests[idx].resource;
+            VKBarrierHelper &helper = resource->getBarrierHelper();
+
+            helper.Currentaccess() = requests[idx].desired.access;
+            helper.Currentlayout() = requests[idx].desired.layout;
+            helper.Currentstage() = requests[idx].desired.stage;
+
+            // transitionTo() 경로와 동일하게 디스크립터 바인딩 정보도 새 레이아웃에 맞춘다
+            resource->updateResourceBindingAfterTransition();
         }
     }
 

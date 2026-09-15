@@ -47,31 +47,39 @@
             "shaderResources": [
                 {
                     "handle": "depthStencil",
-                    "access": "NOTTHING"
+                    "access": "ShaderReadOnly"
                 },
                 {
                     "handle": "LightDeferred",
-                    "access": "NOTTHING"
+                    "access": "ShaderWriteOnly"
                 },
                 {
                     "handle": "DeferredToCompute",
-                    "access": "NOTTHING"
+                    "access": "StorageRead"
                 },
                 {
                     "handle": "gAlbedo",
-                    "access": "NOTTHING"
+                    "access": "ShaderReadOnly"
                 },
                 {
                     "handle": "gNormal",
-                    "access": "NOTTHING"
+                    "access": "ShaderReadOnly"
                 },
                 {
                     "handle": "gPosition",
-                    "access": "NOTTHING"
+                    "access": "ShaderReadOnly"
                 },
                 {
                     "handle": "gMaterial",
-                    "access": "NOTTHING"
+                    "access": "ShaderReadOnly"
+                },
+                {
+                    "handle": "shadowDepth",
+                    "access": "ShaderReadOnly"
+                },
+                {
+                    "handle": "ssaoBlur",
+                    "access": "StorageRead"
                 }
             ]
         },
