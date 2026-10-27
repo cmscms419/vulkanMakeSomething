@@ -34,7 +34,7 @@ namespace vkMath
     constexpr cFloat XM_PIDIV2 = 1.570796327f;
     constexpr cFloat XM_PIDIV4 = 0.785398163f;
 
-    inline const cMat4 CreateRotationY(cFloat radians)
+    inline const cMat4 createRotationY(cFloat radians)
     {
         cFloat cosY = glm::cos(radians);
         cFloat sinY = glm::sin(radians);
@@ -46,7 +46,7 @@ namespace vkMath
         };
         return rotationY;
     }
-    inline const cMat4 CreateRotationX(cFloat radians)
+    inline const cMat4 createRotationX(cFloat radians)
     {
         cFloat cosX = glm::cos(radians);
         cFloat sinX = glm::sin(radians);
@@ -59,7 +59,7 @@ namespace vkMath
         };
         return rotationX;
     }
-    inline const cMat4 CreateRotationZ(cFloat radians)
+    inline const cMat4 createRotationZ(cFloat radians)
     {
         cFloat cosZ = glm::cos(radians);
         cFloat sinZ = glm::sin(radians);
@@ -73,7 +73,7 @@ namespace vkMath
         return rotationZ;
     }
 
-    inline const cMat4 fromQuatToMatrix(cQuat quat)
+    inline const cMat4 makeMatrixFromQuat(cQuat quat)
     {
         return cMat4(
             1.0f - 2.0f * (quat.y * quat.y + quat.z * quat.z), 2.0f * (quat.x * quat.y - quat.w * quat.z), 2.0f * (quat.x * quat.z + quat.w * quat.y), 0.0f,
@@ -83,9 +83,9 @@ namespace vkMath
         );
     }
 
-    const cMat4 CreateRotation(cFloat yaw, cFloat pitch, cFloat roll);
+    const cMat4 createRotation(cFloat yaw, cFloat pitch, cFloat roll);
 
-    const cVec3 RotationQuat(const cQuat q, const cVec3 dir);
+    const cVec3 rotateByQuat(const cQuat q, const cVec3 dir);
 
     const cMat4 convertQuatToMatrix(const cQuat q);
 

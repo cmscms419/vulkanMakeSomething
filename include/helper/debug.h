@@ -11,7 +11,7 @@ namespace vkengine {
 
         void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger, const VkAllocationCallbacks* pAllocator);
 
-        void SetObjectName(VkDevice device, uint64_t objectHandle, VkObjectType objectType, const char* name);
+        void setObjectName(VkDevice device, uint64_t objectHandle, VkObjectType objectType, const char* name);
 
         VkResult CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugMessenger);
     }

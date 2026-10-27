@@ -22,7 +22,7 @@ struct Plane
     Plane(const cVec3& p1, const cVec3& p2, const cVec3& p3);
     Plane(const cVec3& normal, const cVec3& point);
 
-    cFloat distanceToPoint(const cVec3& point) const;
+    cFloat getDistanceToPoint(const cVec3& point) const;
 };
 
 struct AABB
@@ -47,7 +47,7 @@ struct AABB
     // Transform AABB by matrix
     AABB transform(const cMat4& matrix) const;
 
-    static AABB fromCenterExtents(const cVec3& center, const cVec3& halfExtents) {
+    static AABB makeFromCenterExtents(const cVec3& center, const cVec3& halfExtents) {
         return AABB(center - halfExtents, center + halfExtents);
     }
 

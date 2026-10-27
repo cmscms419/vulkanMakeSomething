@@ -2,7 +2,7 @@
 
 namespace vkengine
 {
-    const Bindinginfo* ShaderResourceLayout::findBinding(cUint32_t set, cUint32_t binding) const
+    const BindingInfo* ShaderResourceLayout::findBinding(cUint32_t set, cUint32_t binding) const
     {
         if (this->sets.find(set) != this->sets.end())
         {
@@ -16,7 +16,7 @@ namespace vkengine
         return nullptr; // 해당 set과 binding을 찾지 못한 경우
     }
 
-    const Bindinginfo* ShaderResourceLayout::findBindingByName(const cString &name) const
+    const BindingInfo* ShaderResourceLayout::findBindingByName(const cString &name) const
     {
         for (const auto &descriptorSet : this->sets)
         {
@@ -24,14 +24,14 @@ namespace vkengine
             {
                 if (bindingInfo.second.name == name)
                 {
-                    return &bindingInfo.second; // bindingInfo.second는 Bindinginfo 객체
+                    return &bindingInfo.second; // bindingInfo.second는 BindingInfo 객체
                 }
             }
         }
         return nullptr; // 해당 이름을 가진 바인딩을 찾지 못한 경우
     }
 
-    size_t BindingbaseHash::operator()(const std::vector<Bindingbase> &bindings) const
+    size_t BindingBaseHash::operator()(const std::vector<BindingBase> &bindings) const
     {
         size_t hash = 0;
 
@@ -43,7 +43,7 @@ namespace vkengine
         return hash;
     }
 
-    bool BindingbaseEqual::operator()(const std::vector<Bindingbase> &lhs, const std::vector<Bindingbase> &rhs) const
+    bool BindingBaseEqual::operator()(const std::vector<BindingBase> &lhs, const std::vector<BindingBase> &rhs) const
     {
         if (lhs.size() != rhs.size())
         {

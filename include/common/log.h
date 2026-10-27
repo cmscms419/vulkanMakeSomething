@@ -30,7 +30,7 @@ namespace vkengine {
         };
 
         template <typename... Args>
-        void PRINT_TO_LOGGER(const cString& fmt, Args&&... args)
+        void printToLogger(const cString& fmt, Args&&... args)
         {
             char buffer[2048];
             snprintf(buffer, sizeof(buffer), fmt.c_str(), args...);
@@ -38,7 +38,7 @@ namespace vkengine {
         }
 
         template <typename... Args>
-        void EXIT_TO_LOGGER(const std::string& fmt, Args&&... args)
+        void exitToLogger(const std::string& fmt, Args&&... args)
         {
             char buffer[2048];
             snprintf(buffer, sizeof(buffer), fmt.c_str(), args...);

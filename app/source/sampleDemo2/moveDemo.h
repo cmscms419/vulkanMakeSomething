@@ -25,7 +25,7 @@ namespace vkengine
         virtual void update() override;
 
     private:
-        void setupCamera();                      // 시작 위치 / near·far 구성
+        void initCamera();                      // 시작 위치 / near·far 구성
         void updateCameraLook();                 // 마우스 회전 처리
         void updateCameraMove(cFloat deltaTime); // 키보드 이동 처리
         void updateLightSpaceMatrix();           // 그림자용 lightSpaceMatrix 갱신

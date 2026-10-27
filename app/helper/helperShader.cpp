@@ -3,7 +3,6 @@
 
 #include "log.h"
 
-using namespace vkengine::Log;
 
 namespace vkengine
 {
@@ -56,7 +55,7 @@ namespace vkengine
                 case VK_FORMAT_R32G32B32A32_UINT:
                     return 16;
                 default:
-                    EXIT_TO_LOGGER("Unsupported format.");
+                    Log::exitToLogger("Unsupported format.");
                     return 0; // Unknown/unsupported format
                 }
             }
@@ -70,12 +69,12 @@ namespace vkengine
                     &reflectShaderModule);
                 if (reflectResult != SPV_REFLECT_RESULT_SUCCESS)
                 {
-                    EXIT_TO_LOGGER("Failed to create SPIR-V reflection module: %d", reflectResult);
+                    Log::exitToLogger("Failed to create SPIR-V reflection module: %d", reflectResult);
                 }
 
                 if (reflectShaderModule._internal == nullptr)
                 {
-                    EXIT_TO_LOGGER("SPIR-V reflection module internal structure is null.");
+                    Log::exitToLogger("SPIR-V reflection module internal structure is null.");
                 }
 
                 return reflectShaderModule;
@@ -98,119 +97,119 @@ namespace vkengine
 
             void printReflectionInfo(const SpvReflectShaderModule &reflectModule)
             {
-                PRINT_TO_LOGGER("=== SPIR-V Shader Reflection Information ===");
-                PRINT_TO_LOGGER("Entry Point: ");
-                PRINT_TO_LOGGER(reflectModule.entry_point_name ? reflectModule.entry_point_name : "Unknown");
-                PRINT_TO_LOGGER("");
-                PRINT_TO_LOGGER("Shader Stage: %s", getShaderStageString(reflectModule.shader_stage));
-                PRINT_TO_LOGGER("Source Language: ");
+                Log::printToLogger("=== SPIR-V Shader Reflection Information ===");
+                Log::printToLogger("Entry Point: ");
+                Log::printToLogger(reflectModule.entry_point_name ? reflectModule.entry_point_name : "Unknown");
+                Log::printToLogger("");
+                Log::printToLogger("Shader Stage: %s", getShaderStageString(reflectModule.shader_stage));
+                Log::printToLogger("Source Language: ");
                 switch (reflectModule.source_language)
                 {
                 case SpvSourceLanguageGLSL:
-                    PRINT_TO_LOGGER("GLSL");
+                    Log::printToLogger("GLSL");
                     break;
                 case SpvSourceLanguageHLSL:
-                    PRINT_TO_LOGGER("HLSL");
+                    Log::printToLogger("HLSL");
                     break;
                 case SpvSourceLanguageOpenCL_C:
-                    PRINT_TO_LOGGER("OpenCL C");
+                    Log::printToLogger("OpenCL C");
                     break;
                 default:
-                    PRINT_TO_LOGGER("Unknown (%d)", reflectModule.source_language);
+                    Log::printToLogger("Unknown (%d)", reflectModule.source_language);
                     break;
                 }
-                PRINT_TO_LOGGER("");
+                Log::printToLogger("");
 
-                PRINT_TO_LOGGER(" v%d", reflectModule.source_language_version);
+                Log::printToLogger(" v%d", reflectModule.source_language_version);
 
                 if (reflectModule.source_file)
                 {
-                    PRINT_TO_LOGGER("Source File: %s", reflectModule.source_file);
+                    Log::printToLogger("Source File: %s", reflectModule.source_file);
                 }
 
-                PRINT_TO_LOGGER("--- Descriptor Bindings ---");
-                PRINT_TO_LOGGER("Total descriptor bindings: %d", reflectModule.descriptor_binding_count);
+                Log::printToLogger("--- Descriptor Bindings ---");
+                Log::printToLogger("Total descriptor bindings: %d", reflectModule.descriptor_binding_count);
 
                 for (uint32_t i = 0; i < reflectModule.descriptor_binding_count; ++i)
                 {
                     const SpvReflectDescriptorBinding *binding = &reflectModule.descriptor_bindings[i];
-                    PRINT_TO_LOGGER("  Binding %d:", i);
-                    PRINT_TO_LOGGER("    Name: %s", (binding->name ? binding->name : "Unknown"));
-                    PRINT_TO_LOGGER("    Set: %d", binding->set);
-                    PRINT_TO_LOGGER("    Binding: %d", binding->binding);
-                    PRINT_TO_LOGGER("    Type: %s", descriptor::getDescriptorTypeString(binding->descriptor_type));
-                    PRINT_TO_LOGGER("    Count: %d", binding->count);
+                    Log::printToLogger("  Binding %d:", i);
+                    Log::printToLogger("    Name: %s", (binding->name ? binding->name : "Unknown"));
+                    Log::printToLogger("    Set: %d", binding->set);
+                    Log::printToLogger("    Binding: %d", binding->binding);
+                    Log::printToLogger("    Type: %s", descriptor::getDescriptorTypeString(binding->descriptor_type));
+                    Log::printToLogger("    Count: %d", binding->count);
 
                     if (binding->image.dim != SpvDimMax)
                     {
-                        PRINT_TO_LOGGER("    Image Dimension: ");
+                        Log::printToLogger("    Image Dimension: ");
                         switch (binding->image.dim)
                         {
                         case SpvDim1D:
-                            PRINT_TO_LOGGER("1D");
+                            Log::printToLogger("1D");
                             break;
                         case SpvDim2D:
-                            PRINT_TO_LOGGER("2D");
+                            Log::printToLogger("2D");
                             break;
                         case SpvDim3D:
-                            PRINT_TO_LOGGER("3D");
+                            Log::printToLogger("3D");
                             break;
                         case SpvDimCube:
-                            PRINT_TO_LOGGER("Cube");
+                            Log::printToLogger("Cube");
                             break;
                         case SpvDimBuffer:
-                            PRINT_TO_LOGGER("Buffer");
+                            Log::printToLogger("Buffer");
                             break;
                         default:
-                            PRINT_TO_LOGGER("Unknown");
+                            Log::printToLogger("Unknown");
                             break;
                         }
-                        PRINT_TO_LOGGER("    Image Format: %d", binding->image.image_format);
+                        Log::printToLogger("    Image Format: %d", binding->image.image_format);
                     }
                 }
 
-                PRINT_TO_LOGGER("--- Descriptor Sets ---");
-                PRINT_TO_LOGGER("Total descriptor sets: %d", reflectModule.descriptor_set_count);
+                Log::printToLogger("--- Descriptor Sets ---");
+                Log::printToLogger("Total descriptor sets: %d", reflectModule.descriptor_set_count);
                 for (uint32_t i = 0; i < reflectModule.descriptor_set_count; ++i)
                 {
                     const SpvReflectDescriptorSet *set = &reflectModule.descriptor_sets[i];
-                    PRINT_TO_LOGGER("  Set %d: %d bindings", set->set, set->binding_count);
+                    Log::printToLogger("  Set %d: %d bindings", set->set, set->binding_count);
                 }
 
-                PRINT_TO_LOGGER("--- Input Variables ---");
-                PRINT_TO_LOGGER("Total input variables: %d", reflectModule.input_variable_count);
+                Log::printToLogger("--- Input Variables ---");
+                Log::printToLogger("Total input variables: %d", reflectModule.input_variable_count);
                 for (uint32_t i = 0; i < reflectModule.input_variable_count; ++i)
                 {
                     const SpvReflectInterfaceVariable *var = reflectModule.input_variables[i];
-                    PRINT_TO_LOGGER("  Input %d: %s", i, (var->name ? var->name : "Unknown"));
-                    PRINT_TO_LOGGER("    Location: %d", var->location);
+                    Log::printToLogger("  Input %d: %s", i, (var->name ? var->name : "Unknown"));
+                    Log::printToLogger("    Location: %d", var->location);
                 }
 
-                PRINT_TO_LOGGER("--- Output Variables ---");
-                PRINT_TO_LOGGER("Total output variables: %d", reflectModule.output_variable_count);
+                Log::printToLogger("--- Output Variables ---");
+                Log::printToLogger("Total output variables: %d", reflectModule.output_variable_count);
                 for (uint32_t i = 0; i < reflectModule.output_variable_count; ++i)
                 {
                     const SpvReflectInterfaceVariable *var = reflectModule.output_variables[i];
-                    PRINT_TO_LOGGER("  Output %d: %s", i, (var->name ? var->name : "Unknown"));
-                    PRINT_TO_LOGGER("    Location: %d", var->location);
+                    Log::printToLogger("  Output %d: %s", i, (var->name ? var->name : "Unknown"));
+                    Log::printToLogger("    Location: %d", var->location);
                 }
 
-                PRINT_TO_LOGGER("--- Push Constants ---");
-                PRINT_TO_LOGGER("Total push constant blocks: %d", reflectModule.push_constant_block_count);
+                Log::printToLogger("--- Push Constants ---");
+                Log::printToLogger("Total push constant blocks: %d", reflectModule.push_constant_block_count);
                 for (uint32_t i = 0; i < reflectModule.push_constant_block_count; ++i)
                 {
                     const SpvReflectBlockVariable *block = &reflectModule.push_constant_blocks[i];
-                    PRINT_TO_LOGGER("  Push constant block %d:", i);
-                    PRINT_TO_LOGGER("    Name: %s", (block->name ? block->name : "Unknown"));
-                    PRINT_TO_LOGGER("    Size: %d bytes", block->size);
-                    PRINT_TO_LOGGER("    Offset: %d", block->offset);
+                    Log::printToLogger("  Push constant block %d:", i);
+                    Log::printToLogger("    Name: %s", (block->name ? block->name : "Unknown"));
+                    Log::printToLogger("    Size: %d bytes", block->size);
+                    Log::printToLogger("    Offset: %d", block->offset);
                 }
 
                 // For compute shaders, show workgroup size
                 if (reflectModule.shader_stage & SPV_REFLECT_SHADER_STAGE_COMPUTE_BIT)
                 {
-                    PRINT_TO_LOGGER("--- Compute Shader Info ---");
-                    PRINT_TO_LOGGER("Local workgroup size: (%d, %d, %d)",
+                    Log::printToLogger("--- Compute Shader Info ---");
+                    Log::printToLogger("Local workgroup size: (%d, %d, %d)",
                                     reflectModule.entry_points[0].local_size.x,
                                     reflectModule.entry_points[0].local_size.y,
                                     reflectModule.entry_points[0].local_size.z);
@@ -232,7 +231,7 @@ namespace vkengine
                 case SPV_REFLECT_FORMAT_R32G32B32A32_SFLOAT:
                     return VK_FORMAT_R32G32B32A32_SFLOAT;
                 default:
-                    EXIT_TO_LOGGER("Unsupported SPIR-V format");
+                    Log::exitToLogger("Unsupported SPIR-V format");
                     return VK_FORMAT_UNDEFINED; // Unsupported or unknown format
                 }
             }
@@ -258,7 +257,7 @@ namespace vkengine
                 }
             }
 
-            cString shaderStageFlagsToString(VkShaderStageFlags flags)
+            cString convertShaderStageFlagsToString(VkShaderStageFlags flags)
             {
                 std::string result;
                 if (flags & VK_SHADER_STAGE_VERTEX_BIT)

@@ -55,19 +55,19 @@ namespace vkengine
             const QueueFamilyIndices2 findQueueFamiliesWithoutSurface(VkPhysicalDevice &device);
 
             // pyhsicalDeviceProperties를 가져오는 함수
-            void getPyhsicalDeviceProperties(VkPhysicalDevice device);
+            void getPhysicalDeviceProperties(VkPhysicalDevice device);
 
             // Fence에 대한 information을 생성하는 함수
-            VkFenceCreateInfo fenceCreateInfo(VkFenceCreateFlags flags = 0);
+            VkFenceCreateInfo makeFenceCreateInfo(VkFenceCreateFlags flags = 0);
 
             // Semaphore에 대한 information을 생성하는 함수
-            VkSemaphoreCreateInfo semaphoreCreateInfo(VkSemaphoreCreateFlags flags = 0);
+            VkSemaphoreCreateInfo makeSemaphoreCreateInfo(VkSemaphoreCreateFlags flags = 0);
 
             // commandPood에 대한 information을 생성하는 함수
-            VkCommandPoolCreateInfo commandPoolCreateInfo(cUint32_t queueFamilyIndex, VkCommandPoolCreateFlags flags = 0);
+            VkCommandPoolCreateInfo makeCommandPoolCreateInfo(cUint32_t queueFamilyIndex, VkCommandPoolCreateFlags flags = 0);
 
             // commandBuffer에 대한 information을 생성하는 함수
-            VkCommandBufferAllocateInfo commandBufferAllocateInfo(VkCommandPool pool, cUint32_t count, VkCommandBufferLevel level);
+            VkCommandBufferAllocateInfo makeCommandBufferAllocateInfo(VkCommandPool pool, cUint32_t count, VkCommandBufferLevel level);
         }
     }
 }

@@ -2,10 +2,7 @@
 
 #include "log.h"
 
-using namespace vkengine;
-using namespace vkengine::Log;
 
-using namespace vkengine;
 
 
 int main(int argc, char* argv[]) {
@@ -17,13 +14,13 @@ int main(int argc, char* argv[]) {
         root_path = path;
     }
     else {
-        EXIT_TO_LOGGER("경로를 가져오는 데 실패했습니다.");
+        vkengine::Log::exitToLogger("경로를 가져오는 데 실패했습니다.");
     }
 
 
     PostProcessingExample main(root_path, true);
 
-    main.mainLoop();
+    main.runMainLoop();
 
 
     return 0;

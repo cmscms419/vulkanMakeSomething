@@ -17,50 +17,50 @@ struct LayoutInfo
 
 namespace vkengine
 {
-    struct Bindingbase
+    struct BindingBase
     {
         cString name; // SPIR-V 바인딩 이름 (e.g. "uScene")
     };
 
-    struct Bindinginfo : public Bindingbase
+    struct BindingInfo : public BindingBase
     {
         VkDescriptorSetLayoutBinding binding; // Vulkan의 바인딩 정보 구조체
     };
 
-    struct PushConstantinfo : public Bindingbase
+    struct PushConstantInfo : public BindingBase
     {
         VkPushConstantRange range; // Vulkan의 푸시 상수 범위 구조체
     };
 
-    struct VertexInputinfo : public Bindingbase
+    struct VertexInputinfo : public BindingBase
     {
         VkVertexInputAttributeDescription attributeDescription; // Vulkan의 정점 입력 속성 설명 구조체
     };
 
     struct DescriptorSetLayout
     {
-        std::unordered_map<cUint32_t, Bindinginfo> bindings; // key : binding index, value: 해당 바인딩의 정보
+        std::unordered_map<cUint32_t, BindingInfo> bindings; // key : binding index, value: 해당 바인딩의 정보
     };
 
     struct ShaderResourceLayout
     {
         cString pipelineName;
         std::unordered_map<cUint32_t, DescriptorSetLayout> sets; // key: set index, value: 해당 set의 바인딩 정보
-        std::optional<PushConstantinfo> pushConstant; // 없으면 nullopt
+        std::optional<PushConstantInfo> pushConstant; // 없으면 nullopt
         std::vector<VertexInputinfo> vertexInputs;    // compute면 비어있음
 
-        const Bindinginfo *findBinding(cUint32_t set, cUint32_t binding) const;
-        const Bindinginfo *findBindingByName(const cString &name) const;
+        const BindingInfo *findBinding(cUint32_t set, cUint32_t binding) const;
+        const BindingInfo *findBindingByName(const cString &name) const;
     };
 
-    struct BindingbaseHash
+    struct BindingBaseHash
     {
-        size_t operator()(const std::vector<Bindingbase> &bindings) const;
+        size_t operator()(const std::vector<BindingBase> &bindings) const;
     };
 
-    struct BindingbaseEqual
+    struct BindingBaseEqual
     {
-        bool operator()(const std::vector<Bindingbase> &lhs, const std::vector<Bindingbase> &rhs) const;
+        bool operator()(const std::vector<BindingBase> &lhs, const std::vector<BindingBase> &rhs) const;
 
     };
     

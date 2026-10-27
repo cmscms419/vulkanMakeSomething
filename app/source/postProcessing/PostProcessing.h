@@ -6,11 +6,11 @@
 #include "ubo.h"
 #include "data.h"
 
-#include "VKengine2.h"
-#include "VKgui.h"
-#include "VKSamplerHandler.h"
-#include "VKUniformBuffer2.h"
-#include "VKDescriptorSet.h"
+#include "VulkanEngineWin2.h"
+#include "ImGuiRenderer.h"
+#include "SamplerHandle.h"
+#include "UniformBuffer2.h"
+#include "DescriptorSetHandle.h"
 
 namespace vkengine {
 
@@ -20,27 +20,27 @@ class PostProcessingExample : public vkengine::VulkanEngineWin2
     PostProcessingExample(std::string root_path, cBool useSwapchain);
     ~PostProcessingExample();
 
-    void mainLoop();
+    void runMainLoop();
 
   private:
 
     cString RootPath{};
     cString Path = "../../../../../../";
 
-    VKShaderManager shaderManager;
-    vkengine::gui::VKimguiRenderer guiRenderer;
+    ShaderManager shaderManager;
+    vkengine::gui::ImGuiRenderer guiRenderer;
     std::shared_ptr<vkengine::object::Camera2> camera;
 
     // Rendering pipelines
-    VKPipeLineHandle skyPipeline;
-    VKPipeLineHandle postPipeline;
+    PipelineHandle skyPipeline;
+    PipelineHandle postPipeline;
 
     // Render targets and textures
     VKskyTexture skyTextures;
-    VKImage2D hdrColorBuffer; // HDR color buffer for post-processing input
+    Image2D hdrColorBuffer; // HDR color buffer for post-processing input
 
-    VKSamplerHandler samplerLinearRepeat;
-    VKSamplerHandler samplerLinearClamp;
+    SamplerHandle samplerLinearRepeat;
+    SamplerHandle samplerLinearClamp;
 
     // Uniform buffer objects
     SceneDataUBO sceneDataUBO;
@@ -48,14 +48,14 @@ class PostProcessingExample : public vkengine::VulkanEngineWin2
     PostProcessingOptionsUBO postProcessingOptionsUBO;
 
     // Uniform buffers
-    std::vector<VKUniformBuffer2<SceneDataUBO>> sceneDataUniforms;
-    std::vector<VKUniformBuffer2<SkyOptionsUBO>> skyOptionsUniforms;
-    std::vector<VKUniformBuffer2<PostProcessingOptionsUBO>> postProcessingOptionsUniforms;
+    std::vector<UniformBuffer2<SceneDataUBO>> sceneDataUniforms;
+    std::vector<UniformBuffer2<SkyOptionsUBO>> skyOptionsUniforms;
+    std::vector<UniformBuffer2<PostProcessingOptionsUBO>> postProcessingOptionsUniforms;
 
     // Descriptor sets
-    std::vector<DescriptorSetHander> sceneDescriptorSets;
-    std::vector<DescriptorSetHander> postProcessingDescriptorSets;
-    DescriptorSetHander skyDescriptorSet;
+    std::vector<DescriptorSetHandle> sceneDescriptorSets;
+    std::vector<DescriptorSetHandle> postProcessingDescriptorSets;
+    DescriptorSetHandle skyDescriptorSet;
 
     // Methods
     void initializeSkybox();
@@ -65,8 +65,8 @@ class PostProcessingExample : public vkengine::VulkanEngineWin2
     void renderHDRControlWindow();
     void renderPostProcessingControlWindow();
 
-    void recordCommandBuffer(VKCommandBufferHander& cmd, uint32_t imageIndex, VkExtent2D windowSize);
-    void submitFrame(VKCommandBufferHander& commandBuffer, VkSemaphore waitSemaphore,
+    void recordCommandBuffer(CommandBufferHandle& cmd, uint32_t imageIndex, VkExtent2D windowSize);
+    void submitFrame(CommandBufferHandle& commandBuffer, VkSemaphore waitSemaphore,
                      VkSemaphore signalSemCommandBufferaphore, VkFence fence);
     virtual void recreateSwapchain();
 

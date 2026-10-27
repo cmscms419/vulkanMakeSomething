@@ -69,7 +69,7 @@ struct ModelConfig
 struct ApplicationConfig
 {
     std::vector<ModelConfig> models;
-    cString RanderGraphfilePath;    // RanderGraph file path
+    cString renderGraphFilePath;    // RanderGraph file path
 
     static ApplicationConfig createDefault()
     {
@@ -90,7 +90,7 @@ struct ApplicationConfig
         bistro.autoPlayAnimation = false;
 
         config.models = {character, bistro};
-        config.RanderGraphfilePath = "renderGraph.json";
+        config.renderGraphFilePath = "renderGraph.json";
 
         return config;
     }
@@ -216,7 +216,7 @@ struct PipelineConfig
 
 enum class ResourceAccess : cUint16_t
 {
-    NOTTHING = 0,
+    None = 0,
     ColorAttachmentWrite,
     DepthAttachmentWrite,
     ShaderReadOnly,
@@ -224,7 +224,7 @@ enum class ResourceAccess : cUint16_t
     ShaderWriteOnly,
     ShaderReadWrite,
     Present,
-    MAX
+    Max
 };
 
 struct ResourceUsage
@@ -237,8 +237,8 @@ static inline cString getStringResourceAccess(ResourceAccess access)
 {
     switch (access)
     {
-    case ResourceAccess::NOTTHING:
-        return "NOTTHING";
+    case ResourceAccess::None:
+        return "None";
     case ResourceAccess::ColorAttachmentWrite:
         return "ColorAttachmentWrite";
     case ResourceAccess::DepthAttachmentWrite:
@@ -260,7 +260,7 @@ static inline cString getStringResourceAccess(ResourceAccess access)
 
 static inline ResourceAccess getResourceAccess(cString access)
 {
-    ResourceAccess result = ResourceAccess::NOTTHING;
+    ResourceAccess result = ResourceAccess::None;
 
     if (access == "ColorAttachmentWrite")
     {
@@ -292,7 +292,7 @@ static inline ResourceAccess getResourceAccess(cString access)
     }
     else
     {
-        result = ResourceAccess::NOTTHING;
+        result = ResourceAccess::None;
     }
 
     return result;

@@ -1,8 +1,6 @@
 ﻿#include "moveDemo.h"
 #include "log.h"
 
-using namespace vkengine::Log;
-using namespace vkengine;
 
 int main(int argc, char* argv[]) {
     char path[MAX_PATH];
@@ -12,7 +10,7 @@ int main(int argc, char* argv[]) {
         root_path = path;
     }
     else {
-        EXIT_TO_LOGGER("경로를 가져오는 데 실패했습니다.");
+        vkengine::Log::exitToLogger("경로를 가져오는 데 실패했습니다.");
     }
     ApplicationConfig config;
 
@@ -21,7 +19,7 @@ int main(int argc, char* argv[]) {
                 glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f))
         ));
 
-    std::unique_ptr<DemoApplication> app3 = std::make_unique<DemoApplication>(root_path);
+    std::unique_ptr<vkengine::DemoApplication> app3 = std::make_unique<vkengine::DemoApplication>(root_path);
 
     app3->update();
     

@@ -2,7 +2,6 @@
 #include "helperDevice.h"
 #include "log.h"
 
-using namespace vkengine::Log;
 
 namespace vkengine
 {
@@ -135,7 +134,7 @@ namespace vkengine
                 *allocatedSize = memRequirements.size;  // 실제 할당된 크기
                 *alignment = memRequirements.alignment; // 정렬 방식
 
-                PRINT_TO_LOGGER("allocatedSize : %d, alignment : %d ", *allocatedSize, *alignment);
+                Log::printToLogger("allocatedSize : %d, alignment : %d ", *allocatedSize, *alignment);
 
                 // 메모리 할당 정보를 담은 구조체를 초기화한다.
                 VkMemoryAllocateInfo allocInfo{};
@@ -338,12 +337,12 @@ namespace vkengine
                 endSingleTimeCommands(device, commandPool, graphicsQueue, commandBuffer);
             }
 
-            void copyBufferToImageKTX2(VkCommandBuffer cmd, VkBuffer buffer, VkImage image, cUint32_t width, cUint32_t height, cUint32_t mipmapLevels, ktxTexture *textureKTX, cBool useCubmap)
+            void copyBufferToImageKTX2(VkCommandBuffer cmd, VkBuffer buffer, VkImage image, cUint32_t width, cUint32_t height, cUint32_t mipmapLevels, ktxTexture *textureKTX, cBool useCubemap)
             {
                 // VKBufferImageCopy 배열을 만든다.
                 std::vector<VkBufferImageCopy> bufferCopyRegions;
 
-                if (useCubmap)
+                if (useCubemap)
                 {
                     for (uint32_t face = 0; face < 6; face++)
                     {
@@ -840,7 +839,7 @@ namespace vkengine
                     sourceStage = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT;
                     destinationStage = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT;
 
-                    PRINT_TO_LOGGER("All pass pipeline stage!");
+                    Log::printToLogger("All pass pipeline stage!");
                 }
 
                 // 파이프라인 배리어를 추가하여 레이아웃 전환 명령을 기록합니다.
@@ -857,7 +856,7 @@ namespace vkengine
                 endSingleTimeCommands(device, commandPool, graphicsQueue, commandBuffer);
             }
 
-            void updateimageLayoutcmd(VkCommandBuffer cmdbuffer, VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout, cUint32_t levelCount, cUint32_t layerCount)
+            void updateImageLayoutCmd(VkCommandBuffer cmdbuffer, VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout, cUint32_t levelCount, cUint32_t layerCount)
             {
                 VkImageMemoryBarrier barrier{};
                 barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER; // 배리어의 구조체 타입 설정
@@ -924,7 +923,7 @@ namespace vkengine
                     sourceStage = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT;
                     destinationStage = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT;
 
-                    PRINT_TO_LOGGER("All pass pipeline stage!");
+                    Log::printToLogger("All pass pipeline stage!");
                 }
 
                 // 파이프라인 배리어를 추가하여 레이아웃 전환 명령을 기록합니다.
@@ -938,7 +937,7 @@ namespace vkengine
                 );
             }
 
-            void initializeSynchronization(VkDevice device, cUint32_t maxFramesInFlight, cUint32_t imageCount, std::vector<VkSemaphore> &presentSemaphores, std::vector<VkSemaphore> &renderSemaphores, std::vector<VkFence> &inFlightFences)
+            void createSynchronization(VkDevice device, cUint32_t maxFramesInFlight, cUint32_t imageCount, std::vector<VkSemaphore> &presentSemaphores, std::vector<VkSemaphore> &renderSemaphores, std::vector<VkFence> &inFlightFences)
             {
                 presentSemaphores.resize(imageCount);
                 renderSemaphores.resize(imageCount);
@@ -961,17 +960,17 @@ namespace vkengine
                 }
             }
 
-            cUint32_t alignedSize(cUint32_t value, cUint32_t alignment)
+            cUint32_t getAlignedSize(cUint32_t value, cUint32_t alignment)
             {
                 return (value + alignment - 1) & ~(alignment - 1);
             }
 
-            size_t alignedSize(size_t value, size_t alignment)
+            size_t getAlignedSize(size_t value, size_t alignment)
             {
                 return (value + alignment - 1) & ~(alignment - 1);
             }
 
-            VkDeviceSize alignedVkSize(VkDeviceSize value, VkDeviceSize alignment)
+            VkDeviceSize getAlignedVkSize(VkDeviceSize value, VkDeviceSize alignment)
             {
                 return (value + alignment - 1) & ~(alignment - 1);
             }

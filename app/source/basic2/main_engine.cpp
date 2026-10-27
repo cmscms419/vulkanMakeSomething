@@ -1,11 +1,11 @@
-#include "VKContext.h"
+#include "Context.h"
 
 int main(int argc, char* argv[]) {
 
     std::vector<const char*> requiredInstanceExtensions = {};
     bool useSwapchain = false;
 
-    vkengine::VKcontext ctx(requiredInstanceExtensions, useSwapchain);
+    vkengine::Context ctx(requiredInstanceExtensions, useSwapchain);
 
 
     return EXIT_SUCCESS;

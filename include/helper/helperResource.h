@@ -95,7 +95,7 @@ namespace vkengine
 
             void copyBufferToImageKTX(VkDevice device, VkCommandPool commandPool, VkQueue graphicsQueue, VkBuffer buffer, VkImage image, cUint32_t width, cUint32_t height, cUint32_t mipmapLevels, ktxTexture *textureKTX);
 
-            void copyBufferToImageKTX2(VkCommandBuffer cmd, VkBuffer buffer, VkImage image, cUint32_t width, cUint32_t height, cUint32_t mipmapLevels, ktxTexture *textureKTX, cBool useCubmap = false);
+            void copyBufferToImageKTX2(VkCommandBuffer cmd, VkBuffer buffer, VkImage image, cUint32_t width, cUint32_t height, cUint32_t mipmapLevels, ktxTexture *textureKTX, cBool useCubemap = false);
 
             /**
              * @brief 이미지의 레이아웃을 전환하는 함수
@@ -124,7 +124,7 @@ namespace vkengine
              * mipmap level과 array layer 범위도 지정할 수 있습니다.
              *
              */
-            void updateimageLayoutcmd(VkCommandBuffer cmdbuffer, VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout, cUint32_t levelCount = 1, cUint32_t layerCount = 1);
+            void updateImageLayoutCmd(VkCommandBuffer cmdbuffer, VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout, cUint32_t levelCount = 1, cUint32_t layerCount = 1);
 
             // Mipmaps을 생성하는 함수
             // 이미지를 생성하고 이미지 레이아웃을 변경한 다음 이미지를 복사 -> 단일 이미지에 대한 mipmap 생성
@@ -138,15 +138,15 @@ namespace vkengine
             void generateMipmapsCubeMap2(VkImage image, VkFormat imageFormat, int32_t texWidth, int32_t texHeight, cUint32_t mipLevels);
 
             // 동기화 객체 초기화
-            void initializeSynchronization(VkDevice device, cUint32_t maxFramesInFlight, cUint32_t imageCount, std::vector<VkSemaphore> &presentSemaphores, std::vector<VkSemaphore> &renderSemaphores, std::vector<VkFence> &inFlightFences);
+            void createSynchronization(VkDevice device, cUint32_t maxFramesInFlight, cUint32_t imageCount, std::vector<VkSemaphore> &presentSemaphores, std::vector<VkSemaphore> &renderSemaphores, std::vector<VkFence> &inFlightFences);
 
             void cleanupSynchronization(VkDevice device, std::vector<VkSemaphore> &presentSemaphores, std::vector<VkSemaphore> &renderSemaphores, std::vector<VkFence> &inFlightFences);
 
-            cUint32_t alignedSize(cUint32_t value, cUint32_t alignment);
+            cUint32_t getAlignedSize(cUint32_t value, cUint32_t alignment);
 
-            size_t alignedSize(size_t value, size_t alignment);
+            size_t getAlignedSize(size_t value, size_t alignment);
 
-            VkDeviceSize alignedVkSize(VkDeviceSize value, VkDeviceSize alignment);
+            VkDeviceSize getAlignedVkSize(VkDeviceSize value, VkDeviceSize alignment);
 
             // 특정 데이터를 VkDeviceMemory 객체로 복사하는 함수
             template <typename T>

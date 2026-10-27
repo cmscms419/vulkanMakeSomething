@@ -3,7 +3,6 @@
 #include <fstream>
 #include <filesystem>
 
-using namespace vkengine::Log;
 
 namespace vkengine
 {
@@ -72,7 +71,7 @@ namespace vkengine
             {
                 if (spvFilename.length() < 4 || spvFilename.substr(spvFilename.length() - 4) != ".spv")
                 {
-                    EXIT_TO_LOGGER("Shader file does not have .spv extension: %s", spvFilename);
+                    Log::exitToLogger("Shader file does not have .spv extension: %s", spvFilename);
                 }
 
                 // 경로와 마지막 .spv 제거 ex: path/triangle.vert.spv -> triangle.vert
@@ -94,7 +93,7 @@ namespace vkengine
                 // 파일을 열 수 없는 경우 예외를 발생시킵니다.
                 if (!file.is_open())
                 {
-                    EXIT_TO_LOGGER("failed to open file!");
+                    Log::exitToLogger("failed to open file!");
                 }
 
                 size_t fileSize = (size_t)file.tellg(); // 파일 크기를 이용하여 버퍼를 할당합니다.
@@ -111,7 +110,7 @@ namespace vkengine
                 // 파일 확장자가 .spv인지 확인합니다.
                 if (filename.length() < 4 || filename.substr(filename.length() - 4) != ".spv")
                 {
-                    EXIT_TO_LOGGER("Shader file does not have .spv extension: %s", filename.c_str());
+                    Log::exitToLogger("Shader file does not have .spv extension: %s", filename.c_str());
                 }
 
                 // 파일 끝으로 이동하여 파일 크기를 가져옵니다.
@@ -120,14 +119,14 @@ namespace vkengine
                 // 파일을 열 수 없는 경우 예외를 발생시킵니다.
                 if (!file.is_open())
                 {
-                    EXIT_TO_LOGGER("failed to open file!");
+                    Log::exitToLogger("failed to open file!");
                 }
 
                 // Get file size and validate it's a valid SPIR-V file
                 size_t fileSize = (size_t)file.tellg(); // 파일 크기를 이용하여 버퍼를 할당합니다.
                 if (fileSize == 0 || fileSize % 4 != 0)
                 {
-                    EXIT_TO_LOGGER("Invalid SPIR-V file size: %zu bytes", fileSize);
+                    Log::exitToLogger("Invalid SPIR-V file size: %zu bytes", fileSize);
                 }
 
                 std::vector<cChar> buffer(fileSize); // 파일 포인터를 파일의 시작으로 이동합니다.
@@ -138,7 +137,7 @@ namespace vkengine
                 return buffer;
             }
 
-            bool fileExists(const cString &filename)
+            bool checkFileExists(const cString &filename)
             {
                 std::ifstream f(filename.c_str());
                 return !f.fail();

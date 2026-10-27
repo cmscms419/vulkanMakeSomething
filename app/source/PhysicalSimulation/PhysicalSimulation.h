@@ -2,7 +2,7 @@
 #define PHYSICAL_SIMULATION_H_
 
 #include "Application.h"
-#include "CalculatePhysicsSimulation.h"
+#include "PhysicsSimulator.h"
 
 #include <memory>
 
@@ -25,7 +25,7 @@ namespace vkengine
         void updateInstanceData(cUint32_t currentInstanceCount);
 
 
-        std::unique_ptr<CalculatePhysicsSimulation> physics;
+        std::unique_ptr<PhysicsSimulator> physics;
         std::vector<InstanceData> sphereInstanceData; // Sphere 인스턴스 데이터
 
         cUint32_t maxInstanceCount = 15000;           // 최대객수

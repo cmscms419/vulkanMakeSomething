@@ -44,7 +44,7 @@ namespace vkengine
             // spv 파일을 읽어오는 함수
             std::vector<cChar> readSPVFile(const cString &filename);
 
-            cBool fileExists(const cString &filename);
+            cBool checkFileExists(const cString &filename);
 
             cBool writeString(std::ofstream &stream, const cString &str);
 

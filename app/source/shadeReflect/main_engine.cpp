@@ -5,8 +5,6 @@
 #include "helper.h"
 #include "log.h"
 
-using namespace vkengine::Log;
-using namespace std;
 void printReflectionInfo(const SpvReflectShaderModule& reflectModule)
 {
     vkengine::helper::printReflectionInfo(reflectModule);
@@ -15,10 +13,10 @@ void printReflectionInfo(const SpvReflectShaderModule& reflectModule)
 
 int main(int argc, char* argv[]) {
 
-    PRINT_TO_LOGGER("Hello, Vulkan!");
-    PRINT_TO_LOGGER("Debug Mode");
-    PRINT_TO_LOGGER("User Name: %s", UserName.c_str());
-    PRINT_TO_LOGGER("");
+    vkengine::Log::printToLogger("Hello, Vulkan!");
+    vkengine::Log::printToLogger("Debug Mode");
+    vkengine::Log::printToLogger("User Name: %s", UserName.c_str());
+    vkengine::Log::printToLogger("");
 
     char path[MAX_PATH];
     std::string root_path = "";
@@ -38,14 +36,14 @@ int main(int argc, char* argv[]) {
 
     std::vector<cChar> shaderCode = vkengine::helper::readSPVFile(shaderComPath);
 
-    PRINT_TO_LOGGER("Shader Code Size: %zu bytes", shaderCode.size());
+    vkengine::Log::printToLogger("Shader Code Size: %zu bytes", shaderCode.size());
 
     // SPIR-V 모듈 초기화
     SpvReflectResult result = spvReflectCreateShaderModule(
         shaderCode.size(), reinterpret_cast<const uint32_t*>(shaderCode.data()), &module);
 
     if (result != SPV_REFLECT_RESULT_SUCCESS) {
-        EXIT_TO_LOGGER("Failed to create SPIR-V module: %d", result);
+        vkengine::Log::exitToLogger("Failed to create SPIR-V module: %d", result);
     }
 
 
@@ -55,7 +53,7 @@ int main(int argc, char* argv[]) {
     // 모듈 정리
     spvReflectDestroyShaderModule(&module);
 
-    PRINT_TO_LOGGER("Shader reflection completed successfully!");
+    vkengine::Log::printToLogger("Shader reflection completed successfully!");
 
     return EXIT_SUCCESS;
 }

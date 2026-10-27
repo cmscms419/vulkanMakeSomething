@@ -1,7 +1,5 @@
 #include "Camera2.h"
 
-using namespace vkMath;
-using namespace vkengine::Log;
 
 namespace vkengine
 {
@@ -16,14 +14,14 @@ namespace vkengine
             this->setViewDirection(pos, dir, up);
             this->setPerspectiveProjection(fov, aspect, nearP, farP);
 
-            PRINT_TO_LOGGER("Camera2 Position: %f %f %f", this->pos.x, this->pos.y, this->pos.z);
-            PRINT_TO_LOGGER("");
-            PRINT_TO_LOGGER("Camera2 Target: %f %f %f", this->target.x, this->target.y, this->target.z);
-            PRINT_TO_LOGGER("");
-            PRINT_TO_LOGGER("Camera2 Direction: %f %f %f", this->dir.x, this->dir.y, this->dir.z);
-            PRINT_TO_LOGGER("");
-            PRINT_TO_LOGGER("Camera2 Right: %f %f %f", this->right.x, this->right.y, this->right.z);
-            PRINT_TO_LOGGER("");
+            Log::printToLogger("Camera2 Position: %f %f %f", this->pos.x, this->pos.y, this->pos.z);
+            Log::printToLogger("");
+            Log::printToLogger("Camera2 Target: %f %f %f", this->target.x, this->target.y, this->target.z);
+            Log::printToLogger("");
+            Log::printToLogger("Camera2 Direction: %f %f %f", this->dir.x, this->dir.y, this->dir.z);
+            Log::printToLogger("");
+            Log::printToLogger("Camera2 Right: %f %f %f", this->right.x, this->right.y, this->right.z);
+            Log::printToLogger("");
         }
 
         Camera2::Camera2(cVec3 pos, cVec3 up, cVec3 dir, cVec3 right)
@@ -41,13 +39,13 @@ namespace vkengine
             this->setViewDirection(this->pos, this->dir, this->up);
             this->setPerspectiveProjection(fov, aspect, nearP, farP);
 
-            PRINT_TO_LOGGER("Camera2 Position: %f %f %f", this->pos.x, this->pos.y, this->pos.z);
-            PRINT_TO_LOGGER("");
-            PRINT_TO_LOGGER("Camera2 Target: %f %f %f", this->target.x, this->target.y, this->target.z);
-            PRINT_TO_LOGGER("");
-            PRINT_TO_LOGGER("Camera2 Direction: %f %f %f", this->dir.x, this->dir.y, this->dir.z);
-            PRINT_TO_LOGGER("");
-            PRINT_TO_LOGGER("Camera2 Right: %f %f %f", this->right.x, this->right.y, this->right.z);
+            Log::printToLogger("Camera2 Position: %f %f %f", this->pos.x, this->pos.y, this->pos.z);
+            Log::printToLogger("");
+            Log::printToLogger("Camera2 Target: %f %f %f", this->target.x, this->target.y, this->target.z);
+            Log::printToLogger("");
+            Log::printToLogger("Camera2 Direction: %f %f %f", this->dir.x, this->dir.y, this->dir.z);
+            Log::printToLogger("");
+            Log::printToLogger("Camera2 Right: %f %f %f", this->right.x, this->right.y, this->right.z);
         }
 
         void Camera2::update()
@@ -74,7 +72,7 @@ namespace vkengine
             this->setViewDirection(pos, dir, up);
         }
 
-        void Camera2::RotateScreenStandard(cFloat xpos, cFloat ypos, int windowWidth, int windowHeight)
+        void Camera2::rotateScreenStandard(cFloat xpos, cFloat ypos, int windowWidth, int windowHeight)
         {
             // 마우스 커서의 위치를 NDC로 변환
             // 마우스 커서는 좌측 상단 (0, 0), 우측 하단(width-1, height-1)
@@ -98,17 +96,17 @@ namespace vkengine
             cQuat qPitch = glm::angleAxis(this->pitch, this->Xaxis); // X축
 
             cQuat Result = qYaw * qPitch;
-            dirction = vkMath::RotationQuat(Result, dirction);
+            dirction = vkMath::rotateByQuat(Result, dirction);
 
             this->dir = glm::normalize(dirction);
             this->right = glm::normalize(glm::cross(this->dir, this->up));
 #else
-            dirction = cVec3(vkMath::CreateRotation(this->yaw, this->pitch, 0.0f) * glm::vec4(0.0f, 0.0f, -1.0f, 1.0f));
+            dirction = cVec3(vkMath::createRotation(this->yaw, this->pitch, 0.0f) * glm::vec4(0.0f, 0.0f, -1.0f, 1.0f));
 #endif
 
         }
 
-        void Camera2::RotateDeltaRotation(const cVec3& force, bool constrainPitch)
+        void Camera2::rotateDeltaRotation(const cVec3& force, bool constrainPitch)
         {
             switch (this->cameraType)
             {
@@ -259,7 +257,7 @@ namespace vkengine
             cVec3 zVec = this->Zaxis;
 
             cQuat Result = qYaw * qPitch;
-            zVec = vkMath::RotationQuat(Result, zVec);
+            zVec = vkMath::rotateByQuat(Result, zVec);
 
             this->dir = glm::normalize(zVec);
             this->right = glm::normalize(glm::cross(this->dir, this->up));

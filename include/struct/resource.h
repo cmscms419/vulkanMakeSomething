@@ -3,19 +3,19 @@
 
 #include "common.h"
 #include "log.h"
-#include "resourseload.h"
+#include "resourceLoad.h"
 
 struct TextureResourceBase
 {
-    enum TYPE
+    enum Type
     {
-        NONE = 0,          // 리소스 없음
+        None = 0,          // 리소스 없음
         PNG = 1,          // PNG 리소스
         KTX = 2,          // KTX 리소스
     };
 
     cChar* name = "";                              // 리소스 이름
-    TYPE type = NONE;                               // 리소스 타입 (PNG, KTX 등)
+    Type type = None;                               // 리소스 타입 (PNG, KTX 등)
     cUint32_t texWidth = 0;                         // 텍스처 너비
     cUint32_t texHeight = 0;                        // 텍스처 높이
     cUint32_t texChannels = 0;                      // 텍스처 채널
@@ -26,11 +26,11 @@ struct TextureResourceBase
     virtual cBool createResource(
         cString path = "", 
         cChar* name = "", 
-        TextureType textureType = TextureType::Texture_rgb_alpha) = 0; // 리소스 생성 함수, 경로를 인자로 받음
+        TextureType textureType = TextureType::TextureRGBAlpha) = 0; // 리소스 생성 함수, 경로를 인자로 받음
     virtual cBool createResource2(
         cString path = "", 
         cChar* name = "", 
-        TextureType textureType = TextureType::Texture_rgb_alpha) = 0;
+        TextureType textureType = TextureType::TextureRGBAlpha) = 0;
 };
 
 struct TextureResourcePNG : public TextureResourceBase {
@@ -43,7 +43,7 @@ struct TextureResourcePNG : public TextureResourceBase {
         this->texHeight = 0;
         this->texChannels = 0;
         this->data = nullptr; // 리소스 데이터 초기화
-        this->type = TYPE::PNG; // 리소스 타입을 PNG로 설정
+        this->type = Type::PNG; // 리소스 타입을 PNG로 설정
     }
 
     // 소멸자
@@ -73,7 +73,7 @@ struct TextureResourcePNG : public TextureResourceBase {
                 memcpy(data, other.data, size);
             }
             else {
-                vkengine::Log::EXIT_TO_LOGGER("Failed to allocate memory for texture data.");
+                vkengine::Log::exitToLogger("Failed to allocate memory for texture data.");
             }
         }
         else {
@@ -99,7 +99,7 @@ struct TextureResourcePNG : public TextureResourceBase {
                 memcpy(data, other.data, size);
             }
             else {
-                vkengine::Log::EXIT_TO_LOGGER("Failed to allocate memory for texture data.");
+                vkengine::Log::exitToLogger("Failed to allocate memory for texture data.");
             }
 
         }
@@ -110,7 +110,7 @@ struct TextureResourcePNG : public TextureResourceBase {
         return *this;
     }
 
-    virtual cBool createResource(cString path = "", cChar* name = "", TextureType textureType = TextureType::Texture_rgb_alpha) {
+    virtual cBool createResource(cString path = "", cChar* name = "", TextureType textureType = TextureType::TextureRGBAlpha) {
 
         this->name = name;
 
@@ -120,7 +120,7 @@ struct TextureResourcePNG : public TextureResourceBase {
 
         this->texChannels = textureType; // 기본적으로 RGBA로 설정
 
-        data = load_png_rgba(path.c_str(), &this->texWidth, &this->texHeight, this->texChannels);
+        data = loadPNGAsRGBA(path.c_str(), &this->texWidth, &this->texHeight, this->texChannels);
 
         if (data == nullptr) {
             _PRINT_TO_CONSOLE_("PNG texture data is null.");
@@ -129,7 +129,7 @@ struct TextureResourcePNG : public TextureResourceBase {
 
         return true;
     }
-     cBool createResource2(cString path = "", cChar* name = "", TextureType textureType = TextureType::Texture_rgb_alpha) {
+     cBool createResource2(cString path = "", cChar* name = "", TextureType textureType = TextureType::TextureRGBAlpha) {
         return false;
     }
 };
@@ -147,7 +147,7 @@ struct TextureResourceKTX : public TextureResourceBase {
         this->mipLevels = 0;
         this->layerCount = 0;
         this->texture = nullptr; // KTX 텍스처 초기화
-        this->type = TYPE::KTX;
+        this->type = Type::KTX;
     }
 
     ~TextureResourceKTX() {
@@ -168,12 +168,12 @@ struct TextureResourceKTX : public TextureResourceBase {
         texture = nullptr; // 포인터 초기화
     }
 
-    virtual cBool createResource(cString path = "", cChar* name = "", TextureType textureType = TextureType::Texture_rgb_alpha) {
+    virtual cBool createResource(cString path = "", cChar* name = "", TextureType textureType = TextureType::TextureRGBAlpha) {
         if (texture) {
             ktxTexture_Destroy(texture); // KTX 텍스처 해제
         }
 
-        this->texture = load_ktx_texture(path.c_str(), texture);
+        this->texture = loadKTXTexture(path.c_str(), texture);
 
         if (texture == nullptr) {
             _PRINT_TO_CONSOLE_("KTX texture is null.");
@@ -190,7 +190,7 @@ struct TextureResourceKTX : public TextureResourceBase {
         return true;
     }
 
-    virtual cBool createResource2(cString path, cChar* name = "", TextureType textureType = TextureType::Texture_rgb_alpha) {
+    virtual cBool createResource2(cString path, cChar* name = "", TextureType textureType = TextureType::TextureRGBAlpha) {
         
         if (this->texture2) {
             ktxTexture2_Destroy(this->texture2); // KTX 텍스처 해제
@@ -200,7 +200,7 @@ struct TextureResourceKTX : public TextureResourceBase {
 
         if (result != KTX_SUCCESS)
         {
-            vkengine::Log::EXIT_TO_LOGGER("Failed to load KTX2 texture: %s", path.c_str());
+            vkengine::Log::exitToLogger("Failed to load KTX2 texture: %s", path.c_str());
             return false;
         }
 

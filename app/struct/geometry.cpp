@@ -14,7 +14,7 @@ Plane::Plane(const cVec3& normal, const cVec3& point)
     distance = -glm::dot(this->normal, point);
 }
 
-cFloat Plane::distanceToPoint(const cVec3& point) const
+cFloat Plane::getDistanceToPoint(const cVec3& point) const
 {
     return glm::dot(normal, point) + distance;
 }

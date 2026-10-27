@@ -1,7 +1,6 @@
 #include "PhysicalSimulation.h"
 #include "log.h"
 
-using namespace vkengine::Log;
 
 namespace vkengine
 {
@@ -21,7 +20,7 @@ namespace vkengine
     {
         // Box의 worldBounds — Application::run()이 매 프레임 갱신하지만, update()가 run()보다 먼저 실행되므로
         // 첫 프레임 물리 계산을 위해 여기서 한 번 미리 계산해둠 (docs/physics-plan.md와 동일한 주의사항)
-        // models[0].Meshes()[0].updateWorldBounds(models[0].ModelResource().modelMatrix);
+        // models[0].getMeshes()[0].updateWorldBounds(models[0].getModelResource().modelMatrix);
 
         // Box의 AABB worldBounds — Box 모델의 minBounds/maxBounds를 world 좌표계로 변환한 값
         // obj를 가져오지 않고 임의의 값으로 넣음
@@ -35,16 +34,16 @@ namespace vkengine
 
         for (auto &model : models)
         {
-            // model.Visible() = false; // Sphere 모델은 물리 계산용으로만 사용, 렌더링은 인스턴스로 처리
+            // model.isVisible() = false; // Sphere 모델은 물리 계산용으로만 사용, 렌더링은 인스턴스로 처리
 
-            if (model.Name() == "Sphere")
+            if (model.getName() == "Sphere")
             {
                 // Sphere의 반지름 — 로컬 바운드(minBounds/maxBounds)에 스케일을 곱해서 산출
-                const cVec3 &sMin = model.Meshes()[0].minBounds;
-                const cVec3 &sMax = model.Meshes()[0].maxBounds;
+                const cVec3 &sMin = model.getMeshes()[0].minBounds;
+                const cVec3 &sMax = model.getMeshes()[0].maxBounds;
                 cFloat sphereRadius = glm::length(sMax - sMin) * 0.5f;
 
-                CalculatePhysicsSimulation::Config cfg;
+                PhysicsSimulator::Config cfg;
 
                 // cfg.objectCount = static_cast<cUint32_t>(models.size() - 1); // Box 제외
                 cfg.objectCount = maxInstanceCount; // Sphere 개수
@@ -56,7 +55,7 @@ namespace vkengine
                 cfg.respawnInvisibleFrames = 1;
                 cfg.collisionCooldownFrames = 3;
 
-                physics = std::make_unique<CalculatePhysicsSimulation>(cfg);
+                physics = std::make_unique<PhysicsSimulator>(cfg);
 
                 this->createInstanceBuffers(cfg.objectCount, index); // Sphere 모델 인덱스 전달
 
@@ -76,7 +75,7 @@ namespace vkengine
 
         while (!window->shouldClose())
         {
-            window->getmouseState().mouseDelta = cVec3(0.0f); // ← 추가
+            window->getMouseState().mouseDelta = cVec3(0.0f); // ← 추가
             window->pollEvents();
 
             // Calculate delta time for camera updates
@@ -87,44 +86,44 @@ namespace vkengine
             deltaTime = std::min(deltaTime, 0.016f); // Clamp delta time to prevent large jumps
 
             // camera update
-            if (window->getKeyBoardState().m_keyPressed[GLFW_KEY_W])
+            if (window->getKeyboardState().m_keyPressed[GLFW_KEY_W])
             {
-                this->camera->MoveForward(deltaTime);
+                this->camera->moveForward(deltaTime);
             }
 
-            if (window->getKeyBoardState().m_keyPressed[GLFW_KEY_S])
+            if (window->getKeyboardState().m_keyPressed[GLFW_KEY_S])
             {
-                this->camera->MoveForward(-deltaTime);
+                this->camera->moveForward(-deltaTime);
             }
 
-            if (window->getKeyBoardState().m_keyPressed[GLFW_KEY_A])
+            if (window->getKeyboardState().m_keyPressed[GLFW_KEY_A])
             {
-                this->camera->MoveRight(-deltaTime);
+                this->camera->moveRight(-deltaTime);
             }
 
-            if (window->getKeyBoardState().m_keyPressed[GLFW_KEY_D])
+            if (window->getKeyboardState().m_keyPressed[GLFW_KEY_D])
             {
-                this->camera->MoveRight(deltaTime);
+                this->camera->moveRight(deltaTime);
             }
 
-            if (window->getKeyBoardState().m_keyPressed[GLFW_KEY_Q])
+            if (window->getKeyboardState().m_keyPressed[GLFW_KEY_Q])
             {
-                this->camera->MoveUp(-deltaTime);
+                this->camera->moveUp(-deltaTime);
             }
 
-            if (window->getKeyBoardState().m_keyPressed[GLFW_KEY_E])
+            if (window->getKeyboardState().m_keyPressed[GLFW_KEY_E])
             {
-                this->camera->MoveUp(deltaTime);
+                this->camera->moveUp(deltaTime);
             }
 
-            vkengine::platform::MouseState &mouseState = this->window->getmouseState();
+            vkengine::platform::MouseState &mouseState = this->window->getMouseState();
 
-            this->camera->RotateDeltaRotation(mouseState.mouseDelta); // 마우스 이동에 따른 회전, 감도 조절
+            this->camera->rotateDeltaRotation(mouseState.mouseDelta); // 마우스 이동에 따른 회전, 감도 조절
             this->camera->update();
 
-            this->Renderer.getSceneDataUBO().projection = this->camera->getProjectionMatrix();
-            this->Renderer.getSceneDataUBO().view = this->camera->getViewMatrix();
-            this->Renderer.getSceneDataUBO().cameraPos = camera->getPos();
+            this->renderer.getSceneDataUBO().projection = this->camera->getProjectionMatrix();
+            this->renderer.getSceneDataUBO().view = this->camera->getViewMatrix();
+            this->renderer.getSceneDataUBO().cameraPos = camera->getPos();
 
             // 추가해야 할것
             // 랜더링 하는 것과 안하는 것
@@ -152,7 +151,7 @@ namespace vkengine
         _VK_CHECK_RESULT_(vkWaitForFences(this->cxt->getDevice()->logicaldevice, 1, &this->inFlightFences[currentFrame], VK_TRUE, UINT64_MAX));
         _VK_CHECK_RESULT_(vkResetFences(this->cxt->getDevice()->logicaldevice, 1, &this->inFlightFences[currentFrame]));
 
-        Renderer.update(*camera.get(), currentFrame, (float)glfwGetTime() * 0.5f);
+        renderer.update(*camera.get(), currentFrame, (float)glfwGetTime() * 0.5f);
         // Perform frustum culling on all models
         guiRenderer.update();
 
@@ -173,11 +172,11 @@ namespace vkengine
         }
         else if ((result != VK_SUCCESS) && (result != VK_SUBOPTIMAL_KHR))
         {
-            EXIT_TO_LOGGER("Could not acquire the next swap chain image!");
+            vkengine::Log::exitToLogger("Could not acquire the next swap chain image!");
         }
 
         // Use currentFrame index (CPU-side command buffer)
-        VKCommandBufferHander &cmd = this->commandBuffers[currentFrame];
+        CommandBufferHandle &cmd = this->commandBuffers[currentFrame];
 
         // Begin command buffer
         vkResetCommandBuffer(cmd.getCommandBuffer(), 0);
@@ -189,7 +188,7 @@ namespace vkengine
             VkRect2D scissor{0, 0, this->extent.width, this->extent.height};
 
             // Draw models
-            this->Renderer.rendering(cmd.getCommandBuffer(), currentFrame, imageIndex, this->models, viewport, scissor);
+            this->renderer.render(cmd.getCommandBuffer(), currentFrame, imageIndex, this->models, viewport, scissor);
 
             // Draw GUI (overwrite to swapchain image)
             this->guiRenderer.draw(cmd.getCommandBuffer(), this->swapChain->getSwapChainImageView(imageIndex), viewport);
@@ -218,7 +217,7 @@ namespace vkengine
         presentInfo.swapchainCount = 1;
         presentInfo.pSwapchains = &this->swapChain->getSwapChain();
         presentInfo.pImageIndices = &imageIndex;
-        VkResult presentResult = vkQueuePresentKHR(this->cxt->grapicsQueue(), &presentInfo);
+        VkResult presentResult = vkQueuePresentKHR(this->cxt->getGraphicsQueue(), &presentInfo);
 
         if (presentResult == VK_ERROR_OUT_OF_DATE_KHR || presentResult == VK_SUBOPTIMAL_KHR)
         {
@@ -227,7 +226,7 @@ namespace vkengine
         }
         else if (presentResult != VK_SUCCESS)
         {
-            EXIT_TO_LOGGER("Failed to present swapchain image!");
+            vkengine::Log::exitToLogger("Failed to present swapchain image!");
         }
     }
 
@@ -240,7 +239,7 @@ namespace vkengine
             ImGuiIO &io = ImGui::GetIO();
 
             io.DisplaySize = ImVec2(float(extent.width), float(extent.height));
-            platform::MouseState &mousetState = this->window->getmouseState(); // Update mouse state
+            platform::MouseState &mousetState = this->window->getMouseState(); // Update mouse state
 
             // Always pass mouse input to ImGui - let ImGui decide if it wants to capture it
             io.MousePos = ImVec2(mousetState.position.x, mousetState.position.y);
@@ -254,7 +253,7 @@ namespace vkengine
             ImGui::SetNextWindowSize(ImVec2(0, 0), ImGuiCond_FirstUseEver);
             ImGui::Begin("Physical Simulation Control", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
 
-            CalculatePhysicsSimulation::Config cfg = physics->getConfig();
+            PhysicsSimulator::Config cfg = physics->getConfig();
 
             // cFloat speed = physics->getSimulationSpeed();
             // if (ImGui::SliderFloat("Simulation Speed", &speed, 0.0f, 10.0f))
@@ -262,14 +261,14 @@ namespace vkengine
             //     physics->setSimulationSpeed(speed);
             // }
 
-            cFloat radius = physics->Radius(); // 모든 Sphere가 동일한 반지름을 가지므로 첫 번째 Sphere의 반지름을 사용
+            cFloat radius = physics->getRadius(); // 모든 Sphere가 동일한 반지름을 가지므로 첫 번째 Sphere의 반지름을 사용
 
             if (ImGui::SliderFloat("Sphere Radius", &radius, 0.1f, 5.0f))
             {
                 cfg.objectRadius = radius;
             }
 
-            cInt objectCount = static_cast<cInt>(physics->ObjectCount());
+            cInt objectCount = static_cast<cInt>(physics->getObjectCount());
 
             if (ImGui::SliderInt("instance Count", &objectCount, 1, static_cast<int>(maxInstanceCount)))
             {
@@ -286,7 +285,7 @@ namespace vkengine
             static cVec3 lightColor = cVec3(1.0f);
             static cFloat lightIntensity = 28.454f;
             ImGui::SliderFloat("Light Intensity", &lightIntensity, 0.0f, 100.0f);
-            this->Renderer.getSceneDataUBO().directionalLightColor = lightIntensity * lightColor;
+            this->renderer.getSceneDataUBO().directionalLightColor = lightIntensity * lightColor;
 
             // TODO: IS there a way to determine directionalLightColor from time of day? bright morning sun
             // to noon white light to golden sunset color.
@@ -308,13 +307,13 @@ namespace vkengine
             lightDir.z = cos(elev_rad) * cos(azim_rad);
 
             // Set the light direction (already normalized from spherical coordinates)
-            this->Renderer.getSceneDataUBO().directionalLightDir = lightDir;
+            this->renderer.getSceneDataUBO().directionalLightDir = lightDir;
 
             // Display current light direction for debugging
             ImGui::Text("Light Dir: (%.2f, %.2f, %.2f)",
-                        this->Renderer.getSceneDataUBO().directionalLightDir.x,
-                        this->Renderer.getSceneDataUBO().directionalLightDir.y,
-                        this->Renderer.getSceneDataUBO().directionalLightDir.z);
+                        this->renderer.getSceneDataUBO().directionalLightDir.x,
+                        this->renderer.getSceneDataUBO().directionalLightDir.y,
+                        this->renderer.getSceneDataUBO().directionalLightDir.z);
 
             ImGui::Text("Rendering Instance Count %d", static_cast<cInt>(this->sphereInstanceData.size()));
 
@@ -331,32 +330,32 @@ namespace vkengine
     {
         if (this->models.empty() || modelIndex >= this->models.size())
         {
-            EXIT_TO_LOGGER("Models are not set or invalid model index. Cannot create instance buffers.");
+            vkengine::Log::exitToLogger("Models are not set or invalid model index. Cannot create instance buffers.");
         }
 
-        this->Renderer.createInstanceBuffers(maxInstanceCount, modelIndex);
+        this->renderer.createInstanceBuffers(maxInstanceCount, modelIndex);
 
-        DrawModelResource resource = this->models[modelIndex].ModelResource();
+        DrawModelResource resource = this->models[modelIndex].getModelResource();
 
-        this->Renderer.getDrawInstanceResource().materialIndex = this->models[modelIndex].Meshes()[0].materialIndex;
-        this->Renderer.getDrawInstanceResource().modelMatrix = glm::scale(cMat4(1.0f), cVec3(this->physics->Radius()));
-        std::fill(std::begin(this->Renderer.getDrawInstanceResource().coeffs), std::end(this->Renderer.getDrawInstanceResource().coeffs), 0.0f);
+        this->renderer.getDrawInstanceResource().materialIndex = this->models[modelIndex].getMeshes()[0].materialIndex;
+        this->renderer.getDrawInstanceResource().modelMatrix = glm::scale(cMat4(1.0f), cVec3(this->physics->getRadius()));
+        std::fill(std::begin(this->renderer.getDrawInstanceResource().coeffs), std::end(this->renderer.getDrawInstanceResource().coeffs), 0.0f);
         
-        this->Renderer.getDrawInstanceResource().coeffs[0] = resource.coeffs[0];
-        this->Renderer.getDrawInstanceResource().coeffs[1] = resource.coeffs[1];
-        this->Renderer.getDrawInstanceResource().coeffs[2] = resource.coeffs[2];
-        this->Renderer.getDrawInstanceResource().coeffs[3] = resource.coeffs[3];
-        this->Renderer.getDrawInstanceResource().coeffs[4] = resource.coeffs[4];
-        this->Renderer.getDrawInstanceResource().coeffs[5] = resource.coeffs[5];
+        this->renderer.getDrawInstanceResource().coeffs[0] = resource.coeffs[0];
+        this->renderer.getDrawInstanceResource().coeffs[1] = resource.coeffs[1];
+        this->renderer.getDrawInstanceResource().coeffs[2] = resource.coeffs[2];
+        this->renderer.getDrawInstanceResource().coeffs[3] = resource.coeffs[3];
+        this->renderer.getDrawInstanceResource().coeffs[4] = resource.coeffs[4];
+        this->renderer.getDrawInstanceResource().coeffs[5] = resource.coeffs[5];
     }
 
     void PhysicalSimulation::updateInstanceData(cUint32_t currentInstanceCount)
     {
-        this->Renderer.getSphereinstanceBuffer(currentFrame).updateData(sphereInstanceData.data(), sizeof(InstanceData) * currentInstanceCount, 0);
-        this->Renderer.updateInstance(currentInstanceCount);
+        this->renderer.getSphereinstanceBuffer(currentFrame).updateData(sphereInstanceData.data(), sizeof(InstanceData) * currentInstanceCount, 0);
+        this->renderer.updateInstance(currentInstanceCount);
 
-        cMat4 modelMatrix = glm::scale(cMat4(1.0f), cVec3(this->physics->Radius()));
+        cMat4 modelMatrix = glm::scale(cMat4(1.0f), cVec3(this->physics->getRadius()));
 
-        this->Renderer.getDrawInstanceResource().modelMatrix = modelMatrix; // Transpose of the inverse for normal transformation
+        this->renderer.getDrawInstanceResource().modelMatrix = modelMatrix; // Transpose of the inverse for normal transformation
     }
 }

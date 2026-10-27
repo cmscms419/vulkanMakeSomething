@@ -15,7 +15,7 @@ constexpr cInt MAX_BONES = 256; // 이 bone 수는 PC 기준으로 임시로 지
 extern const std::vector<const char *> validationLayers;
 extern const std::vector<const char *> coreDeviceExtensions;
 extern const std::vector<VkDynamicState> dynamicStates;
-extern const cString RESOURSE_PATH;
+extern const cString RESOURCE_PATH;
 extern const cString SHADER_PATH;
 extern const cString MODEL_PATH;
 extern const cString TEXTURE_PATH;

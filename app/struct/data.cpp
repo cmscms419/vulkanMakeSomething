@@ -129,7 +129,7 @@ const std::vector<VkDynamicState> dynamicStates = {
     VK_DYNAMIC_STATE_VIEWPORT,
     VK_DYNAMIC_STATE_SCISSOR};
 
-const cString RESOURSE_PATH = "../../../../../../resource/";
+const cString RESOURCE_PATH = "../../../../../../resource/";
 const cString SHADER_PATH = "../../../../../../shader/";
 const cString MODEL_PATH = "viking_room.obj";
 const cString TEXTURE_PATH = "viking_room.png";

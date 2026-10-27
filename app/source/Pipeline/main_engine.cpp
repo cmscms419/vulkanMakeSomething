@@ -1,11 +1,11 @@
-#include "VKContext.h"
-#include "VKImage2D.h"
-#include "VKShaderManager.h"
-#include "VKshader.h"
-#include "VKpipeLineHandle.h"
-#include "VKbarrier2.h"
-#include "VKCommandBufferHander.h"
-#include "VKbuffer2.h"
+#include "Context.h"
+#include "Image2D.h"
+#include "ShaderManager.h"
+#include "Shader.h"
+#include "PipelineHandle.h"
+#include "BarrierHelper.h"
+#include "CommandBufferHandle.h"
+#include "BaseBuffer2.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #define STB_IMAGE_WRITE_IMPLEMENTATION
@@ -14,7 +14,6 @@
 #include "stb_image_write.h"
 
 
-using namespace vkengine;
 
 int main(int argc, char* argv[]) {
 
@@ -31,13 +30,13 @@ int main(int argc, char* argv[]) {
     std::vector<const char*> requiredInstanceExtensions = {};
     bool useSwapchain = false;
 
-    VKcontext ctx(requiredInstanceExtensions, useSwapchain);
+    Context ctx(requiredInstanceExtensions, useSwapchain);
     VkDevice device = ctx.getDevice()->logicaldevice;
 
     const uint32_t width = 640;
     const uint32_t height = 480;
 
-    VKImage2D texture(ctx);
+    Image2D texture(ctx);
     texture.createImage(
         width,
         height,
@@ -50,7 +49,7 @@ int main(int argc, char* argv[]) {
         (VkImageCreateFlagBits)0
     );
 
-    VKShaderManager shaderManager(
+    ShaderManager shaderManager(
         ctx,
         root_path + "../../../../../../shader/",
         {
@@ -58,12 +57,12 @@ int main(int argc, char* argv[]) {
         }
     );
 
-    VKPipeLineHandle samplePipeline(ctx, shaderManager, "sample_pipeline",
+    PipelineHandle samplePipeline(ctx, shaderManager, "sample_pipeline",
         VK_FORMAT_R8G8B8A8_UNORM, VK_FORMAT_UNDEFINED, VK_SAMPLE_COUNT_1_BIT);
 
-    VKCommandBufferHander commandGrapicsHander = ctx.createGrapicsCommandBufferHander(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
+    CommandBufferHandle commandGraphicsHandle = ctx.createGraphicsCommandBufferHandle(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
 
-    texture.transitionToColorAttachment(commandGrapicsHander.getCommandBuffer());
+    texture.transitionToColorAttachment(commandGraphicsHandle.getCommandBuffer());
 
     VkRenderingAttachmentInfo colorAttachment{ VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO };
     colorAttachment.imageView = texture.getImageView(); 
@@ -80,48 +79,48 @@ int main(int argc, char* argv[]) {
     renderingInfo.pDepthAttachment = nullptr;
     renderingInfo.pStencilAttachment = nullptr;
 
-    vkCmdBeginRendering(commandGrapicsHander.getCommandBuffer(), &renderingInfo);
+    vkCmdBeginRendering(commandGraphicsHandle.getCommandBuffer(), &renderingInfo);
 
-    vkCmdBindPipeline(commandGrapicsHander.getCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS,
+    vkCmdBindPipeline(commandGraphicsHandle.getCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS,
         samplePipeline.getPipeline());
 
     VkViewport viewport{ 0.0f, 0.0f, static_cast<float>(width), static_cast<float>(height),
                         0.0f, 1.0f };
-    vkCmdSetViewport(commandGrapicsHander.getCommandBuffer(), 0, 1, &viewport);
+    vkCmdSetViewport(commandGraphicsHandle.getCommandBuffer(), 0, 1, &viewport);
 
     VkRect2D scissor{ {0, 0}, {width, height} };
-    vkCmdSetScissor(commandGrapicsHander.getCommandBuffer(), 0, 1, &scissor);
+    vkCmdSetScissor(commandGraphicsHandle.getCommandBuffer(), 0, 1, &scissor);
 
-    vkCmdDraw(commandGrapicsHander.getCommandBuffer(), 3, 1, 0, 0);
+    vkCmdDraw(commandGraphicsHandle.getCommandBuffer(), 3, 1, 0, 0);
 
-    vkCmdEndRendering(commandGrapicsHander.getCommandBuffer());
+    vkCmdEndRendering(commandGraphicsHandle.getCommandBuffer());
 
-    texture.transitionToTransferSrc(commandGrapicsHander.getCommandBuffer());
+    texture.transitionToTransferSrc(commandGraphicsHandle.getCommandBuffer());
 
-    commandGrapicsHander.submitAndWait();
+    commandGraphicsHandle.submitAndWait();
 
     VkDeviceSize imageSize = width * height * 4;
 
-    VKBaseBuffer2 statingBuffer(ctx);
+    BaseBuffer2 statingBuffer(ctx);
     statingBuffer.createStagingBuffer(imageSize, nullptr);
 
-    VKCommandBufferHander copyCmdBufferHander = ctx.createGrapicsCommandBufferHander(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
+    CommandBufferHandle copyCmdBufferHandle = ctx.createGraphicsCommandBufferHandle(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
     
     VkBufferImageCopy copyRegion{
         0, 0, 0, {VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1}, {0, 0, 0}, {width, height, 1} };
 
     vkCmdCopyImageToBuffer(
-        copyCmdBufferHander.getCommandBuffer(),
+        copyCmdBufferHandle.getCommandBuffer(),
         texture.getImage(),
         VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-        statingBuffer.Buffer(),
+        statingBuffer.getBuffer(),
         1,
         &copyRegion
     );
 
-    copyCmdBufferHander.submitAndWait();
+    copyCmdBufferHandle.submitAndWait();
 
-    cUChar* data = static_cast<unsigned char*>(statingBuffer.Mapped());
+    cUChar* data = static_cast<unsigned char*>(statingBuffer.getMapped());
     cString outputImageFilename = "output.jpg";
 
     if (stbi_write_jpg(outputImageFilename.c_str(), width, height, 4, data, 90))

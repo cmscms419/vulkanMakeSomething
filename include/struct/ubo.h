@@ -3,7 +3,7 @@
 
 #include "common.h"
 
-struct UniformBufferSkymapParams
+struct SkymapParamsUBO
 {
     cVec4 lightPos[4] = { cVec4(0.0f) }; // 조명 위치
     cFloat exposure = 0.0f;
@@ -38,13 +38,13 @@ struct SkyOptionsUBO
     cFloat padding3;
 };
 
-struct BoneDataUniform
+struct BoneDataUBO
 {
     alignas(16) cMat4 boneMatrices[256]; // 16,384 bytes (already 16-byte aligned)
     alignas(16) cVec4 animationData;     // x = hasAnimation (0.0/1.0), y,z,w = future use
 };
 
-struct OptionsUniform
+struct OptionsUBO
 {
     alignas(4) cInt textureOn = 1;   // Use int instead of bool, 1 = true, 0 = false
     alignas(4) cInt shadowOn = 1;    // Use int instead of bool, 1 = true, 0 = false

@@ -3,12 +3,12 @@
 
 #include "common.h"
 
-#include "VKengine2.h"
+#include "VulkanEngineWin2.h"
 #include "Camera2.h"
-#include "VKgui.h"
-#include "VKModel.h"
-#include "VKCommandBufferHander.h"
-#include "VKrenderer.h"
+#include "ImGuiRenderer.h"
+#include "Model.h"
+#include "CommandBufferHandle.h"
+#include "Renderer.h"
 
 namespace vkengine {
 
@@ -25,19 +25,19 @@ namespace vkengine {
         virtual void updateGui();
 
     protected:
-        std::vector<VKModel> models;
+        std::vector<Model> models;
         virtual void updateAnimation(cFloat deltaTime);
         
         cString RootPath{};
         const cUint32_t kMaxFramesInFlight = MAX_FRAMES_IN_FLIGHT;
-        const cString AssetsPath = RESOURSE_PATH;
+        const cString AssetsPath = RESOURCE_PATH;
         const cString ShaderPath = SHADER_PATH;
-        VKShaderManager shaderManager;
+        ShaderManager shaderManager;
 
         std::shared_ptr<object::Camera2> camera;
 
-        gui::VKimguiRenderer guiRenderer;
-        VKRenderer Renderer;
+        gui::ImGuiRenderer guiRenderer;
+        Renderer renderer;
 
         cUint32_t frameCounter = 0;
         cUint32_t currentFrame = 0;     // For CPU resources (command buffers, fences)
@@ -45,9 +45,9 @@ namespace vkengine {
 
         // NEW: Configuration loading methods
         void initializeWithConfig(const ApplicationConfig &config);
-        // void setupCamera(const CameraConfig& cameraConfig);
+        // void initCamera(const CameraConfig& cameraConfig);
         void loadModels(const std::vector<ModelConfig> &modelConfigs);
-        void setupCallbacks();
+        void initCallbacks();
         void initializeVulkanResources();
         void initializeRenderGraph(cString buildRenderGraph);
 

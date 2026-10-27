@@ -3,7 +3,6 @@
 
 #include <unordered_map>
 
-using namespace vkengine::Log;
 
 namespace vkengine
 {
@@ -11,7 +10,7 @@ namespace vkengine
     {
         namespace descriptor
         {
-            VkWriteDescriptorSet writeDescriptorSet(VkDescriptorSet dstSet, VkDescriptorType type, cUint32_t binding, VkDescriptorBufferInfo *bufferInfo, cUint32_t descriptorCount)
+            VkWriteDescriptorSet makeWriteDescriptorSet(VkDescriptorSet dstSet, VkDescriptorType type, cUint32_t binding, VkDescriptorBufferInfo *bufferInfo, cUint32_t descriptorCount)
             {
                 VkWriteDescriptorSet writeDescriptorSet{};
                 writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -24,7 +23,7 @@ namespace vkengine
             }
 
             // Image를 사용하는 경우
-            VkWriteDescriptorSet writeDescriptorSet(VkDescriptorSet dstSet, VkDescriptorType type, cUint32_t binding, VkDescriptorImageInfo *imageInfo, cUint32_t descriptorCount)
+            VkWriteDescriptorSet makeWriteDescriptorSet(VkDescriptorSet dstSet, VkDescriptorType type, cUint32_t binding, VkDescriptorImageInfo *imageInfo, cUint32_t descriptorCount)
             {
                 VkWriteDescriptorSet writeDescriptorSet{};
                 writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -36,7 +35,7 @@ namespace vkengine
                 return writeDescriptorSet;
             }
 
-            VkDescriptorPoolCreateInfo descriptorPoolCreateInfo(const std::vector<VkDescriptorPoolSize> &poolSizes, cUint32_t maxSets)
+            VkDescriptorPoolCreateInfo makeDescriptorPoolCreateInfo(const std::vector<VkDescriptorPoolSize> &poolSizes, cUint32_t maxSets)
             {
                 VkDescriptorPoolCreateInfo descriptorPoolInfo{};
                 descriptorPoolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
@@ -46,7 +45,7 @@ namespace vkengine
                 return descriptorPoolInfo;
             }
 
-            VkDescriptorSetLayoutBinding descriptorSetLayoutBinding(VkDescriptorType type, VkShaderStageFlags stageFlags, cUint32_t binding, cUint32_t descriptorCount)
+            VkDescriptorSetLayoutBinding makeDescriptorSetLayoutBinding(VkDescriptorType type, VkShaderStageFlags stageFlags, cUint32_t binding, cUint32_t descriptorCount)
             {
                 VkDescriptorSetLayoutBinding setLayoutBinding{};
                 setLayoutBinding.descriptorType = type;
@@ -56,7 +55,7 @@ namespace vkengine
                 return setLayoutBinding;
             }
 
-            VkDescriptorSetLayoutCreateInfo descriptorSetLayoutCreateInfo(const std::vector<VkDescriptorSetLayoutBinding> &bindings)
+            VkDescriptorSetLayoutCreateInfo makeDescriptorSetLayoutCreateInfo(const std::vector<VkDescriptorSetLayoutBinding> &bindings)
             {
                 VkDescriptorSetLayoutCreateInfo descriptorSetLayoutCreateInfo{};
                 descriptorSetLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
@@ -65,7 +64,7 @@ namespace vkengine
                 return descriptorSetLayoutCreateInfo;
             }
 
-            VkDescriptorSetLayoutCreateInfo descriptorSetLayoutCreateInfo2(const VkDescriptorSetLayoutBinding &bindings, cUint32_t bindingCount)
+            VkDescriptorSetLayoutCreateInfo makeDescriptorSetLayoutCreateInfo2(const VkDescriptorSetLayoutBinding &bindings, cUint32_t bindingCount)
             {
                 VkDescriptorSetLayoutCreateInfo descriptorSetLayoutCreateInfo{};
                 descriptorSetLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
@@ -74,7 +73,7 @@ namespace vkengine
                 return descriptorSetLayoutCreateInfo;
             }
 
-            VkDescriptorSetAllocateInfo descriptorSetAllocateInfo(const VkDescriptorPool &descriptorPool, const VkDescriptorSetLayout &pSetLayouts, cUint32_t descriptorSetCount)
+            VkDescriptorSetAllocateInfo makeDescriptorSetAllocateInfo(const VkDescriptorPool &descriptorPool, const VkDescriptorSetLayout &pSetLayouts, cUint32_t descriptorSetCount)
             {
                 VkDescriptorSetAllocateInfo descriptorSetAllocateInfo{};
                 descriptorSetAllocateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
@@ -85,7 +84,7 @@ namespace vkengine
                 return descriptorSetAllocateInfo;
             }
 
-            VkDescriptorPoolSize descriptorPoolSize(VkDescriptorType type, cUint32_t descriptorCount)
+            VkDescriptorPoolSize makeDescriptorPoolSize(VkDescriptorType type, cUint32_t descriptorCount)
             {
                 VkDescriptorPoolSize descriptorPoolSize{};
                 descriptorPoolSize.type = type;
@@ -93,7 +92,7 @@ namespace vkengine
                 return descriptorPoolSize;
             }
 
-            cString descriptorTypeToString(VkDescriptorType type)
+            cString convertDescriptorTypeToString(VkDescriptorType type)
             {
                 cString str;
 
@@ -158,7 +157,7 @@ namespace vkengine
                 return str;
             }
 
-            VkDescriptorType stringToDescriptorType(const cString &typeStr)
+            VkDescriptorType convertStringToDescriptorType(const cString &typeStr)
             {
                 static const std::unordered_map<cString, VkDescriptorType> stringToTypeMap = {
                     {"SAMPLER", VK_DESCRIPTOR_TYPE_SAMPLER},
@@ -185,7 +184,7 @@ namespace vkengine
                     return it->second;
                 }
 
-                EXIT_TO_LOGGER("Error: Unknown descriptor type string: %s", typeStr.c_str());
+                Log::exitToLogger("Error: Unknown descriptor type string: %s", typeStr.c_str());
                 return VK_DESCRIPTOR_TYPE_MAX_ENUM; // Return a default value in case of error
             }
 

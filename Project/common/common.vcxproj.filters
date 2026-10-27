@@ -41,9 +41,9 @@
     </ClInclude>
     <ClInclude Include="..\..\include\common\math_types.h" />
     <ClInclude Include="..\..\include\helper\debug.h" />
-    <ClInclude Include="..\..\include\helper\resourseload.h" />
+    <ClInclude Include="..\..\include\helper\resourceLoad.h" />
     <ClInclude Include="..\..\include\struct\geometry.h" />
-    <ClInclude Include="..\..\include\struct\material.h" />
+    <ClInclude Include="..\..\include\struct\materialData.h" />
     <ClInclude Include="..\..\include\struct\resource.h" />
     <ClInclude Include="..\..\include\struct\type.h" />
     <ClInclude Include="..\..\include\struct\ubo.h" />
@@ -56,7 +56,7 @@
     <ClInclude Include="..\..\include\helper\helperDevice.h">
       <Filter>helper</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\helper\helperPipeLine.h">
+    <ClInclude Include="..\..\include\helper\helperPipeline.h">
       <Filter>helper</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\helper\helperResource.h">
@@ -90,7 +90,7 @@
       <Filter>helper</Filter>
     </ClCompile>
     <ClCompile Include="..\..\app\helper\debug.cpp" />
-    <ClCompile Include="..\..\app\helper\resourseload.cpp" />
+    <ClCompile Include="..\..\app\helper\resourceLoad.cpp" />
     <ClCompile Include="..\..\app\struct\geometry.cpp" />
     <ClCompile Include="..\..\app\struct\type.cpp" />
     <ClCompile Include="..\..\app\struct\data.cpp" />
@@ -100,7 +100,7 @@
     <ClCompile Include="..\..\app\helper\helperDevice.cpp">
       <Filter>helper</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\app\helper\helperPipeLine.cpp">
+    <ClCompile Include="..\..\app\helper\helperPipeline.cpp">
       <Filter>helper</Filter>
     </ClCompile>
     <ClCompile Include="..\..\app\helper\helperResource.cpp">

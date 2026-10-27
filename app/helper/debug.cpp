@@ -58,7 +58,7 @@ namespace vkengine {
             }
         }
 
-        void SetObjectName(VkDevice device, uint64_t objectHandle, VkObjectType objectType, const char* name) {
+        void setObjectName(VkDevice device, uint64_t objectHandle, VkObjectType objectType, const char* name) {
             VkDebugUtilsObjectNameInfoEXT nameInfo = {};
             nameInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
             nameInfo.objectType = objectType;

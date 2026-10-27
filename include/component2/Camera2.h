@@ -46,23 +46,23 @@ namespace vkengine {
             void setFov(cFloat fov) { this->fov = fov; }
             void setSpeed(cFloat speed) { this->speed = speed; }
 
-            void MoveForward(cFloat deltaTime)
+            void moveForward(cFloat deltaTime)
             {
                 this->pos -= this->dir * this->speed * deltaTime;
             };
 
-            void MoveRight(cFloat deltaTime)
+            void moveRight(cFloat deltaTime)
             {
                 this->pos += this->right * this->speed * deltaTime;
             };
 
-            void MoveUp(cFloat deltaTime)
+            void moveUp(cFloat deltaTime)
             {
                 this->pos -= this->up * this->speed * deltaTime;
             };
 
-            void RotateScreenStandard(cFloat xpos, cFloat ypos, int windowWidth, int windowHeight);
-            void RotateDeltaRotation(const cVec3& force, bool constrainPitch = true);
+            void rotateScreenStandard(cFloat xpos, cFloat ypos, int windowWidth, int windowHeight);
+            void rotateDeltaRotation(const cVec3& force, bool constrainPitch = true);
 
             void setPerspectiveProjection(cFloat fov, cFloat aspect, cFloat nearP, cFloat farP);
             void setPerspectiveProjection();

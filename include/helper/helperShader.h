@@ -15,7 +15,7 @@ namespace vkengine
 
             const cChar *getShaderStageString(const SpvReflectShaderStageFlagBits &stage);
 
-            cString shaderStageFlagsToString(VkShaderStageFlags flags);
+            cString convertShaderStageFlagsToString(VkShaderStageFlags flags);
 
             void printReflectionInfo(const SpvReflectShaderModule &reflectModule);
 

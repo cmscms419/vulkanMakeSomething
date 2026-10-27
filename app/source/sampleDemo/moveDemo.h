@@ -13,7 +13,7 @@ namespace vkengine
 
         virtual void update() override;
     private:
-        cFloat FindYGround(const cVec3& position);
+        cFloat findYGround(const cVec3& position);
         void resolveWallCollisions(cVec3& position);
 
         cVec3 velocity;

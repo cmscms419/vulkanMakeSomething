@@ -6,9 +6,6 @@
 #include <stdexcept>
 
 #define IMGUI_DEFINE_MATH_OPERATORS
-using namespace vkengine;
-using namespace vkengine::Log;
-using namespace vkengine::gui;
 
 PostProcessingExample::PostProcessingExample(std::string root_path, cBool useSwapchain)
     : 
@@ -22,7 +19,7 @@ PostProcessingExample::PostProcessingExample(std::string root_path, cBool useSwa
                       {"post", {"vertpost.spv", "fragpost.spv"}}
                      }
     },
-      guiRenderer{ *this->cxt, shaderManager, swapChain->getSwapChainImageFormat(), RootPath + RESOURSE_PATH },
+      guiRenderer{ *this->cxt, shaderManager, swapChain->getSwapChainImageFormat(), RootPath + RESOURCE_PATH },
       skyTextures{ *this->cxt },
       skyPipeline(*this->cxt, shaderManager),
       postPipeline(*this->cxt, shaderManager),
@@ -30,9 +27,9 @@ PostProcessingExample::PostProcessingExample(std::string root_path, cBool useSwa
       samplerLinearRepeat(*this->cxt),
       samplerLinearClamp(*this->cxt)
 {
-    PRINT_TO_LOGGER("Current working directory: %s", this->RootPath);
+    vkengine::Log::printToLogger("Current working directory: %s", this->RootPath);
     
-    this->commandBuffers = this->cxt->createGrapicsCommandBufferHanders(MAX_FRAMES_IN_FLIGHT);
+    this->commandBuffers = this->cxt->createGraphicsCommandBufferHandles(MAX_FRAMES_IN_FLIGHT);
     this->camera = std::make_shared<vkengine::object::Camera2>();
     this->window->setCamera(this->camera);
 
@@ -86,7 +83,7 @@ void PostProcessingExample::recreateSwapchain()
 
     //  4. Post-processing descriptor sets 재생성
     for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-        // 기존 descriptor set은 DescriptorSetHander가 자동으로 정리
+        // 기존 descriptor set은 DescriptorSetHandle가 자동으로 정리
         postProcessingDescriptorSets[i].create(
             *this->cxt,
             {
@@ -193,7 +190,7 @@ void PostProcessingExample::initializePostProcessing()
     }
 }
 
-void PostProcessingExample::mainLoop()
+void PostProcessingExample::runMainLoop()
 {
     auto lastTime = std::chrono::high_resolution_clock::now();
 
@@ -209,34 +206,34 @@ void PostProcessingExample::mainLoop()
         deltaTime = std::min(deltaTime, 0.033f); // Max 33ms (30 FPS minimum)
 
         // camera update
-        if (window->getKeyBoardState().m_keyPressed[GLFW_KEY_W])
+        if (window->getKeyboardState().m_keyPressed[GLFW_KEY_W])
         {
-            this->camera->MoveForward(deltaTime);
+            this->camera->moveForward(deltaTime);
         }
 
-        if (window->getKeyBoardState().m_keyPressed[GLFW_KEY_S])
+        if (window->getKeyboardState().m_keyPressed[GLFW_KEY_S])
         {
-            this->camera->MoveForward(-deltaTime);
+            this->camera->moveForward(-deltaTime);
         }
 
-        if (window->getKeyBoardState().m_keyPressed[GLFW_KEY_A])
+        if (window->getKeyboardState().m_keyPressed[GLFW_KEY_A])
         {
-            this->camera->MoveRight(-deltaTime);
+            this->camera->moveRight(-deltaTime);
         }
 
-        if (window->getKeyBoardState().m_keyPressed[GLFW_KEY_D])
+        if (window->getKeyboardState().m_keyPressed[GLFW_KEY_D])
         {
-            this->camera->MoveRight(deltaTime);
+            this->camera->moveRight(deltaTime);
         }
 
-        if (window->getKeyBoardState().m_keyPressed[GLFW_KEY_Q])
+        if (window->getKeyboardState().m_keyPressed[GLFW_KEY_Q])
         {
-            this->camera->MoveUp(-deltaTime);
+            this->camera->moveUp(-deltaTime);
         }
 
-        if (window->getKeyBoardState().m_keyPressed[GLFW_KEY_E])
+        if (window->getKeyboardState().m_keyPressed[GLFW_KEY_E])
         {
-            this->camera->MoveUp(deltaTime);
+            this->camera->moveUp(deltaTime);
         }
 
         // Update camera
@@ -273,7 +270,7 @@ void PostProcessingExample::renderFrame()
         this->recreateSwapchain();
         return;
     } else if (acquireResult != VK_SUCCESS && acquireResult != VK_SUBOPTIMAL_KHR) {
-        EXIT_TO_LOGGER("Failed to acquire swapChain image!");
+        vkengine::Log::exitToLogger("Failed to acquire swapChain image!");
     }
 
     recordCommandBuffer(commandBuffers[currentFrame], imageIndex, extent);
@@ -290,18 +287,18 @@ void PostProcessingExample::renderFrame()
         return;
     }
     else if (presentResult == VK_SUBOPTIMAL_KHR) {
-        EXIT_TO_LOGGER("Window resize not implemented");
+        vkengine::Log::exitToLogger("Window resize not implemented");
     } else if (presentResult != VK_SUCCESS) {
-        EXIT_TO_LOGGER("Failed to present swapChain image!");
+        vkengine::Log::exitToLogger("Failed to present swapChain image!");
     }
 
-    this->caluCurrentValue();
+    this->calculateCurrentValue();
 }
 
 void PostProcessingExample::updateGui(VkExtent2D windowSize)
 {
     ImGuiIO& io = ImGui::GetIO();
-    vkengine::platform::MouseState& mouseState = this->window->getmouseState();
+    vkengine::platform::MouseState& mouseState = this->window->getMouseState();
 
     cVec3 CameraPosition = this->camera->getPos();
     cFloat Yaw = this->camera->getYaw();
@@ -541,7 +538,7 @@ void PostProcessingExample::renderPostProcessingControlWindow()
     ImGui::End();
 }
 
-void PostProcessingExample::recordCommandBuffer(VKCommandBufferHander& cmd, uint32_t imageIndex,
+void PostProcessingExample::recordCommandBuffer(CommandBufferHandle& cmd, uint32_t imageIndex,
                                                      VkExtent2D windowSize)
 {
     vkResetCommandBuffer(cmd.getCommandBuffer(), 0);
@@ -664,7 +661,7 @@ void PostProcessingExample::recordCommandBuffer(VKCommandBufferHander& cmd, uint
     _VK_CHECK_RESULT_(vkEndCommandBuffer(cmd.getCommandBuffer()));
 }
 
-void PostProcessingExample::submitFrame(VKCommandBufferHander& commandBuffer,
+void PostProcessingExample::submitFrame(CommandBufferHandle& commandBuffer,
                                              VkSemaphore waitSemaphore, VkSemaphore signalSemaphore,
                                              VkFence fence)
 {

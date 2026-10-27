@@ -13,7 +13,7 @@ struct QueueFamilyIndices {
     cBool graphicsAndComputeFamilyHasValue = false;
     cBool presentFamilyHasValue = false;
 
-    cVoid setgraphicsAndComputeFamily(cUint32_t index) {
+    cVoid setGraphicsAndComputeFamily(cUint32_t index) {
         graphicsAndComputeFamily = index;
         graphicsAndComputeFamilyHasValue = true;
     }
@@ -61,21 +61,21 @@ struct QueueFamilyIndices {
 
 struct QueueFamilyIndices2 {
     cUint32_t graphicFamily = 0;  // 그래픽스 큐 패밀리 인덱스 (그래픽스 명령을 처리하는 큐)
-    cUint32_t computerFamily = 0; // 컴퓨팅 큐 패밀리 인덱스 (컴퓨팅 명령을 처리하는 큐)
+    cUint32_t computeFamily = 0; // 컴퓨팅 큐 패밀리 인덱스 (컴퓨팅 명령을 처리하는 큐)
     cUint32_t transferFamily = 0; // 트랜스퍼 큐 패밀리 인덱스 (트랜스퍼 명령을 처리하는 큐)
     VkQueueFamilyProperties queueFamilyProperties = {};
 
     cBool graphicFamilyHasValue = false;
-    cBool computerFamilyHasValue = false;
+    cBool computeFamilyHasValue = false;
     cBool transferFamilyHasValue = false;
 
     cVoid setGraphicFamily(cUint32_t index) {
         graphicFamily = index;
         graphicFamilyHasValue = true;
     }
-    cVoid setComputerFamily(cUint32_t index) {
-        computerFamily = index;
-        computerFamilyHasValue = true;
+    cVoid setComputeFamily(cUint32_t index) {
+        computeFamily = index;
+        computeFamilyHasValue = true;
     }
     cVoid setTransferFamily(cUint32_t index) {
         transferFamily = index;
@@ -90,11 +90,11 @@ struct QueueFamilyIndices2 {
         }
         return target;
     }
-    cUint32_t getComputerQueueFamilyIndex() const {
+    cUint32_t getComputeQueueFamilyIndex() const {
         cUint32_t target = -1;
         if (queueFamilyProperties.queueFlags & VkQueueFlagBits::VK_QUEUE_COMPUTE_BIT)
         {
-            target = computerFamily;
+            target = computeFamily;
         }
         return target;
     }
@@ -108,14 +108,14 @@ struct QueueFamilyIndices2 {
     }
 
     cBool isComplete() const {
-        return this->graphicFamilyHasValue && this->computerFamilyHasValue && this->transferFamilyHasValue;
+        return this->graphicFamilyHasValue && this->computeFamilyHasValue && this->transferFamilyHasValue;
     }
     cVoid reset() {
         this->graphicFamily = 0;
-        this->computerFamily = 0;
+        this->computeFamily = 0;
         this->transferFamily = 0;
         this->graphicFamilyHasValue = false;
-        this->computerFamilyHasValue = false;
+        this->computeFamilyHasValue = false;
         this->transferFamilyHasValue = false;
     }
 };
@@ -139,7 +139,7 @@ struct FrameData {
     VkSemaphore VkrenderFinishedSemaphore;
     VkFence VkinFlightFences;
 
-    VkCommandBufferBeginInfo commandBufferBeginInfo(VkCommandBufferUsageFlags flags = 0) {
+    VkCommandBufferBeginInfo makeCommandBufferBeginInfo(VkCommandBufferUsageFlags flags = 0) {
         VkCommandBufferBeginInfo info = {};
         info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
         info.pNext = nullptr;
@@ -149,7 +149,7 @@ struct FrameData {
     }
 };
 
-struct depthStencil {
+struct DepthStencil {
     VkFormat depthFormat{ VK_FORMAT_UNDEFINED };
     VkImage depthImage{ VK_NULL_HANDLE };
     VkDeviceMemory depthImageMemory{ VK_NULL_HANDLE };
@@ -172,15 +172,15 @@ struct depthStencil {
     }
 };
 
-struct ComputerFrameData {
+struct ComputeFrameData {
 
-    ComputerFrameData() {
+    ComputeFrameData() {
         mainCommandBuffer = VK_NULL_HANDLE;
         computeFinishedSemaphores = VK_NULL_HANDLE;
         VkinFlightFences = VK_NULL_HANDLE;
     }
 
-    VkCommandBufferBeginInfo commandBufferBeginInfo(VkCommandBufferUsageFlags flags = 0) {
+    VkCommandBufferBeginInfo makeCommandBufferBeginInfo(VkCommandBufferUsageFlags flags = 0) {
         VkCommandBufferBeginInfo info = {};
         info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
         info.pNext = nullptr;
@@ -194,7 +194,7 @@ struct ComputerFrameData {
     VkFence VkinFlightFences;
 };
 
-struct subUniformBuffer {
+struct SubUniformBuffer {
     VkBuffer buffer;
     VkDeviceMemory memory;
     cVoid* Mapped;

@@ -1,21 +1,19 @@
 #include "common.h"
 
-#include "VKContext.h"
-#include "VKImage2D.h"
-#include "VKShaderManager.h"
-#include "VKshader.h"
-#include "VKpipeLineHandle.h"
-#include "VKbarrier2.h"
-#include "VKCommandBufferHander.h"
-#include "VKbuffer2.h"
-#include "VKwindow.h"
-#include "VKswapchain.h"
-#include "VKgui.h"
+#include "Context.h"
+#include "Image2D.h"
+#include "ShaderManager.h"
+#include "Shader.h"
+#include "PipelineHandle.h"
+#include "BarrierHelper.h"
+#include "CommandBufferHandle.h"
+#include "BaseBuffer2.h"
+#include "Window.h"
+#include "SwapChain.h"
+#include "ImGuiRenderer.h"
 
 #include "log.h"
 
-using namespace vkengine;
-using namespace vkengine::Log;
 
 // Forward declarations
 void renderColorControlWindow();
@@ -113,8 +111,8 @@ void renderColorControlWindow()
 }
 
 void recordCommanBuffer(
-    VKCommandBufferHander& cmd, VKSwapChain& swapchain, cUint32_t imageIndex,
-    VkExtent2D windowSize, gui::VKimguiRenderer& guiRenderer)
+    CommandBufferHandle& cmd, SwapChain& swapchain, cUint32_t imageIndex,
+    VkExtent2D windowSize, gui::ImGuiRenderer& guiRenderer)
 {
     vkResetCommandBuffer(cmd.getCommandBuffer(), 0);
     VkCommandBufferBeginInfo cmdBufferBeginInfo{ VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO };
@@ -131,7 +129,7 @@ void recordCommanBuffer(
     VkClearColorValue clearColorValue = { {clearColor.r, clearColor.g, clearColor.b, clearColor.a} };
 
     VkRenderingAttachmentInfo colorAttachment{ VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO };
-    colorAttachment.imageView = swapchain.ImageView(imageIndex);
+    colorAttachment.imageView = swapchain.getSwapChainImageView(imageIndex);
     colorAttachment.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
     colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
     colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
@@ -148,7 +146,7 @@ void recordCommanBuffer(
 
     // Draw GUI on top of the clear color
     VkViewport viewport{ 0.0f, 0.0f, (float)windowSize.width, (float)windowSize.height, 0.0f, 1.0f };
-    guiRenderer.draw(cmd.getCommandBuffer(), swapchain.ImageView(imageIndex), viewport);
+    guiRenderer.draw(cmd.getCommandBuffer(), swapchain.getSwapChainImageView(imageIndex), viewport);
 
     // COLOR_ATTACHMENT_OPTIMAL에서 PRESENT_SRC_KHR로 전환
     swapchain.getBarrierHelper(imageIndex).transitionImageLayout2(
@@ -160,7 +158,7 @@ void recordCommanBuffer(
      _VK_CHECK_RESULT_(vkEndCommandBuffer(cmd.getCommandBuffer()));
 }
 
-void submitFrame(VKCommandBufferHander& commandBuffer, VkSemaphore waitSemaphore,
+void submitFrame(CommandBufferHandle& commandBuffer, VkSemaphore waitSemaphore,
     VkSemaphore signalSemaphore, VkFence fence)
 {
     VkSemaphoreSubmitInfo waitSemaphoreInfo{ VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO };
@@ -208,11 +206,11 @@ int main(int argc, char* argv[]) {
     int windowHeight = 0;
 
     window->getFramebufferSize(&windowWidth, &windowHeight);
-    VKcontext vkContext(window->getRequiredExtensions(), true);
+    Context vkContext(window->getRequiredExtensions(), true);
     
     VkExtent2D extent{ static_cast<cUint32_t>(windowWidth), static_cast<cUint32_t>(windowHeight) };
     
-    VKSwapChain swapChain(vkContext, window->createVulkanSurface(vkContext.getInstance()), extent, true);
+    SwapChain swapChain(vkContext, window->createVulkanSurface(vkContext.getInstance()), extent, true);
 
     char path[MAX_PATH];
     std::string root_path = "";
@@ -221,24 +219,24 @@ int main(int argc, char* argv[]) {
         root_path = path;
     }
     else {
-        EXIT_TO_LOGGER("경로를 가져오는 데 실패했습니다.");
+        vkengine::Log::exitToLogger("경로를 가져오는 데 실패했습니다.");
     }
 
-    VKShaderManager shaderManager
+    ShaderManager shaderManager
     (
         vkContext,
         root_path + "../../../../../../shader/",
         { {"gui", {"vertimgui.spv", "fragimgui.spv"}} }
     );
 
-    gui::VKimguiRenderer guiRenderer(vkContext, shaderManager, swapChain.getSwapChainImageFormat());
+    gui::ImGuiRenderer guiRenderer(vkContext, shaderManager, swapChain.getSwapChainImageFormat());
 
-    std::vector<VKCommandBufferHander> commandBuffers = vkContext.createGrapicsCommandBufferHanders(MAX_FRAMES_IN_FLIGHT);
+    std::vector<CommandBufferHandle> commandBuffers = vkContext.createGraphicsCommandBufferHandles(MAX_FRAMES_IN_FLIGHT);
     std::vector<VkSemaphore> presentSemaphores;
     std::vector<VkSemaphore> renderSemaphores;
     std::vector<VkFence> inFlightFences;
 
-    helper::initializeSynchronization
+    helper::createSynchronization
     (
         vkContext.getDevice()->logicaldevice,
         MAX_FRAMES_IN_FLIGHT,
@@ -258,7 +256,7 @@ int main(int argc, char* argv[]) {
     {
         window->pollEvents();
 
-        updateGui(extent, window->getmouseState());
+        updateGui(extent, window->getMouseState());
 
         guiRenderer.update();
 
@@ -271,11 +269,11 @@ int main(int argc, char* argv[]) {
         if (acquireResult == VK_ERROR_OUT_OF_DATE_KHR) {
             //this->recreateSwapChain(); // 스왑 체인을 다시 생성합니다.
             // TODO 다시 만들어야 한다. 
-            EXIT_TO_LOGGER("Window resize not implemented");
+            vkengine::Log::exitToLogger("Window resize not implemented");
         }
         else if (acquireResult != VK_SUCCESS && acquireResult != VK_SUBOPTIMAL_KHR)
         {
-            EXIT_TO_LOGGER("Failed to acquire swapchain image!");
+            vkengine::Log::exitToLogger("Failed to acquire swapchain image!");
         }
         else {
             _VK_CHECK_RESULT_(acquireResult);
@@ -292,14 +290,14 @@ int main(int argc, char* argv[]) {
             renderSemaphores[currentSemaphore]);
 
         if (presentResult == VK_ERROR_OUT_OF_DATE_KHR || presentResult == VK_SUBOPTIMAL_KHR) {
-            EXIT_TO_LOGGER("Window resize not implemented");
+            vkengine::Log::exitToLogger("Window resize not implemented");
         }
         else if (presentResult != VK_SUCCESS) {
-            EXIT_TO_LOGGER("Failed to present swapchain image!");
+            vkengine::Log::exitToLogger("Failed to present swapchain image!");
         }
 
         currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
-        currentSemaphore = (currentSemaphore + 1) % swapChain.ImageCount();
+        currentSemaphore = (currentSemaphore + 1) % swapChain.getSwapChainImageCount();
     }
 
     vkContext.waitGraphicsQueueIdle();

@@ -9,5 +9,4 @@
 #include "helperPipeline.h"
 #include "helperDescriptor.h"
 
-
 #endif // !INCLUDE_SOURCE_HELPER_H_

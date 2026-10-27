@@ -9,7 +9,6 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include "Application.h"
 
-using namespace vkengine::Log;
 
 namespace vkengine
 {
@@ -35,12 +34,12 @@ namespace vkengine
                             {"ssaoBlur", {"compssaoBlur.spv"}},
                         }},
           guiRenderer{*this->cxt, shaderManager, swapChain->getSwapChainImageFormat(), RootPath + this->AssetsPath},
-          Renderer(*this->cxt, shaderManager, *this->swapChain, this->kMaxFramesInFlight, RootPath + this->AssetsPath, RootPath + this->ShaderPath)
+          renderer(*this->cxt, shaderManager, *this->swapChain, this->kMaxFramesInFlight, RootPath + this->AssetsPath, RootPath + this->ShaderPath)
     {
         initializeVulkanResources();
-        setupCallbacks();
+        initCallbacks();
         initializeWithConfig(config);
-        initializeRenderGraph(config.RanderGraphfilePath);
+        initializeRenderGraph(config.renderGraphFilePath);
     }
 
     Application::~Application()
@@ -51,7 +50,7 @@ namespace vkengine
     {
         this->loadModels(config.models);
 
-        this->Renderer.prepareForModels(
+        this->renderer.initModelResources(
             this->models,
             this->swapChain->getSwapChainImageFormat(),
             this->cxt->getDepthStencil()->depthFormat,
@@ -68,18 +67,18 @@ namespace vkengine
 
             cString fullPath = this->RootPath + this->AssetsPath + modelConfig.filePath;
             model.loadFromModelFile(fullPath, modelConfig.isBistroObj);
-            model.Name() = modelConfig.displayName;
-            model.ModelResource().modelMatrix = modelConfig.transform;
+            model.getName() = modelConfig.displayName;
+            model.getModelResource().modelMatrix = modelConfig.transform;
 
-            PRINT_TO_LOGGER("Loaded model '%s'", modelConfig.displayName.c_str());
-            PRINT_TO_LOGGER("   - Meshes: %zu", model.Meshes().size());
-            PRINT_TO_LOGGER("   - Materials: %zu", model.Materials().size());
-            PRINT_TO_LOGGER("   - Textures: %zu", model.Textures().size());
+            Log::printToLogger("Loaded model '%s'", modelConfig.displayName.c_str());
+            Log::printToLogger("   - Meshes: %zu", model.getMeshes().size());
+            Log::printToLogger("   - Materials: %zu", model.getMaterials().size());
+            Log::printToLogger("   - Textures: %zu", model.getTextures().size());
 
             // Setup animation if model supports it
             if (model.hasAnimations() && modelConfig.autoPlayAnimation)
             {
-                PRINT_TO_LOGGER("   Animations: %d found", model.getAnimationCount());
+                Log::printToLogger("   Animations: %d found", model.getAnimationCount());
 
                 if (model.getAnimationCount() > 0)
                 {
@@ -90,28 +89,28 @@ namespace vkengine
                     model.setAnimationSpeed(modelConfig.animationSpeed);
                     model.playAnimation();
 
-                    PRINT_TO_LOGGER("   - Started animation: '%s' (%.2f sec)",
+                    Log::printToLogger("   - Started animation: '%s' (%.2f sec)",
                                     model.getAnimation()->getCurrentAnimationName().c_str(),
                                     model.getAnimation()->getDuration());
                 }
             }
             else if (!model.hasAnimations())
             {
-                PRINT_TO_LOGGER("   Animations: None");
+                Log::printToLogger("   Animations: None");
             }
 
-            PRINT_TO_LOGGER(""); // 빈 줄
+            Log::printToLogger(""); // 빈 줄
         }
     }
 
-    void Application::setupCallbacks()
+    void Application::initCallbacks()
     {
         // engine에서 제공하는 카메라 컨트롤 윈도우 사용
     }
     
     void Application::initializeVulkanResources()
     {
-        this->commandBuffers = this->cxt->createGrapicsCommandBufferHanders(this->kMaxFramesInFlight);
+        this->commandBuffers = this->cxt->createGraphicsCommandBufferHandles(this->kMaxFramesInFlight);
         this->camera = std::make_shared<vkengine::object::Camera2>();
 
         cFloat fov = camera->getFov();
@@ -125,7 +124,7 @@ namespace vkengine
 
     void Application::initializeRenderGraph(cString buildRenderGraph)
     {
-        this->Renderer.buildRenderGraph(buildRenderGraph);
+        this->renderer.buildRenderGraph(buildRenderGraph);
     }
 
     void Application::run()
@@ -133,23 +132,23 @@ namespace vkengine
         _VK_CHECK_RESULT_(vkWaitForFences(this->cxt->getDevice()->logicaldevice, 1, &this->inFlightFences[currentFrame], VK_TRUE, UINT64_MAX));
         _VK_CHECK_RESULT_(vkResetFences(this->cxt->getDevice()->logicaldevice, 1, &this->inFlightFences[currentFrame]));
 
-        Renderer.update(*camera.get(), currentFrame, (float)glfwGetTime() * 0.5f);
-        Renderer.updateBoneData(models, currentFrame);
+        renderer.update(*camera.get(), currentFrame, (float)glfwGetTime() * 0.5f);
+        renderer.updateBoneData(models, currentFrame);
 
         cMat4 viewProjection = this->camera->getProjectionMatrix() * this->camera->getViewMatrix();
-        Renderer.updateViewFrustum(viewProjection);
+        renderer.updateViewFrustum(viewProjection);
 
         for (auto &model : models)
         {
-            const glm::mat4 &modelMatrix = model.ModelResource().modelMatrix;
-            for (auto &mesh : model.Meshes())
+            const glm::mat4 &modelMatrix = model.getModelResource().modelMatrix;
+            for (auto &mesh : model.getMeshes())
             {
                 mesh.updateWorldBounds(modelMatrix);
             }
         }
 
         // Perform frustum culling on all models
-        Renderer.performFrustumCulling(models);
+        renderer.performFrustumCulling(models);
         guiRenderer.update();
 
         uint32_t imageIndex{0};
@@ -163,11 +162,11 @@ namespace vkengine
         }
         else if ((result != VK_SUCCESS) && (result != VK_SUBOPTIMAL_KHR))
         {
-            EXIT_TO_LOGGER("Could not acquire the next swap chain image!");
+            Log::exitToLogger("Could not acquire the next swap chain image!");
         }
 
         // Use currentFrame index (CPU-side command buffer)
-        VKCommandBufferHander &cmd = this->commandBuffers[currentFrame];
+        CommandBufferHandle &cmd = this->commandBuffers[currentFrame];
 
         // Begin command buffer
         vkResetCommandBuffer(cmd.getCommandBuffer(), 0);
@@ -179,7 +178,7 @@ namespace vkengine
             VkRect2D scissor{0, 0, this->extent.width, this->extent.height};
 
             // Draw models
-            this->Renderer.rendering(cmd.getCommandBuffer(), currentFrame, imageIndex, this->models, viewport, scissor);
+            this->renderer.render(cmd.getCommandBuffer(), currentFrame, imageIndex, this->models, viewport, scissor);
 
             // Draw GUI (overwrite to swapchain image)
             this->guiRenderer.draw(cmd.getCommandBuffer(), this->swapChain->getSwapChainImageView(imageIndex), viewport);
@@ -208,13 +207,13 @@ namespace vkengine
         presentInfo.swapchainCount = 1;
         presentInfo.pSwapchains = &this->swapChain->getSwapChain();
         presentInfo.pImageIndices = &imageIndex;
-        VkResult presentResult = vkQueuePresentKHR(this->cxt->grapicsQueue(), &presentInfo);
+        VkResult presentResult = vkQueuePresentKHR(this->cxt->getGraphicsQueue(), &presentInfo);
 
         if (presentResult == VK_ERROR_OUT_OF_DATE_KHR || presentResult == VK_SUBOPTIMAL_KHR) {
             this->framebufferResized = false;
             recreateSwapchain();
         } else if (presentResult != VK_SUCCESS) {
-            EXIT_TO_LOGGER("Failed to present swapchain image!");
+            Log::exitToLogger("Failed to present swapchain image!");
         }
     }
 
@@ -236,46 +235,46 @@ namespace vkengine
             deltaTime = std::min(deltaTime, 0.033f); // Max 33ms (30 FPS minimum)
 
             // camera update
-            if (window->getKeyBoardState().m_keyPressed[GLFW_KEY_W])
+            if (window->getKeyboardState().m_keyPressed[GLFW_KEY_W])
             {
-                this->camera->MoveForward(deltaTime);
+                this->camera->moveForward(deltaTime);
             }
 
-            if (window->getKeyBoardState().m_keyPressed[GLFW_KEY_S])
+            if (window->getKeyboardState().m_keyPressed[GLFW_KEY_S])
             {
-                this->camera->MoveForward(-deltaTime);
+                this->camera->moveForward(-deltaTime);
             }
 
-            if (window->getKeyBoardState().m_keyPressed[GLFW_KEY_A])
+            if (window->getKeyboardState().m_keyPressed[GLFW_KEY_A])
             {
-                this->camera->MoveRight(-deltaTime);
+                this->camera->moveRight(-deltaTime);
             }
 
-            if (window->getKeyBoardState().m_keyPressed[GLFW_KEY_D])
+            if (window->getKeyboardState().m_keyPressed[GLFW_KEY_D])
             {
-                this->camera->MoveRight(deltaTime);
+                this->camera->moveRight(deltaTime);
             }
 
-            if (window->getKeyBoardState().m_keyPressed[GLFW_KEY_Q])
+            if (window->getKeyboardState().m_keyPressed[GLFW_KEY_Q])
             {
-                this->camera->MoveUp(-deltaTime);
+                this->camera->moveUp(-deltaTime);
             }
 
-            if (window->getKeyBoardState().m_keyPressed[GLFW_KEY_E])
+            if (window->getKeyboardState().m_keyPressed[GLFW_KEY_E])
             {
-                this->camera->MoveUp(deltaTime);
+                this->camera->moveUp(deltaTime);
             }
 
             updateGui();
 
-            auto &mouse = window->getmouseState();
+            auto &mouse = window->getMouseState();
 
-            this->camera->RotateDeltaRotation(mouse.mouseDelta); // 마우스 이동에 따른 회전, 감도 조절
+            this->camera->rotateDeltaRotation(mouse.mouseDelta); // 마우스 이동에 따른 회전, 감도 조절
             this->camera->update();
 
-            this->Renderer.getSceneDataUBO().projection = this->camera->getProjectionMatrix();
-            this->Renderer.getSceneDataUBO().view = this->camera->getViewMatrix();
-            this->Renderer.getSceneDataUBO().cameraPos = camera->getPos();
+            this->renderer.getSceneDataUBO().projection = this->camera->getProjectionMatrix();
+            this->renderer.getSceneDataUBO().view = this->camera->getViewMatrix();
+            this->renderer.getSceneDataUBO().cameraPos = camera->getPos();
 
             for (auto &model : models)
             {
@@ -287,14 +286,14 @@ namespace vkengine
 
             if (models.size() > 0)
             {
-                cMat4 lightView = glm::lookAt(cVec3(0.0f), -Renderer.getSceneDataUBO().directionalLightDir, cVec3(0.0f, 0.0f, 1.0f));
+                cMat4 lightView = glm::lookAt(cVec3(0.0f), -renderer.getSceneDataUBO().directionalLightDir, cVec3(0.0f, 0.0f, 1.0f));
 
                 // Transform the first model's bounding box to find the initial light bounding box
                 // 초기 빛 경계 상자를 찾기 위해 첫 번째 모델의 경계 상자를 변환합니다.
                 cVec3 firstMin =
-                    cVec3(models[0].ModelResource().modelMatrix * cVec4(models[0].BoundingBoxMin(), 1.0f));
+                    cVec3(models[0].getModelResource().modelMatrix * cVec4(models[0].getBoundingBoxMin(), 1.0f));
                 cVec3 firstMax =
-                    cVec3(models[0].ModelResource().modelMatrix * cVec4(models[0].BoundingBoxMax(), 1.0f));
+                    cVec3(models[0].getModelResource().modelMatrix * cVec4(models[0].getBoundingBoxMax(), 1.0f));
 
                 // Ensure min is actually smaller than max for each component
                 // 각 구성 요소에 대해 최소값이 실제로 최대값보다 작은지 확인합니다.
@@ -307,8 +306,8 @@ namespace vkengine
                 {
                     // Transform this model's bounding box to world space
                     // 이 모델의 경계 상자를 월드 공간으로 변환합니다.
-                    cVec3 modelMin = cVec3(models[i].ModelResource().modelMatrix * cVec4(models[i].BoundingBoxMin(), 1.0f));
-                    cVec3 modelMax = cVec3(models[i].ModelResource().modelMatrix * cVec4(models[i].BoundingBoxMax(), 1.0f));
+                    cVec3 modelMin = cVec3(models[i].getModelResource().modelMatrix * cVec4(models[i].getBoundingBoxMin(), 1.0f));
+                    cVec3 modelMax = cVec3(models[i].getModelResource().modelMatrix * cVec4(models[i].getBoundingBoxMax(), 1.0f));
 
                     // Ensure proper min/max ordering
                     // 올바른 최소/최대 순서 보장
@@ -342,7 +341,7 @@ namespace vkengine
                 min_ = vmin;
                 max_ = vmax;
                 cMat4 lightProjection = glm::orthoLH_ZO(min_.x, max_.x, min_.y, max_.y, max_.z, min_.z); // 마지막 Max, Min 순서 주의
-                Renderer.getSceneDataUBO().lightSpaceMatrix = lightProjection * lightView;
+                renderer.getSceneDataUBO().lightSpaceMatrix = lightProjection * lightView;
 
                 // Modifed "Vulkan 3D Graphics Rendering Cookbook - 2nd Edition Build Status"
                 // https://github.com/PacktPublishing/3D-Graphics-Rendering-Cookbook-Second-Edition
@@ -366,7 +365,7 @@ namespace vkengine
 
         io.DisplaySize = ImVec2(float(extent.width), float(extent.height));
         // io.DeltaTime = frameTimer;
-        platform::MouseState &mousetState = this->window->getmouseState(); // Update mouse state
+        platform::MouseState &mousetState = this->window->getMouseState(); // Update mouse state
 
         // Always pass mouse input to ImGui - let ImGui decide if it wants to capture it
         io.MousePos = ImVec2(mousetState.position.x, mousetState.position.y);
@@ -383,7 +382,7 @@ namespace vkengine
         static cVec3 lightColor = cVec3(1.0f);
         static cFloat lightIntensity = 28.454f;
         ImGui::SliderFloat("Light Intensity", &lightIntensity, 0.0f, 100.0f);
-        this->Renderer.getSceneDataUBO().directionalLightColor = lightIntensity * lightColor;
+        this->renderer.getSceneDataUBO().directionalLightColor = lightIntensity * lightColor;
 
         // TODO: IS there a way to determine directionalLightColor from time of day? bright morning sun
         // to noon white light to golden sunset color.
@@ -405,34 +404,34 @@ namespace vkengine
         lightDir.z = cos(elev_rad) * cos(azim_rad);
 
         // Set the light direction (already normalized from spherical coordinates)
-        this->Renderer.getSceneDataUBO().directionalLightDir = lightDir;
+        this->renderer.getSceneDataUBO().directionalLightDir = lightDir;
 
         // Display current light direction for debugging
         ImGui::Text("Light Dir: (%.2f, %.2f, %.2f)",
-                    this->Renderer.getSceneDataUBO().directionalLightDir.x,
-                    this->Renderer.getSceneDataUBO().directionalLightDir.y,
-                    this->Renderer.getSceneDataUBO().directionalLightDir.z);
+                    this->renderer.getSceneDataUBO().directionalLightDir.x,
+                    this->renderer.getSceneDataUBO().directionalLightDir.y,
+                    this->renderer.getSceneDataUBO().directionalLightDir.z);
 
         // Rendering Options Controls
         ImGui::Separator();
         ImGui::Text("Rendering Options");
 
-        bool textureOn = this->Renderer.getOptionsUniform().textureOn != 0;
-        bool shadowOn = this->Renderer.getOptionsUniform().shadowOn != 0;
-        bool discardOn = this->Renderer.getOptionsUniform().discardOn != 0;
+        bool textureOn = this->renderer.getOptionsUBO().textureOn != 0;
+        bool shadowOn = this->renderer.getOptionsUBO().shadowOn != 0;
+        bool discardOn = this->renderer.getOptionsUBO().discardOn != 0;
 
         // NEW: Frustum Culling Controls
         ImGui::Separator();
         ImGui::Text("View Frustum Culling");
 
-        bool frustumCullingEnabled = this->Renderer.isFrustumCullingEnabled();
+        bool frustumCullingEnabled = this->renderer.isFrustumCullingEnabled();
         if (ImGui::Checkbox("Enable Frustum Culling", &frustumCullingEnabled))
         {
-            this->Renderer.setFrustumCullingEnabled(frustumCullingEnabled);
+            this->renderer.setFrustumCullingEnabled(frustumCullingEnabled);
         }
 
         // Display culling statistics
-        const auto &stats = this->Renderer.getCullingStats();
+        const auto &stats = this->renderer.getCullingStats();
         ImGui::Text("Total Meshes: %u", stats.totalMeshes);
         ImGui::Text("Rendered: %u", stats.renderedMeshes);
         ImGui::Text("Culled: %u", stats.culledMeshes);
@@ -445,20 +444,20 @@ namespace vkengine
 
         if (ImGui::Checkbox("Textures", &textureOn))
         {
-            this->Renderer.getOptionsUniform().textureOn = textureOn ? 1 : 0;
+            this->renderer.getOptionsUBO().textureOn = textureOn ? 1 : 0;
         }
         if (ImGui::Checkbox("Shadows", &shadowOn))
         {
-            this->Renderer.getOptionsUniform().shadowOn = shadowOn ? 1 : 0;
+            this->renderer.getOptionsUBO().shadowOn = shadowOn ? 1 : 0;
         }
         if (ImGui::Checkbox("Alpha Discard", &discardOn))
         {
-            this->Renderer.getOptionsUniform().discardOn = discardOn ? 1 : 0;
+            this->renderer.getOptionsUBO().discardOn = discardOn ? 1 : 0;
         }
 
-        ImGui::SliderFloat("Specular",      &this->Renderer.getOptionsUniform().specularWeight, 0.0f, 1.0f);
-        ImGui::SliderFloat("Diffuse",       &this->Renderer.getOptionsUniform().diffuseWeight,  0.0f, 5.0f);
-        ImGui::SliderFloat("Shadow Offset", &this->Renderer.getOptionsUniform().shadowOffset,   0.0f, 1.0f);
+        ImGui::SliderFloat("Specular",      &this->renderer.getOptionsUBO().specularWeight, 0.0f, 1.0f);
+        ImGui::SliderFloat("Diffuse",       &this->renderer.getOptionsUBO().diffuseWeight,  0.0f, 5.0f);
+        ImGui::SliderFloat("Shadow Offset", &this->renderer.getOptionsUBO().shadowOffset,   0.0f, 1.0f);
 
         ImGui::Separator();
 
@@ -468,7 +467,7 @@ namespace vkengine
             char labelBuffer[128];
 
             // 모델 이름
-            cString modelName = m.Name().empty() ? "Unnamed" : m.Name();
+            cString modelName = m.getName().empty() ? "Unnamed" : m.getName();
             snprintf(labelBuffer, sizeof(labelBuffer), "Model %u - %s", i, modelName.c_str());
 
             // clean
@@ -476,10 +475,10 @@ namespace vkengine
             {
                 // Visible 체크박스
                 snprintf(labelBuffer, sizeof(labelBuffer), "Visible##%u", i);
-                ImGui::Checkbox(labelBuffer, &m.Visible());
+                ImGui::Checkbox(labelBuffer, &m.isVisible());
 
                 // Coefficients 슬라이더들
-                float *coeffs = m.ModelResource().coeffs;
+                float *coeffs = m.getModelResource().coeffs;
 
                 snprintf(labelBuffer, sizeof(labelBuffer), "Specular##%u", i);
                 ImGui::SliderFloat(labelBuffer, &coeffs[0], 0.0f, 1.0f);
@@ -504,13 +503,13 @@ namespace vkengine
 
             // Extract and edit position
             char labelBuffer2[128];
-            glm::vec3 position = glm::vec3(m.ModelResource().modelMatrix[3]);
+            glm::vec3 position = glm::vec3(m.getModelResource().modelMatrix[3]);
 
             snprintf(labelBuffer2, sizeof(labelBuffer2), "Position##%u", i);
 
             if (ImGui::SliderFloat3(labelBuffer2, &position.x, -10.0f, 10.0f))
             {
-                m.ModelResource().modelMatrix[3] = glm::vec4(position, 1.0f);
+                m.getModelResource().modelMatrix[3] = glm::vec4(position, 1.0f);
             }
 
             // Decompose matrix into components
@@ -518,7 +517,7 @@ namespace vkengine
             glm::vec4 perspective;
             glm::quat rotation;
 
-            if (glm::decompose(m.ModelResource().modelMatrix, scale, rotation, translation, skew, perspective))
+            if (glm::decompose(m.getModelResource().modelMatrix, scale, rotation, translation, skew, perspective))
             {
                 // Convert quaternion to euler angles for easier editing
                 glm::vec3 eulerAngles = glm::eulerAngles(rotation);
@@ -536,7 +535,7 @@ namespace vkengine
                     glm::mat4 R = glm::mat4_cast(rotation);
                     glm::mat4 S = glm::scale(glm::mat4(1.0f), scale);
 
-                    m.ModelResource().modelMatrix = T * R * S;
+                    m.getModelResource().modelMatrix = T * R * S;
                 }
             }
         }
@@ -572,7 +571,7 @@ namespace vkengine
             return;
         }
 
-        SSAOParamsUBO &ssao = this->Renderer.getSSAOParamsUBO();
+        SSAOParamsUBO &ssao = this->renderer.getSSAOParamsUBO();
 
         // ssaoSampleCount == 0 이면 ssao.comp / lightdeferred.comp 양쪽에서 SSAO를 건너뛴다.
         // 토글로 껐다 켤 때 이전 샘플 수를 잃지 않도록 보관한다.
@@ -655,19 +654,19 @@ namespace vkengine
         // HDR Environment Controls
         if (ImGui::CollapsingHeader("HDR Environment", ImGuiTreeNodeFlags_DefaultOpen))
         {
-            ImGui::SliderFloat("Environment Intensity", &this->Renderer.getSkyOptionsUBO().environmentIntensity, 0.0f,
+            ImGui::SliderFloat("Environment Intensity", &this->renderer.getSkyOptionsUBO().environmentIntensity, 0.0f,
                                10.0f, "%.2f");
         }
 
         // Environment Map Controls
         if (ImGui::CollapsingHeader("Environment Map", ImGuiTreeNodeFlags_DefaultOpen))
         {
-            ImGui::SliderFloat("Roughness Level", &this->Renderer.getSkyOptionsUBO().roughnessLevel, 0.0f, 8.0f, "%.1f");
+            ImGui::SliderFloat("Roughness Level", &this->renderer.getSkyOptionsUBO().roughnessLevel, 0.0f, 8.0f, "%.1f");
 
-            bool useIrradiance = this->Renderer.getSkyOptionsUBO().useIrradianceMap != 0;
+            bool useIrradiance = this->renderer.getSkyOptionsUBO().useIrradianceMap != 0;
             if (ImGui::Checkbox("Use Irradiance Map", &useIrradiance))
             {
-                this->Renderer.getSkyOptionsUBO().useIrradianceMap = useIrradiance ? 1 : 0;
+                this->renderer.getSkyOptionsUBO().useIrradianceMap = useIrradiance ? 1 : 0;
             }
             ImGui::SameLine();
             if (ImGui::Button("?"))
@@ -684,16 +683,16 @@ namespace vkengine
         // Debug Visualization
         if (ImGui::CollapsingHeader("Debug Visualization"))
         {
-            bool showMipLevels = this->Renderer.getSkyOptionsUBO().showMipLevels != 0;
+            bool showMipLevels = this->renderer.getSkyOptionsUBO().showMipLevels != 0;
             if (ImGui::Checkbox("Show Mip Levels", &showMipLevels))
             {
-                this->Renderer.getSkyOptionsUBO().showMipLevels = showMipLevels ? 1 : 0;
+                this->renderer.getSkyOptionsUBO().showMipLevels = showMipLevels ? 1 : 0;
             }
 
-            bool showCubeFaces = this->Renderer.getSkyOptionsUBO().showCubeFaces != 0;
+            bool showCubeFaces = this->renderer.getSkyOptionsUBO().showCubeFaces != 0;
             if (ImGui::Checkbox("Show Cube Faces", &showCubeFaces))
             {
-                this->Renderer.getSkyOptionsUBO().showCubeFaces = showCubeFaces ? 1 : 0;
+                this->renderer.getSkyOptionsUBO().showCubeFaces = showCubeFaces ? 1 : 0;
             }
         }
 
@@ -702,32 +701,32 @@ namespace vkengine
         {
             if (ImGui::Button("Default"))
             {
-                this->Renderer.getSkyOptionsUBO().environmentIntensity = 1.0f;
-                this->Renderer.getSkyOptionsUBO().roughnessLevel = 0.5f;
-                this->Renderer.getSkyOptionsUBO().useIrradianceMap = 0;
-                this->Renderer.getSkyOptionsUBO().showMipLevels = 0;
-                this->Renderer.getSkyOptionsUBO().showCubeFaces = 0;
+                this->renderer.getSkyOptionsUBO().environmentIntensity = 1.0f;
+                this->renderer.getSkyOptionsUBO().roughnessLevel = 0.5f;
+                this->renderer.getSkyOptionsUBO().useIrradianceMap = 0;
+                this->renderer.getSkyOptionsUBO().showMipLevels = 0;
+                this->renderer.getSkyOptionsUBO().showCubeFaces = 0;
             }
             ImGui::SameLine();
             if (ImGui::Button("High Exposure"))
             {
-                this->Renderer.getSkyOptionsUBO().environmentIntensity = 1.5f;
+                this->renderer.getSkyOptionsUBO().environmentIntensity = 1.5f;
             }
             ImGui::SameLine();
             if (ImGui::Button("Low Exposure"))
             {
-                this->Renderer.getSkyOptionsUBO().environmentIntensity = 0.8f;
+                this->renderer.getSkyOptionsUBO().environmentIntensity = 0.8f;
             }
 
             if (ImGui::Button("Sharp Reflections"))
             {
-                this->Renderer.getSkyOptionsUBO().roughnessLevel = 0.0f;
-                this->Renderer.getSkyOptionsUBO().useIrradianceMap = 0;
+                this->renderer.getSkyOptionsUBO().roughnessLevel = 0.0f;
+                this->renderer.getSkyOptionsUBO().useIrradianceMap = 0;
             }
             ImGui::SameLine();
             if (ImGui::Button("Diffuse Lighting"))
             {
-                this->Renderer.getSkyOptionsUBO().useIrradianceMap = 1;
+                this->renderer.getSkyOptionsUBO().useIrradianceMap = 1;
             }
         }
 
@@ -752,15 +751,15 @@ namespace vkengine
                                               "Uncharted 2", "GT (Gran Turismo)", "Lottes",
                                               "Exponential", "Reinhard Extended", "Luminance",
                                               "Hable"};
-            ImGui::Combo("Tone Mapping Type", &this->Renderer.getPostProcessingOptionsUBO().toneMappingType,
+            ImGui::Combo("Tone Mapping Type", &this->renderer.getPostProcessingOptionsUBO().toneMappingType,
                          toneMappingNames, IM_ARRAYSIZE(toneMappingNames));
 
-            ImGui::SliderFloat("Exposure", &this->Renderer.getPostProcessingOptionsUBO().exposure, 0.1f, 5.0f, "%.2f");
-            ImGui::SliderFloat("Gamma", &this->Renderer.getPostProcessingOptionsUBO().gamma, 1.0f / 2.2f, 2.2f, "%.2f");
+            ImGui::SliderFloat("Exposure", &this->renderer.getPostProcessingOptionsUBO().exposure, 0.1f, 5.0f, "%.2f");
+            ImGui::SliderFloat("Gamma", &this->renderer.getPostProcessingOptionsUBO().gamma, 1.0f / 2.2f, 2.2f, "%.2f");
 
-            if (this->Renderer.getPostProcessingOptionsUBO().toneMappingType == 7)
+            if (this->renderer.getPostProcessingOptionsUBO().toneMappingType == 7)
             { // Reinhard Extended
-                ImGui::SliderFloat("Max White", &this->Renderer.getPostProcessingOptionsUBO().maxWhite, 1.0f, 20.0f,
+                ImGui::SliderFloat("Max White", &this->renderer.getPostProcessingOptionsUBO().maxWhite, 1.0f, 20.0f,
                                    "%.1f");
             }
         }
@@ -768,27 +767,27 @@ namespace vkengine
         // Color Grading Controls
         if (ImGui::CollapsingHeader("Color Grading", ImGuiTreeNodeFlags_DefaultOpen))
         {
-            ImGui::SliderFloat("Contrast", &this->Renderer.getPostProcessingOptionsUBO().contrast, 0.0f, 3.0f, "%.2f");
-            ImGui::SliderFloat("Brightness", &this->Renderer.getPostProcessingOptionsUBO().brightness, -1.0f, 1.0f,
+            ImGui::SliderFloat("Contrast", &this->renderer.getPostProcessingOptionsUBO().contrast, 0.0f, 3.0f, "%.2f");
+            ImGui::SliderFloat("Brightness", &this->renderer.getPostProcessingOptionsUBO().brightness, -1.0f, 1.0f,
                                "%.2f");
-            ImGui::SliderFloat("Saturation", &this->Renderer.getPostProcessingOptionsUBO().saturation, 0.0f, 2.0f, "%.2f");
-            ImGui::SliderFloat("Vibrance", &this->Renderer.getPostProcessingOptionsUBO().vibrance, -1.0f, 1.0f, "%.2f");
+            ImGui::SliderFloat("Saturation", &this->renderer.getPostProcessingOptionsUBO().saturation, 0.0f, 2.0f, "%.2f");
+            ImGui::SliderFloat("Vibrance", &this->renderer.getPostProcessingOptionsUBO().vibrance, -1.0f, 1.0f, "%.2f");
         }
 
         // Effects Controls
         if (ImGui::CollapsingHeader("Effects"))
         {
-            ImGui::SliderFloat("Vignette Strength", &this->Renderer.getPostProcessingOptionsUBO().vignetteStrength, 0.0f,
+            ImGui::SliderFloat("Vignette Strength", &this->renderer.getPostProcessingOptionsUBO().vignetteStrength, 0.0f,
                                1.0f, "%.2f");
-            if (this->Renderer.getPostProcessingOptionsUBO().vignetteStrength > 0.0f)
+            if (this->renderer.getPostProcessingOptionsUBO().vignetteStrength > 0.0f)
             {
-                ImGui::SliderFloat("Vignette Radius", &this->Renderer.getPostProcessingOptionsUBO().vignetteRadius, 0.1f,
+                ImGui::SliderFloat("Vignette Radius", &this->renderer.getPostProcessingOptionsUBO().vignetteRadius, 0.1f,
                                    1.5f, "%.2f");
             }
 
-            ImGui::SliderFloat("Film Grain", &this->Renderer.getPostProcessingOptionsUBO().filmGrainStrength, 0.0f, 0.2f,
+            ImGui::SliderFloat("Film Grain", &this->renderer.getPostProcessingOptionsUBO().filmGrainStrength, 0.0f, 0.2f,
                                "%.3f");
-            ImGui::SliderFloat("Chromatic Aberration", &this->Renderer.getPostProcessingOptionsUBO().chromaticAberration,
+            ImGui::SliderFloat("Chromatic Aberration", &this->renderer.getPostProcessingOptionsUBO().chromaticAberration,
                                0.0f, 5.0f, "%.1f");
         }
 
@@ -797,20 +796,20 @@ namespace vkengine
         {
             const char *debugModeNames[] = {"Off", "Tone Mapping Comparison", "Color Channels",
                                             "Split Comparison"};
-            ImGui::Combo("Debug Mode", &this->Renderer.getPostProcessingOptionsUBO().debugMode, debugModeNames,
+            ImGui::Combo("Debug Mode", &this->renderer.getPostProcessingOptionsUBO().debugMode, debugModeNames,
                          IM_ARRAYSIZE(debugModeNames));
 
-            if (this->Renderer.getPostProcessingOptionsUBO().debugMode == 2)
+            if (this->renderer.getPostProcessingOptionsUBO().debugMode == 2)
             { // Color Channels
                 const char *channelNames[] = {"All", "Red Only", "Green Only",
                                               "Blue Only", "Alpha", "Luminance"};
-                ImGui::Combo("Show Channel", &this->Renderer.getPostProcessingOptionsUBO().showOnlyChannel, channelNames,
+                ImGui::Combo("Show Channel", &this->renderer.getPostProcessingOptionsUBO().showOnlyChannel, channelNames,
                              IM_ARRAYSIZE(channelNames));
             }
 
-            if (this->Renderer.getPostProcessingOptionsUBO().debugMode == 3)
+            if (this->renderer.getPostProcessingOptionsUBO().debugMode == 3)
             { // Split Comparison
-                ImGui::SliderFloat("Split Position", &this->Renderer.getPostProcessingOptionsUBO().debugSplit, 0.0f, 1.0f,
+                ImGui::SliderFloat("Split Position", &this->renderer.getPostProcessingOptionsUBO().debugSplit, 0.0f, 1.0f,
                                    "%.2f");
             }
         }
@@ -820,49 +819,49 @@ namespace vkengine
         {
             if (ImGui::Button("Default"))
             {
-                this->Renderer.getPostProcessingOptionsUBO().toneMappingType = 2; // ACES
-                this->Renderer.getPostProcessingOptionsUBO().exposure = 1.0f;
-                this->Renderer.getPostProcessingOptionsUBO().gamma = 2.2f;
-                this->Renderer.getPostProcessingOptionsUBO().contrast = 1.0f;
-                this->Renderer.getPostProcessingOptionsUBO().brightness = 0.0f;
-                this->Renderer.getPostProcessingOptionsUBO().saturation = 1.0f;
-                this->Renderer.getPostProcessingOptionsUBO().vibrance = 0.0f;
-                this->Renderer.getPostProcessingOptionsUBO().vignetteStrength = 0.0f;
-                this->Renderer.getPostProcessingOptionsUBO().filmGrainStrength = 0.0f;
-                this->Renderer.getPostProcessingOptionsUBO().chromaticAberration = 0.0f;
-                this->Renderer.getPostProcessingOptionsUBO().debugMode = 0;
+                this->renderer.getPostProcessingOptionsUBO().toneMappingType = 2; // ACES
+                this->renderer.getPostProcessingOptionsUBO().exposure = 1.0f;
+                this->renderer.getPostProcessingOptionsUBO().gamma = 2.2f;
+                this->renderer.getPostProcessingOptionsUBO().contrast = 1.0f;
+                this->renderer.getPostProcessingOptionsUBO().brightness = 0.0f;
+                this->renderer.getPostProcessingOptionsUBO().saturation = 1.0f;
+                this->renderer.getPostProcessingOptionsUBO().vibrance = 0.0f;
+                this->renderer.getPostProcessingOptionsUBO().vignetteStrength = 0.0f;
+                this->renderer.getPostProcessingOptionsUBO().filmGrainStrength = 0.0f;
+                this->renderer.getPostProcessingOptionsUBO().chromaticAberration = 0.0f;
+                this->renderer.getPostProcessingOptionsUBO().debugMode = 0;
             }
             ImGui::SameLine();
             if (ImGui::Button("Cinematic"))
             {
-                this->Renderer.getPostProcessingOptionsUBO().toneMappingType = 3; // Uncharted 2
-                this->Renderer.getPostProcessingOptionsUBO().exposure = 1.2f;
-                this->Renderer.getPostProcessingOptionsUBO().contrast = 1.1f;
-                this->Renderer.getPostProcessingOptionsUBO().saturation = 0.9f;
-                this->Renderer.getPostProcessingOptionsUBO().vignetteStrength = 0.3f;
-                this->Renderer.getPostProcessingOptionsUBO().vignetteRadius = 0.8f;
-                this->Renderer.getPostProcessingOptionsUBO().filmGrainStrength = 0.02f;
+                this->renderer.getPostProcessingOptionsUBO().toneMappingType = 3; // Uncharted 2
+                this->renderer.getPostProcessingOptionsUBO().exposure = 1.2f;
+                this->renderer.getPostProcessingOptionsUBO().contrast = 1.1f;
+                this->renderer.getPostProcessingOptionsUBO().saturation = 0.9f;
+                this->renderer.getPostProcessingOptionsUBO().vignetteStrength = 0.3f;
+                this->renderer.getPostProcessingOptionsUBO().vignetteRadius = 0.8f;
+                this->renderer.getPostProcessingOptionsUBO().filmGrainStrength = 0.02f;
             }
 
             if (ImGui::Button("High Contrast"))
             {
-                this->Renderer.getPostProcessingOptionsUBO().contrast = 1.5f;
-                this->Renderer.getPostProcessingOptionsUBO().brightness = 0.1f;
-                this->Renderer.getPostProcessingOptionsUBO().saturation = 1.3f;
-                this->Renderer.getPostProcessingOptionsUBO().vignetteStrength = 0.2f;
+                this->renderer.getPostProcessingOptionsUBO().contrast = 1.5f;
+                this->renderer.getPostProcessingOptionsUBO().brightness = 0.1f;
+                this->renderer.getPostProcessingOptionsUBO().saturation = 1.3f;
+                this->renderer.getPostProcessingOptionsUBO().vignetteStrength = 0.2f;
             }
             ImGui::SameLine();
             if (ImGui::Button("Low Contrast"))
             {
-                this->Renderer.getPostProcessingOptionsUBO().contrast = 0.7f;
-                this->Renderer.getPostProcessingOptionsUBO().brightness = 0.05f;
-                this->Renderer.getPostProcessingOptionsUBO().saturation = 0.8f;
+                this->renderer.getPostProcessingOptionsUBO().contrast = 0.7f;
+                this->renderer.getPostProcessingOptionsUBO().brightness = 0.05f;
+                this->renderer.getPostProcessingOptionsUBO().saturation = 0.8f;
             }
 
             if (ImGui::Button("Show Tone Mapping"))
             {
-                this->Renderer.getPostProcessingOptionsUBO().debugMode = 1;
-                this->Renderer.getPostProcessingOptionsUBO().exposure = 2.0f;
+                this->renderer.getPostProcessingOptionsUBO().debugMode = 1;
+                this->renderer.getPostProcessingOptionsUBO().exposure = 2.0f;
             }
         }
 

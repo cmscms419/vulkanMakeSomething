@@ -1,0 +1,105 @@
+﻿#include "PipelineHandle.h"
+
+#include "data.h"
+#include "helper.h"
+
+
+namespace vkengine {
+    void PipelineHandle::createSquarePipeline(
+        VkFormat outColorFormat, 
+        VkFormat depthFormat, 
+        VkSampleCountFlagBits msaaSamples)
+    {
+        const cUint32_t sizeofVertexStructure = 1;
+        const VkDevice device = ctx.getDevice()->logicaldevice;
+
+        Log::printToLogger("Creating Graphics Pipeline: " + this->name + "");
+
+        // Fixed vertex input - no vertex buffers needed for procedural triangle
+        // 
+        VkPipelineVertexInputStateCreateInfo vertexInputCI = helper::pipeline::makePipelineVertexInputStateCreateInfo(
+            VkVertexInputBindingDescription{},
+            VkVertexInputAttributeDescription{},
+            0,
+            0
+        );
+
+        VkPipelineInputAssemblyStateCreateInfo inputAssembly = helper::pipeline::makePipelineInputAssemblyStateCreateInfo(
+            VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0, VK_FALSE);
+
+        VkPipelineViewportStateCreateInfo viewportState = helper::pipeline::makePipelineViewportStateCreateInfo(
+            VkViewport{},
+            VkRect2D{},
+            1, 1);
+
+        VkPipelineRasterizationStateCreateInfo rasterizer = helper::pipeline::makePipelineRasterizationStateCreateInfo(
+            VK_POLYGON_MODE_FILL,
+            VK_CULL_MODE_NONE,
+            VK_FRONT_FACE_COUNTER_CLOCKWISE);
+
+        VkPipelineMultisampleStateCreateInfo multisampling =
+            helper::pipeline::makePipelineMultisampleStateCreateInfo(VK_SAMPLE_COUNT_1_BIT);
+
+        VkPipelineDepthStencilStateCreateInfo depthStencil =
+            helper::pipeline::makePipelineDepthStencilStateCreateInfo(VK_FALSE, VK_FALSE, VK_COMPARE_OP_ALWAYS);
+
+        // 0xf == VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | 
+        //        VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT
+        VkPipelineColorBlendAttachmentState colorBlendAttachment =
+            helper::pipeline::makePipelineColorBlendAttachmentState(0xf, VK_FALSE);
+
+        VkPipelineColorBlendStateCreateInfo colorBlending = helper::pipeline::makePipelineColorBlendStateCreateInfo(
+            1, &colorBlendAttachment);
+
+        // dynamic states에서 뷰포트와 시저를 설정
+        // 파이프라인 생성 후에 커맨드 버퍼에서 설정 가능
+        VkPipelineDynamicStateCreateInfo dynamicState =
+            helper::pipeline::makePipelineDynamicStateCreateInfo(dynamicStates);
+
+        // 쉐이더 스테이지 생성
+        // 쉐이더 모듈을 로드하고 파이프라인 쉐이더 스테이지 생성 정보를 만듭니다.
+        std::vector<VkPipelineShaderStageCreateInfo> shaderStages =
+            this->shaderManager.makePipelineShaderStageCIs(this->name);
+
+        // vulkan 1.3을 위한 Dynamic rendering 세팅을 해야한다.
+        /*std::vector<VkFormat> colorFormats = { outColorFormat };
+        VkPipelineRenderingCreateInfo pipelineRenderingCreateInfo = helper::makePipelineRenderingCreateInfo
+        (
+            colorFormats,
+            depthFormat,
+            VK_FORMAT_UNDEFINED
+        );*/
+
+        VkPipelineRenderingCreateInfo pipelineRenderingCreateInfo{
+        VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO };
+        
+        pipelineRenderingCreateInfo.colorAttachmentCount = 1;
+        pipelineRenderingCreateInfo.pColorAttachmentFormats = &outColorFormat;
+        pipelineRenderingCreateInfo.depthAttachmentFormat = VK_FORMAT_UNDEFINED;
+        pipelineRenderingCreateInfo.stencilAttachmentFormat = VK_FORMAT_UNDEFINED;
+        
+        VkGraphicsPipelineCreateInfo pipelineInfo{};
+
+        pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+        pipelineInfo.pNext = &pipelineRenderingCreateInfo;
+        pipelineInfo.stageCount = static_cast<cUint32_t>(shaderStages.size());
+        pipelineInfo.pStages = shaderStages.data();
+        pipelineInfo.pVertexInputState = &vertexInputCI;
+        pipelineInfo.pInputAssemblyState = &inputAssembly;
+        pipelineInfo.pViewportState = &viewportState;
+        pipelineInfo.pRasterizationState = &rasterizer;
+        pipelineInfo.pMultisampleState = &multisampling;
+        pipelineInfo.pDepthStencilState = &depthStencil;
+        pipelineInfo.pColorBlendState = &colorBlending;
+        pipelineInfo.pDynamicState = &dynamicState;
+        pipelineInfo.layout = pipelineLayout;
+        pipelineInfo.renderPass = VK_NULL_HANDLE; // dynamic rendering
+        pipelineInfo.subpass = 0;
+        pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
+        pipelineInfo.basePipelineIndex = -1;
+
+        _VK_CHECK_RESULT_(
+            vkCreateGraphicsPipelines(device, ctx.getPipelineCache(), 1, &pipelineInfo, nullptr, &pipeline)
+        );
+    }
+}

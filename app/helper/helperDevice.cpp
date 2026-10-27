@@ -3,7 +3,6 @@
 #include "log.h"
 #include "data.h"
 
-using namespace vkengine::Log;
 
 namespace vkengine
 {
@@ -65,7 +64,7 @@ namespace vkengine
                 for (const auto &extension : availableExtensions)
                 {
 
-                    PRINT_TO_LOGGER("Available Extension: %s", extension.extensionName);
+                    Log::printToLogger("Available Extension: %s", extension.extensionName);
                     requiredExtensions.erase(extension.extensionName);
                 }
 
@@ -111,10 +110,10 @@ namespace vkengine
                     return 0;
                 }
 
-                PRINT_TO_LOGGER("Device %s score: %d", deviceProperties.deviceName, score);
-                PRINT_TO_LOGGER("DeviceProperties.deviceType: %d", deviceProperties.deviceType);
-                PRINT_TO_LOGGER("Device Name: %s", deviceProperties.deviceName);
-                PRINT_TO_LOGGER("");
+                Log::printToLogger("Device %s score: %d", deviceProperties.deviceName, score);
+                Log::printToLogger("DeviceProperties.deviceType: %d", deviceProperties.deviceType);
+                Log::printToLogger("Device Name: %s", deviceProperties.deviceName);
+                Log::printToLogger("");
 
                 return score;
             }
@@ -177,7 +176,7 @@ namespace vkengine
                     }
                     else
                     {
-                        PRINT_TO_LOGGER("Failed to find supported format!");
+                        Log::printToLogger("Failed to find supported format!");
                     }
                 }
 
@@ -270,7 +269,7 @@ namespace vkengine
                 vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, queueFamilies.data());
 
 #ifdef DEBUG_
-                getPyhsicalDeviceProperties(device);
+                getPhysicalDeviceProperties(device);
 #endif // DEBUG_
 
                 int i = 0;
@@ -278,8 +277,8 @@ namespace vkengine
                 for (const auto &queueFamily : queueFamilies)
                 {
                     // 현재 큐 패밀리가 그래픽스 큐를 지원하는지 확인
-                    PRINT_TO_LOGGER("QueueFamily %d", i);
-                    PRINT_TO_LOGGER("QueueFamily queueCount: %d", queueFamily.queueCount);
+                    Log::printToLogger("QueueFamily %d", i);
+                    Log::printToLogger("QueueFamily queueCount: %d", queueFamily.queueCount);
 
                     cString queueFlagsStr;
                     if (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT)
@@ -299,20 +298,20 @@ namespace vkengine
                     if (queueFamily.queueFlags & VK_QUEUE_OPTICAL_FLOW_BIT_NV)
                         queueFlagsStr += "OPTICAL_FLOW ";
 
-                    PRINT_TO_LOGGER("QueueFamily queueFlags: %s", queueFlagsStr.c_str());
+                    Log::printToLogger("QueueFamily queueFlags: %s", queueFlagsStr.c_str());
 
-                    PRINT_TO_LOGGER("QueueFamily timestampValidBits: %d", queueFamily.timestampValidBits);
-                    PRINT_TO_LOGGER("QueueFamily minImageTransferGranularity.width: %d", queueFamily.minImageTransferGranularity.width);
-                    PRINT_TO_LOGGER("QueueFamily minImageTransferGranularity.height: %d", queueFamily.minImageTransferGranularity.height);
-                    PRINT_TO_LOGGER("QueueFamily minImageTransferGranularity.depth: %d", queueFamily.minImageTransferGranularity.depth);
+                    Log::printToLogger("QueueFamily timestampValidBits: %d", queueFamily.timestampValidBits);
+                    Log::printToLogger("QueueFamily minImageTransferGranularity.width: %d", queueFamily.minImageTransferGranularity.width);
+                    Log::printToLogger("QueueFamily minImageTransferGranularity.height: %d", queueFamily.minImageTransferGranularity.height);
+                    Log::printToLogger("QueueFamily minImageTransferGranularity.depth: %d", queueFamily.minImageTransferGranularity.depth);
 
                     if ((queueFamily.queueFlags & VkQueueFlagBits::VK_QUEUE_GRAPHICS_BIT) && (queueFamily.queueFlags & VkQueueFlagBits::VK_QUEUE_COMPUTE_BIT))
                     {
-                        PRINT_TO_LOGGER("VK_QUEUE_GRAPHICS_BIT is supported");
-                        PRINT_TO_LOGGER("VK_QUEUE_COMPUTE_BIT is supported");
+                        Log::printToLogger("VK_QUEUE_GRAPHICS_BIT is supported");
+                        Log::printToLogger("VK_QUEUE_COMPUTE_BIT is supported");
                         if (!selected)
                         {
-                            indices.setgraphicsAndComputeFamily(i);
+                            indices.setGraphicsAndComputeFamily(i);
                         }
                     }
 
@@ -321,7 +320,7 @@ namespace vkengine
 
                     if (presentSupport)
                     {
-                        PRINT_TO_LOGGER("VK_QUEUE_PRESENT_BIT is supported");
+                        Log::printToLogger("VK_QUEUE_PRESENT_BIT is supported");
                         if (!selected)
                         {
                             indices.setPresentFamily(i);
@@ -335,7 +334,7 @@ namespace vkengine
                         {
                             indices.queueFamilyProperties = queueFamily;
                             target = indices;
-                            PRINT_TO_LOGGER("------------------ select Queuefamily index: %d ------------------", i);
+                            Log::printToLogger("------------------ select Queuefamily index: %d ------------------", i);
                             selected = true;
                         }
                     }
@@ -364,18 +363,18 @@ namespace vkengine
                 for (const auto &queueFamily : queueFamilies)
                 {
                     // 그래픽스와 컴퓨트 큐 지원 확인
-                    PRINT_TO_LOGGER("QueueFamily %d", i);
-                    PRINT_TO_LOGGER("QueueFamily queueCount: %d", queueFamily.queueCount);
-                    PRINT_TO_LOGGER("QueueFamily queueFlags: %d", queueFamily.queueFlags);
-                    PRINT_TO_LOGGER("QueueFamily timestampValidBits: %d", queueFamily.timestampValidBits);
-                    PRINT_TO_LOGGER("QueueFamily minImageTransferGranularity.width: %d", queueFamily.minImageTransferGranularity.width);
-                    PRINT_TO_LOGGER("QueueFamily minImageTransferGranularity.height: %d", queueFamily.minImageTransferGranularity.height);
-                    PRINT_TO_LOGGER("QueueFamily minImageTransferGranularity.depth: %d", queueFamily.minImageTransferGranularity.depth);
+                    Log::printToLogger("QueueFamily %d", i);
+                    Log::printToLogger("QueueFamily queueCount: %d", queueFamily.queueCount);
+                    Log::printToLogger("QueueFamily queueFlags: %d", queueFamily.queueFlags);
+                    Log::printToLogger("QueueFamily timestampValidBits: %d", queueFamily.timestampValidBits);
+                    Log::printToLogger("QueueFamily minImageTransferGranularity.width: %d", queueFamily.minImageTransferGranularity.width);
+                    Log::printToLogger("QueueFamily minImageTransferGranularity.height: %d", queueFamily.minImageTransferGranularity.height);
+                    Log::printToLogger("QueueFamily minImageTransferGranularity.depth: %d", queueFamily.minImageTransferGranularity.depth);
 
                     // 그래픽스 큐 지원 확인
                     if (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT)
                     {
-                        PRINT_TO_LOGGER("VK_QUEUE_GRAPHICS_BIT is supported");
+                        Log::printToLogger("VK_QUEUE_GRAPHICS_BIT is supported");
                         if (!indices.graphicFamilyHasValue)
                         {
                             indices.setGraphicFamily(i);
@@ -385,17 +384,17 @@ namespace vkengine
                     // 컴퓨트 큐 지원 확인
                     if (queueFamily.queueFlags & VK_QUEUE_COMPUTE_BIT)
                     {
-                        PRINT_TO_LOGGER("VK_QUEUE_COMPUTE_BIT is supported");
-                        if (!indices.computerFamilyHasValue)
+                        Log::printToLogger("VK_QUEUE_COMPUTE_BIT is supported");
+                        if (!indices.computeFamilyHasValue)
                         {
-                            indices.setComputerFamily(i);
+                            indices.setComputeFamily(i);
                         }
                     }
 
                     // 트랜스퍼 큐 지원 확인
                     if (queueFamily.queueFlags & VK_QUEUE_TRANSFER_BIT)
                     {
-                        PRINT_TO_LOGGER("VK_QUEUE_TRANSFER_BIT is supported");
+                        Log::printToLogger("VK_QUEUE_TRANSFER_BIT is supported");
                         if (!indices.transferFamilyHasValue)
                         {
                             indices.setTransferFamily(i);
@@ -411,7 +410,7 @@ namespace vkengine
                             target = indices;
                             selected = true;
 
-                            PRINT_TO_LOGGER("------------------ select Queuefamily index: %d ------------------", i);
+                            Log::printToLogger("------------------ select Queuefamily index: %d ------------------", i);
                         }
                     }
 
@@ -423,15 +422,15 @@ namespace vkengine
                 return target;
             }
 
-            void getPyhsicalDeviceProperties(VkPhysicalDevice device)
+            void getPhysicalDeviceProperties(VkPhysicalDevice device)
             {
                 VkPhysicalDeviceProperties deviceProperties;
                 vkGetPhysicalDeviceProperties(device, &deviceProperties);
-                PRINT_TO_LOGGER("Device Name: %s", deviceProperties.deviceName);
-                PRINT_TO_LOGGER("DeviceProperties.deviceType: %d", deviceProperties.deviceType);
+                Log::printToLogger("Device Name: %s", deviceProperties.deviceName);
+                Log::printToLogger("DeviceProperties.deviceType: %d", deviceProperties.deviceType);
             }
 
-            VkCommandPoolCreateInfo commandPoolCreateInfo(uint32_t queueFamilyIndex, VkCommandPoolCreateFlags flags)
+            VkCommandPoolCreateInfo makeCommandPoolCreateInfo(uint32_t queueFamilyIndex, VkCommandPoolCreateFlags flags)
             {
                 VkCommandPoolCreateInfo info = {};
                 info.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
@@ -441,7 +440,7 @@ namespace vkengine
                 return info;
             }
 
-            VkCommandBufferAllocateInfo commandBufferAllocateInfo(VkCommandPool pool, uint32_t count = 1, VkCommandBufferLevel level = VK_COMMAND_BUFFER_LEVEL_PRIMARY)
+            VkCommandBufferAllocateInfo makeCommandBufferAllocateInfo(VkCommandPool pool, uint32_t count = 1, VkCommandBufferLevel level = VK_COMMAND_BUFFER_LEVEL_PRIMARY)
             {
                 VkCommandBufferAllocateInfo info = {};
                 info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -453,7 +452,7 @@ namespace vkengine
                 return info;
             }
 
-            VkFenceCreateInfo fenceCreateInfo(VkFenceCreateFlags flags)
+            VkFenceCreateInfo makeFenceCreateInfo(VkFenceCreateFlags flags)
             {
                 VkFenceCreateInfo info = {};
                 info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
@@ -464,7 +463,7 @@ namespace vkengine
                 return info;
             }
 
-            VkSemaphoreCreateInfo semaphoreCreateInfo(VkSemaphoreCreateFlags flags)
+            VkSemaphoreCreateInfo makeSemaphoreCreateInfo(VkSemaphoreCreateFlags flags)
             {
                 VkSemaphoreCreateInfo info = {};
                 info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;

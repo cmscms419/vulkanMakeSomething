@@ -1,35 +1,32 @@
-#include "VKContext.h"
-#include "VKImage2D.h"
-#include "VKShaderManager.h"
-#include "VKshader.h"
-#include "VKpipeLineHandle.h"
-#include "VKbarrier2.h"
-#include "VKCommandBufferHander.h"
-#include "VKbuffer2.h"
-#include "VKwindow.h"
-#include "VKswapchain.h"
+#include "Context.h"
+#include "Image2D.h"
+#include "ShaderManager.h"
+#include "Shader.h"
+#include "PipelineHandle.h"
+#include "BarrierHelper.h"
+#include "CommandBufferHandle.h"
+#include "BaseBuffer2.h"
+#include "Window.h"
+#include "SwapChain.h"
 #include "Camera2.h"
-#include "VKgui.h"
+#include "ImGuiRenderer.h"
 #include "VKSkyTexture.h"
-#include "VKUniformBuffer2.h"
-#include "VKDescriptorSet.h"
+#include "UniformBuffer2.h"
+#include "DescriptorSetHandle.h"
 
 #include <chrono>
 
 #include "log.h"
 
-using namespace vkengine;
-using namespace vkengine::Log;
 
-using namespace vkengine;
 
 SceneDataUBO sceneDataUBO = {};
 SkyOptionsUBO skyOptionsUBO = {};
 
-std::vector<VKUniformBuffer2<SceneDataUBO>> sceneDataUniforms;
-std::vector<VKUniformBuffer2<SkyOptionsUBO>> skyOptionsUniforms;
-std::vector<DescriptorSetHander> sceneDescriptorSets;
-DescriptorSetHander skyDescriptorSet;
+std::vector<UniformBuffer2<SceneDataUBO>> sceneDataUniforms;
+std::vector<UniformBuffer2<SkyOptionsUBO>> skyOptionsUniforms;
+std::vector<DescriptorSetHandle> sceneDescriptorSets;
+DescriptorSetHandle skyDescriptorSet;
 bool shouldClose{ false };
 
 cUint32_t currentFrame = 0;
@@ -163,8 +160,8 @@ void renderColorControlWindow()
 }
 
 void recordCommandBuffer(
-    VKCommandBufferHander& cmd, VKSwapChain& swapchain, cUint32_t imageIndex,
-    VkExtent2D windowSize, gui::VKimguiRenderer& guiRenderer, VKPipeLineHandle& skypipeline)
+    CommandBufferHandle& cmd, SwapChain& swapchain, cUint32_t imageIndex,
+    VkExtent2D windowSize, gui::ImGuiRenderer& guiRenderer, PipelineHandle& skypipeline)
 {
     vkResetCommandBuffer(cmd.getCommandBuffer(), 0);
     VkCommandBufferBeginInfo cmdBufferBeginInfo{ VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO };
@@ -182,7 +179,7 @@ void recordCommandBuffer(
     VkClearColorValue clearColorValue = { {0.53f, 0.81f, 0.92f, 1.0f} };
 
     VkRenderingAttachmentInfo colorAttachment{ VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO };
-    colorAttachment.imageView = swapchain.ImageView(imageIndex);
+    colorAttachment.imageView = swapchain.getSwapChainImageView(imageIndex);
     colorAttachment.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
     colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
     colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
@@ -227,7 +224,7 @@ void recordCommandBuffer(
     _VK_CHECK_RESULT_(vkEndCommandBuffer(cmd.getCommandBuffer()));
 }
 
-void submitFrame(VKCommandBufferHander& commandBuffer, VkSemaphore waitSemaphore,
+void submitFrame(CommandBufferHandle& commandBuffer, VkSemaphore waitSemaphore,
     VkSemaphore signalSemaphore, VkFence fence)
 {
     VkSemaphoreSubmitInfo waitSemaphoreInfo{ VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO };
@@ -275,11 +272,11 @@ int main(int argc, char* argv[]) {
     int windowHeight = 0;
 
     window->getFramebufferSize(&windowWidth, &windowHeight);
-    VKcontext vkContext(window->getRequiredExtensions(), true);
+    Context vkContext(window->getRequiredExtensions(), true);
 
     VkExtent2D extent{ static_cast<cUint32_t>(windowWidth), static_cast<cUint32_t>(windowHeight) };
 
-    VKSwapChain swapChain(vkContext, window->createVulkanSurface(vkContext.getInstance()), extent, true);
+    SwapChain swapChain(vkContext, window->createVulkanSurface(vkContext.getInstance()), extent, true);
 
 
     char path[MAX_PATH];
@@ -289,10 +286,10 @@ int main(int argc, char* argv[]) {
         root_path = path;
     }
     else {
-        EXIT_TO_LOGGER("경로를 가져오는 데 실패했습니다.");
+        vkengine::Log::exitToLogger("경로를 가져오는 데 실패했습니다.");
     }
 
-    VKShaderManager shaderManager
+    ShaderManager shaderManager
     (
         vkContext,
         root_path + "../../../../../../shader/",
@@ -301,14 +298,14 @@ int main(int argc, char* argv[]) {
           {"sky", {"vertskybox2.spv", "fragskybox2.spv"}} 
         }
     );
-    gui::VKimguiRenderer guiRenderer(vkContext, shaderManager, swapChain.getSwapChainImageFormat(), root_path + "../../../../../../resource/");
-    std::vector<VKCommandBufferHander> commandBuffers = vkContext.createGrapicsCommandBufferHanders(MAX_FRAMES_IN_FLIGHT);
+    gui::ImGuiRenderer guiRenderer(vkContext, shaderManager, swapChain.getSwapChainImageFormat(), root_path + "../../../../../../resource/");
+    std::vector<CommandBufferHandle> commandBuffers = vkContext.createGraphicsCommandBufferHandles(MAX_FRAMES_IN_FLIGHT);
     uint32_t imageCount = swapChain.getSwapChainImageCount();
     std::vector<VkSemaphore> presentSemaphores;
     std::vector<VkSemaphore> renderSemaphores;
     std::vector<VkFence> inFlightFences;
 
-    VKPipeLineHandle skyboxpipeline(vkContext, shaderManager);
+    PipelineHandle skyboxpipeline(vkContext, shaderManager);
     skyboxpipeline.createByName(
         "sky", 
         swapChain.getSwapChainImageFormat(), 
@@ -322,7 +319,7 @@ int main(int argc, char* argv[]) {
         root_path + "../../../../../../resource/cubeMap/diffuse_out.ktx2",
         root_path + "../../../../../../resource/cubeMap/outputLUT.png");
 
-    helper::initializeSynchronization
+    helper::createSynchronization
     (
         vkContext.getDevice()->logicaldevice,
         MAX_FRAMES_IN_FLIGHT,
@@ -394,34 +391,34 @@ int main(int argc, char* argv[]) {
         deltaTime = std::min(deltaTime, 0.033f); // Max 33ms (30 FPS minimum)
 
         // camera update
-        if (window->getKeyBoardState().m_keyPressed[GLFW_KEY_W])
+        if (window->getKeyboardState().m_keyPressed[GLFW_KEY_W])
         {
-            camera->MoveForward(0.003);
+            camera->moveForward(0.003);
         }
 
-        if (window->getKeyBoardState().m_keyPressed[GLFW_KEY_S])
+        if (window->getKeyboardState().m_keyPressed[GLFW_KEY_S])
         {
-            camera->MoveForward(-0.003);
+            camera->moveForward(-0.003);
         }
 
-        if (window->getKeyBoardState().m_keyPressed[GLFW_KEY_A])
+        if (window->getKeyboardState().m_keyPressed[GLFW_KEY_A])
         {
-            camera->MoveRight(-0.003);
+            camera->moveRight(-0.003);
         }
 
-        if (window->getKeyBoardState().m_keyPressed[GLFW_KEY_D])
+        if (window->getKeyboardState().m_keyPressed[GLFW_KEY_D])
         {
-            camera->MoveRight(0.003);
+            camera->moveRight(0.003);
         }
 
-        if (window->getKeyBoardState().m_keyPressed[GLFW_KEY_Q])
+        if (window->getKeyboardState().m_keyPressed[GLFW_KEY_Q])
         {
-            camera->MoveUp(-0.003);
+            camera->moveUp(-0.003);
         }
 
-        if (window->getKeyBoardState().m_keyPressed[GLFW_KEY_E])
+        if (window->getKeyboardState().m_keyPressed[GLFW_KEY_E])
         {
-            camera->MoveUp(0.003);
+            camera->moveUp(0.003);
         }
 
         camera->update();
@@ -430,7 +427,7 @@ int main(int argc, char* argv[]) {
         sceneDataUBO.view = camera->getViewMatrix();
         sceneDataUBO.cameraPos = camera->getPos();
 
-        updateGui(extent, window->getmouseState(), camera.get());
+        updateGui(extent, window->getMouseState(), camera.get());
         guiRenderer.update();
 
         _VK_CHECK_RESULT_(vkWaitForFences(vkContext.getDevice()->logicaldevice, 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX));
@@ -445,11 +442,11 @@ int main(int argc, char* argv[]) {
         if (acquireResult == VK_ERROR_OUT_OF_DATE_KHR) {
             //this->recreateSwapChain(); // 스왑 체인을 다시 생성합니다.
             // TODO 다시 만들어야 한다. 
-            EXIT_TO_LOGGER("Window resize not implemented");
+            vkengine::Log::exitToLogger("Window resize not implemented");
         }
         else if (acquireResult != VK_SUCCESS && acquireResult != VK_SUBOPTIMAL_KHR)
         {
-            EXIT_TO_LOGGER("Failed to acquire swapchain image!");
+            vkengine::Log::exitToLogger("Failed to acquire swapchain image!");
         }
         else {
             _VK_CHECK_RESULT_(acquireResult);
@@ -460,14 +457,14 @@ int main(int argc, char* argv[]) {
         submitFrame(commandBuffers[currentFrame], presentSemaphores[currentSemaphore],
             renderSemaphores[currentSemaphore], inFlightFences[currentFrame]);
         
-        VkResult presentResult = swapChain.queuePresent(vkContext.grapicsQueue(), imageIndex,
+        VkResult presentResult = swapChain.queuePresent(vkContext.getGraphicsQueue(), imageIndex,
             renderSemaphores[currentSemaphore]);
 
         if (presentResult == VK_ERROR_OUT_OF_DATE_KHR || presentResult == VK_SUBOPTIMAL_KHR) {
-            EXIT_TO_LOGGER("Window resize not implemented");
+            vkengine::Log::exitToLogger("Window resize not implemented");
         }
         else if (presentResult != VK_SUCCESS) {
-            EXIT_TO_LOGGER("Failed to present swapchain image!");
+            vkengine::Log::exitToLogger("Failed to present swapchain image!");
         }
 
         currentFrame = (currentFrame + 1) % 2;

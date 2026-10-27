@@ -1,7 +1,6 @@
 #include "moveDemo.h"
 #define CAMERA_POSITION glm::vec3(0.0f, 2.0f, 3.0f) // 카메라 초기 위치
 
-using namespace vkengine;
 
 constexpr float MOVE_SPEED = 3.0f;
 
@@ -26,7 +25,7 @@ namespace vkengine
         this->currentFacingYaw = glm::radians(-90.0f);
 
         // createDefault() 기준 캐릭터 위치
-        glm::vec3 characterPos = this->models[0].ModelResource().modelMatrix[3]; // 모델 행렬의 4번째 열에서 위치 추출
+        glm::vec3 characterPos = this->models[0].getModelResource().modelMatrix[3]; // 모델 행렬의 4번째 열에서 위치 추출
         glm::vec3 cameraPos = characterPos + CAMERA_POSITION; // 카메라 위치를 캐릭터 뒤로 설정
 
         // 카메라 → 캐릭터 방향 계산
@@ -35,7 +34,7 @@ namespace vkengine
         float desiredPitch = std::asin(-toTarget.y);
 
         // sensitivity = 0.001f 이므로 역산
-        camera->RotateDeltaRotation(glm::vec3(desiredYaw / 0.001f, desiredPitch / 0.001f, 0.0f));
+        camera->rotateDeltaRotation(glm::vec3(desiredYaw / 0.001f, desiredPitch / 0.001f, 0.0f));
     }
 
     DemoApplication::~DemoApplication()
@@ -49,7 +48,7 @@ namespace vkengine
 
         while (!window->shouldClose())
         {
-            window->getmouseState().mouseDelta = cVec3(0.0f); // ← 추가
+            window->getMouseState().mouseDelta = cVec3(0.0f); // ← 추가
             window->pollEvents();
 
             // NEW: Calculate delta time for smooth animation
@@ -63,24 +62,24 @@ namespace vkengine
             updateGui();
 
             // charater move
-            cVec3 characterPosition = models[0].ModelResource().modelMatrix[3]; // 모델 행렬의 4번째 열에서 위치 추출
+            cVec3 characterPosition = models[0].getModelResource().modelMatrix[3]; // 모델 행렬의 4번째 열에서 위치 추출
             cVec3 moveInput = cVec3(0.0f);
             cVec3 forward = normalize(cVec3(camera->getDir().x, 0, camera->getDir().z));
             cVec3 right = normalize(glm::cross(forward, cVec3(0, 1, 0)));
 
-            if (window->getKeyBoardState().m_keyPressed[GLFW_KEY_W])
+            if (window->getKeyboardState().m_keyPressed[GLFW_KEY_W])
                 moveInput -= forward * deltaTime; // 앞으로 이동
 
-            if (window->getKeyBoardState().m_keyPressed[GLFW_KEY_S])
+            if (window->getKeyboardState().m_keyPressed[GLFW_KEY_S])
                 moveInput += forward * deltaTime; // 뒤로 이동
 
-            if (window->getKeyBoardState().m_keyPressed[GLFW_KEY_A])
+            if (window->getKeyboardState().m_keyPressed[GLFW_KEY_A])
                 moveInput += right * deltaTime; // 왼쪽으로 이동
 
-            if (window->getKeyBoardState().m_keyPressed[GLFW_KEY_D])
+            if (window->getKeyboardState().m_keyPressed[GLFW_KEY_D])
                 moveInput -= right * deltaTime; // 오른쪽으로 이동
             
-            if (window->getKeyBoardState().m_keyPressed[GLFW_KEY_LEFT_SHIFT])
+            if (window->getKeyboardState().m_keyPressed[GLFW_KEY_LEFT_SHIFT])
                 this->isSpeedUp = true;
             else
                 this->isSpeedUp = false;
@@ -115,7 +114,7 @@ namespace vkengine
                 }
             }
 
-            if (window->getKeyBoardState().m_keyPressed[GLFW_KEY_SPACE] && isGrounded)
+            if (window->getKeyboardState().m_keyPressed[GLFW_KEY_SPACE] && isGrounded)
             {
                 velocity.y = JUMP_SPEED; // 점프 속도 설정
                 isGrounded = false;      // 공중에 떠 있는 상태로 전환
@@ -130,7 +129,7 @@ namespace vkengine
 
             characterPosition += velocity * deltaTime;
 
-            cFloat groundY = this->FindYGround(characterPosition);
+            cFloat groundY = this->findYGround(characterPosition);
             // this->resolveWallCollisions(characterPosition);
             cBool groundFound = groundY > -FLT_MAX / 2.0f;
 
@@ -146,7 +145,7 @@ namespace vkengine
                 isGrounded = false;
             }
 
-            // models[0].ModelResource().modelMatrix[3] = cVec4(characterPosition, 1.0f); // 모델 행렬의 4번째 열에 위치 업데이트
+            // models[0].getModelResource().modelMatrix[3] = cVec4(characterPosition, 1.0f); // 모델 행렬의 4번째 열에 위치 업데이트
 
             // cFloat currentFacingYaw = std::atan2(velocity.x, velocity.z); // 카메라 방향에 맞춰 캐릭터 회전
 
@@ -164,21 +163,21 @@ namespace vkengine
             cMat4 newMatrix = glm::translate(cMat4(1.0f), characterPosition);     // T
             newMatrix = glm::scale(newMatrix, cVec3(0.012f));                     // T * S
             newMatrix = glm::rotate(newMatrix, currentFacingYaw, cVec3(0, 1, 0)); // T * S * R
-            models[0].ModelResource().modelMatrix = newMatrix;
+            models[0].getModelResource().modelMatrix = newMatrix;
 
             // this->camera->setPos(characterPosition + CAMERA_POSITION); // 카메라 위치를 캐릭터 뒤로 설정
             // this->camera->update();
 
-            auto &mouse = window->getmouseState();
+            auto &mouse = window->getMouseState();
 
             camera->updateOrbit(
                 characterPosition + glm::vec3(0, 0.8f, 0), // 캐릭터 상체
                 mouse.mouseDelta.x * 0.01f,                // sensitivity
                 mouse.mouseDelta.y * 0.01f);               // sensitivity
 
-            this->Renderer.getSceneDataUBO().projection = this->camera->getProjectionMatrix();
-            this->Renderer.getSceneDataUBO().view = this->camera->getViewMatrix();
-            this->Renderer.getSceneDataUBO().cameraPos = camera->getPos();
+            this->renderer.getSceneDataUBO().projection = this->camera->getProjectionMatrix();
+            this->renderer.getSceneDataUBO().view = this->camera->getViewMatrix();
+            this->renderer.getSceneDataUBO().cameraPos = camera->getPos();
 
             for (auto &model : models)
             {
@@ -190,14 +189,14 @@ namespace vkengine
 
             if (models.size() > 0)
             {
-                cMat4 lightView = glm::lookAt(cVec3(0.0f), -Renderer.getSceneDataUBO().directionalLightDir, cVec3(0.0f, 0.0f, 1.0f));
+                cMat4 lightView = glm::lookAt(cVec3(0.0f), -renderer.getSceneDataUBO().directionalLightDir, cVec3(0.0f, 0.0f, 1.0f));
 
                 // Transform the first model's bounding box to find the initial light bounding box
                 // 초기 빛 경계 상자를 찾기 위해 첫 번째 모델의 경계 상자를 변환합니다.
                 cVec3 firstMin =
-                    cVec3(models[0].ModelResource().modelMatrix * cVec4(models[0].BoundingBoxMin(), 1.0f));
+                    cVec3(models[0].getModelResource().modelMatrix * cVec4(models[0].getBoundingBoxMin(), 1.0f));
                 cVec3 firstMax =
-                    cVec3(models[0].ModelResource().modelMatrix * cVec4(models[0].BoundingBoxMax(), 1.0f));
+                    cVec3(models[0].getModelResource().modelMatrix * cVec4(models[0].getBoundingBoxMax(), 1.0f));
 
                 // Ensure min is actually smaller than max for each component
                 // 각 구성 요소에 대해 최소값이 실제로 최대값보다 작은지 확인합니다.
@@ -210,8 +209,8 @@ namespace vkengine
                 {
                     // Transform this model's bounding box to world space
                     // 이 모델의 경계 상자를 월드 공간으로 변환합니다.
-                    cVec3 modelMin = cVec3(models[i].ModelResource().modelMatrix * cVec4(models[i].BoundingBoxMin(), 1.0f));
-                    cVec3 modelMax = cVec3(models[i].ModelResource().modelMatrix * cVec4(models[i].BoundingBoxMax(), 1.0f));
+                    cVec3 modelMin = cVec3(models[i].getModelResource().modelMatrix * cVec4(models[i].getBoundingBoxMin(), 1.0f));
+                    cVec3 modelMax = cVec3(models[i].getModelResource().modelMatrix * cVec4(models[i].getBoundingBoxMax(), 1.0f));
 
                     // Ensure proper min/max ordering
                     // 올바른 최소/최대 순서 보장
@@ -245,7 +244,7 @@ namespace vkengine
                 min_ = vmin;
                 max_ = vmax;
                 cMat4 lightProjection = glm::orthoLH_ZO(min_.x, max_.x, min_.y, max_.y, max_.z, min_.z); // 마지막 Max, Min 순서 주의
-                Renderer.getSceneDataUBO().lightSpaceMatrix = lightProjection * lightView;
+                renderer.getSceneDataUBO().lightSpaceMatrix = lightProjection * lightView;
 
                 // Modifed "Vulkan 3D Graphics Rendering Cookbook - 2nd Edition Build Status"
                 // https://github.com/PacktPublishing/3D-Graphics-Rendering-Cookbook-Second-Edition
@@ -261,7 +260,7 @@ namespace vkengine
         this->cxt->waitIdle();
     }
 
-    cFloat DemoApplication::FindYGround(const cVec3 &position)
+    cFloat DemoApplication::findYGround(const cVec3 &position)
     {
         if (models.size() < 2)
             return -FLT_MAX;
@@ -269,7 +268,7 @@ namespace vkengine
         float groundY = -FLT_MAX;
         float searchOriginY = position.y + 0.05f; // 발보다 살짝 위에서 아래로 탐색
 
-        for (const auto &mesh : models[1].Meshes())
+        for (const auto &mesh : models[1].getMeshes())
         {
             const AABB &bb = mesh.worldBounds;
 
@@ -299,7 +298,7 @@ namespace vkengine
     {
         for (int iter = 0; iter < 2; ++iter)
         { // 2회 반복으로 안정성 확보
-            for (const auto &mesh : models[1].Meshes())
+            for (const auto &mesh : models[1].getMeshes())
             {
                 const AABB &bb = mesh.worldBounds;
 

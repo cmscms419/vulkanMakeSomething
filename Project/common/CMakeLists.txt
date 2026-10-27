@@ -6,7 +6,7 @@ set(PROJECT_NAME common)
 set(no_group_source_files
     "../../app/common/vkmath.cpp"
     "../../app/helper/debug.cpp"
-    "../../app/helper/resourseload.cpp"
+    "../../app/helper/resourceLoad.cpp"
     "../../app/struct/data.cpp"
     "../../app/struct/geometry.cpp"
     "../../app/struct/type.cpp"
@@ -14,11 +14,11 @@ set(no_group_source_files
     "../../include/common/math_types.h"
     "../../include/common/vkmath.h"
     "../../include/helper/debug.h"
-    "../../include/helper/resourseload.h"
+    "../../include/helper/resourceLoad.h"
     # "../../include/struct/configtype.h"
     "../../include/struct/data.h"
     "../../include/struct/geometry.h"
-    "../../include/struct/material.h"
+    "../../include/struct/materialData.h"
     "../../include/struct/object.h"
     "../../include/struct/resource.h"
     "../../include/struct/type.h"
@@ -74,11 +74,9 @@ set(ALL_FILES
 ################################################################################
 add_library(${PROJECT_NAME} STATIC ${ALL_FILES})
 
-use_props(${PROJECT_NAME} "${CMAKE_CONFIGURATION_TYPES}" "${DEFAULT_CXX_PROPS}")
 ################################################################################
 # Includes for CMake from *.props
 ################################################################################
-use_props(${PROJECT_NAME} "${CMAKE_CONFIGURATION_TYPES}" "$ENV{VCTargetsPath}/BuildCustomizations/CUDA 12.6.cmake")
 
 set(ROOT_NAMESPACE common)
 

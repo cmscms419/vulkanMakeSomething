@@ -12,16 +12,16 @@
     <ClCompile Include="..\..\app\component2\Camera2.cpp">
       <Filter>component2</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\app\component2\VKwindow.cpp">
+    <ClCompile Include="..\..\app\component2\Window.cpp">
       <Filter>component2</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\app\component2\VKgui.cpp">
+    <ClCompile Include="..\..\app\component2\ImGuiRenderer.cpp">
       <Filter>component2</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\app\component2\VKengine2.cpp">
+    <ClCompile Include="..\..\app\component2\VulkanEngineWin2.cpp">
       <Filter>component2</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\app\component2\VKrenderer.cpp">
+    <ClCompile Include="..\..\app\component2\Renderer.cpp">
       <Filter>component2</Filter>
     </ClCompile>
     <ClCompile Include="..\..\app\component2\imgui\imgui.cpp">
@@ -48,7 +48,7 @@
     <ClCompile Include="..\..\app\component2\Application.cpp">
       <Filter>component2</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\app\component2\CalculatePhysicsSimulation.cpp">
+    <ClCompile Include="..\..\app\component2\PhysicsSimulator.cpp">
       <Filter>component2</Filter>
     </ClCompile>
   </ItemGroup>
@@ -56,19 +56,19 @@
     <ClInclude Include="..\..\include\component2\Camera2.h">
       <Filter>component2</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\component2\VKwindow.h">
+    <ClInclude Include="..\..\include\component2\Window.h">
       <Filter>component2</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\component2\VKgui.h">
+    <ClInclude Include="..\..\include\component2\ImGuiRenderer.h">
       <Filter>component2</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\component2\VKengine2.h">
+    <ClInclude Include="..\..\include\component2\VulkanEngineWin2.h">
       <Filter>component2</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\component2\VKrenderer.h">
+    <ClInclude Include="..\..\include\component2\Renderer.h">
       <Filter>component2</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\component2\CalculatePhysicsSimulation.h">
+    <ClInclude Include="..\..\include\component2\PhysicsSimulator.h">
       <Filter>component2</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\component2\Application.h">
