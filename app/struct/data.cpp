@@ -141,6 +141,7 @@ const cString TEST_TEXTURE_PATH_ARRAY3 = "Texture/512x512/Elements/Elements_18-5
 const cString TEST_TEXTURE_PATH_ARRAY4 = "Texture/512x512/Elements/Elements_19-512x512.png";
 const cString TEST_TEXTURE_PATH_ARRAY5 = "Texture/512x512/Elements/Elements_20-512x512.png";
 const cString CUBE_TEXTURE_PATH = "Texture/skybox";
+const cString DUMMY_TEXTURE_PATH = "CustomUVChecker_byValle_2K.png";
 
 size_t BindingHash::operator()(const std::vector<VkDescriptorSetLayoutBinding> &bindings) const
 {

@@ -34,7 +34,7 @@ class Model
     void cleanup();
     void createVulkanResources();
 
-    void createDescriptorManager2(SamplerHandle& sampler, std::vector<MaterialData>& allMaterials, TextureTable &table);
+    void createDescriptorManager2(std::vector<MaterialData>& allMaterials, TextureTable &table);
 
     // Animation methods - ADD THESE
     void updateAnimation(float deltaTime);

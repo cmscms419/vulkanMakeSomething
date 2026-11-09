@@ -35,15 +35,32 @@ namespace vkengine
         descriptorSet = context.getDescriptorManager()->allocateDescriptorSet(layout);
 
         // 4. 각 리소스의 updateWrite()로 write 구성 후 일괄 업데이트
-        std::vector<VkWriteDescriptorSet> writes(resourceBindings.size());
+        std::vector<VkWriteDescriptorSet> writes;
+        writes.reserve(resourceBindings.size());
+
         for (size_t i = 0; i < resourceBindings.size(); i++)
         {
-            resourceBindings[i].get().updateWrite(writes[i]);
-            writes[i].dstSet = descriptorSet; // ← DescriptorSetHandle가 덮어씀
-            writes[i].dstBinding = layoutBindings[i].binding;
+            VkWriteDescriptorSet write{};
+            resourceBindings[i].get().updateWrite(write);
+
+            // descriptorCount 가 0 인 write 는 Vulkan 이 금지한다
+            // (VUID-VkWriteDescriptorSet-descriptorCount-arraylength).
+            // 비어 있는 배열 리소스가 들어오면 그 바인딩만 건너뛴다. 레이아웃에
+            // PARTIALLY_BOUND 가 켜져 있으므로 한 칸도 안 채운 채로 두어도 된다.
+            if (write.descriptorCount == 0)
+            {
+                continue;
+            }
+
+            write.dstSet = descriptorSet;                 // DescriptorSetHandle 가 덮어쓴다
+            write.dstBinding = layoutBindings[i].binding; // 걸러내도 바인딩 번호는 원래 i 의 것
+            writes.push_back(write);
         }
-        
-        vkUpdateDescriptorSets(context.getDevice()->logicaldevice, uint32_t(writes.size()), writes.data(), 0, nullptr);
+
+        if (!writes.empty())
+        {
+            vkUpdateDescriptorSets(context.getDevice()->logicaldevice, uint32_t(writes.size()), writes.data(), 0, nullptr);
+        }
     }
 
     const VkDescriptorSet &DescriptorSetHandle::get() const

@@ -5,6 +5,17 @@
 
 #define UNIQUE_VERTEXTYPE 1
 
+// TextureTable (바인들리스 텍스처 테이블) 상수
+// shader/materialCommon.glsl 에 한 벌 더 두었다. 한쪽만 고치면 안 된다.
+// 바인들리스 배열의 크기. 셰이더의 materialTextures[] 선언과 같아야 한다.
+#define MAX_TEXTURE_COUNT 512
+
+// 0번 슬롯은 더미 텍스처가 차지한다 (파일은 data.h 의 DUMMY_TEXTURE_PATH).
+// 실제 텍스처는 1번부터 들어간다. 덕분에 테이블이 절대 비지 않고,
+// "텍스처 없음" 을 -1 이 아니라 유효한 인덱스로 표현할 수 있다.
+// 셰이더는 index > DUMMY_TEXTURE_INDEX 로 없음을 판별한다.
+#define DUMMY_TEXTURE_INDEX 0
+
 constexpr const char* DEBUG_USER_NAME_0 = "alstj";
 
 namespace vkengine {

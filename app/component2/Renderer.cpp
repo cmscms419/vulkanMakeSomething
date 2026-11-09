@@ -129,9 +129,14 @@ namespace vkengine
 
         std::vector<MaterialData> allMaterials;
 
+        // Texturetable 준비
+        // 샘플러가 테이블로 넘어간다. 이후 실제 텍스처는 1번부터 들어간다.
+        this->table.initialize(this->samplerLinearRepeat.getSampler(),
+                               this->assetsPath + DUMMY_TEXTURE_PATH);
+
         for (Model &model : models)
         {
-            model.createDescriptorManager2(samplerLinearRepeat, allMaterials, table);
+            model.createDescriptorManager2(allMaterials, table);
         }
 
         VkDeviceSize size = sizeof(MaterialData) * allMaterials.size();

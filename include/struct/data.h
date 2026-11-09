@@ -27,6 +27,7 @@ extern const cString TEST_TEXTURE_PATH_ARRAY3;
 extern const cString TEST_TEXTURE_PATH_ARRAY4;
 extern const cString TEST_TEXTURE_PATH_ARRAY5;
 extern const cString CUBE_TEXTURE_PATH;
+extern const cString DUMMY_TEXTURE_PATH;
 extern const cBool enableValidationLayers;
 
 extern const std::vector<Vertex> cube;

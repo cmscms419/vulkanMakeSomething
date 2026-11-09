@@ -1,5 +1,8 @@
 #version 450
 #extension GL_EXT_nonuniform_qualifier : require
+#extension GL_GOOGLE_include_directive : require
+
+#include "materialCommon.glsl"
 
 layout(location = 0) in vec3 fragPos;
 layout(location = 1) in vec3 fragNormal;
@@ -56,7 +59,7 @@ layout(set = 1, binding = 0) restrict readonly buffer MaterialBuffer {
 } materialBuffer;
 
 // Material textures
-layout(set = 1, binding = 1) uniform sampler2D materialTextures[512]; 
+layout(set = 1, binding = 1) uniform sampler2D materialTextures[MAX_TEXTURE_COUNT]; 
 // 512 is TextureManager::kMaxTextures_
 
 // IBL textures
@@ -255,9 +258,9 @@ void main() {
     MaterialUBO material = materialBuffer.materials[pushConstants.materialIndex];
 
     // Sample material properties using bindless access
-    vec4 baseColorRGBA = material.baseColorTextureIndex >= 0 ? texture(materialTextures[nonuniformEXT(material.baseColorTextureIndex)], fragTexCoord) : vec4(1.0) ;
+    vec4 baseColorRGBA = material.baseColorTextureIndex > DUMMY_TEXTURE_INDEX ? texture(materialTextures[nonuniformEXT(material.baseColorTextureIndex)], fragTexCoord) : vec4(1.0) ;
 
-    if(options.discardOn != 0 && material.opacityTextureIndex >= 0)
+    if(options.discardOn != 0 && material.opacityTextureIndex > DUMMY_TEXTURE_INDEX)
     {
         float opacity = texture(materialTextures[nonuniformEXT(material.opacityTextureIndex)], fragTexCoord).r;
         if(opacity < 0.08)
@@ -268,7 +271,7 @@ void main() {
     float metallic = material.metallicFactor;
     float roughness = material.roughnessFactor;
 
-    if(material.metallicRoughnessTextureIndex >= 0){
+    if(material.metallicRoughnessTextureIndex > DUMMY_TEXTURE_INDEX){
         vec3 metallicRoughness = texture(materialTextures[nonuniformEXT(material.metallicRoughnessTextureIndex)], fragTexCoord).rgb;
         metallic *= metallicRoughness.b; // Blue channel
         roughness *= metallicRoughness.g; // Green channel
@@ -280,12 +283,12 @@ void main() {
     roughness += pushConstants.coeffs[5];
 
     float ao = 1.0;
-    if(material.occlusionTextureIndex >= 0){
+    if(material.occlusionTextureIndex > DUMMY_TEXTURE_INDEX){
         ao = texture(materialTextures[nonuniformEXT(material.occlusionTextureIndex)], fragTexCoord).r;
     }
 
     vec3 emissive = material.emissiveFactor.xyz * emissiveWeight;
-    if(material.emissiveTextureIndex >= 0){
+    if(material.emissiveTextureIndex > DUMMY_TEXTURE_INDEX){
         emissive *= texture(materialTextures[nonuniformEXT(material.emissiveTextureIndex)], fragTexCoord).rgb;
     }
 
@@ -296,7 +299,7 @@ void main() {
     vec3 B = normalize(fragBitangent);
     mat3 TBN = mat3(T, B, N);
 
-    if(material.normalTextureIndex >= 0) {
+    if(material.normalTextureIndex > DUMMY_TEXTURE_INDEX) {
       vec3 tangentNormal = texture(materialTextures[nonuniformEXT(material.normalTextureIndex)], fragTexCoord).xyz * 2.0 - 1.0;
       if (length(tangentNormal) > 0.5)
         N = normalize(TBN * tangentNormal);
