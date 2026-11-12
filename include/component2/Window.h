@@ -33,6 +33,7 @@ namespace vkengine {
             cFloat Fov = 45.0f;
             cVec2 position{ 0.0f, 0.0f };
             cVec3 mouseDelta{ 0.0f, 0.0f, 0.0f };
+            cFloat scrollDelta = 0.0f;
         };
 
         struct KeyboardState

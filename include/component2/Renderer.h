@@ -24,6 +24,10 @@
 namespace vkengine
 {
 
+    // 천 데이터 관리 (include/component2/DataManagement.h).
+    // 천 패스는 정점/인덱스 버퍼만 빌려 쓰므로 전방 선언으로 충분하다.
+    class ClothDataManagement;
+
     struct CullingStats
     {
         cUint32_t totalMeshes = 0;
@@ -70,6 +74,11 @@ namespace vkengine
             VkFormat depthFormat,
             cUint32_t swapChainWidth,
             cUint32_t swapChainHeight);
+
+        // 천 패스에서 그릴 대상을 넘겨준다.
+        // Application 생성자가 렌더 그래프를 먼저 만들고 데모가 그 뒤에 천을 만들기 때문에,
+        // 그래프가 compile 되는 시점에는 nullptr 인 것이 정상이다 — 패스 함수가 널 검사를 한다.
+        void setClothData(ClothDataManagement *clothData);
 
         // View frustum culling
         // 컬링 통계 정보 반환 (전체, 컬링된, 렌더링된 메시 수)
@@ -191,6 +200,11 @@ namespace vkengine
         std::vector<BaseBuffer2> debugLineVertexBuffers; // per frame-in-flight, host-visible + mapped
         std::vector<DescriptorSetHandle> debugLineDescriptorSets;
 
+        // 천 렌더링 — 버퍼는 ClothDataManagement 가 들고 있고 여기서는 빌려 쓴다.
+        // 디스크립터는 SceneDataUBO 하나뿐이다 (debugLine 과 같은 레이아웃).
+        ClothDataManagement *clothData = nullptr;
+        std::vector<DescriptorSetHandle> clothDescriptorSets;
+
         ViewFrustum viewFrustum{};
         cBool frustumCullingEnabled{true};
         CullingStats cullingStats;
@@ -213,6 +227,7 @@ namespace vkengine
         void makeSkyboxProcessPass(VkCommandBuffer cmd, cUint32_t currentFrame, cUint32_t imageIndex);
         void makeDebugLinePass(VkCommandBuffer cmd, cUint32_t currentFrame, cUint32_t imageIndex);
         void makeInstancePass(VkCommandBuffer cmd, cUint32_t currentFrame, cUint32_t imageIndex);
+        void makeClothPass(VkCommandBuffer cmd, cUint32_t currentFrame, cUint32_t imageIndex);
 
         // Helper functions for creating rendering structures
         // 컬러 어태치먼트 정보 생성

@@ -300,6 +300,54 @@
       }
     },
     {
+      "label": "Build: clothSimulation (Debug)",
+      "type": "shell",
+      "command": "C:/Program Files/Microsoft Visual Studio/2022/Community/MSBuild/Current/Bin/MSBuild.exe",
+      "args": [
+        "${workspaceFolder}/Project/clothSimulation/clothSimulation.vcxproj",
+        "/p:Configuration=Debug",
+        "/p:Platform=x64",
+        "/p:SolutionDir=${workspaceFolder}/Project/",
+        "/v:minimal"
+      ],
+      "dependsOrder": "sequence",
+      "dependsOn": [
+        "Build: common (Debug)",
+        "Build: basicEngine2 (Debug)",
+        "Build: component2 (Debug)"
+      ],
+      "group": "build",
+      "problemMatcher": "$msCompile",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "Build: clothSimulation (Release)",
+      "type": "shell",
+      "command": "C:/Program Files/Microsoft Visual Studio/2022/Community/MSBuild/Current/Bin/MSBuild.exe",
+      "args": [
+        "${workspaceFolder}/Project/clothSimulation/clothSimulation.vcxproj",
+        "/p:Configuration=Release",
+        "/p:Platform=x64",
+        "/p:SolutionDir=${workspaceFolder}/Project/",
+        "/v:minimal"
+      ],
+      "dependsOrder": "sequence",
+      "dependsOn": [
+        "Build: common (Release)",
+        "Build: basicEngine2 (Release)",
+        "Build: component2 (Release)"
+      ],
+      "group": "build",
+      "problemMatcher": "$msCompile",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      }
+    },
+    {
       "label": "Build: PhysicalSimulation (Release)",
       "type": "shell",
       "command": "C:/Program Files/Microsoft Visual Studio/2022/Community/MSBuild/Current/Bin/MSBuild.exe",

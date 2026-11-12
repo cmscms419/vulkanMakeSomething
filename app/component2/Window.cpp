@@ -371,6 +371,10 @@ namespace vkengine {
 
                 if (instance != nullptr)
                 {
+                    // ImGui 창 스크롤용으로 원본 이동량을 모아 둔다.
+                    // 아래 Fov 줌과는 별개다 - 휠 하나로 둘 다 움직인다.
+                    instance->mouseState.scrollDelta += static_cast<cFloat>(yoffset);
+
                     if (instance->mouseState.scrolled)
                     {
                         if (yoffset > 0) {

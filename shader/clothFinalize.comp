@@ -1,0 +1,38 @@
+#version 450
+#extension GL_GOOGLE_include_directive : require
+
+#include "clothCommon.glsl"
+
+layout (local_size_x = 256, local_size_y = 1, local_size_z = 1) in;
+
+layout(push_constant) uniform PushConstants {
+    uint  numVertices;
+    float floorY;       // 임시 바닥 높이
+} pushConstants;
+
+void main() {
+
+    uint vertexIndex = gl_GlobalInvocationID.x;
+
+    if (vertexIndex >= pushConstants.numVertices) {
+        return;
+    }
+
+    clothVertex vertex = vertices[vertexIndex];
+
+    if (vertex.pinned > 0.5) {
+        vertices[vertexIndex].velocity = vec3(0.0);
+        return;
+    }
+
+    vec3 position = vertex.position;
+
+    // 임시 바닥 충돌 (나중에 충돌 에너지로 교체)
+    if (position.y < pushConstants.floorY) {
+        position.y = pushConstants.floorY;
+        vertices[vertexIndex].position = position;
+    }
+
+    // v = (x(t+h) - x(t)) / h
+    vertices[vertexIndex].velocity = (position - vertex.prevPosition) / h;
+}

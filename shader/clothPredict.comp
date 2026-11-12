@@ -1,0 +1,31 @@
+#version 450
+#extension GL_GOOGLE_include_directive : require
+
+#include "clothCommon.glsl"
+
+layout (local_size_x = 256, local_size_y = 1, local_size_z = 1) in;
+
+layout(push_constant) uniform PushConstants {
+    uint numVertices;
+} pushConstants;
+
+void main() {
+    uint vertexIndex = gl_GlobalInvocationID.x;
+
+    if (vertexIndex >= pushConstants.numVertices) {
+        return;
+    }
+
+    clothVertex vertex = vertices[vertexIndex];
+    vertices[vertexIndex].prevPosition = vertex.position;
+
+    if (vertex.pinned > 0.5) {
+        vertices[vertexIndex].nextPosition = vertex.position;
+        return;
+    }
+
+    vec3 nextPosition = vertex.position + vertex.velocity * h + h * h * gravity; //  y = x + h·v + h²·g
+    
+    vertices[vertexIndex].nextPosition = nextPosition;
+    vertices[vertexIndex].position = nextPosition;
+}

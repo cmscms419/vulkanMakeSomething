@@ -1,0 +1,160 @@
+{
+    "passes": [
+        {
+            "name": "shadow",
+            "shaderResources": [
+                {
+                    "handle": "shadowDepth",
+                    "access": "DepthAttachmentWrite"
+                }
+            ]
+        },
+        {
+            "name": "pbrdeferred",
+            "shaderResources": [
+                {
+                    "handle": "shadowDepth",
+                    "access": "ShaderReadOnly"
+                },
+                {
+                    "handle": "depthStencil",
+                    "access": "DepthAttachmentWrite"
+                },
+                {
+                    "handle": "gAlbedo",
+                    "access": "ColorAttachmentWrite"
+                },
+                {
+                    "handle": "gNormal",
+                    "access": "ColorAttachmentWrite"
+                },
+                {
+                    "handle": "gPosition",
+                    "access": "ColorAttachmentWrite"
+                },
+                {
+                    "handle": "gMaterial",
+                    "access": "ColorAttachmentWrite"
+                }
+            ]
+        },
+        {
+            "name": "cloth",
+            "shaderResources": [
+                {
+                    "handle": "depthStencil",
+                    "access": "DepthAttachmentWrite"
+                },
+                {
+                    "handle": "gAlbedo",
+                    "access": "ColorAttachmentWrite"
+                },
+                {
+                    "handle": "gNormal",
+                    "access": "ColorAttachmentWrite"
+                },
+                {
+                    "handle": "gPosition",
+                    "access": "ColorAttachmentWrite"
+                },
+                {
+                    "handle": "gMaterial",
+                    "access": "ColorAttachmentWrite"
+                }
+            ]
+        },
+        {
+            "name": "skybox",
+            "shaderResources": [
+                {
+                    "handle": "depthStencil",
+                    "access": "DepthAttachmentWrite"
+                },
+                {
+                    "handle": "DeferredToCompute",
+                    "access": "ColorAttachmentWrite"
+                }
+            ]
+        },
+        {
+            "name": "ssao",
+            "shaderResources": [
+                {
+                    "handle": "depthStencil",
+                    "access": "ShaderReadOnly"
+                },
+                {
+                    "handle": "gNormal",
+                    "access": "ShaderReadOnly"
+                },
+                {
+                    "handle": "ssaoRaw",
+                    "access": "ShaderWriteOnly"
+                }
+            ]
+        },
+        {
+            "name": "ssaoBlur",
+            "shaderResources": [
+                {
+                    "handle": "ssaoRaw",
+                    "access": "StorageRead"
+                },
+                {
+                    "handle": "ssaoBlur",
+                    "access": "ShaderWriteOnly"
+                }
+            ]
+        },
+        {
+            "name": "lightdeferred",
+            "shaderResources": [
+                {
+                    "handle": "depthStencil",
+                    "access": "ShaderReadOnly"
+                },
+                {
+                    "handle": "LightDeferred",
+                    "access": "ShaderWriteOnly"
+                },
+                {
+                    "handle": "DeferredToCompute",
+                    "access": "StorageRead"
+                },
+                {
+                    "handle": "gAlbedo",
+                    "access": "ShaderReadOnly"
+                },
+                {
+                    "handle": "gNormal",
+                    "access": "ShaderReadOnly"
+                },
+                {
+                    "handle": "gPosition",
+                    "access": "ShaderReadOnly"
+                },
+                {
+                    "handle": "gMaterial",
+                    "access": "ShaderReadOnly"
+                },
+                {
+                    "handle": "shadowDepth",
+                    "access": "ShaderReadOnly"
+                },
+                {
+                    "handle": "ssaoBlur",
+                    "access": "StorageRead"
+                }
+            ]
+        },
+        {
+            "name": "postProcess",
+            "shaderResources": [
+                {
+                    "handle": "LightDeferred",
+                    "access": "ShaderReadOnly"
+                }
+            ]
+        }
+    ]
+}

@@ -226,6 +226,22 @@ namespace vkengine
             vertexInputAttributes[1].format = VK_FORMAT_R32G32B32_SFLOAT;
             vertexInputAttributes[1].offset = offsetof(LineVertex, color);
         }
+        else if (config.vertexInput.type == PipelineConfig::VertexInput::Type::Cloth)
+        {
+            // 천 정점 — clothSolve.comp 가 고쳐 쓰는 스토리지 버퍼를 그대로 정점 버퍼로 읽는다.
+            // ClothVertex 는 position/prevPosition/nextPosition/velocity 로 64 byte 인데,
+            // 그리는 데 필요한 것은 맨 앞 position 뿐이다 (cloth.vert 의 location 0).
+            vertexInputBindings.resize(1);
+            vertexInputBindings[0].binding = 0;
+            vertexInputBindings[0].stride = kClothVertexStride;
+            vertexInputBindings[0].inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+
+            vertexInputAttributes.resize(1);
+            vertexInputAttributes[0].binding = 0;
+            vertexInputAttributes[0].location = 0;
+            vertexInputAttributes[0].format = VK_FORMAT_R32G32B32_SFLOAT;
+            vertexInputAttributes[0].offset = kClothVertexPositionOffset;
+        }
 
         std::vector<VkPipelineShaderStageCreateInfo> shaderStagesCI =
             shaderManager.makePipelineShaderStageCIs(this->name);

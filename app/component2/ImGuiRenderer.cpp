@@ -35,9 +35,11 @@ namespace vkengine {
             io.FontGlobalScale = this->scale;
 
             {
-                // 폰트 경로를 재수정 해야한다.
-                const cString fontFileName =
-                    path + "/Roboto-Medium.ttf"; // Korean Font
+                const cString latinFontName = path + "/Roboto-Medium.ttf";
+                const cString koreanFontName =
+                    path + "/NotoSansKR-Medium.ttf";
+
+                const cFloat fontSize = 16.0f * this->scale;
 
                 unsigned char* fontData = nullptr;
                 int texWidth, texHeight;
@@ -45,22 +47,30 @@ namespace vkengine {
 
                 ImFontConfig config;
                 config.MergeMode = false;
-                
-                io.Fonts->AddFontFromFileTTF(fontFileName.c_str(), 16.0f * this->scale, &config,
-                    io.Fonts->GetGlyphRangesDefault());
-
-                config.MergeMode = true;
+                // io.Fonts->AddFontFromFileTTF(latinFontName.c_str(), fontSize, &config,
+                //     io.Fonts->GetGlyphRangesDefault());
+                // config.MergeMode = true;
                 config.OversampleH = 2;  // 폰트 품질 개선
                 config.OversampleV = 1;
 
-                io.Fonts->AddFontFromFileTTF(fontFileName.c_str(), 16.0f * this->scale, &config,
+                io.Fonts->AddFontFromFileTTF(koreanFontName.c_str(), fontSize, &config,
                     io.Fonts->GetGlyphRangesKorean());
+                    
+                // 한글 폰트는 .gitignore 에 들어 있어 새로 클론하면 없을 수 있다.
+                // if (std::filesystem::exists(koreanFontName))
+                // {
+                // }
+                // else
+                // {
+                //     Log::printToLogger("Korean font not found, UI stays latin-only : %s",
+                //         koreanFontName.c_str());
+                // }
 
                 io.Fonts->GetTexDataAsRGBA32(&fontData, &texWidth, &texHeight);
 
                 if (!fontData)
                 {
-                    Log::exitToLogger("Failed to load font data from : %s", fontFileName);
+                    Log::exitToLogger("Failed to load font data from : %s", latinFontName.c_str());
                 }
                 
                 this->fontImage.createTextureFromPixelData(fontData, texWidth, texHeight, 4, false);

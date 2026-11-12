@@ -5,6 +5,8 @@
 #include "resourceLoad.h"
 #include "helper.h"
 
+#include "DataManagement.h"
+
 
 namespace vkengine
 {
@@ -55,6 +57,11 @@ namespace vkengine
         this->currentModels = nullptr;
     }
 
+    void Renderer::setClothData(ClothDataManagement *clothData)
+    {
+        this->clothData = clothData;
+    }
+
     void Renderer::buildRenderGraph(cString renderGraphFilePath)
     {
         this->renderGraph.registerResource("shadowDepth", this->images["shadowMap"]);               // 쉐도우 맵 리소스 등록
@@ -76,6 +83,15 @@ namespace vkengine
                                                [this](VkCommandBuffer cmd, cUint32_t frameIndex, cUint32_t imageIndex)
                                                {
                                                    this->makePBRDeferredPass(cmd, frameIndex, imageIndex);
+                                               });
+
+        // 천 — pbrdeferred 뒤에 같은 G-Buffer 에 덧그린다.
+        // json 에 cloth 패스를 적어 놓고 이 등록을 빼먹으면 그냥 안 그려진다
+        // (RenderGraph::execute() 가 등록되지 않은 패스를 조용히 넘긴다).
+        this->renderGraph.registerPassFunction("cloth",
+                                               [this](VkCommandBuffer cmd, cUint32_t frameIndex, cUint32_t imageIndex)
+                                               {
+                                                   this->makeClothPass(cmd, frameIndex, imageIndex);
                                                });
 
         this->renderGraph.registerPassFunction("skybox",
@@ -178,6 +194,11 @@ namespace vkengine
                                                         std::vector<VkFormat>{VK_FORMAT_R8G8B8A8_UNORM, VK_FORMAT_R16G16B16A16_SFLOAT,
                                                                               VK_FORMAT_R32G32B32A32_SFLOAT, VK_FORMAT_R16G16B16A16_SFLOAT},
                                                         depthFormat, VK_SAMPLE_COUNT_1_BIT));
+        // 천 — G-Buffer 4장에 그리므로 포맷 목록이 pbrdeferred 와 같아야 한다.
+        pipelines.emplace("cloth", PipelineHandle(ctx, shaderManager, PipelineConfig::createCloth(),
+                                                    std::vector<VkFormat>{VK_FORMAT_R8G8B8A8_UNORM, VK_FORMAT_R16G16B16A16_SFLOAT,
+                                                                          VK_FORMAT_R32G32B32A32_SFLOAT, VK_FORMAT_R16G16B16A16_SFLOAT},
+                                                    depthFormat, VK_SAMPLE_COUNT_1_BIT));
     }
 
     void Renderer::createTextures(cUint32_t swapchainWidth, cUint32_t swapchainHeight)
@@ -397,6 +418,14 @@ namespace vkengine
             debugLineDescriptorSets[i].create(this->ctx, {std::ref(sceneDataUniform[i].getBuffer())});
         }
 
+        // 천 디스크립터 셋 — SceneDataUBO 하나뿐이라 debugLine 과 레이아웃이 같다.
+        // cloth.vert 는 행렬을, cloth.frag 는 cameraPos 를 쓴다 (법선 뒤집기).
+        clothDescriptorSets.resize(this->MaxFramesFlight);
+        for (size_t i = 0; i < this->MaxFramesFlight; i++)
+        {
+            clothDescriptorSets[i].create(this->ctx, {std::ref(sceneDataUniform[i].getBuffer())});
+        }
+
         PostDescriptorSets.resize(this->MaxFramesFlight);
         for (size_t i = 0; i < this->MaxFramesFlight; i++)
         {
@@ -601,16 +630,10 @@ namespace vkengine
         cUint32_t groupCountY = (currentScissor.extent.height + 15) / 16; // Round up division
         vkCmdDispatch(cmd, groupCountX, groupCountY, 1);
 
-        VkMemoryBarrier2 memoryBarrier{VK_STRUCTURE_TYPE_MEMORY_BARRIER_2};
-        memoryBarrier.srcStageMask = VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT;
-        memoryBarrier.dstStageMask = VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT;
-        memoryBarrier.srcAccessMask = VK_ACCESS_2_SHADER_WRITE_BIT;
-        memoryBarrier.dstAccessMask = VK_ACCESS_2_SHADER_READ_BIT;
-
-        VkDependencyInfo dependencyInfo{VK_STRUCTURE_TYPE_DEPENDENCY_INFO};
-        dependencyInfo.memoryBarrierCount = 1;
-        dependencyInfo.pMemoryBarriers = &memoryBarrier;
-        vkCmdPipelineBarrier2(cmd, &dependencyInfo);
+        // 컴퓨트가 쓴 결과를 뒤 패스의 프래그먼트 셰이더가 읽는다.
+        BarrierHelperFunction::insertMemoryBarrier(cmd,
+            VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT, VK_ACCESS_2_SHADER_WRITE_BIT,
+            VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT, VK_ACCESS_2_SHADER_READ_BIT);
     }
 
     void Renderer::makePostProcessPass(VkCommandBuffer cmd, cUint32_t currentFrame, cUint32_t imageIndex)
@@ -826,6 +849,54 @@ namespace vkengine
                            sizeof(instanceData), &instanceData);
 
         vkCmdDrawIndexed(cmd, static_cast<cUint32_t>(this->currentModels->at(instanceConfig.currentModelIndex).getMeshes()[0].indices.size()), this->instanceConfig.currentInstanceCount, 0, 0, 0);
+        vkCmdEndRendering(cmd);
+    }
+
+    void Renderer::makeClothPass(VkCommandBuffer cmd, cUint32_t currentFrame, cUint32_t imageIndex)
+    {
+        // 렌더 그래프는 Application 생성자에서 만들어지고 천은 그 뒤에 만들어진다.
+        // 그래서 setClothData() 가 불리기 전에도 이 패스가 실행될 수 있다.
+        if (this->clothData == nullptr || !this->clothData->isReady() || this->clothData->getIndexCount() == 0u)
+        {
+            return;
+        }
+
+        VkRect2D renderArea = {0, 0, this->currentScissor.extent.width, this->currentScissor.extent.height};
+
+        // pbrdeferred 가 이미 채운 G-Buffer 에 이어서 그린다 — 그래서 CLEAR 가 아니라 LOAD 다.
+        // CLEAR 로 두면 앞서 그린 모델이 전부 지워진다.
+        std::vector<VkRenderingAttachmentInfo> colorAttachments{};
+        VkRenderingAttachmentInfo depthAttachment = createDepthAttachment(this->images["depthStencil"]->getImageView(), VK_ATTACHMENT_LOAD_OP_LOAD);
+        colorAttachments.push_back(createColorAttachment(this->images["gAlbedo"]->getImageView(), VK_ATTACHMENT_LOAD_OP_LOAD));
+        colorAttachments.push_back(createColorAttachment(this->images["gNormal"]->getImageView(), VK_ATTACHMENT_LOAD_OP_LOAD));
+        colorAttachments.push_back(createColorAttachment(this->images["gPosition"]->getImageView(), VK_ATTACHMENT_LOAD_OP_LOAD));
+        colorAttachments.push_back(createColorAttachment(this->images["gMaterial"]->getImageView(), VK_ATTACHMENT_LOAD_OP_LOAD));
+
+        VkRenderingInfo renderingInfo{VK_STRUCTURE_TYPE_RENDERING_INFO_KHR};
+        renderingInfo.renderArea = renderArea;
+        renderingInfo.layerCount = 1;
+        renderingInfo.colorAttachmentCount = static_cast<cUint32_t>(colorAttachments.size());
+        renderingInfo.pColorAttachments = colorAttachments.data();
+        renderingInfo.pDepthAttachment = &depthAttachment;
+
+        vkCmdBeginRendering(cmd, &renderingInfo);
+        vkCmdSetViewport(cmd, 0, 1, &this->currentViewport);
+        vkCmdSetScissor(cmd, 0, 1, &this->currentScissor);
+
+        vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelines.at("cloth").getPipeline());
+
+        const auto descriptorSets = std::vector{clothDescriptorSets[currentFrame].get()};
+        vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelines.at("cloth").getPipelineLayout(), 0,
+                                static_cast<cUint32_t>(descriptorSets.size()), descriptorSets.data(), 0, nullptr);
+
+        // compute 가 매 프레임 고쳐 쓰는 그 버퍼를 그대로 정점 버퍼로 읽는다.
+        // ClothDataManagement::step() 끝의 배리어가 VERTEX_ATTRIBUTE_READ 까지 막아 준다.
+        VkBuffer vertexBuffers[] = {this->clothData->getVertexBuffer().getBuffer()};
+        VkDeviceSize offsets[] = {0};
+        vkCmdBindVertexBuffers(cmd, 0, 1, vertexBuffers, offsets);
+        vkCmdBindIndexBuffer(cmd, this->clothData->getIndexBuffer().getBuffer(), 0, VK_INDEX_TYPE_UINT32);
+
+        vkCmdDrawIndexed(cmd, this->clothData->getIndexCount(), 1, 0, 0, 0);
         vkCmdEndRendering(cmd);
     }
 

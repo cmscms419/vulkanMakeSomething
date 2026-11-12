@@ -1,0 +1,97 @@
+#version 450
+#extension GL_GOOGLE_include_directive : require
+
+#include "clothCommon.glsl"
+
+layout (local_size_x = 256, local_size_y = 1, local_size_z = 1) in;
+
+layout(push_constant) uniform PushConstants {
+    uint groupOffset;   // groupVertices 배열에서 이 그룹이 시작하는 위치
+    uint groupCount;    // 이 그룹에 속한 정점 개수
+} pushConstants;
+
+// 이 정점 하나에 대해 G 를 최소화하는 뉴턴 스텝 한 번.
+//   G(x) = (m/2h²)|x - y|² + Σ ½k(l - L)²
+// force 는 -∇G (어느 쪽으로), hessian 은 ∇²G (얼마나) 다.
+void main() {
+
+    uint localIndex = gl_GlobalInvocationID.x;
+
+    if (localIndex >= pushConstants.groupCount) {
+        return;
+    }
+
+    // 배열 위치 -> 실제 정점 번호 (같은 그룹끼리는 스프링으로 연결되어 있지 않다)
+    uint vertexIndex = groupVertices[pushConstants.groupOffset + localIndex];
+    clothVertex vertex = vertices[vertexIndex];
+
+    if (vertex.pinned > 0.5) {
+        return;
+    }
+
+    vec3 xi = vertex.position;
+
+    // 관성항의 강성. 단위는 N/m 로 s.stiffness 와 같은 종류다.
+    // y 에 박힌, 자연 길이 0 의 가상 스프링이라고 보면 된다.
+    float m_h2 = vertex.mass / (h * h);
+
+    // 관성항의 힘: 예측 위치 y(nextPosition) 쪽으로 당긴다
+    vec3 force   = -m_h2 * (xi - vertex.nextPosition);
+
+    // 관성항의 강성. 모든 방향이 같으므로 대각 행렬.
+    // 이 항이 헤시안의 바닥을 깔아 준다 - 평면 천은 면 밖(법선) 방향으로
+    // 스프링 강성이 0 이라, 이게 없으면 특이행렬이 되어 inverse() 가 터진다.
+    mat3 hessian = mat3(m_h2,0.0,0.0,0.0,m_h2,0.0,0.0,0.0,m_h2);
+
+    clothVertexAdjacency clothAdjacency = adjacency[vertexIndex];
+
+    // 이 정점에 연결된 여러 스프링의 힘과 강성을 누적한다.
+    // 같은 에너지의 1차 미분(힘)과 2차 미분(강성)이라 한 루프에서 같이 뽑는다.
+    for (uint n = 0; n < clothAdjacency.count; n++)
+    {
+        uint springIndex = adjacencySprings[clothAdjacency.offset + n];
+        spring s = springs[springIndex];
+
+        uint otherIndex = (s.vertexA == vertexIndex) ? s.vertexB : s.vertexA;
+
+        // 이웃은 로컬 복사본이 아니라 버퍼에서 직접 읽는다 = Gauss-Seidel.
+        // 앞 그룹이 이미 갱신했으면 그 새 값을 읽는다 (Jacobi 대비 2배 빠른 수렴).
+        // 스냅샷을 읽도록 바꾸면 Jacobi 가 되고, 그 순간 그래프 컬러링이 무의미해진다.
+        vec3 d = xi - vertices[otherIndex].position;
+        float l = length(d);
+
+        if (l < 1e-8) {
+            continue; // 0으로 나누기 방지
+        }
+
+        vec3 dir = d / l;
+
+        // 힘 = -k * (현재 길이 - 자연 길이) * 방향
+        force -= s.stiffness * (l - s.restLength) * dir;
+
+        // 강성 = k * [ dir*dirT + max(0, 1 - L/l) * (I - dir*dirT) ]
+        //   dir*dirT     : 스프링 방향. 강성 k        (훅의 법칙)
+        //   I - dir*dirT : 수직 방향.   강성 k(1-L/l) = T/l
+        //                  장력이 기울어져 생기는 복원력. 기타줄과 같은 원리.
+        //                  장력이 0 이면(l == L) 수직 저항이 전혀 없다.
+        // 투영 형태로 쓰는 이유: 두 고유값이 식에 그대로 노출되어 있어서
+        // 고유값 분해 없이 max() 하나로 수직 성분만 자를 수 있다.
+        mat3 dirOuter = outerProduct(dir, dir);
+
+        // 압축(l < L)이면 수직 강성이 음수가 된다. 좌굴이라 물리적으로는 맞지만,
+        // 헤시안이 부정부호가 되면 H^-1*f 가 하강 방향이라고 보장할 수 없다.
+        // 0 으로 잘라 양정부호를 유지한다 (Teran et al. 2005).
+        float compressionClamp = max(0.0, 1.0 - s.restLength / l);
+
+        hessian += s.stiffness * (dirOuter + compressionClamp * (mat3(1.0) - dirOuter));
+    }
+
+    // m_h2 가 바닥을 깔아 주므로 실제로는 거의 걸리지 않는 안전망
+    if (abs(determinant(hessian)) < 1e-12) {
+        return;
+    }
+
+    // 뉴턴 스텝: dx = H^-1 * f
+    // force(N) 를 hessian(N/m) 으로 나눠 거리(m) 를 얻는 것이다.
+    vertices[vertexIndex].position = xi + inverse(hessian) * force;
+}

@@ -187,6 +187,13 @@ struct LineVertex {
     cVec3 color;
 };
 
+// 천 정점(ClothVertex, include/component2/ClothSimulation.h) 을 정점 버퍼로
+// 바인딩할 때 필요한 값. engine2 는 component2 헤더를 보지 않으므로 여기 둔다.
+// 구조체가 실제로 64 byte 인지는 ClothSimulation.h 의 static_assert 가 못박는다.
+// position 이 구조체 맨 앞이라 offset 은 0 이다.
+static const cUint32_t kClothVertexStride = 64;
+static const cUint32_t kClothVertexPositionOffset = 0;
+
 // Hash function for vector<VkDescriptorSetLayoutBinding>
 struct BindingHash
 {

@@ -196,7 +196,13 @@ namespace vkengine
                     }
                 }
 
-                return 0;
+                // 0 을 돌려주면 안 된다. 요구한 속성이 없는 메모리 타입으로 조용히
+                // 할당되어, 나중에 vkMapMemory 나 매핑 쓰기에서 엉뚱하게 터진다.
+                // Context::getMemoryTypeIndex() 와 같은 정책으로 바로 멈춘다.
+                Log::exitToLogger("findMemoryType : 조건에 맞는 메모리 타입이 없다. "
+                                  "typeFilter 0x%08X / properties 0x%08X",
+                                  typeFilter, properties);
+                return cUint32_t(-1);
             }
 
             VkSampleCountFlagBits getMaxUsableSampleCount(VkPhysicalDevice physicalDevice)

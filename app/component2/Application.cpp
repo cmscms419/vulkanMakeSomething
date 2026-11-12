@@ -32,6 +32,10 @@ namespace vkengine
                             {"lightdeferred", {"complightdeferred.spv"}},
                             {"ssao", {"compssao.spv"}},
                             {"ssaoBlur", {"compssaoBlur.spv"}},
+                            {"cloth", {"vertcloth.spv", "fragcloth.spv"}},
+                            {"clothPredict", {"compclothPredict.spv"}},
+                            {"clothSolve", {"compclothSolve.spv"}},
+                            {"clothFinalize", {"compclothFinalize.spv"}},
                         }},
           guiRenderer{*this->cxt, shaderManager, swapChain->getSwapChainImageFormat(), RootPath + this->AssetsPath},
           renderer(*this->cxt, shaderManager, *this->swapChain, this->kMaxFramesInFlight, RootPath + this->AssetsPath, RootPath + this->ShaderPath)
@@ -373,15 +377,21 @@ namespace vkengine
         io.MouseDown[1] = mousetState.buttons.right;
         io.MouseDown[2] = mousetState.buttons.middle;
 
+        // 휠을 ImGui 로 넘긴다. 넘기지 않으면 내용이 창보다 긴 패널을
+        // 스크롤바를 직접 끄는 것 말고는 움직일 수 없다.
+        // 카메라 줌은 handleScroll() 이 따로 하므로 그대로 같이 동작한다.
+        io.MouseWheel = mousetState.scrollDelta;
+        mousetState.scrollDelta = 0.0f;
+
         ImGui::NewFrame();
         ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0);
         ImGui::SetNextWindowPos(ImVec2(10 * scale, 10 * scale), ImGuiCond_FirstUseEver);
         ImGui::SetNextWindowSize(ImVec2(0, 0), ImGuiCond_FirstUseEver);
-        ImGui::Begin("Vulkan realtime Rendering Example", nullptr, ImGuiWindowFlags_None);
+        ImGui::Begin("Vulkan 실시간 렌더링 예제", nullptr, ImGuiWindowFlags_None);
 
         static cVec3 lightColor = cVec3(1.0f);
         static cFloat lightIntensity = 28.454f;
-        ImGui::SliderFloat("Light Intensity", &lightIntensity, 0.0f, 100.0f);
+        ImGui::SliderFloat("빛 세기", &lightIntensity, 0.0f, 100.0f);
         this->renderer.getSceneDataUBO().directionalLightColor = lightIntensity * lightColor;
 
         // TODO: IS there a way to determine directionalLightColor from time of day? bright morning sun
@@ -390,8 +400,8 @@ namespace vkengine
         static float elevation = 65.2f; // Elevation angle (up/down) in degrees
         static float azimuth = -143.8f; // Azimuth angle (left/right) in degrees
 
-        ImGui::SliderFloat("Light Elevation", &elevation, -90.0f, 90.0f, "%.1f°");
-        ImGui::SliderFloat("Light Azimuth", &azimuth, -180.0f, 180.0f, "%.1f°");
+        ImGui::SliderFloat("빛 고도", &elevation, -90.0f, 90.0f, "%.1f°");
+        ImGui::SliderFloat("빛 방위", &azimuth, -180.0f, 180.0f, "%.1f°");
 
         // Convert to radians
         float elev_rad = glm::radians(elevation);
@@ -407,14 +417,14 @@ namespace vkengine
         this->renderer.getSceneDataUBO().directionalLightDir = lightDir;
 
         // Display current light direction for debugging
-        ImGui::Text("Light Dir: (%.2f, %.2f, %.2f)",
+        ImGui::Text("빛 방향 : (%.2f, %.2f, %.2f)",
                     this->renderer.getSceneDataUBO().directionalLightDir.x,
                     this->renderer.getSceneDataUBO().directionalLightDir.y,
                     this->renderer.getSceneDataUBO().directionalLightDir.z);
 
         // Rendering Options Controls
         ImGui::Separator();
-        ImGui::Text("Rendering Options");
+        ImGui::Text("렌더링 옵션");
 
         bool textureOn = this->renderer.getOptionsUBO().textureOn != 0;
         bool shadowOn = this->renderer.getOptionsUBO().shadowOn != 0;
@@ -422,42 +432,42 @@ namespace vkengine
 
         // NEW: Frustum Culling Controls
         ImGui::Separator();
-        ImGui::Text("View Frustum Culling");
+        ImGui::Text("절두체 컬링");
 
         bool frustumCullingEnabled = this->renderer.isFrustumCullingEnabled();
-        if (ImGui::Checkbox("Enable Frustum Culling", &frustumCullingEnabled))
+        if (ImGui::Checkbox("절두체 컬링 사용", &frustumCullingEnabled))
         {
             this->renderer.setFrustumCullingEnabled(frustumCullingEnabled);
         }
 
         // Display culling statistics
         const auto &stats = this->renderer.getCullingStats();
-        ImGui::Text("Total Meshes: %u", stats.totalMeshes);
-        ImGui::Text("Rendered: %u", stats.renderedMeshes);
-        ImGui::Text("Culled: %u", stats.culledMeshes);
+        ImGui::Text("전체 메시 : %u", stats.totalMeshes);
+        ImGui::Text("그려짐   : %u", stats.renderedMeshes);
+        ImGui::Text("잘림     : %u", stats.culledMeshes);
 
         if (stats.totalMeshes > 0)
         {
             float cullPercent = (float)stats.culledMeshes / stats.totalMeshes * 100.0f;
-            ImGui::Text("Culled: %.1f%%", cullPercent);
+            ImGui::Text("잘린 비율 : %.1f%%", cullPercent);
         }
 
-        if (ImGui::Checkbox("Textures", &textureOn))
+        if (ImGui::Checkbox("텍스처", &textureOn))
         {
             this->renderer.getOptionsUBO().textureOn = textureOn ? 1 : 0;
         }
-        if (ImGui::Checkbox("Shadows", &shadowOn))
+        if (ImGui::Checkbox("그림자", &shadowOn))
         {
             this->renderer.getOptionsUBO().shadowOn = shadowOn ? 1 : 0;
         }
-        if (ImGui::Checkbox("Alpha Discard", &discardOn))
+        if (ImGui::Checkbox("알파 버림", &discardOn))
         {
             this->renderer.getOptionsUBO().discardOn = discardOn ? 1 : 0;
         }
 
-        ImGui::SliderFloat("Specular",      &this->renderer.getOptionsUBO().specularWeight, 0.0f, 1.0f);
-        ImGui::SliderFloat("Diffuse",       &this->renderer.getOptionsUBO().diffuseWeight,  0.0f, 5.0f);
-        ImGui::SliderFloat("Shadow Offset", &this->renderer.getOptionsUBO().shadowOffset,   0.0f, 1.0f);
+        ImGui::SliderFloat("반사광",      &this->renderer.getOptionsUBO().specularWeight, 0.0f, 1.0f);
+        ImGui::SliderFloat("난반사",       &this->renderer.getOptionsUBO().diffuseWeight,  0.0f, 5.0f);
+        ImGui::SliderFloat("그림자 오프셋", &this->renderer.getOptionsUBO().shadowOffset,   0.0f, 1.0f);
 
         ImGui::Separator();
 
@@ -467,35 +477,35 @@ namespace vkengine
             char labelBuffer[128];
 
             // 모델 이름
-            cString modelName = m.getName().empty() ? "Unnamed" : m.getName();
-            snprintf(labelBuffer, sizeof(labelBuffer), "Model %u - %s", i, modelName.c_str());
+            cString modelName = m.getName().empty() ? "이름 없음" : m.getName();
+            snprintf(labelBuffer, sizeof(labelBuffer), "모델 %u - %s", i, modelName.c_str());
 
             // clean
             if (ImGui::TreeNode(labelBuffer))
             {
                 // Visible 체크박스
-                snprintf(labelBuffer, sizeof(labelBuffer), "Visible##%u", i);
+                snprintf(labelBuffer, sizeof(labelBuffer), "보이기##%u", i);
                 ImGui::Checkbox(labelBuffer, &m.isVisible());
 
                 // Coefficients 슬라이더들
                 float *coeffs = m.getModelResource().coeffs;
 
-                snprintf(labelBuffer, sizeof(labelBuffer), "Specular##%u", i);
+                snprintf(labelBuffer, sizeof(labelBuffer), "반사광##%u", i);
                 ImGui::SliderFloat(labelBuffer, &coeffs[0], 0.0f, 1.0f);
 
-                snprintf(labelBuffer, sizeof(labelBuffer), "Diffuse##%u", i);
+                snprintf(labelBuffer, sizeof(labelBuffer), "난반사##%u", i);
                 ImGui::SliderFloat(labelBuffer, &coeffs[1], 0.0f, 10.0f);
 
-                snprintf(labelBuffer, sizeof(labelBuffer), "Emissive##%u", i);
+                snprintf(labelBuffer, sizeof(labelBuffer), "발광##%u", i);
                 ImGui::SliderFloat(labelBuffer, &coeffs[2], 0.0f, 10.0f);
 
-                snprintf(labelBuffer, sizeof(labelBuffer), "Shadow Offset##%u", i);
+                snprintf(labelBuffer, sizeof(labelBuffer), "그림자 오프셋##%u", i);
                 ImGui::SliderFloat(labelBuffer, &coeffs[3], 0.0f, 1.0f);
 
-                snprintf(labelBuffer, sizeof(labelBuffer), "Metallic##%u", i);
+                snprintf(labelBuffer, sizeof(labelBuffer), "금속성##%u", i);
                 ImGui::SliderFloat(labelBuffer, &coeffs[4], 0.0f, 1.0f);
 
-                snprintf(labelBuffer, sizeof(labelBuffer), "Roughness##%u", i);
+                snprintf(labelBuffer, sizeof(labelBuffer), "거칠기##%u", i);
                 ImGui::SliderFloat(labelBuffer, &coeffs[5], 0.0f, 1.0f);
 
                 ImGui::TreePop();
@@ -505,7 +515,7 @@ namespace vkengine
             char labelBuffer2[128];
             glm::vec3 position = glm::vec3(m.getModelResource().modelMatrix[3]);
 
-            snprintf(labelBuffer2, sizeof(labelBuffer2), "Position##%u", i);
+            snprintf(labelBuffer2, sizeof(labelBuffer2), "위치##%u", i);
 
             if (ImGui::SliderFloat3(labelBuffer2, &position.x, -10.0f, 10.0f))
             {
@@ -524,7 +534,7 @@ namespace vkengine
                 float yRotationDegrees = glm::degrees(eulerAngles.y);
                 char labelBuffer3[128];
 
-                snprintf(labelBuffer3, sizeof(labelBuffer3), "Y Rotation##%u", i);
+                snprintf(labelBuffer3, sizeof(labelBuffer3), "Y 회전##%u", i);
                 if (ImGui::SliderFloat(labelBuffer3, &yRotationDegrees, -90.0f, 90.0f, "%.1f°"))
                 {
                     // Reconstruct matrix from components
@@ -562,10 +572,10 @@ namespace vkengine
 
     void Application::renderSSAOControlWindow()
     {
-        ImGui::SetNextWindowPos(ImVec2(1090, 10), ImGuiCond_FirstUseEver);
-        ImGui::SetNextWindowSize(ImVec2(370, 400), ImGuiCond_FirstUseEver);
+        ImGui::SetNextWindowPos(ImVec2(1490, 10), ImGuiCond_FirstUseEver);
+        ImGui::SetNextWindowSize(ImVec2(470, 420), ImGuiCond_FirstUseEver);
 
-        if (!ImGui::Begin("SSAO Controls"))
+        if (!ImGui::Begin("SSAO 설정"))
         {
             ImGui::End();
             return;
@@ -578,7 +588,7 @@ namespace vkengine
         static cInt savedSampleCount = 16;
 
         cBool enabled = ssao.ssaoSampleCount > 0;
-        if (ImGui::Checkbox("Enable SSAO", &enabled))
+        if (ImGui::Checkbox("SSAO 사용", &enabled))
         {
             if (enabled)
             {
@@ -593,47 +603,47 @@ namespace vkengine
         if (ImGui::IsItemHovered())
         {
             // SSAO에서 오는 아티팩트인지 디퍼드 조명에서 오는지 가르는 실험용 토글
-            ImGui::SetTooltip("Off: SSAO result is not applied to indirect lighting.");
+            ImGui::SetTooltip("끄면 SSAO 결과가 간접광에 반영되지 않는다.");
         }
 
         ImGui::Separator();
 
         ImGui::BeginDisabled(!enabled);
 
-        if (ImGui::CollapsingHeader("Parameters", ImGuiTreeNodeFlags_DefaultOpen))
+        if (ImGui::CollapsingHeader("파라미터", ImGuiTreeNodeFlags_DefaultOpen))
         {
-            ImGui::SliderInt("Sample Count", &ssao.ssaoSampleCount, 1, 64);
+            ImGui::SliderInt("샘플 수", &ssao.ssaoSampleCount, 1, 64);
             if (ImGui::IsItemHovered())
             {
-                ImGui::SetTooltip("Samples per pixel. More = less noise, linearly more cost.");
+                ImGui::SetTooltip("픽셀당 샘플 수. 많을수록 노이즈가 줄지만 비용이 비례해 늘어난다.");
             }
 
-            ImGui::SliderFloat("Radius", &ssao.ssaoRadius, 0.01f, 5.0f, "%.3f",
+            ImGui::SliderFloat("반경", &ssao.ssaoRadius, 0.01f, 5.0f, "%.3f",
                                ImGuiSliderFlags_Logarithmic);
             if (ImGui::IsItemHovered())
             {
                 // 씬 스케일에 맞아야 한다. 너무 크면 접촉 그림자 대신 넓은 번짐이 생긴다.
-                ImGui::SetTooltip("World-space search radius. Must match scene scale.");
+                ImGui::SetTooltip("월드 공간 탐색 반경. 씬 스케일에 맞아야 한다.");
             }
 
-            ImGui::SliderFloat("Bias", &ssao.ssaoBias, 0.0f, 0.2f, "%.4f");
+            ImGui::SliderFloat("바이어스", &ssao.ssaoBias, 0.0f, 0.2f, "%.4f");
             if (ImGui::IsItemHovered())
             {
                 // 너무 작으면 표면에 줄무늬, 너무 크면 접촉 그림자가 사라진다.
-                ImGui::SetTooltip("Depth offset preventing self-occlusion banding.");
+                ImGui::SetTooltip("자기 가림으로 생기는 줄무늬를 막는 깊이 오프셋.");
             }
 
-            ImGui::SliderFloat("Power", &ssao.ssaoPower, 0.1f, 8.0f, "%.2f");
+            ImGui::SliderFloat("강도", &ssao.ssaoPower, 0.1f, 8.0f, "%.2f");
             if (ImGui::IsItemHovered())
             {
-                ImGui::SetTooltip("Exponent applied to AO. Higher = stronger contrast.");
+                ImGui::SetTooltip("AO 에 적용하는 지수. 클수록 대비가 세진다.");
             }
         }
 
         ImGui::EndDisabled();
 
         ImGui::Separator();
-        ImGui::TextDisabled("radius=%.3f  bias=%.4f  samples=%d  power=%.2f",
+        ImGui::TextDisabled("반경=%.3f  바이어스=%.4f  샘플=%d  강도=%.2f",
                             ssao.ssaoRadius, ssao.ssaoBias,
                             ssao.ssaoSampleCount, ssao.ssaoPower);
 
@@ -642,29 +652,29 @@ namespace vkengine
 
     void Application::renderHDRControlWindow()
     {
-        ImGui::SetNextWindowPos(ImVec2(320, 10), ImGuiCond_FirstUseEver);
-        ImGui::SetNextWindowSize(ImVec2(350, 350), ImGuiCond_FirstUseEver);
+        ImGui::SetNextWindowPos(ImVec2(480, 10), ImGuiCond_FirstUseEver);
+        ImGui::SetNextWindowSize(ImVec2(470, 380), ImGuiCond_FirstUseEver);
 
-        if (!ImGui::Begin("HDR Skybox Controls"))
+        if (!ImGui::Begin("HDR 스카이박스 설정"))
         {
             ImGui::End();
             return;
         }
 
         // HDR Environment Controls
-        if (ImGui::CollapsingHeader("HDR Environment", ImGuiTreeNodeFlags_DefaultOpen))
+        if (ImGui::CollapsingHeader("HDR 환경", ImGuiTreeNodeFlags_DefaultOpen))
         {
-            ImGui::SliderFloat("Environment Intensity", &this->renderer.getSkyOptionsUBO().environmentIntensity, 0.0f,
+            ImGui::SliderFloat("환경광 세기", &this->renderer.getSkyOptionsUBO().environmentIntensity, 0.0f,
                                10.0f, "%.2f");
         }
 
         // Environment Map Controls
-        if (ImGui::CollapsingHeader("Environment Map", ImGuiTreeNodeFlags_DefaultOpen))
+        if (ImGui::CollapsingHeader("환경 맵", ImGuiTreeNodeFlags_DefaultOpen))
         {
-            ImGui::SliderFloat("Roughness Level", &this->renderer.getSkyOptionsUBO().roughnessLevel, 0.0f, 8.0f, "%.1f");
+            ImGui::SliderFloat("거칠기 단계", &this->renderer.getSkyOptionsUBO().roughnessLevel, 0.0f, 8.0f, "%.1f");
 
             bool useIrradiance = this->renderer.getSkyOptionsUBO().useIrradianceMap != 0;
-            if (ImGui::Checkbox("Use Irradiance Map", &useIrradiance))
+            if (ImGui::Checkbox("Irradiance 맵 사용", &useIrradiance))
             {
                 this->renderer.getSkyOptionsUBO().useIrradianceMap = useIrradiance ? 1 : 0;
             }
@@ -675,31 +685,31 @@ namespace vkengine
             }
             if (ImGui::IsItemHovered())
             {
-                ImGui::SetTooltip("Toggle between prefiltered environment map (sharp reflections) and "
-                                  "irradiance map (diffuse lighting)");
+                ImGui::SetTooltip("미리 필터링한 환경 맵(선명한 반사)과 "
+                                  "irradiance 맵(부드러운 조명)을 번갈아 쓴다");
             }
         }
 
         // Debug Visualization
-        if (ImGui::CollapsingHeader("Debug Visualization"))
+        if (ImGui::CollapsingHeader("디버그 표시"))
         {
             bool showMipLevels = this->renderer.getSkyOptionsUBO().showMipLevels != 0;
-            if (ImGui::Checkbox("Show Mip Levels", &showMipLevels))
+            if (ImGui::Checkbox("밉 단계 보기", &showMipLevels))
             {
                 this->renderer.getSkyOptionsUBO().showMipLevels = showMipLevels ? 1 : 0;
             }
 
             bool showCubeFaces = this->renderer.getSkyOptionsUBO().showCubeFaces != 0;
-            if (ImGui::Checkbox("Show Cube Faces", &showCubeFaces))
+            if (ImGui::Checkbox("큐브 면 보기", &showCubeFaces))
             {
                 this->renderer.getSkyOptionsUBO().showCubeFaces = showCubeFaces ? 1 : 0;
             }
         }
 
         // Simplified Presets
-        if (ImGui::CollapsingHeader("Presets"))
+        if (ImGui::CollapsingHeader("프리셋"))
         {
-            if (ImGui::Button("Default"))
+            if (ImGui::Button("기본값"))
             {
                 this->renderer.getSkyOptionsUBO().environmentIntensity = 1.0f;
                 this->renderer.getSkyOptionsUBO().roughnessLevel = 0.5f;
@@ -708,23 +718,23 @@ namespace vkengine
                 this->renderer.getSkyOptionsUBO().showCubeFaces = 0;
             }
             ImGui::SameLine();
-            if (ImGui::Button("High Exposure"))
+            if (ImGui::Button("노출 높게"))
             {
                 this->renderer.getSkyOptionsUBO().environmentIntensity = 1.5f;
             }
             ImGui::SameLine();
-            if (ImGui::Button("Low Exposure"))
+            if (ImGui::Button("노출 낮게"))
             {
                 this->renderer.getSkyOptionsUBO().environmentIntensity = 0.8f;
             }
 
-            if (ImGui::Button("Sharp Reflections"))
+            if (ImGui::Button("선명한 반사"))
             {
                 this->renderer.getSkyOptionsUBO().roughnessLevel = 0.0f;
                 this->renderer.getSkyOptionsUBO().useIrradianceMap = 0;
             }
             ImGui::SameLine();
-            if (ImGui::Button("Diffuse Lighting"))
+            if (ImGui::Button("부드러운 조명"))
             {
                 this->renderer.getSkyOptionsUBO().useIrradianceMap = 1;
             }
@@ -735,89 +745,89 @@ namespace vkengine
 
     void Application::renderPostProcessingControlWindow()
     {
-        ImGui::SetNextWindowPos(ImVec2(680, 10), ImGuiCond_FirstUseEver);
-        ImGui::SetNextWindowSize(ImVec2(400, 600), ImGuiCond_FirstUseEver);
+        ImGui::SetNextWindowPos(ImVec2(960, 10), ImGuiCond_FirstUseEver);
+        ImGui::SetNextWindowSize(ImVec2(520, 620), ImGuiCond_FirstUseEver);
 
-        if (!ImGui::Begin("Post-Processing Controls"))
+        if (!ImGui::Begin("후처리 설정"))
         {
             ImGui::End();
             return;
         }
 
         // Tone Mapping Controls
-        if (ImGui::CollapsingHeader("Tone Mapping", ImGuiTreeNodeFlags_DefaultOpen))
+        if (ImGui::CollapsingHeader("톤 매핑", ImGuiTreeNodeFlags_DefaultOpen))
         {
-            const char *toneMappingNames[] = {"None", "Reinhard", "ACES",
+            const char *toneMappingNames[] = {"끄기", "Reinhard", "ACES",
                                               "Uncharted 2", "GT (Gran Turismo)", "Lottes",
                                               "Exponential", "Reinhard Extended", "Luminance",
                                               "Hable"};
-            ImGui::Combo("Tone Mapping Type", &this->renderer.getPostProcessingOptionsUBO().toneMappingType,
+            ImGui::Combo("톤 매핑 방식", &this->renderer.getPostProcessingOptionsUBO().toneMappingType,
                          toneMappingNames, IM_ARRAYSIZE(toneMappingNames));
 
-            ImGui::SliderFloat("Exposure", &this->renderer.getPostProcessingOptionsUBO().exposure, 0.1f, 5.0f, "%.2f");
-            ImGui::SliderFloat("Gamma", &this->renderer.getPostProcessingOptionsUBO().gamma, 1.0f / 2.2f, 2.2f, "%.2f");
+            ImGui::SliderFloat("노출", &this->renderer.getPostProcessingOptionsUBO().exposure, 0.1f, 5.0f, "%.2f");
+            ImGui::SliderFloat("감마", &this->renderer.getPostProcessingOptionsUBO().gamma, 1.0f / 2.2f, 2.2f, "%.2f");
 
             if (this->renderer.getPostProcessingOptionsUBO().toneMappingType == 7)
             { // Reinhard Extended
-                ImGui::SliderFloat("Max White", &this->renderer.getPostProcessingOptionsUBO().maxWhite, 1.0f, 20.0f,
+                ImGui::SliderFloat("최대 흰색", &this->renderer.getPostProcessingOptionsUBO().maxWhite, 1.0f, 20.0f,
                                    "%.1f");
             }
         }
 
         // Color Grading Controls
-        if (ImGui::CollapsingHeader("Color Grading", ImGuiTreeNodeFlags_DefaultOpen))
+        if (ImGui::CollapsingHeader("색 보정", ImGuiTreeNodeFlags_DefaultOpen))
         {
-            ImGui::SliderFloat("Contrast", &this->renderer.getPostProcessingOptionsUBO().contrast, 0.0f, 3.0f, "%.2f");
-            ImGui::SliderFloat("Brightness", &this->renderer.getPostProcessingOptionsUBO().brightness, -1.0f, 1.0f,
+            ImGui::SliderFloat("대비", &this->renderer.getPostProcessingOptionsUBO().contrast, 0.0f, 3.0f, "%.2f");
+            ImGui::SliderFloat("밝기", &this->renderer.getPostProcessingOptionsUBO().brightness, -1.0f, 1.0f,
                                "%.2f");
-            ImGui::SliderFloat("Saturation", &this->renderer.getPostProcessingOptionsUBO().saturation, 0.0f, 2.0f, "%.2f");
-            ImGui::SliderFloat("Vibrance", &this->renderer.getPostProcessingOptionsUBO().vibrance, -1.0f, 1.0f, "%.2f");
+            ImGui::SliderFloat("채도", &this->renderer.getPostProcessingOptionsUBO().saturation, 0.0f, 2.0f, "%.2f");
+            ImGui::SliderFloat("생동감", &this->renderer.getPostProcessingOptionsUBO().vibrance, -1.0f, 1.0f, "%.2f");
         }
 
         // Effects Controls
-        if (ImGui::CollapsingHeader("Effects"))
+        if (ImGui::CollapsingHeader("효과"))
         {
-            ImGui::SliderFloat("Vignette Strength", &this->renderer.getPostProcessingOptionsUBO().vignetteStrength, 0.0f,
+            ImGui::SliderFloat("비네트 세기", &this->renderer.getPostProcessingOptionsUBO().vignetteStrength, 0.0f,
                                1.0f, "%.2f");
             if (this->renderer.getPostProcessingOptionsUBO().vignetteStrength > 0.0f)
             {
-                ImGui::SliderFloat("Vignette Radius", &this->renderer.getPostProcessingOptionsUBO().vignetteRadius, 0.1f,
+                ImGui::SliderFloat("비네트 반경", &this->renderer.getPostProcessingOptionsUBO().vignetteRadius, 0.1f,
                                    1.5f, "%.2f");
             }
 
-            ImGui::SliderFloat("Film Grain", &this->renderer.getPostProcessingOptionsUBO().filmGrainStrength, 0.0f, 0.2f,
+            ImGui::SliderFloat("필름 그레인", &this->renderer.getPostProcessingOptionsUBO().filmGrainStrength, 0.0f, 0.2f,
                                "%.3f");
-            ImGui::SliderFloat("Chromatic Aberration", &this->renderer.getPostProcessingOptionsUBO().chromaticAberration,
+            ImGui::SliderFloat("색수차", &this->renderer.getPostProcessingOptionsUBO().chromaticAberration,
                                0.0f, 5.0f, "%.1f");
         }
 
         // Debug Controls
-        if (ImGui::CollapsingHeader("Debug Visualization"))
+        if (ImGui::CollapsingHeader("디버그 표시"))
         {
-            const char *debugModeNames[] = {"Off", "Tone Mapping Comparison", "Color Channels",
-                                            "Split Comparison"};
-            ImGui::Combo("Debug Mode", &this->renderer.getPostProcessingOptionsUBO().debugMode, debugModeNames,
+            const char *debugModeNames[] = {"끄기", "톤 매핑 비교", "색 채널",
+                                            "분할 비교"};
+            ImGui::Combo("디버그 모드", &this->renderer.getPostProcessingOptionsUBO().debugMode, debugModeNames,
                          IM_ARRAYSIZE(debugModeNames));
 
             if (this->renderer.getPostProcessingOptionsUBO().debugMode == 2)
             { // Color Channels
-                const char *channelNames[] = {"All", "Red Only", "Green Only",
-                                              "Blue Only", "Alpha", "Luminance"};
-                ImGui::Combo("Show Channel", &this->renderer.getPostProcessingOptionsUBO().showOnlyChannel, channelNames,
+                const char *channelNames[] = {"전체", "R 만", "G 만",
+                                              "B 만", "알파", "휘도"};
+                ImGui::Combo("채널 보기", &this->renderer.getPostProcessingOptionsUBO().showOnlyChannel, channelNames,
                              IM_ARRAYSIZE(channelNames));
             }
 
             if (this->renderer.getPostProcessingOptionsUBO().debugMode == 3)
             { // Split Comparison
-                ImGui::SliderFloat("Split Position", &this->renderer.getPostProcessingOptionsUBO().debugSplit, 0.0f, 1.0f,
+                ImGui::SliderFloat("분할 위치", &this->renderer.getPostProcessingOptionsUBO().debugSplit, 0.0f, 1.0f,
                                    "%.2f");
             }
         }
 
         // Presets
-        if (ImGui::CollapsingHeader("Presets"))
+        if (ImGui::CollapsingHeader("프리셋"))
         {
-            if (ImGui::Button("Default"))
+            if (ImGui::Button("기본값"))
             {
                 this->renderer.getPostProcessingOptionsUBO().toneMappingType = 2; // ACES
                 this->renderer.getPostProcessingOptionsUBO().exposure = 1.0f;
@@ -832,7 +842,7 @@ namespace vkengine
                 this->renderer.getPostProcessingOptionsUBO().debugMode = 0;
             }
             ImGui::SameLine();
-            if (ImGui::Button("Cinematic"))
+            if (ImGui::Button("시네마틱"))
             {
                 this->renderer.getPostProcessingOptionsUBO().toneMappingType = 3; // Uncharted 2
                 this->renderer.getPostProcessingOptionsUBO().exposure = 1.2f;
@@ -843,7 +853,7 @@ namespace vkengine
                 this->renderer.getPostProcessingOptionsUBO().filmGrainStrength = 0.02f;
             }
 
-            if (ImGui::Button("High Contrast"))
+            if (ImGui::Button("대비 높게"))
             {
                 this->renderer.getPostProcessingOptionsUBO().contrast = 1.5f;
                 this->renderer.getPostProcessingOptionsUBO().brightness = 0.1f;
@@ -851,14 +861,14 @@ namespace vkengine
                 this->renderer.getPostProcessingOptionsUBO().vignetteStrength = 0.2f;
             }
             ImGui::SameLine();
-            if (ImGui::Button("Low Contrast"))
+            if (ImGui::Button("대비 낮게"))
             {
                 this->renderer.getPostProcessingOptionsUBO().contrast = 0.7f;
                 this->renderer.getPostProcessingOptionsUBO().brightness = 0.05f;
                 this->renderer.getPostProcessingOptionsUBO().saturation = 0.8f;
             }
 
-            if (ImGui::Button("Show Tone Mapping"))
+            if (ImGui::Button("톤 매핑 비교"))
             {
                 this->renderer.getPostProcessingOptionsUBO().debugMode = 1;
                 this->renderer.getPostProcessingOptionsUBO().exposure = 2.0f;
@@ -870,10 +880,10 @@ namespace vkengine
 
     void Application::renderCameraControlWindow()
     {
-        ImGui::SetNextWindowPos(ImVec2(10, 350), ImGuiCond_FirstUseEver);
-        ImGui::SetNextWindowSize(ImVec2(300, 400), ImGuiCond_FirstUseEver);
+        ImGui::SetNextWindowPos(ImVec2(1970, 10), ImGuiCond_FirstUseEver);
+        ImGui::SetNextWindowSize(ImVec2(400, 430), ImGuiCond_FirstUseEver);
 
-        if (!ImGui::Begin("Camera Controls"))
+        if (!ImGui::Begin("카메라 설정"))
         {
             ImGui::End();
             return;
@@ -885,50 +895,50 @@ namespace vkengine
         cFloat Pithch = this->camera->getPitch();
 
         // Camera Information Display
-        if (ImGui::CollapsingHeader("Camera Information", ImGuiTreeNodeFlags_DefaultOpen))
+        if (ImGui::CollapsingHeader("카메라 정보", ImGuiTreeNodeFlags_DefaultOpen))
         {
-            ImGui::Text("Position: (%.2f, %.2f, %.2f)", CameraPosition.x, CameraPosition.y, CameraPosition.z);
-            ImGui::Text("Camera Yaw Pitch: (%.2f, %.2f)", Yaw, Pithch);
+            ImGui::Text("위치 : (%.2f, %.2f, %.2f)", CameraPosition.x, CameraPosition.y, CameraPosition.z);
+            ImGui::Text("Yaw / Pitch : (%.2f, %.2f)", Yaw, Pithch);
 
             // Camera Type Toggle
             /*bool isFirstPerson = camera_.type == hlab::Camera::CameraType::firstperson;
-            if (ImGui::Checkbox("First Person Mode", &isFirstPerson)) {
+            if (ImGui::Checkbox("1인칭 모드", &isFirstPerson)) {
                 camera_.type = isFirstPerson ? hlab::Camera::CameraType::firstperson
                     : hlab::Camera::CameraType::lookat;
             }*/
         }
 
         // Camera Position Controls
-        if (ImGui::CollapsingHeader("Position Controls", ImGuiTreeNodeFlags_DefaultOpen))
+        if (ImGui::CollapsingHeader("위치 조절", ImGuiTreeNodeFlags_DefaultOpen))
         {
             glm::vec3 tempPosition = camera.getPos();
-            if (ImGui::SliderFloat3("Position", &tempPosition.x, -50.0f, 50.0f, "%.2f"))
+            if (ImGui::SliderFloat3("위치", &tempPosition.x, -50.0f, 50.0f, "%.2f"))
             {
                 camera.setPos(tempPosition);
             }
 
             // Quick position buttons
-            if (ImGui::Button("Reset Position"))
+            if (ImGui::Button("위치 초기화"))
             {
                 camera.setPos(glm::vec3(0.0f, 0.0f, -2.5f));
             }
             ImGui::SameLine();
-            if (ImGui::Button("View Origin"))
+            if (ImGui::Button("원점 보기"))
             {
                 camera.setPos(glm::vec3(0.0f, 0.0f, 5.0f));
             }
         }
 
         // Camera Rotation Controls
-        if (ImGui::CollapsingHeader("Rotation Controls", ImGuiTreeNodeFlags_DefaultOpen))
+        if (ImGui::CollapsingHeader("회전 조절", ImGuiTreeNodeFlags_DefaultOpen))
         {
             /*glm::vec3 tempRotation = camera.rotation;
-            if (ImGui::SliderFloat3("Rotation (degrees)", &tempRotation.x, -180.0f, 180.0f, "%.1f°")) {
+            if (ImGui::SliderFloat3("회전 (도)", &tempRotation.x, -180.0f, 180.0f, "%.1f°")) {
                 camera_.setRotation(tempRotation);
             }*/
 
             // Quick rotation buttons
-            if (ImGui::Button("Reset Rotation"))
+            if (ImGui::Button("회전 초기화"))
             {
                 camera.setPitch(cFloat(0.0f));
                 camera.setYaw(cFloat(0.0f));
@@ -937,20 +947,20 @@ namespace vkengine
         }
 
         // Controls Information
-        if (ImGui::CollapsingHeader("Controls Help"))
+        if (ImGui::CollapsingHeader("조작법"))
         {
-            ImGui::Text("Keyboard Controls:");
-            ImGui::BulletText("WASD: Move forward/back/left/right");
-            ImGui::BulletText("Q/E: Move up/down");
-            ImGui::BulletText("F2: Toggle camera mode");
-            ImGui::BulletText("F3: Print camera info to console");
+            ImGui::Text("키보드");
+            ImGui::BulletText("WASD : 앞 / 뒤 / 좌 / 우 이동");
+            ImGui::BulletText("Q / E : 위 / 아래 이동");
+            ImGui::BulletText("F2 : 카메라 모드 전환");
+            ImGui::BulletText("F3 : 카메라 정보를 콘솔에 출력");
 
             ImGui::Separator();
-            ImGui::Text("Mouse Controls:");
-            ImGui::BulletText("Left Click + Drag: Look around");
-            ImGui::BulletText("Right Click + Drag: Zoom in/out");
-            ImGui::BulletText("Middle Click + Drag: Pan");
-            ImGui::BulletText("Scroll Wheel: Zoom");
+            ImGui::Text("마우스");
+            ImGui::BulletText("왼쪽 드래그 : 시점 회전");
+            ImGui::BulletText("오른쪽 드래그 : 확대 / 축소");
+            ImGui::BulletText("가운데 드래그 : 평행 이동");
+            ImGui::BulletText("휠 : 확대 / 축소");
         }
 
         ImGui::End();

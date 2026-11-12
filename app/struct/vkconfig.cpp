@@ -99,6 +99,48 @@ PipelineConfig PipelineConfig::createDeferredLighting()
     return config;
 }
 
+// ---------------------------------------------------------------------------
+// 천 시뮬레이션 — 세 패스 모두 compute 이고, set 0 의 바인딩 구성이 동일하다
+// (clothCommon.glsl 하나를 세 셰이더가 공유한다). 그래서 디스크립터 세트는
+// 하나만 만들어 세 파이프라인에 그대로 바인딩할 수 있다.
+// 다른 것은 푸시 상수뿐이고, 그것은 ShaderManager 가 리플렉션으로 알아낸다.
+// ---------------------------------------------------------------------------
+PipelineConfig PipelineConfig::createCloth()
+{
+    PipelineConfig config;
+    config.name = "cloth";
+    config.requiredFormats = {true, true, true};                     // color, depth, msaa
+    config.vertexInput.type = PipelineConfig::VertexInput::Type::Cloth;
+    config.depthStencil = {true, true, VK_COMPARE_OP_LESS_OR_EQUAL}; // pbrdeferred 와 동일
+    config.multisample.type = PipelineConfig::Multisample::Type::Variable;
+    // cullMode 는 기본값 VK_CULL_MODE_NONE 을 그대로 쓴다 — 천은 양면이다.
+    return config;
+}
+
+PipelineConfig PipelineConfig::createClothPredict()
+{
+    PipelineConfig config;
+    config.name = "clothPredict";
+    config.type = PipelineConfig::Type::Compute;
+    return config;
+}
+
+PipelineConfig PipelineConfig::createClothSolve()
+{
+    PipelineConfig config;
+    config.name = "clothSolve";
+    config.type = PipelineConfig::Type::Compute;
+    return config;
+}
+
+PipelineConfig PipelineConfig::createClothFinalize()
+{
+    PipelineConfig config;
+    config.name = "clothFinalize";
+    config.type = PipelineConfig::Type::Compute;
+    return config;
+}
+
 PipelineConfig PipelineConfig::createTriangle()
 {
     PipelineConfig config;

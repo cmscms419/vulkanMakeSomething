@@ -83,6 +83,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PhysicalSimulation", "Physi
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ResumeDemo2", "ResumeDemo2\ResumeDemo2.vcxproj", "{1313CD8E-AF68-4538-ADED-E10AF413E680}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "clothSimulation", "clothSimulation\clothSimulation.vcxproj", "{7C1E4A62-3B5D-4F08-9E21-6D4A8B9C2F10}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -141,6 +143,10 @@ Global
 		{1313CD8E-AF68-4538-ADED-E10AF413E680}.Debug|x64.Build.0 = Debug|x64
 		{1313CD8E-AF68-4538-ADED-E10AF413E680}.Release|x64.ActiveCfg = Release|x64
 		{1313CD8E-AF68-4538-ADED-E10AF413E680}.Release|x64.Build.0 = Release|x64
+		{7C1E4A62-3B5D-4F08-9E21-6D4A8B9C2F10}.Debug|x64.ActiveCfg = Debug|x64
+		{7C1E4A62-3B5D-4F08-9E21-6D4A8B9C2F10}.Debug|x64.Build.0 = Debug|x64
+		{7C1E4A62-3B5D-4F08-9E21-6D4A8B9C2F10}.Release|x64.ActiveCfg = Release|x64
+		{7C1E4A62-3B5D-4F08-9E21-6D4A8B9C2F10}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -156,6 +162,7 @@ Global
 		{D3E4D430-C961-4B76-B7CC-7A7F5B90C24E} = {9982C1F3-33A6-4CD6-9D5F-E8BF420AC414}
 		{33737D46-C44A-4FC5-A1F5-A441032D33FB} = {9982C1F3-33A6-4CD6-9D5F-E8BF420AC414}
 		{1313CD8E-AF68-4538-ADED-E10AF413E680} = {9982C1F3-33A6-4CD6-9D5F-E8BF420AC414}
+		{7C1E4A62-3B5D-4F08-9E21-6D4A8B9C2F10} = {9982C1F3-33A6-4CD6-9D5F-E8BF420AC414}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {46E572E5-9639-4EE0-9508-072778161B66}

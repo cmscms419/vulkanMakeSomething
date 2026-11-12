@@ -124,13 +124,15 @@ struct PipelineConfig
             ImGui,
             Standard,
             Line,
-            InstanceData
+            InstanceData,
+            Cloth
         } type = Type::None;
         // None: No vertex input (shader-generated geometry)
         // ImGui: Custom ImGui vertex format
         // Standard: Standard 3D vertex with Vertex::getAttributeDescriptions()
         // Line: LineVertex (pos+color) — debug line rendering
         // InstanceData: InstanceData (TRS matrix) — instanced rendering
+        // Cloth: ClothVertex (64 byte) — compute 가 쓰는 버퍼를 그대로 읽는다
     } vertexInput;
 
     // Primitive topology (default TRIANGLE_LIST — 대부분의 파이프라인이 이 값 사용)
@@ -212,6 +214,10 @@ struct PipelineConfig
     static PipelineConfig createTriangle();
     static PipelineConfig createDebugLine();
     static PipelineConfig createInstanced();
+    static PipelineConfig createCloth();
+    static PipelineConfig createClothPredict();
+    static PipelineConfig createClothSolve();
+    static PipelineConfig createClothFinalize();
 };
 
 enum class ResourceAccess : cUint16_t
