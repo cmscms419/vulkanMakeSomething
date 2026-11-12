@@ -195,6 +195,22 @@ namespace vkengine {
         // 여러 요청 수집 → vkCmdPipelineBarrier2 한 번 제출 → 상태 일괄 확정
         static void batchTransition(VkCommandBuffer cmd,
                                     std::vector<TransitionRequest>& requests);
+
+        // 전역 메모리 배리어 (VkMemoryBarrier2).
+        // 스토리지 버퍼처럼 레이아웃 개념이 없는 리소스의 dispatch 사이 의존을
+        // 거는 용도다. 이미지 경로(batchTransition)와 달리 상태를 추적하지 않고
+        // 벡터도 쓰지 않는다.
+        //
+        //  1. 상태 추적 금지 - buildBarrier() 는 "현재 == 목표" 면 배리어를
+        //     생략한다. 그런데 같은 플래그의 배리어를 반복해서 거는 것이
+        //     이 함수의 주 용도다 
+        // (천 solve 루프 : 같은 버퍼에 SHADER_WRITE -> SHADER_READ 를 프레임당 50 회). 
+        //     검증 레이어도 잡지 못하는 경쟁 상태가 조용히 생긴다.
+        //  2. 할당 금지 - 프레임당 수십 번 불린다. 배리어 하나를 스택에
+        //     올려 그대로 제출한다.
+        static void insertMemoryBarrier(VkCommandBuffer cmd,
+                                        VkPipelineStageFlags2 srcStage, VkAccessFlags2 srcAccess,
+                                        VkPipelineStageFlags2 dstStage, VkAccessFlags2 dstAccess);
     };
 }
 

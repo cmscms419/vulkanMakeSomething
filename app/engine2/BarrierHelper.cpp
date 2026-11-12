@@ -213,4 +213,27 @@ namespace vkengine
         }
     }
 
+    void BarrierHelperFunction::insertMemoryBarrier(VkCommandBuffer cmd,
+                                                    VkPipelineStageFlags2 srcStage, VkAccessFlags2 srcAccess,
+                                                    VkPipelineStageFlags2 dstStage, VkAccessFlags2 dstAccess)
+    {
+        if (cmd == VK_NULL_HANDLE)
+        {
+            return;
+        }
+
+        // 상태 추적도 배치도 없다. 이유는 헤더의 선언 주석 참고.
+        VkMemoryBarrier2 memoryBarrier{VK_STRUCTURE_TYPE_MEMORY_BARRIER_2};
+        memoryBarrier.srcStageMask = srcStage;
+        memoryBarrier.dstStageMask = dstStage;
+        memoryBarrier.srcAccessMask = srcAccess;
+        memoryBarrier.dstAccessMask = dstAccess;
+
+        VkDependencyInfo depInfo{VK_STRUCTURE_TYPE_DEPENDENCY_INFO};
+        depInfo.memoryBarrierCount = 1;
+        depInfo.pMemoryBarriers = &memoryBarrier;
+
+        vkCmdPipelineBarrier2(cmd, &depInfo);
+    }
+
 }
