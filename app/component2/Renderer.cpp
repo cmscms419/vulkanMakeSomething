@@ -155,6 +155,14 @@ namespace vkengine
             model.createDescriptorManager2(allMaterials, table);
         }
 
+        // 모델이 없을 수 도 있다
+        // Vulkan 은 크기 0 인 버퍼를 만들 수 없다 (VkBufferCreateInfo::size > 0).
+        // 디스크립터 셋은 그대로 있어야 하므로 더미 하나를 넣어 버퍼를 살려 둔다.ㄴ
+        if (allMaterials.empty())
+        {
+            allMaterials.emplace_back();
+        }
+
         VkDeviceSize size = sizeof(MaterialData) * allMaterials.size();
 
         materialStorageBuffer.createStorageBuffer(size,
