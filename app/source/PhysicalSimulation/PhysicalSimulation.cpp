@@ -153,7 +153,7 @@ namespace vkengine
 
         renderer.update(*camera.get(), currentFrame, (float)glfwGetTime() * 0.5f);
         // Perform frustum culling on all models
-        guiRenderer.update();
+        guiRenderer.update(currentFrame); // 펜스 대기 뒤에 호출해야 한다 (프레임별 GUI 버퍼)
 
         if (this->physics)
         {
@@ -191,7 +191,7 @@ namespace vkengine
             this->renderer.render(cmd.getCommandBuffer(), currentFrame, imageIndex, this->models, viewport, scissor);
 
             // Draw GUI (overwrite to swapchain image)
-            this->guiRenderer.draw(cmd.getCommandBuffer(), this->swapChain->getSwapChainImageView(imageIndex), viewport);
+            this->guiRenderer.draw(cmd.getCommandBuffer(), currentFrame, this->swapChain->getSwapChainImageView(imageIndex), viewport);
 
             // Transition swapchain image to present layout
             this->swapChain->transitionTo(cmd.getCommandBuffer(), imageIndex);

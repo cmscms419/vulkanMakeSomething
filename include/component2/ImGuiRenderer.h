@@ -31,20 +31,30 @@ namespace vkengine {
             ImGuiRenderer(Context& context, ShaderManager& shaderManager, VkFormat colorFormat, std::string path);
             ~ImGuiRenderer();
 
-            void draw(const VkCommandBuffer cmd, VkImageView swapchainImageView, VkViewport viewport);
+            // frameIndex 는 update() 와 draw() 에 같은 값(Application 의 currentFrame)을 넘겨야 한다.
+            void draw(const VkCommandBuffer cmd, cUint32_t frameIndex, VkImageView swapchainImageView, VkViewport viewport);
             void resize(cUint32_t width, cUint32_t height);
 
-            bool update();
+            bool update(cUint32_t frameIndex);
             PipelineHandle& getPipelineHandle();
 
         private:
+            struct FrameGeometry
+            {
+                BaseBuffer2 vertexBuffer;
+                BaseBuffer2 indexBuffer;
+                cUint32_t vertexCapacity = 0; // 버퍼에 담을 수 있는 정점 수
+                cUint32_t indexCapacity = 0;  // 버퍼에 담을 수 있는 인덱스 수
+
+                explicit FrameGeometry(Context& ctx) : vertexBuffer(ctx), indexBuffer(ctx) {}
+            };
+
+            FrameGeometry& getFrameGeometry(cUint32_t frameIndex);
+
             Context& ctx;
             ShaderManager& shaderManager;
 
-            BaseBuffer2 VertexBuffer;
-            BaseBuffer2 IndexBuffer;
-            cUint32_t vertexCount = 0;
-            cUint32_t indexCount = 0;
+            std::vector<std::unique_ptr<FrameGeometry>> frameGeometries;
 
             Image2D fontImage;
             SamplerHandle fontSampler;

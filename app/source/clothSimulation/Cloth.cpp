@@ -270,7 +270,7 @@ namespace vkengine
         }
 
         renderer.performFrustumCulling(models);
-        guiRenderer.update();
+        guiRenderer.update(currentFrame); // 펜스 대기 뒤에 호출해야 한다 (프레임별 GUI 버퍼)
 
         cUint32_t imageIndex{0};
         VkResult result = this->swapChain->acquireNextImage(presentSemaphores[currentSemaphore], imageIndex);
@@ -306,7 +306,7 @@ namespace vkengine
             this->renderer.render(cmd.getCommandBuffer(), currentFrame, imageIndex,
                                   this->models, viewport, scissor);
 
-            this->guiRenderer.draw(cmd.getCommandBuffer(),
+            this->guiRenderer.draw(cmd.getCommandBuffer(), currentFrame,
                                    this->swapChain->getSwapChainImageView(imageIndex), viewport);
 
             this->swapChain->transitionTo(cmd.getCommandBuffer(), imageIndex);

@@ -153,7 +153,7 @@ namespace vkengine
 
         // Perform frustum culling on all models
         renderer.performFrustumCulling(models);
-        guiRenderer.update();
+        guiRenderer.update(currentFrame); // 펜스 대기 뒤에 호출해야 한다 (프레임별 GUI 버퍼)
 
         uint32_t imageIndex{0};
         VkResult result = this->swapChain->acquireNextImage(presentSemaphores[currentSemaphore], imageIndex);
@@ -185,7 +185,7 @@ namespace vkengine
             this->renderer.render(cmd.getCommandBuffer(), currentFrame, imageIndex, this->models, viewport, scissor);
 
             // Draw GUI (overwrite to swapchain image)
-            this->guiRenderer.draw(cmd.getCommandBuffer(), this->swapChain->getSwapChainImageView(imageIndex), viewport);
+            this->guiRenderer.draw(cmd.getCommandBuffer(), currentFrame, this->swapChain->getSwapChainImageView(imageIndex), viewport);
 
             // Transition swapchain image to present layout
             this->swapChain->transitionTo(cmd.getCommandBuffer(), imageIndex);

@@ -5,7 +5,7 @@ namespace vkengine {
     namespace gui {
         
         ImGuiRenderer::ImGuiRenderer(Context& context, ShaderManager& shaderManager, VkFormat colorFormat, std::string path)
-            : ctx(context), shaderManager(shaderManager), VertexBuffer(context), IndexBuffer(context),
+            : ctx(context), shaderManager(shaderManager),
             fontImage(context), fontSampler(context), pushConsts(context), pipelineHandle(context, shaderManager)
         {
             pipelineHandle.createByName("gui", colorFormat);
@@ -89,7 +89,7 @@ namespace vkengine {
             }
         }
         
-        void ImGuiRenderer::draw(const VkCommandBuffer cmd, VkImageView swapchainImageView, VkViewport viewport)
+        void ImGuiRenderer::draw(const VkCommandBuffer cmd, cUint32_t frameIndex, VkImageView swapchainImageView, VkViewport viewport)
         {
             VkRenderingAttachmentInfo swapchainColorAttachment{ VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO };
             swapchainColorAttachment.imageView = swapchainImageView;
@@ -111,7 +111,14 @@ namespace vkengine {
                 return;
             }
 
-            vkCmdBeginRendering(cmd, &colorOnlyRenderingInfo); 
+            FrameGeometry& geometry = this->getFrameGeometry(frameIndex);
+
+            if (geometry.vertexBuffer.getBuffer() == VK_NULL_HANDLE ||
+                geometry.indexBuffer.getBuffer() == VK_NULL_HANDLE) {
+                return;
+            }
+
+            vkCmdBeginRendering(cmd, &colorOnlyRenderingInfo);
 
             vkCmdSetViewport(cmd, 0, 1, &viewport);
 
@@ -128,8 +135,8 @@ namespace vkengine {
             pushConsts.push(cmd, this->pipelineHandle.getPipelineLayout());
 
             VkDeviceSize offsets[1] = { 0 };
-            vkCmdBindVertexBuffers(cmd, 0, 1, &this->VertexBuffer.getBuffer(), offsets);
-            vkCmdBindIndexBuffer(cmd, this->IndexBuffer.getBuffer(), 0, VK_INDEX_TYPE_UINT16);
+            vkCmdBindVertexBuffers(cmd, 0, 1, &geometry.vertexBuffer.getBuffer(), offsets);
+            vkCmdBindIndexBuffer(cmd, geometry.indexBuffer.getBuffer(), 0, VK_INDEX_TYPE_UINT16);
 
             for (cInt32_t i = 0; i < imDrawData->CmdListsCount; i++) {
                 const ImDrawList* cmd_list = imDrawData->CmdLists[i];
@@ -161,7 +168,16 @@ namespace vkengine {
             io.DisplaySize = ImVec2((float)(width), (float)(height));
         }
         
-        bool ImGuiRenderer::update()
+        ImGuiRenderer::FrameGeometry& ImGuiRenderer::getFrameGeometry(cUint32_t frameIndex)
+        {
+            while (this->frameGeometries.size() <= frameIndex)
+            {
+                this->frameGeometries.push_back(std::make_unique<FrameGeometry>(this->ctx));
+            }
+            return *this->frameGeometries[frameIndex];
+        }
+
+        bool ImGuiRenderer::update(cUint32_t frameIndex)
         {
             ImDrawData* imDrawData = ImGui::GetDrawData();
             bool updateCmdBuffers = false;
@@ -170,33 +186,34 @@ namespace vkengine {
                 return false;
             }
 
-            VkDeviceSize vertexBufferSize = imDrawData->TotalVtxCount * sizeof(ImDrawVert);
-            VkDeviceSize indexBufferSize = imDrawData->TotalIdxCount * sizeof(ImDrawIdx);
-
-            if ((vertexBufferSize == 0) || (indexBufferSize == 0)) {
+            if ((imDrawData->TotalVtxCount == 0) || (imDrawData->TotalIdxCount == 0)) {
                 return false;
             }
 
-            if ((this->VertexBuffer.getBuffer() == VK_NULL_HANDLE) ||
-                (imDrawData->TotalVtxCount > cInt(this->vertexCount)))
+            FrameGeometry& geometry = this->getFrameGeometry(frameIndex);
+
+            const auto grow = [](cInt32_t required) -> cUint32_t {
+                return static_cast<cUint32_t>(required + required / 2);
+            };
+
+            if ((geometry.vertexBuffer.getBuffer() == VK_NULL_HANDLE) ||
+                (imDrawData->TotalVtxCount > cInt(geometry.vertexCapacity)))
             {
-                this->ctx.waitGraphicsQueueIdle();
-                this->VertexBuffer.createVertexBuffer(vertexBufferSize, nullptr);
-                this->vertexCount = imDrawData->TotalVtxCount; // 버퍼 용량을 의미한다
+                geometry.vertexCapacity = grow(imDrawData->TotalVtxCount);
+                geometry.vertexBuffer.createVertexBuffer(geometry.vertexCapacity * sizeof(ImDrawVert), nullptr);
                 updateCmdBuffers = true;
             }
 
-            if ((this->IndexBuffer.getBuffer() == VK_NULL_HANDLE) ||
-                (imDrawData->TotalIdxCount > cInt(this->indexCount)))
+            if ((geometry.indexBuffer.getBuffer() == VK_NULL_HANDLE) ||
+                (imDrawData->TotalIdxCount > cInt(geometry.indexCapacity)))
             {
-                this->ctx.waitGraphicsQueueIdle();
-                this->IndexBuffer.createIndexBuffer(indexBufferSize, nullptr);
-                this->indexCount = imDrawData->TotalIdxCount; // 버퍼 용량을 의미한다
+                geometry.indexCapacity = grow(imDrawData->TotalIdxCount);
+                geometry.indexBuffer.createIndexBuffer(geometry.indexCapacity * sizeof(ImDrawIdx), nullptr);
                 updateCmdBuffers = true;
             }
 
-            ImDrawVert* vtxDst = (ImDrawVert*)VertexBuffer.getMapped();
-            ImDrawIdx* idxDst = (ImDrawIdx*)IndexBuffer.getMapped();
+            ImDrawVert* vtxDst = (ImDrawVert*)geometry.vertexBuffer.getMapped();
+            ImDrawIdx* idxDst = (ImDrawIdx*)geometry.indexBuffer.getMapped();
 
             for (int n = 0; n < imDrawData->CmdListsCount; n++) {
                 const ImDrawList* cmd_list = imDrawData->CmdLists[n];
@@ -206,8 +223,8 @@ namespace vkengine {
                 idxDst += cmd_list->IdxBuffer.Size;
             }
 
-            VertexBuffer.flush();
-            IndexBuffer.flush();
+            geometry.vertexBuffer.flush();
+            geometry.indexBuffer.flush();
 
             return updateCmdBuffers;
         }
