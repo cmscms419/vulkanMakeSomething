@@ -165,8 +165,8 @@ vec3 getIBLGGXFresnel(vec3 n, vec3 v, float roughness, vec3 F0, float specularWe
 vec3 getIBLRadianceGGX(vec3 n, vec3 v, float roughness)
 {
     float NdotV = clamp(dot(n, v), 0.0, 1.0);
-    float lod = roughness * float(MAX_REFLECTION_LOD - 1) + 0.5;
-    vec3 reflection = normalize(reflect(v, n));
+    float lod = roughness * float(textureQueryLevels(prefilteredMap) - 1);
+    vec3 reflection = normalize(reflect(-v, n));
     return textureLod(prefilteredMap, reflection, lod).rgb;
 }
 

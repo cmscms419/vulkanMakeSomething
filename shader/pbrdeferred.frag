@@ -53,8 +53,10 @@ struct MaterialUBO {
     int emissiveTextureIndex;
     int normalTextureIndex;
     int opacityTextureIndex;
-    int metallicRoughnessTextureIndex;
+    int metallicRoughnessTextureIndex; // workflow == SPECULAR_GLOSSINESS 이면 _spec 텍스처(RGB=F0, A=smoothness)
     int occlusionTextureIndex;
+    int workflow;                      // MATERIAL_WORKFLOW_* (materialCommon.glsl)
+    int padding0;
 };
 
 // Bindless material storage buffer
@@ -77,11 +79,43 @@ vec3 encodeNormal(vec3 normal) {
     return normal * 0.5 + 0.5;
 }
 
+// ---------------------------------------------------------------------------
+// Specular-Glossiness -> Metallic-Roughness 변환
+// (KHR_materials_pbrSpecularGlossiness 변환기에서 쓰는 공식)
+// lighting 패스는 metallic-roughness 만 알기 때문에 G-buffer 에 쓰기 전에 여기서 바꾼다.
+// ---------------------------------------------------------------------------
+const float DIELECTRIC_F0 = 0.04;
+
+float perceivedBrightness(vec3 c) {
+    return sqrt(0.299 * c.r * c.r + 0.587 * c.g * c.g + 0.114 * c.b * c.b);
+}
+
+float solveMetallic(float diffuse, float specular, float oneMinusSpecularStrength) {
+    if (specular < DIELECTRIC_F0)
+        return 0.0;
+
+    float a = DIELECTRIC_F0;
+    float b = diffuse * oneMinusSpecularStrength / (1.0 - DIELECTRIC_F0) + specular - 2.0 * DIELECTRIC_F0;
+    float c = DIELECTRIC_F0 - specular;
+    float D = max(b * b - 4.0 * a * c, 0.0);
+    return clamp((-b + sqrt(D)) / (2.0 * a), 0.0, 1.0);
+}
+
+// diffuse: 선형 diffuse 색, specular: 선형 F0 색 -> (baseColor, metallic)
+void convertSpecularGlossiness(vec3 diffuse, vec3 specular, out vec3 baseColor, out float metallic) {
+    float oneMinusSpecularStrength = 1.0 - max(max(specular.r, specular.g), specular.b);
+    metallic = solveMetallic(perceivedBrightness(diffuse), perceivedBrightness(specular), oneMinusSpecularStrength);
+
+    vec3 baseColorFromDiffuse = diffuse * oneMinusSpecularStrength / (1.0 - DIELECTRIC_F0) / max(1.0 - metallic, 1e-4);
+    vec3 baseColorFromSpecular = (specular - DIELECTRIC_F0 * (1.0 - metallic)) / max(metallic, 1e-4);
+    baseColor = clamp(mix(baseColorFromDiffuse, baseColorFromSpecular, metallic * metallic), 0.0, 1.0);
+}
+
 void main() {
-    float specularWeight = pushConstants.coeffs[0];
-    float diffuseWeight = pushConstants.coeffs[1];
+    // coeffs 사용처 (C++ DrawModelResource 와 레이아웃은 그대로 128 바이트):
+    //   [2] = 모델별 발광 오프셋, [4]/[5] = 모델별 금속성/거칠기 오프셋.
+    //   [0]/[1]/[3] 은 forward 시절 반사광/난반사/그림자 오프셋 자리였는데 deferred 에서는 쓰지 않는다.
     float emissiveWeight = pushConstants.coeffs[2];
-    float shadowOffset = pushConstants.coeffs[3];
 
     // Access material using push constant index
     MaterialUBO material = materialBuffer.materials[pushConstants.materialIndex];
@@ -102,7 +136,18 @@ void main() {
     float metallic = material.metallicFactor;
     float roughness = material.roughnessFactor;
 
-    if(options.textureOn != 0 && material.metallicRoughnessTextureIndex > DUMMY_TEXTURE_INDEX){
+    bool hasMaterialTexture = options.textureOn != 0 && material.metallicRoughnessTextureIndex > DUMMY_TEXTURE_INDEX;
+
+    if (hasMaterialTexture && material.workflow == MATERIAL_WORKFLOW_SPECULAR_GLOSSINESS) {
+        // Bistro _spec.png: sRGB 포맷이라 rgb 는 이미 선형 F0, a 는 선형 smoothness
+        vec4 specularGlossiness = texture(materialTextures[nonuniformEXT(material.metallicRoughnessTextureIndex)], fragTexCoord);
+        convertSpecularGlossiness(baseColor, specularGlossiness.rgb, baseColor, metallic);
+
+        // 알파가 없는 PNG(L/RGB, 팔레트에 tRNS 없음)는 a 가 1.0 으로 읽힌다.
+        // 이걸 smoothness 1 로 믿으면 거울이 되므로, 이때는 MTL 의 Ns 에서 구한 roughness 를 쓴다.
+        roughness = (specularGlossiness.a > 0.999) ? material.roughnessFactor : 1.0 - specularGlossiness.a;
+    }
+    else if (hasMaterialTexture) {
         vec3 metallicRoughness = texture(materialTextures[nonuniformEXT(material.metallicRoughnessTextureIndex)], fragTexCoord).rgb;
         metallic *= metallicRoughness.b; // Blue channel
         roughness *= metallicRoughness.g; // Green channel
@@ -119,7 +164,9 @@ void main() {
         ao = texture(materialTextures[nonuniformEXT(material.occlusionTextureIndex)], fragTexCoord).r;
     }
 
-    vec3 emissive = material.emissiveFactor.xyz * emissiveWeight;
+    // emissive 전역 세기(options.emissiveWeight)는 lightdeferred 에서 한 번만 곱한다.
+    // 모델별 GUI 값(coeffs[2])은 metallic/roughness 처럼 덧셈 오프셋이다. 기본 0 = 저작된 값 그대로.
+    vec3 emissive = material.emissiveFactor.xyz * (1.0 + emissiveWeight);
     if(options.textureOn != 0 && material.emissiveTextureIndex > DUMMY_TEXTURE_INDEX){
         emissive *= texture(materialTextures[nonuniformEXT(material.emissiveTextureIndex)], fragTexCoord).rgb;
     }
@@ -138,7 +185,8 @@ void main() {
 
     // Output to G-Buffer
     // Clamp material properties
-    roughness = clamp(roughness, 0.0, 1.0);
+    // 0 에 가까운 roughness 는 GGX 하이라이트가 한 점으로 모여 깜빡이므로 하한을 둔다.
+    roughness = clamp(roughness, 0.045, 1.0);
     metallic = clamp(metallic, 0.0, 1.0);
     
     gAlbedo = vec4(baseColor, metallic);

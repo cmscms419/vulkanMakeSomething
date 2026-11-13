@@ -238,7 +238,7 @@ namespace vkengine
         cString path = this->assetsPath + "cubeMap/";
         this->images["prefiltered"]->createTextureFromKTX2(path + "specular_out.ktx2", true);
         this->images["irradiance"]->createTextureFromKTX2(path + "diffuse_out.ktx2", true);
-        this->images["brdfLUT"]->createTextureFromImage(path + "outputLUT.png", false, true);
+        this->images["brdfLUT"]->createTextureFromImage(path + "outputLUT.png", false, false);
 
         this->images["prefiltered"]->setSampler(this->samplerLinearRepeat.getSampler());
         this->images["irradiance"]->setSampler(this->samplerLinearRepeat.getSampler());
@@ -965,11 +965,10 @@ namespace vkengine
             {
                 auto &mesh = this->currentModels->at(j).getMeshes()[i];
 
-                // Skip culled meshes in shadow pass too
-                if (mesh.isCulled)
-                {
-                    continue;
-                }
+                // mesh culled 삭제 
+                // 이유 : 그림자를 생성하는데, mesh 정보다 필요하다. 추후 GPU 혹은 다른 방법으로 cullined 해야한다
+                // TODO: 다른 culled 방법 도입 필요
+                
 
                 // Bind vertex and index buffers
                 vkCmdBindVertexBuffers(cmd, 0, 1, &mesh.vertex->getBuffer(), offsets);

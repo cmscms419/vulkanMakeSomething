@@ -15,4 +15,8 @@
 // index > DUMMY_TEXTURE_INDEX 로 해야 한다.
 #define DUMMY_TEXTURE_INDEX 0
 
+// include/struct/materialData.h 의 enum class MaterialWorkflow 와 값이 같아야 한다.
+#define MATERIAL_WORKFLOW_METALLIC_ROUGHNESS 0
+#define MATERIAL_WORKFLOW_SPECULAR_GLOSSINESS 1
+
 #endif // MATERIAL_COMMON_GLSL

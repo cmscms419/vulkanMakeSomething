@@ -47,7 +47,6 @@ layout(set = 0, binding = 12) uniform sampler2D brdfLut;
 layout(set = 0, binding = 13, r8) uniform readonly image2D ssaoImage;
 
 const float PI = 3.14159265359;
-const float MAX_REFLECTION_LOD = 4.0;
 
 // Note: PBR lighting constants now come from OptionsUBO instead of being hardcoded
 
@@ -78,9 +77,12 @@ vec3 getIBLGGXFresnel(vec3 n, vec3 v, float roughness, vec3 F0, float specularWe
 }
 
 vec3 getIBLRadianceGGX(vec3 n, vec3 v, float roughness) {
-    float NdotV = clamp(dot(n, v), 0.0, 1.0);
-    float lod = roughness * float(MAX_REFLECTION_LOD - 1) + 0.5;
-    vec3 reflection = normalize(reflect(v, n));
+    // 밉 수는 하드코딩하지 않고 실제 prefiltered 큐브맵에서 읽는다.
+    // v 는 표면 -> 카메라 방향이라 반사 벡터는 reflect(-v, n) 이다.
+    // reflect(v, n) 은 정확히 반대쪽을 가리켜 바닥에 하늘 대신 땅이 비친다.
+    float lastMip = float(textureQueryLevels(prefilteredMap) - 1);
+    float lod = roughness * lastMip;
+    vec3 reflection = normalize(reflect(-v, n));
     return textureLod(prefilteredMap, reflection, lod).rgb;
 }
 
@@ -183,10 +185,11 @@ void main()
         return;
     }
 
-    vec2 texCoords = vec2(imageCoords) / vec2(imageSize);
+    // G-buffer 는 출력과 해상도가 같으므로 필터링 없이 texelFetch 로 읽는다.
+    // (vec2(imageCoords) / size 로 linear 샘플하면 반 텍셀 어긋나 이웃 픽셀의 노멀/러프니스가 섞인다)
 
     // Sample depth to distinguish sky from geometry
-    float depth = texture(depthTexture, texCoords).r;
+    float depth = texelFetch(depthTexture, imageCoords, 0).r;
     const float SKY_DEPTH_THRESHOLD = 0.9999;
     const float DEPTH_TRANSITION_RANGE = 0.001;
     
@@ -207,10 +210,10 @@ void main()
     // Only calculate lighting for geometry pixels (including near-sky pixels for blending)
     if (depth < SKY_DEPTH_THRESHOLD + DEPTH_TRANSITION_RANGE) {
         // Sample G-buffer data
-        vec4 albedoMetallic = texture(gAlbedo, texCoords);
-        vec4 normalRoughness = texture(gNormal, texCoords);
-        vec4 positionDepth = texture(gPosition, texCoords);
-        vec4 materialData = texture(gMaterial, texCoords);
+        vec4 albedoMetallic = texelFetch(gAlbedo, imageCoords, 0);
+        vec4 normalRoughness = texelFetch(gNormal, imageCoords, 0);
+        vec4 positionDepth = texelFetch(gPosition, imageCoords, 0);
+        vec4 materialData = texelFetch(gMaterial, imageCoords, 0);
         
         // Extract material properties
         vec3 baseColor = albedoMetallic.rgb;
@@ -258,7 +261,8 @@ void main()
             // Apply specularWeight consistently to direct lighting
             vec3 dielectric_fresnel = F_Schlick(f0_dielectric * options.specularWeight, f90_dielectric, abs(VdotH));
             vec3 metal_fresnel = F_Schlick(baseColor.rgb, vec3(1.0), abs(VdotH));
-            vec3 lightIntensity = vec3(1.0, 0.9, 0.7) * sceneData.directionalLightColor;
+            // 색은 GUI 의 directionalLightColor 만 따른다 (예전 하드코딩 틴트 (1,0.9,0.7) 제거)
+            vec3 lightIntensity = sceneData.directionalLightColor;
             vec3 l_diffuse = lightIntensity * NdotL * BRDF_lambertian(baseColor.rgb);
             
             vec3 l_specular_metal = lightIntensity * NdotL * BRDF_specularGGX(roughness*roughness, NdotL, NdotV, NdotH);
@@ -280,15 +284,14 @@ void main()
         // IBL (ambient) contribution - SSAO는 간접광에만 적용 (직접광은 그림자가 담당)
         vec3 iblColor = mix(f_dielectric_brdf_ibl, f_metal_brdf_ibl, metallic);
 
-        // SSAO 적용 - pow(ssaoPower) 는 ssao.comp 에서 이미 적용되어 있다
-        iblColor *= imageLoad(ssaoImage, imageCoords).r;
+        // 차폐(머티리얼 AO 텍스처 + SSAO)는 간접광에만 적용한다.
+        // 직접광의 차폐는 그림자가 담당하므로, 여기에 AO 를 곱하면 햇빛 받는 면까지 어두워진다.
+        // pow(ssaoPower) 는 ssao.comp 에서 이미 적용되어 있다
+        float ssao = imageLoad(ssaoImage, imageCoords).r;
+        iblColor *= ao * ssao;
 
         // Combine IBL and direct lighting
         vec3 finalColor = iblColor + l_light;
-
-        // Apply ambient occlusion
-        float u_OcclusionStrength = 1.0;
-        finalColor = finalColor * (1.0 + u_OcclusionStrength * (ao - 1.0));
 
         // Add emissive
         finalColor += emissiveColor * options.emissiveWeight;

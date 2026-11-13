@@ -465,10 +465,6 @@ namespace vkengine
             this->renderer.getOptionsUBO().discardOn = discardOn ? 1 : 0;
         }
 
-        ImGui::SliderFloat("반사광",      &this->renderer.getOptionsUBO().specularWeight, 0.0f, 1.0f);
-        ImGui::SliderFloat("난반사",       &this->renderer.getOptionsUBO().diffuseWeight,  0.0f, 5.0f);
-        ImGui::SliderFloat("그림자 오프셋", &this->renderer.getOptionsUBO().shadowOffset,   0.0f, 1.0f);
-
         ImGui::Separator();
 
         for (uint32_t i = 0; i < models.size(); i++)
@@ -487,20 +483,10 @@ namespace vkengine
                 snprintf(labelBuffer, sizeof(labelBuffer), "보이기##%u", i);
                 ImGui::Checkbox(labelBuffer, &m.isVisible());
 
-                // Coefficients 슬라이더들
                 float *coeffs = m.getModelResource().coeffs;
-
-                snprintf(labelBuffer, sizeof(labelBuffer), "반사광##%u", i);
-                ImGui::SliderFloat(labelBuffer, &coeffs[0], 0.0f, 1.0f);
-
-                snprintf(labelBuffer, sizeof(labelBuffer), "난반사##%u", i);
-                ImGui::SliderFloat(labelBuffer, &coeffs[1], 0.0f, 10.0f);
 
                 snprintf(labelBuffer, sizeof(labelBuffer), "발광##%u", i);
                 ImGui::SliderFloat(labelBuffer, &coeffs[2], 0.0f, 10.0f);
-
-                snprintf(labelBuffer, sizeof(labelBuffer), "그림자 오프셋##%u", i);
-                ImGui::SliderFloat(labelBuffer, &coeffs[3], 0.0f, 1.0f);
 
                 snprintf(labelBuffer, sizeof(labelBuffer), "금속성##%u", i);
                 ImGui::SliderFloat(labelBuffer, &coeffs[4], 0.0f, 1.0f);
@@ -511,43 +497,6 @@ namespace vkengine
                 ImGui::TreePop();
             }
 
-            // Extract and edit position
-            char labelBuffer2[128];
-            glm::vec3 position = glm::vec3(m.getModelResource().modelMatrix[3]);
-
-            snprintf(labelBuffer2, sizeof(labelBuffer2), "위치##%u", i);
-
-            if (ImGui::SliderFloat3(labelBuffer2, &position.x, -10.0f, 10.0f))
-            {
-                m.getModelResource().modelMatrix[3] = glm::vec4(position, 1.0f);
-            }
-
-            // Decompose matrix into components
-            glm::vec3 scale, translation, skew;
-            glm::vec4 perspective;
-            glm::quat rotation;
-
-            if (glm::decompose(m.getModelResource().modelMatrix, scale, rotation, translation, skew, perspective))
-            {
-                // Convert quaternion to euler angles for easier editing
-                glm::vec3 eulerAngles = glm::eulerAngles(rotation);
-                float yRotationDegrees = glm::degrees(eulerAngles.y);
-                char labelBuffer3[128];
-
-                snprintf(labelBuffer3, sizeof(labelBuffer3), "Y 회전##%u", i);
-                if (ImGui::SliderFloat(labelBuffer3, &yRotationDegrees, -90.0f, 90.0f, "%.1f°"))
-                {
-                    // Reconstruct matrix from components
-                    eulerAngles.y = glm::radians(yRotationDegrees);
-                    rotation = glm::quat(eulerAngles);
-
-                    glm::mat4 T = glm::translate(glm::mat4(1.0f), translation);
-                    glm::mat4 R = glm::mat4_cast(rotation);
-                    glm::mat4 S = glm::scale(glm::mat4(1.0f), scale);
-
-                    m.getModelResource().modelMatrix = T * R * S;
-                }
-            }
         }
 
         ImGui::End();

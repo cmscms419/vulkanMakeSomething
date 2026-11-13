@@ -20,6 +20,9 @@
 
 namespace vkengine
 {
+    // 캐시 포맷 버전. 머티리얼 필드나 텍스처 sRGB 판정이 바뀌면 올린다.
+    // 2: MaterialData::workflow 추가, Bistro map_Ks/emissive sRGB, Ka 제거, Ns -> roughness
+    static constexpr uint32_t kCacheFileVersion = 2;
 
     ModelLoader::ModelLoader(Model &model) : model(model)
     {
@@ -76,6 +79,7 @@ namespace vkengine
                 // Cache loading failed, clear any partially loaded data and fall back to model loading
                 Log::printToLogger("Cache loading failed, falling back to model file loading");
                 model.cleanup();
+                useCache = false; // 아래에서 Bistro 메시 최적화와 캐시 재작성이 다시 일어나게 한다
             }
         }
 
@@ -277,9 +281,12 @@ namespace vkengine
         // Read file format version for future compatibility
         uint32_t fileVersion;
         stream.read(reinterpret_cast<char *>(&fileVersion), sizeof(fileVersion));
-        if (!stream.good() || fileVersion != 1)
+        if (!stream.good() || fileVersion != kCacheFileVersion)
         {
-            Log::exitToLogger("Unsupported cache file version: %u", fileVersion);
+            // 예전 포맷 캐시: 아무것도 읽지 않고 돌아가면 호출자가 모델 파일 로드로 넘어가고 캐시를 새로 쓴다.
+            Log::printToLogger("Cache version mismatch (file %u, expected %u). Rebuilding cache.",
+                               fileVersion, kCacheFileVersion);
+            return;
         }
 
         // Read directory
@@ -425,6 +432,8 @@ namespace vkengine
                 sizeof(model.materials[i].ubo.metallicRoughnessTextureIndex));
             stream.read(reinterpret_cast<char *>(&model.materials[i].ubo.occlusionTextureIndex),
                         sizeof(model.materials[i].ubo.occlusionTextureIndex));
+            stream.read(reinterpret_cast<char *>(&model.materials[i].ubo.workflow),
+                        sizeof(model.materials[i].ubo.workflow));
 
             // Read flags
             stream.read(reinterpret_cast<char *>(&model.materials[i].flags),
@@ -458,7 +467,7 @@ namespace vkengine
             Log::exitToLogger("Failed to open cache file for writing: %s", cacheFilename.c_str());
         }
         // Write file format version for future compatibility
-        const uint32_t fileVersion = 1;
+        const uint32_t fileVersion = kCacheFileVersion;
         stream.write(reinterpret_cast<const char *>(&fileVersion), sizeof(fileVersion));
 
         // Write directory
@@ -554,6 +563,8 @@ namespace vkengine
                 sizeof(material.ubo.metallicRoughnessTextureIndex));
             stream.write(reinterpret_cast<const char *>(&material.ubo.occlusionTextureIndex),
                          sizeof(material.ubo.occlusionTextureIndex));
+            stream.write(reinterpret_cast<const char *>(&material.ubo.workflow),
+                         sizeof(material.ubo.workflow));
 
             // Write flags
             stream.write(reinterpret_cast<const char *>(&material.flags), sizeof(material.flags));
@@ -835,7 +846,7 @@ namespace vkengine
         }
         if (material->GetTexture(aiTextureType_EMISSIVE, 0, &texturePath) == AI_SUCCESS)
         {
-            mat.ubo.emissiveTextureIndex = getTextureIndex(texturePath.C_Str(), false);
+            mat.ubo.emissiveTextureIndex = getTextureIndex(texturePath.C_Str(), true);
         }
 
         Log::printToLogger("Processed materialIndex %u:", materialIndex);
@@ -858,12 +869,6 @@ namespace vkengine
         {
             aiColor4D Color;
 
-            if (aiGetMaterialColor(aiMat, AI_MATKEY_COLOR_AMBIENT, &Color) == AI_SUCCESS)
-            {
-                mat.ubo.emissiveFactor = {Color.r, Color.g, Color.b, Color.a};
-                if (mat.ubo.emissiveFactor.w > 1.0f)
-                    mat.ubo.emissiveFactor.w = 1.0f;
-            }
             if (aiGetMaterialColor(aiMat, AI_MATKEY_COLOR_DIFFUSE, &Color) == AI_SUCCESS)
             {
                 mat.ubo.baseColorFactor = {Color.r, Color.g, Color.b, Color.a};
@@ -901,7 +906,17 @@ namespace vkengine
                 mat.ubo.metallicFactor = tmp;
 
             if (aiGetMaterialFloat(aiMat, AI_MATKEY_ROUGHNESS_FACTOR, &tmp) == AI_SUCCESS)
+            {
                 mat.ubo.roughness = tmp;
+            }
+            else if (aiGetMaterialFloat(aiMat, AI_MATKEY_SHININESS, &tmp) == AI_SUCCESS && tmp > 0.0f)
+            {
+                // OBJ 의 Ns(Blinn-Phong 지수) -> GGX perceptual roughness.
+                // alpha = sqrt(2 / (Ns + 2)), 셰이더가 roughness^2 를 alpha 로 쓰므로 roughness = sqrt(alpha).
+                // Ns 100 -> 0.37, Ns 10 -> 0.64, Ns 1 -> 0.90
+                const cFloat alpha = std::sqrt(2.0f / (tmp + 2.0f));
+                mat.ubo.roughness = glm::clamp(std::sqrt(alpha), 0.05f, 1.0f);
+            }
         }
 
         // Load textures
@@ -930,7 +945,18 @@ namespace vkengine
 
             if (aiMat->GetTexture(aiTextureType_EMISSIVE, 0, &texturePath) == AI_SUCCESS)
             {
-                mat.ubo.emissiveTextureIndex = getTextureIndex(texturePath.C_Str(), false);
+                // emissive 는 색 데이터라 sRGB 로 읽는다.
+                mat.ubo.emissiveTextureIndex = getTextureIndex(texturePath.C_Str(), true);
+            }
+
+            // map_Ks (_spec.png): G3D/McGuire 규약의 specular-glossiness 텍스처.
+            // RGB = F0 반사색(sRGB 로 저장됨), A = smoothness(선형).
+            // sRGB 포맷으로 올리면 RGB 만 선형화되고 A 는 그대로라 한 장으로 둘 다 맞게 읽힌다.
+            // 별도 인덱스를 늘리지 않으려고 metallicRoughnessTextureIndex 슬롯을 재사용하고 workflow 로 구분한다.
+            if (aiMat->GetTexture(aiTextureType_SPECULAR, 0, &texturePath) == AI_SUCCESS)
+            {
+                mat.ubo.metallicRoughnessTextureIndex = getTextureIndex(texturePath.C_Str(), true);
+                mat.ubo.workflow = static_cast<cInt>(MaterialWorkflow::SpecularGlossiness);
             }
 
             if (aiMat->GetTexture(aiTextureType_DIFFUSE, 0, &texturePath) == AI_SUCCESS)
@@ -1026,8 +1052,9 @@ namespace vkengine
                 mat.ubo.transparencyFactor = 0.1f;
                 mat.flags |= Material::Transparent;
             }
-            else if (name("Metal"))
+            else if (name("Metal") && mat.ubo.workflow != static_cast<cInt>(MaterialWorkflow::SpecularGlossiness))
             {
+                // _spec 텍스처가 있으면 금속성은 텍스처의 F0 에서 셰이더가 구한다.
                 mat.ubo.metallicFactor = 1.0f;
                 mat.ubo.roughness = 0.1f;
             }
