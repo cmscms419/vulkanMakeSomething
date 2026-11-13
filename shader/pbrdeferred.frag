@@ -192,6 +192,6 @@ void main() {
     
     gAlbedo = vec4(baseColor, metallic);
     gNormal = vec4(encodeNormal(N), roughness);
-    gPosition = vec4(fragPos, packShadingModel(SHADING_MODEL_STANDARD, 0.0)); // a = 셰이딩 모델 (materialCommon.glsl)
+    gPosition = vec4(fragPos, packShadingModel(SHADING_MODEL_STANDARD, 0.0, 0.0)); // a = 셰이딩 모델 (materialCommon.glsl)
     gMaterial = vec4(emissive, ao);
 }

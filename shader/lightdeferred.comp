@@ -128,8 +128,11 @@ vec3 BRDF_specularGGX(float alphaRoughness, float NdotL, float NdotV, float Ndot
 // ---------------------------------------------------------------------------
 // 천 셰이딩 모델 (SHADING_MODEL_CLOTH)
 //
-//   직접광 = wrap 확산 + Charlie sheen + 얇은 천 투과
-//   간접광 = irradiance 확산 + sheen 환경광(근사) + 뒷면 irradiance 투과
+//   직접광 = mix(wrap 확산 + 얇은 천 투과, 금속 GGX 반사, metallic) + Charlie sheen
+//   간접광 = mix(irradiance 확산 + 뒷면 irradiance 투과, 금속 IBL 반사, metallic) + sheen 환경광(근사)
+//
+// metallic 은 금속 실이 섞인 천(라메, 금사 자수)용이다. glTF 처럼 바탕(base) 을 금속/비금속으로 섞고
+// sheen 은 그 위에 얹는 층으로 둔다 — 금속 천도 비스듬히 보면 섬유 광택이 남는다.
 //
 // Charlie 분포 / 가시성: Estevez & Kulla 2017 "Production Friendly Microfacet Sheen BRDF",
 // glTF KHR_materials_sheen 참조 구현(glTF Sample Viewer)과 같은 식.
@@ -173,7 +176,7 @@ float approximateSheenAlbedo(float NdotV) {
 }
 
 // 천 셰이딩 모델 결과. iblColor 는 간접광(나중에 AO/SSAO 를 곱한다), directColor 는 직접광(그림자 반영 전).
-void shadeCloth(vec3 baseColor, float sheenIntensity, float translucency, float roughness,
+void shadeCloth(vec3 baseColor, float sheenIntensity, float translucency, float metallic, float roughness,
                 vec3 N, vec3 V, vec3 l, vec3 lightIntensity,
                 out vec3 iblColor, out vec3 directColor)
 {
@@ -199,13 +202,23 @@ void shadeCloth(vec3 baseColor, float sheenIntensity, float translucency, float 
     // 얇은 천 투과: 빛이 천의 뒤쪽(보이는 면의 반대편)에서 오면 천을 통과해 비쳐 보인다.
     vec3 transmission = translucency * BRDF_lambertian(baseColor) * clamp(-NdotLSigned, 0.0, 1.0);
 
-    directColor = lightIntensity * (diffuse + sheen + transmission);
+    // 금속 실: baseColor 를 F0 로 쓰는 GGX 반사 (STANDARD 모델의 금속 경로와 같은 식).
+    // 금속은 빛을 통과시키지 않으므로 투과는 비금속 쪽에만 있다.
+    vec3 metalReflection = vec3(0.0);
+    if (NdotL > 0.0) {
+        vec3 metalFresnel = F_Schlick(baseColor, vec3(1.0), clampedDot(V, h));
+        metalReflection = metalFresnel * BRDF_specularGGX(roughness * roughness, NdotL, NdotV, NdotH) * NdotL;
+    }
+
+    vec3 dielectricBase = diffuse + transmission;
+    directColor = lightIntensity * (mix(dielectricBase, metalReflection, metallic) + sheen);
 
     // 간접광
     vec3 iblDiffuse = texture(irradianceMap, N).rgb * baseColor * options.diffuseWeight;
     vec3 iblTransmission = texture(irradianceMap, -N).rgb * baseColor * translucency;
+    vec3 iblMetal = getIBLGGXFresnel(N, V, roughness, baseColor, 1.0) * getIBLRadianceGGX(N, V, roughness);
     vec3 iblSheen = sheenColor * getIBLRadianceGGX(N, V, roughness) * approximateSheenAlbedo(NdotV);
-    iblColor = iblDiffuse + iblTransmission + iblSheen;
+    iblColor = mix(iblDiffuse + iblTransmission, iblMetal, metallic) + iblSheen;
 }
 
 // Shadow calculation - Updated to match pbrForward.frag implementation
@@ -335,12 +348,13 @@ void main()
         }
 
         if (shadingModel == SHADING_MODEL_CLOTH) {
-            // gAlbedo.a = sheen 세기, gPosition.a 의 파라미터 = 얇은 천 투과
+            // gAlbedo.a = sheen 세기, gPosition.a 의 파라미터 = (얇은 천 투과, 금속성)
             float sheenIntensity = albedoMetallic.a;
-            float translucency = unpackShadingParameter(positionDepth.a);
+            float translucency = unpackShadingParameter0(positionDepth.a);
+            float clothMetallic = unpackShadingParameter1(positionDepth.a);
 
             vec3 directColor;
-            shadeCloth(baseColor, sheenIntensity, translucency, roughness,
+            shadeCloth(baseColor, sheenIntensity, translucency, clothMetallic, roughness,
                        N, V, lightDirection, sceneData.directionalLightColor,
                        iblColor, directColor);
             l_light = directColor * shadowFactor;

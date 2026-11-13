@@ -21,26 +21,36 @@
 
 // ---------------------------------------------------------------------------
 // 셰이딩 모델 — G-buffer 를 쓰는 셰이더가 gPosition.a 에 기록하고 lightdeferred 가 읽는다.
-//   gPosition.a = 모델 번호 + 파라미터 * 0.5   (gPosition 은 RGBA32F 라 정밀도 문제가 없다)
+//   gPosition.a = 모델 번호 + (파라미터0 8비트, 파라미터1 8비트) / 65536
+//   정수부 = 모델 번호, 소수부 16비트 = 파라미터 두 개 (각 0~1 을 0~255 로 양자화).
+//   gPosition 은 RGBA32F 라 정수부가 작으면(< 128) 소수부 16비트가 정확히 보존된다.
 //
 // 모델별 G-buffer 해석
-//   STANDARD : gAlbedo.a = metallic,     파라미터 = 0
-//   CLOTH    : gAlbedo.a = sheen 세기,   파라미터 = 얇은 천 투과 (0~1)
+//   STANDARD : gAlbedo.a = metallic,     파라미터0 = 0,                파라미터1 = 0
+//   CLOTH    : gAlbedo.a = sheen 세기,   파라미터0 = 얇은 천 투과 (0~1), 파라미터1 = metallic (0~1)
 // G-buffer 를 쓰는 셰이더(pbrdeferred, physicsInstance, cloth)는 반드시 이 값을 써야 한다.
 // ---------------------------------------------------------------------------
 #define SHADING_MODEL_STANDARD 0
 #define SHADING_MODEL_CLOTH 1
 
-float packShadingModel(int model, float parameter) {
-    return float(model) + clamp(parameter, 0.0, 1.0) * 0.5;
+float packShadingModel(int model, float parameter0, float parameter1) {
+    float quantized0 = floor(clamp(parameter0, 0.0, 1.0) * 255.0 + 0.5);
+    float quantized1 = floor(clamp(parameter1, 0.0, 1.0) * 255.0 + 0.5);
+    return float(model) + (quantized0 * 256.0 + quantized1) / 65536.0;
 }
 
 int unpackShadingModel(float packed) {
     return int(floor(packed));
 }
 
-float unpackShadingParameter(float packed) {
-    return fract(packed) * 2.0;
+float unpackShadingParameter0(float packed) {
+    float bits = floor(fract(packed) * 65536.0 + 0.5);
+    return floor(bits / 256.0) / 255.0;
+}
+
+float unpackShadingParameter1(float packed) {
+    float bits = floor(fract(packed) * 65536.0 + 0.5);
+    return mod(bits, 256.0) / 255.0;
 }
 
 #endif // MATERIAL_COMMON_GLSL

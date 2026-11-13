@@ -4,8 +4,8 @@
 #include "common.h"
 #include "type.h"
 
-constexpr cInt WIDTH = 1920;
-constexpr cInt HEIGHT = 1080;
+constexpr cInt WIDTH = 2880;
+constexpr cInt HEIGHT = 1620;
 constexpr cInt MAX_FRAMES = 4;
 constexpr cInt MAX_FRAMES_IN_FLIGHT = 2;
 constexpr cInt MAX_FRAMES_IN_FLIGHT_UI_VERSION = 3;

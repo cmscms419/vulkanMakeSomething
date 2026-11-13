@@ -754,7 +754,8 @@ namespace vkengine
 
             materialChanged = ImGui::ColorEdit3("기본 색", &material.baseColorFactor.x) || materialChanged;
             materialChanged = ImGui::SliderFloat("거칠기", &material.roughness, 0.0f, 1.0f, "%.2f") || materialChanged;
-            // 천 셰이딩 모델은 금속성을 쓰지 않는다. 대신 sheen 과 투과를 조절한다.
+            // 금속성: 금속 실이 섞인 천. 바탕을 금속 반사로 바꾸고 sheen 은 그 위에 남는다.
+            materialChanged = ImGui::SliderFloat("금속성", &material.metallicFactor, 0.0f, 1.0f, "%.2f") || materialChanged;
             materialChanged = ImGui::SliderFloat("Sheen 세기", &material.clothFactor.x, 0.0f, 1.0f, "%.2f") || materialChanged;
             materialChanged = ImGui::SliderFloat("투과 (역광)", &material.clothFactor.y, 0.0f, 1.0f, "%.2f") || materialChanged;
             materialChanged = ImGui::ColorEdit3("발광 색", &material.emissiveFactor.x,

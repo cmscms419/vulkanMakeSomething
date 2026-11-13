@@ -114,12 +114,17 @@ void main() {
         baseColor *= sampleMaterialTexture(material.baseColorTextureIndex).rgb;
     }
 
-    // 천 셰이딩 모델은 금속성을 쓰지 않는다 (천은 유전체). MR 텍스처는 거칠기(G)만 읽는다.
-    // 거칠기는 sheen 의 거칠기로도 쓰인다 (lightdeferred 의 Charlie 분포).
+    // 금속성: 금속 실이 섞인 천(라메, 금사 자수 등). 0 이면 보통 천(유전체).
+    // lightdeferred 가 "천(확산+투과) ↔ 금속 반사(GGX)" 를 이 값으로 섞고 그 위에 sheen 을 얹는다.
+    // 거칠기는 금속 반사와 sheen(Charlie 분포)이 같이 쓴다.
+    float metallic = material.metallicFactor;
     float roughness = material.roughnessFactor;
     if (hasTexture(material.metallicRoughnessTextureIndex)) {
-        roughness *= sampleMaterialTexture(material.metallicRoughnessTextureIndex).g;
+        vec3 metallicRoughness = sampleMaterialTexture(material.metallicRoughnessTextureIndex).rgb;
+        metallic *= metallicRoughness.b;
+        roughness *= metallicRoughness.g;
     }
+    metallic = clamp(metallic, 0.0, 1.0);
 
     float sheenIntensity = clamp(material.clothFactor.x, 0.0, 1.0);
     float translucency = clamp(material.clothFactor.y, 0.0, 1.0);
@@ -139,9 +144,9 @@ void main() {
 
     // 천 셰이딩 모델의 G-buffer 해석 (materialCommon.glsl 참고)
     //   gAlbedo.a   = sheen 세기 (STANDARD 에서는 metallic 자리)
-    //   gPosition.a = CLOTH + 얇은 천 투과
+    //   gPosition.a = CLOTH + (얇은 천 투과, 금속성)
     gAlbedo = vec4(baseColor, sheenIntensity);
     gNormal = vec4(encodeNormal(N), roughness);
-    gPosition = vec4(fragPos, packShadingModel(SHADING_MODEL_CLOTH, translucency));
+    gPosition = vec4(fragPos, packShadingModel(SHADING_MODEL_CLOTH, translucency, metallic));
     gMaterial = vec4(emissive, ao);
 }
