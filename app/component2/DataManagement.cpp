@@ -46,6 +46,8 @@ namespace vkengine
 
         this->vertexCount = cloth.getVertexCount();
         this->indexCount = cloth.getIndexCount();
+        this->gridX = cloth.getInfo().gridX;
+        this->gridY = cloth.getInfo().gridY;
         this->iterations = cloth.getInfo().iterations;
         this->floorY = cloth.getInfo().floorY;
         this->groupRanges = cloth.getGroupRanges();
@@ -157,6 +159,9 @@ namespace vkengine
                                                std::ref<ShaderResource>(this->adjacencyBuffer),
                                                std::ref<ShaderResource>(this->adjacencySpringBuffer),
                                                std::ref<ShaderResource>(this->groupBuffer)});
+
+        // cloth.vert 의 set 1 — 같은 정점 버퍼를 SSBO 로 한 번 더 묶는다.
+        this->renderDescriptorSet.create(this->ctx, {std::ref<ShaderResource>(this->vertexBuffer)});
     }
 
     void ClothDataManagement::cleanupBuffers()
@@ -189,6 +194,8 @@ namespace vkengine
         this->groupRanges.clear();
         this->vertexCount = 0;
         this->indexCount = 0;
+        this->gridX = 0;
+        this->gridY = 0;
     }
 
     cUint32_t ClothDataManagement::getGroupCountX(cUint32_t threadCount)

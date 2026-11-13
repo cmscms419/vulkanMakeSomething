@@ -88,6 +88,14 @@ namespace vkengine
         BaseBuffer2& getIndexBuffer() { return this->indexBuffer; }
         cUint32_t getIndexCount() const { return this->indexCount; }
 
+        // cloth.vert 가 정점 번호를 격자 좌표 (x, y) 로 바꿔 이웃 정점을 읽을 때 쓴다.
+        cUint32_t getGridX() const { return this->gridX; }
+        cUint32_t getGridY() const { return this->gridY; }
+
+        // cloth 그리기 파이프라인의 set 1 — 정점 버퍼를 SSBO 로 읽는다 (이웃 위치로 법선 계산).
+        // 정점 버퍼가 create() 마다 새로 만들어지므로 Renderer 가 아니라 여기서 들고 있는다.
+        const DescriptorSetHandle& getRenderDescriptorSet() const { return this->renderDescriptorSet; }
+
         // 디버그용 — GPU 의 정점을 CPU 로 가져온다.
         // 내부에서 큐를 기다리므로 프레임 루프 안에서 매 프레임 부르면 안 된다.
         void downloadVertices(std::vector<ClothVertex>& outVertices);
@@ -162,6 +170,9 @@ namespace vkengine
         // 그래서 디스크립터 세트는 하나만 만들어 세 파이프라인에 그대로 쓴다.
         DescriptorSetHandle descriptorSet;
 
+        // cloth 그리기용 set 1 : binding 0 = vertexBuffer (SSBO). compute 의 set 0 과는 별개다.
+        DescriptorSetHandle renderDescriptorSet;
+
         PushConstants<PredictPushConstants> predictPushConstants;
         PushConstants<SolvePushConstants> solvePushConstants;
         PushConstants<FinalizePushConstants> finalizePushConstants;
@@ -170,6 +181,8 @@ namespace vkengine
 
         cUint32_t vertexCount = 0;
         cUint32_t indexCount = 0;
+        cUint32_t gridX = 0;
+        cUint32_t gridY = 0;
         cUint32_t iterations = 0;
         cFloat floorY = 0.0f;
         cBool ready = false;

@@ -893,9 +893,16 @@ namespace vkengine
 
         vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelines.at("cloth").getPipeline());
 
-        const auto descriptorSets = std::vector{clothDescriptorSets[currentFrame].get()};
+        // set 0 = SceneDataUBO, set 1 = 천 정점 버퍼(SSBO) — cloth.vert 가 격자 이웃을 읽어 법선을 만든다.
+        const auto descriptorSets = std::vector{clothDescriptorSets[currentFrame].get(),
+                                                this->clothData->getRenderDescriptorSet().get()};
         vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelines.at("cloth").getPipelineLayout(), 0,
                                 static_cast<cUint32_t>(descriptorSets.size()), descriptorSets.data(), 0, nullptr);
+
+        // cloth.vert 의 push_constant { uint gridX; uint gridY; } 와 1:1
+        const cUint32_t gridSize[2] = {this->clothData->getGridX(), this->clothData->getGridY()};
+        vkCmdPushConstants(cmd, pipelines.at("cloth").getPipelineLayout(), VK_SHADER_STAGE_VERTEX_BIT,
+                           0, sizeof(gridSize), gridSize);
 
         // compute 가 매 프레임 고쳐 쓰는 그 버퍼를 그대로 정점 버퍼로 읽는다.
         // ClothDataManagement::step() 끝의 배리어가 VERTEX_ATTRIBUTE_READ 까지 막아 준다.

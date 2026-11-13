@@ -19,6 +19,7 @@ layout(std140, set = 0, binding = 0) uniform SceneDataUBO {
 } sceneData;
 
 layout(location = 0) in vec3 fragPos;
+layout(location = 1) in vec3 fragNormal; // cloth.vert 가 격자 이웃으로 만든 정점 법선 (보간됨)
 
 layout(location = 0) out vec4 gAlbedo;   // RGB: albedo,          A: metallic
 layout(location = 1) out vec4 gNormal;   // RGB: world normal,    A: roughness
@@ -35,16 +36,19 @@ vec3 encodeNormal(vec3 normal) {
 }
 
 void main() {
-    // 법선을 화면 미분으로 만든다.
-    // ClothVertex 64 byte 에 법선 칸이 없어서(position/prevPosition/nextPosition/velocity)
-    // 정점에서 들고 올 수가 없다. 이 방법은 면 단위라 각져 보인다.
-    // 매끄럽게 하려면 정점 셰이더에서 SSBO 로 이웃을 읽어야 한다.
-    vec3 N = normalize(cross(dFdx(fragPos), dFdy(fragPos)));
+    // 정점 법선(보간) — 면 경계가 보이지 않는 부드러운 음영.
+    vec3 N = normalize(fragNormal);
 
-    // 천은 양면이다 (cullMode = NONE).
-    // 뒷면에서는 위 법선이 반대로 나오므로 카메라 쪽으로 뒤집는다.
-    // 안 하면 천의 절반이 검게 보인다.
-    if (dot(N, sceneData.cameraPos - fragPos) < 0.0) {
+    // 천은 양면이다 (cullMode = NONE). 보이는 쪽 면으로 법선을 맞춰야 뒷면이 검게 보이지 않는다.
+    // 기준은 화면 미분으로 만든 "면 법선을 카메라 쪽으로 돌린 것" 이다.
+    //  - 면 법선은 삼각형 안에서 일정하므로, 픽셀마다 시선 방향으로 뒤집을 때처럼
+    //    한 삼각형 안에서 앞/뒤가 갈리는 일이 없다.
+    //  - 삼각형 감기 방향이나 Vulkan 의 y 뒤집기에 기대지 않아도 된다 (gl_FrontFacing 대신).
+    vec3 faceNormal = normalize(cross(dFdx(fragPos), dFdy(fragPos)));
+    if (dot(faceNormal, sceneData.cameraPos - fragPos) < 0.0) {
+        faceNormal = -faceNormal;
+    }
+    if (dot(N, faceNormal) < 0.0) {
         N = -N;
     }
 
