@@ -33,6 +33,19 @@ static constexpr cFloat CAMERA_FAR_PLANE = 500.0f;
 
 namespace vkengine
 {
+    // 천 기본 머티리얼. 예전에는 cloth.frag 안의 상수(kClothColor 등)였다.
+    // 텍스처는 아직 없다 (-1). 직조 텍스처를 붙일 때 TextureTable 의 전역 번호를 넣는다.
+    static MaterialData makeDefaultClothMaterial()
+    {
+        MaterialData material{};
+        material.baseColorFactor = cVec4(0.72f, 0.20f, 0.24f, 1.0f);
+        material.roughness = 0.85f;
+        material.metallicFactor = 0.0f;
+        material.emissiveFactor = cVec4(0.0f);
+        material.workflow = static_cast<cInt>(MaterialWorkflow::MetallicRoughness);
+        return material;
+    }
+
     Cloth::Cloth(cString root_path)
         : Application(root_path), clothData(*this->cxt, this->shaderManager)
     {
@@ -93,6 +106,9 @@ namespace vkengine
         // 천 패스가 그릴 대상을 렌더러에 알려 준다.
         // 렌더 그래프는 Application 생성자에서 이미 만들어졌으므로 지금 넘겨야 한다.
         this->renderer.setClothData(&this->clothData);
+
+        // Renderer 가 예약해 둔 머티리얼 칸을 채운다. 프레임 루프 전이라 동기화 없이 써도 된다.
+        this->renderer.setClothMaterial(makeDefaultClothMaterial());
     }
 
     void Cloth::rebuildCloth(const ClothSimulation::Info& info)

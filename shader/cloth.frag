@@ -1,10 +1,18 @@
 #version 450
+#extension GL_EXT_nonuniform_qualifier : require
+#extension GL_GOOGLE_include_directive : require
+
+#include "materialCommon.glsl"
 
 // 천 프래그먼트 셰이더 — G-Buffer 에 덧그린다.
 //
 // pbrdeferred 가 G-Buffer 를 채운 뒤에 LOAD 로 이어서 그리므로,
 // 조명/그림자/SSAO 는 lightdeferred 패스가 알아서 해준다.
 // 출력 4장의 의미는 pbrdeferred.frag / physicsInstance.frag 와 똑같아야 한다.
+//
+// 머티리얼은 엔진의 전역 머티리얼 버퍼(set 2)에서 읽는다.
+// Renderer 가 예약한 칸(clothMaterialIndex)을 데모가 setClothMaterial() 로 채운다.
+// 워크플로는 metallic-roughness 만 지원한다.
 
 layout(std140, set = 0, binding = 0) uniform SceneDataUBO {
     mat4 projection;
@@ -18,24 +26,63 @@ layout(std140, set = 0, binding = 0) uniform SceneDataUBO {
     mat4 lightSpaceMatrix;
 } sceneData;
 
+// pbrdeferred.frag 의 MaterialUBO, C++ MaterialData(80 byte)와 같은 배치
+struct MaterialUBO {
+    vec4 emissiveFactor;
+    vec4 baseColorFactor;
+    float roughnessFactor;
+    float transparencyFactor;
+    float discardAlpha;
+    float metallicFactor;
+    int baseColorTextureIndex;
+    int emissiveTextureIndex;
+    int normalTextureIndex;
+    int opacityTextureIndex;
+    int metallicRoughnessTextureIndex;
+    int occlusionTextureIndex;
+    int workflow;
+    int padding0;
+};
+
+layout(set = 2, binding = 0) restrict readonly buffer MaterialBuffer {
+    MaterialUBO materials[];
+} materialBuffer;
+
+layout(set = 2, binding = 1) uniform sampler2D materialTextures[MAX_TEXTURE_COUNT];
+
+// cloth.vert 와 블록 선언이 같아야 한다.
+layout(push_constant) uniform ClothDrawConstants {
+    uint gridX;
+    uint gridY;
+    uint materialIndex;
+} drawConstants;
+
 layout(location = 0) in vec3 fragPos;
-layout(location = 1) in vec3 fragNormal; // cloth.vert 가 격자 이웃으로 만든 정점 법선 (보간됨)
+layout(location = 1) in vec3 fragNormal;   // cloth.vert 가 격자 이웃으로 만든 정점 법선 (보간됨)
+layout(location = 2) in vec2 fragTexCoord; // 격자 UV
+layout(location = 3) in vec3 fragTangent;  // u 방향
 
 layout(location = 0) out vec4 gAlbedo;   // RGB: albedo,          A: metallic
 layout(location = 1) out vec4 gNormal;   // RGB: world normal,    A: roughness
 layout(location = 2) out vec4 gPosition; // RGB: world position,  A: depth
 layout(location = 3) out vec4 gMaterial; // RGB: emissive,        A: AO
 
-// 천 머티리얼. 지금은 상수다 — ImGui 로 조절하는 것은 Step 8 에서 한다.
-const vec3 kClothColor = vec3(0.72, 0.20, 0.24);
-const float kClothRoughness = 0.85;
-const float kClothMetallic = 0.0;
-
 vec3 encodeNormal(vec3 normal) {
     return normal * 0.5 + 0.5;
 }
 
+bool hasTexture(int index) {
+    return index > DUMMY_TEXTURE_INDEX;
+}
+
+vec4 sampleMaterialTexture(int index) {
+    return texture(materialTextures[nonuniformEXT(index)], fragTexCoord);
+}
+
 void main() {
+    MaterialUBO material = materialBuffer.materials[drawConstants.materialIndex];
+
+    // ---- 법선 ---------------------------------------------------------
     // 정점 법선(보간) — 면 경계가 보이지 않는 부드러운 음영.
     vec3 N = normalize(fragNormal);
 
@@ -52,8 +99,44 @@ void main() {
         N = -N;
     }
 
-    gAlbedo = vec4(kClothColor, kClothMetallic);
-    gNormal = vec4(encodeNormal(N), kClothRoughness);
+    // 노멀맵 (직조 요철). 뒷면에서는 N 이 뒤집혔으므로 B = cross(N, T) 도 따라 뒤집힌다.
+    if (hasTexture(material.normalTextureIndex)) {
+        vec3 T = normalize(fragTangent - N * dot(N, fragTangent)); // N 에 직교화
+        vec3 B = cross(N, T);
+        vec3 tangentNormal = sampleMaterialTexture(material.normalTextureIndex).xyz * 2.0 - 1.0;
+        N = normalize(mat3(T, B, N) * tangentNormal);
+    }
+
+    // ---- 머티리얼 -----------------------------------------------------
+    vec3 baseColor = material.baseColorFactor.rgb;
+    if (hasTexture(material.baseColorTextureIndex)) {
+        baseColor *= sampleMaterialTexture(material.baseColorTextureIndex).rgb;
+    }
+
+    float metallic = material.metallicFactor;
+    float roughness = material.roughnessFactor;
+    if (hasTexture(material.metallicRoughnessTextureIndex)) {
+        vec3 metallicRoughness = sampleMaterialTexture(material.metallicRoughnessTextureIndex).rgb;
+        metallic *= metallicRoughness.b;
+        roughness *= metallicRoughness.g;
+    }
+
+    float ao = 1.0;
+    if (hasTexture(material.occlusionTextureIndex)) {
+        ao = sampleMaterialTexture(material.occlusionTextureIndex).r;
+    }
+
+    vec3 emissive = material.emissiveFactor.rgb;
+    if (hasTexture(material.emissiveTextureIndex)) {
+        emissive *= sampleMaterialTexture(material.emissiveTextureIndex).rgb;
+    }
+
+    // pbrdeferred.frag 와 같은 하한 (GGX 하이라이트가 한 점으로 모여 깜빡이는 것 방지)
+    roughness = clamp(roughness, 0.045, 1.0);
+    metallic = clamp(metallic, 0.0, 1.0);
+
+    gAlbedo = vec4(baseColor, metallic);
+    gNormal = vec4(encodeNormal(N), roughness);
     gPosition = vec4(fragPos, gl_FragCoord.z);
-    gMaterial = vec4(vec3(0.0), 1.0);
+    gMaterial = vec4(emissive, ao);
 }

@@ -80,6 +80,11 @@ namespace vkengine
         // 그래프가 compile 되는 시점에는 nullptr 인 것이 정상이다 — 패스 함수가 널 검사를 한다.
         void setClothData(ClothDataManagement *clothData);
 
+        // 천 머티리얼을 전역 머티리얼 버퍼의 예약된 칸(clothMaterialIndex)에 쓴다.
+        // 초기화 중(프레임 루프 전)에만 불러야 한다 — 그리는 중인 프레임과 동기화하지 않는다.
+        // 텍스처 인덱스는 TextureTable 의 전역 번호여야 한다 (-1 = 텍스처 없음).
+        void setClothMaterial(const MaterialData &material);
+
         // View frustum culling
         // 컬링 통계 정보 반환 (전체, 컬링된, 렌더링된 메시 수)
         const CullingStats& getCullingStats() const;
@@ -201,9 +206,13 @@ namespace vkengine
         std::vector<DescriptorSetHandle> debugLineDescriptorSets;
 
         // 천 렌더링 — 버퍼는 ClothDataManagement 가 들고 있고 여기서는 빌려 쓴다.
-        // 디스크립터는 SceneDataUBO 하나뿐이다 (debugLine 과 같은 레이아웃).
+        // set 0 = SceneDataUBO (debugLine 과 같은 레이아웃) / set 1 = 천 정점 SSBO / set 2 = materialDescriptorSet
         ClothDataManagement *clothData = nullptr;
         std::vector<DescriptorSetHandle> clothDescriptorSets;
+
+        // 전역 머티리얼 버퍼에서 천이 쓰는 칸. initModelResources() 가 모델 머티리얼 뒤에 하나 예약한다.
+        // 천은 모델 로드 경로를 타지 않고 Application 생성 뒤에 만들어지므로 미리 자리를 잡아 둔다.
+        cUint32_t clothMaterialIndex = 0;
 
         ViewFrustum viewFrustum{};
         cBool frustumCullingEnabled{true};

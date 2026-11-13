@@ -57,6 +57,13 @@ namespace vkengine
         this->currentModels = nullptr;
     }
 
+    void Renderer::setClothMaterial(const MaterialData &material)
+    {
+        // 스테이징 복사 후 submitAndWait 로 끝난다. 프레임이 아직 돌지 않는 초기화 시점에만 안전하다.
+        const VkDeviceSize offset = sizeof(MaterialData) * this->clothMaterialIndex;
+        this->materialStorageBuffer.copyData(&material, sizeof(MaterialData), offset);
+    }
+
     void Renderer::setClothData(ClothDataManagement *clothData)
     {
         this->clothData = clothData;
@@ -154,6 +161,11 @@ namespace vkengine
         {
             model.createDescriptorManager2(allMaterials, table);
         }
+
+        // 천 머티리얼 자리 예약 (80 바이트). 천이 없는 앱에서는 쓰이지 않는 기본값으로 남는다.
+        // 실제 값은 데모가 setClothMaterial() 로 채운다.
+        this->clothMaterialIndex = static_cast<cUint32_t>(allMaterials.size());
+        allMaterials.emplace_back();
 
         // 모델이 없을 수 도 있다
         // Vulkan 은 크기 0 인 버퍼를 만들 수 없다 (VkBufferCreateInfo::size > 0).
@@ -893,16 +905,21 @@ namespace vkengine
 
         vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelines.at("cloth").getPipeline());
 
-        // set 0 = SceneDataUBO, set 1 = 천 정점 버퍼(SSBO) — cloth.vert 가 격자 이웃을 읽어 법선을 만든다.
+        // set 0 = SceneDataUBO
+        // set 1 = 천 정점 버퍼(SSBO) — cloth.vert 가 격자 이웃을 읽어 법선/탄젠트를 만든다.
+        // set 2 = 전역 머티리얼 버퍼 + 바인드리스 텍스처 (pbrdeferred 의 set 1 과 같은 레이아웃)
         const auto descriptorSets = std::vector{clothDescriptorSets[currentFrame].get(),
-                                                this->clothData->getRenderDescriptorSet().get()};
+                                                this->clothData->getRenderDescriptorSet().get(),
+                                                this->materialDescriptorSet.get()};
         vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelines.at("cloth").getPipelineLayout(), 0,
                                 static_cast<cUint32_t>(descriptorSets.size()), descriptorSets.data(), 0, nullptr);
 
-        // cloth.vert 의 push_constant { uint gridX; uint gridY; } 와 1:1
-        const cUint32_t gridSize[2] = {this->clothData->getGridX(), this->clothData->getGridY()};
-        vkCmdPushConstants(cmd, pipelines.at("cloth").getPipelineLayout(), VK_SHADER_STAGE_VERTEX_BIT,
-                           0, sizeof(gridSize), gridSize);
+        // cloth.vert / cloth.frag 의 push_constant { uint gridX; uint gridY; uint materialIndex; } 와 1:1
+        const cUint32_t drawConstants[3] = {this->clothData->getGridX(), this->clothData->getGridY(),
+                                            this->clothMaterialIndex};
+        vkCmdPushConstants(cmd, pipelines.at("cloth").getPipelineLayout(),
+                           VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+                           0, sizeof(drawConstants), drawConstants);
 
         // compute 가 매 프레임 고쳐 쓰는 그 버퍼를 그대로 정점 버퍼로 읽는다.
         // ClothDataManagement::step() 끝의 배리어가 VERTEX_ATTRIBUTE_READ 까지 막아 준다.

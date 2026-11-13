@@ -37,15 +37,19 @@ layout(std430, set = 1, binding = 0) readonly buffer ClothVertexBuffer {
 } clothVertices;
 
 // Renderer::makeClothPass 가 넣는다. 정점 번호 = y * gridX + x (ClothSimulation::getVertexIndex)
+// cloth.frag 와 블록 선언이 같아야 한다 (materialIndex 는 frag 가 쓴다).
 layout(push_constant) uniform ClothDrawConstants {
     uint gridX;
     uint gridY;
+    uint materialIndex;
 } drawConstants;
 
 layout(location = 0) in vec3 inPosition;
 
 layout(location = 0) out vec3 fragPos;
 layout(location = 1) out vec3 fragNormal;
+layout(location = 2) out vec2 fragTexCoord; // 격자 좌표에서 만든 UV: (0,0) = 첫 정점, (1,1) = 마지막 정점
+layout(location = 3) out vec3 fragTangent;  // UV 의 u 가 늘어나는 방향 (노멀맵용)
 
 vec3 loadPosition(uint x, uint y) {
     return clothVertices.vertices[y * drawConstants.gridX + x].positionMass.xyz;
@@ -69,6 +73,15 @@ void main() {
     // 천이 한 점으로 뭉개진 경우 normalize 가 NaN 을 만들지 않게 한다.
     float normalLength = length(normal);
     fragNormal = (normalLength > 1e-8) ? normal / normalLength : vec3(0.0, 0.0, 1.0);
+
+    // 탄젠트 = u 방향(격자 x 방향). 법선과 같은 이웃 차분을 재사용한다.
+    float tangentLength = length(tangentX);
+    fragTangent = (tangentLength > 1e-8) ? tangentX / tangentLength : vec3(1.0, 0.0, 0.0);
+
+    // 격자는 규칙적이라 UV 를 버퍼에 담지 않고 정점 번호에서 바로 만든다.
+    // 반복(타일링)은 텍스처 쪽 샘플러가 REPEAT 이므로 나중에 배율만 곱하면 된다.
+    fragTexCoord = vec2(float(x) / float(max(drawConstants.gridX - 1u, 1u)),
+                        float(y) / float(max(drawConstants.gridY - 1u, 1u)));
 
     fragPos = inPosition;
     gl_Position = sceneData.projection * sceneData.view * vec4(inPosition, 1.0);
