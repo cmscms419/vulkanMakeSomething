@@ -57,6 +57,7 @@ struct MaterialUBO {
     int occlusionTextureIndex;
     int workflow;                      // MATERIAL_WORKFLOW_* (materialCommon.glsl)
     int padding0;
+    vec4 clothFactor;                  // 천 전용 (cloth.frag). 여기서는 쓰지 않는다
 };
 
 // Bindless material storage buffer
@@ -191,6 +192,6 @@ void main() {
     
     gAlbedo = vec4(baseColor, metallic);
     gNormal = vec4(encodeNormal(N), roughness);
-    gPosition = vec4(fragPos, gl_FragCoord.z);
+    gPosition = vec4(fragPos, packShadingModel(SHADING_MODEL_STANDARD, 0.0)); // a = 셰이딩 모델 (materialCommon.glsl)
     gMaterial = vec4(emissive, ao);
 }

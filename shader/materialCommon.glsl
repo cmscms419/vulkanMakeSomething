@@ -19,4 +19,28 @@
 #define MATERIAL_WORKFLOW_METALLIC_ROUGHNESS 0
 #define MATERIAL_WORKFLOW_SPECULAR_GLOSSINESS 1
 
+// ---------------------------------------------------------------------------
+// 셰이딩 모델 — G-buffer 를 쓰는 셰이더가 gPosition.a 에 기록하고 lightdeferred 가 읽는다.
+//   gPosition.a = 모델 번호 + 파라미터 * 0.5   (gPosition 은 RGBA32F 라 정밀도 문제가 없다)
+//
+// 모델별 G-buffer 해석
+//   STANDARD : gAlbedo.a = metallic,     파라미터 = 0
+//   CLOTH    : gAlbedo.a = sheen 세기,   파라미터 = 얇은 천 투과 (0~1)
+// G-buffer 를 쓰는 셰이더(pbrdeferred, physicsInstance, cloth)는 반드시 이 값을 써야 한다.
+// ---------------------------------------------------------------------------
+#define SHADING_MODEL_STANDARD 0
+#define SHADING_MODEL_CLOTH 1
+
+float packShadingModel(int model, float parameter) {
+    return float(model) + clamp(parameter, 0.0, 1.0) * 0.5;
+}
+
+int unpackShadingModel(float packed) {
+    return int(floor(packed));
+}
+
+float unpackShadingParameter(float packed) {
+    return fract(packed) * 2.0;
+}
+
 #endif // MATERIAL_COMMON_GLSL

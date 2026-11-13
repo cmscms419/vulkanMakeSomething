@@ -31,6 +31,9 @@ struct MaterialUBO {
     int opacityTextureIndex;
     int metallicRoughnessTextureIndex;
     int occlusionTextureIndex;
+    int workflow;      // 이하 C++ MaterialData(96 byte)와 배열 stride 를 맞추려고 둔다
+    int padding0;
+    vec4 clothFactor;
 };
 
 layout(set = 1, binding = 0) restrict readonly buffer MaterialBuffer {
@@ -108,6 +111,6 @@ void main() {
 
     gAlbedo = vec4(baseColor, metallic);
     gNormal = vec4(encodeNormal(N), roughness);
-    gPosition = vec4(fragPos, gl_FragCoord.z);
+    gPosition = vec4(fragPos, packShadingModel(SHADING_MODEL_STANDARD, 0.0)); // a = 셰이딩 모델 (materialCommon.glsl)
     gMaterial = vec4(emissive, ao);
 }

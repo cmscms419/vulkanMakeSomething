@@ -1,5 +1,8 @@
 #version 450
 #extension GL_KHR_vulkan_glsl : enable
+#extension GL_GOOGLE_include_directive : require
+
+#include "materialCommon.glsl" // SHADING_MODEL_*, unpackShadingModel()
 
 layout (local_size_x = 16, local_size_y = 16) in;
 
@@ -122,6 +125,89 @@ vec3 BRDF_specularGGX(float alphaRoughness, float NdotL, float NdotV, float Ndot
     return vec3(Vis * D);
 }
 
+// ---------------------------------------------------------------------------
+// 천 셰이딩 모델 (SHADING_MODEL_CLOTH)
+//
+//   직접광 = wrap 확산 + Charlie sheen + 얇은 천 투과
+//   간접광 = irradiance 확산 + sheen 환경광(근사) + 뒷면 irradiance 투과
+//
+// Charlie 분포 / 가시성: Estevez & Kulla 2017 "Production Friendly Microfacet Sheen BRDF",
+// glTF KHR_materials_sheen 참조 구현(glTF Sample Viewer)과 같은 식.
+// wrap 확산과 sheen 색 = sqrt(baseColor) 기본값은 Filament 의 cloth 모델을 따른다.
+// ---------------------------------------------------------------------------
+float D_Charlie(float sheenRoughness, float NdotH) {
+    float alphaG = max(sheenRoughness * sheenRoughness, 1e-6);
+    float invR = 1.0 / alphaG;
+    float sin2h = max(1.0 - NdotH * NdotH, 0.0);
+    return (2.0 + invR) * pow(sin2h, invR * 0.5) / (2.0 * PI);
+}
+
+float lambdaSheenNumericHelper(float x, float alphaG) {
+    float oneMinusAlphaSq = (1.0 - alphaG) * (1.0 - alphaG);
+    float a = mix(21.5473, 25.3245, oneMinusAlphaSq);
+    float b = mix(3.82987, 3.32435, oneMinusAlphaSq);
+    float c = mix(0.19823, 0.16801, oneMinusAlphaSq);
+    float d = mix(-1.97760, -1.27393, oneMinusAlphaSq);
+    float e = mix(-4.32054, -4.85967, oneMinusAlphaSq);
+    return a / (1.0 + b * pow(x, c)) + d * x + e;
+}
+
+float lambdaSheen(float cosTheta, float alphaG) {
+    if (abs(cosTheta) < 0.5) {
+        return exp(lambdaSheenNumericHelper(cosTheta, alphaG));
+    }
+    return exp(2.0 * lambdaSheenNumericHelper(0.5, alphaG) - lambdaSheenNumericHelper(1.0 - cosTheta, alphaG));
+}
+
+float V_Charlie(float NdotL, float NdotV, float sheenRoughness) {
+    float alphaG = max(sheenRoughness * sheenRoughness, 1e-6);
+    float denominator = (1.0 + lambdaSheen(NdotV, alphaG) + lambdaSheen(NdotL, alphaG)) * (4.0 * NdotV * NdotL);
+    return clamp(1.0 / max(denominator, 1e-6), 0.0, 1.0);
+}
+
+// sheen 환경광 반사율 근사.
+// 정확하게 하려면 Charlie 용 사전 적분 LUT(와 Charlie 로 prefilter 한 큐브맵)가 필요한데 아직 없다.
+// sheen 은 비스듬히 볼수록 강해지는 성질만 살린 경험식이다 — LUT 를 만들면 교체한다.
+float approximateSheenAlbedo(float NdotV) {
+    return 0.1 + 0.4 * pow(1.0 - NdotV, 3.0);
+}
+
+// 천 셰이딩 모델 결과. iblColor 는 간접광(나중에 AO/SSAO 를 곱한다), directColor 는 직접광(그림자 반영 전).
+void shadeCloth(vec3 baseColor, float sheenIntensity, float translucency, float roughness,
+                vec3 N, vec3 V, vec3 l, vec3 lightIntensity,
+                out vec3 iblColor, out vec3 directColor)
+{
+    vec3 sheenColor = sheenIntensity * sqrt(max(baseColor, vec3(0.0)));
+
+    float NdotLSigned = dot(N, l);
+    float NdotL = clamp(NdotLSigned, 0.0, 1.0);
+    float NdotV = clamp(dot(N, V), 1e-4, 1.0);
+    vec3 h = normalize(l + V);
+    float NdotH = clampedDot(N, h);
+
+    // wrap 확산: 빛이 법선과 직각을 조금 넘어가도 확산광이 부드럽게 줄어든다 (섬유 사이로 빛이 번지는 느낌).
+    // (NdotL + w) / (1 + w)^2, w = 0.5 — 코사인 항을 이미 포함한다.
+    const float wrap = 0.5;
+    vec3 diffuse = BRDF_lambertian(baseColor) * clamp((NdotLSigned + wrap) / ((1.0 + wrap) * (1.0 + wrap)), 0.0, 1.0);
+
+    // sheen: 섬유 끝에서 생기는 부드러운 광택. 비스듬히 볼 때 테두리가 밝아진다.
+    vec3 sheen = vec3(0.0);
+    if (NdotL > 0.0) {
+        sheen = sheenColor * D_Charlie(roughness, NdotH) * V_Charlie(NdotL, NdotV, roughness) * NdotL;
+    }
+
+    // 얇은 천 투과: 빛이 천의 뒤쪽(보이는 면의 반대편)에서 오면 천을 통과해 비쳐 보인다.
+    vec3 transmission = translucency * BRDF_lambertian(baseColor) * clamp(-NdotLSigned, 0.0, 1.0);
+
+    directColor = lightIntensity * (diffuse + sheen + transmission);
+
+    // 간접광
+    vec3 iblDiffuse = texture(irradianceMap, N).rgb * baseColor * options.diffuseWeight;
+    vec3 iblTransmission = texture(irradianceMap, -N).rgb * baseColor * translucency;
+    vec3 iblSheen = sheenColor * getIBLRadianceGGX(N, V, roughness) * approximateSheenAlbedo(NdotV);
+    iblColor = iblDiffuse + iblTransmission + iblSheen;
+}
+
 // Shadow calculation - Updated to match pbrForward.frag implementation
 float calculateShadow(vec3 worldPos) {
     // Apply the same scaleBias transformation as in pbrForward.vert
@@ -231,7 +317,36 @@ void main()
         // Calculate view direction
         vec3 V = normalize(sceneData.cameraPos - worldPosition);
         vec3 N = normalize(worldNormal);
-        
+
+        // 셰이딩 모델 (gPosition.a, materialCommon.glsl)
+        int shadingModel = unpackShadingModel(positionDepth.a);
+
+        vec3 iblColor = vec3(0.0);
+        vec3 l_light = vec3(0.0);
+
+        // 그림자는 두 모델이 같이 쓴다. 천은 역광(투과)에도 그림자를 적용해야 하므로
+        // STANDARD 처럼 NdotL > 0 일 때만 계산하지 않는다.
+        vec3 lightDirection = normalize(sceneData.directionalLightDir);
+        float shadowFactor = 1.0;
+        if (options.shadowOn != 0 &&
+            (shadingModel == SHADING_MODEL_CLOTH || dot(N, lightDirection) > 0.0)) {
+            shadowFactor = calculateShadow(worldPosition);
+            shadowFactor = clamp(shadowFactor + options.shadowOffset, 0.0, 1.0);
+        }
+
+        if (shadingModel == SHADING_MODEL_CLOTH) {
+            // gAlbedo.a = sheen 세기, gPosition.a 의 파라미터 = 얇은 천 투과
+            float sheenIntensity = albedoMetallic.a;
+            float translucency = unpackShadingParameter(positionDepth.a);
+
+            vec3 directColor;
+            shadeCloth(baseColor, sheenIntensity, translucency, roughness,
+                       N, V, lightDirection, sceneData.directionalLightColor,
+                       iblColor, directColor);
+            l_light = directColor * shadowFactor;
+        }
+        else {
+        // ---- SHADING_MODEL_STANDARD (metallic-roughness GGX) -------------
         // IBL lighting - Apply diffuseWeight to diffuse component only
         vec3 f_diffuse = texture(irradianceMap, N).rgb * baseColor * options.diffuseWeight;
         vec3 f_specular_metal = getIBLRadianceGGX(N, V, roughness);
@@ -249,9 +364,8 @@ void main()
         vec3 f_dielectric_brdf_ibl = mix(f_diffuse, f_specular_dielectric, f_dielectric_fresnel_ibl);
         
         // Directional light - Always calculate lighting, shadow factor depends on shadowOn
-        vec3 l_light = vec3(0.0);
         {
-            vec3 l = normalize(sceneData.directionalLightDir);
+            vec3 l = lightDirection;
             vec3 h = normalize(l + V);
             float NdotL = clampedDot(N, l);
             float NdotV = clampedDot(N, V);
@@ -271,18 +385,13 @@ void main()
             vec3 l_metal_brdf = metal_fresnel * l_specular_metal;
             vec3 l_dielectric_brdf = mix(l_diffuse, l_specular_dielectric, dielectric_fresnel);
             
-            // Calculate shadow factor only if shadows are enabled
-            float shadowFactor = 1.0; // Default: no shadow
-            if (options.shadowOn != 0 && NdotL > 0.0) {
-                shadowFactor = calculateShadow(worldPosition);
-                shadowFactor = clamp(shadowFactor + options.shadowOffset, 0.0, 1.0);
-            }
-            
+            // shadowFactor 는 분기 앞에서 계산했다
             l_light = mix(l_dielectric_brdf, l_metal_brdf, metallic) * shadowFactor;
         }
-        
+
         // IBL (ambient) contribution - SSAO는 간접광에만 적용 (직접광은 그림자가 담당)
-        vec3 iblColor = mix(f_dielectric_brdf_ibl, f_metal_brdf_ibl, metallic);
+        iblColor = mix(f_dielectric_brdf_ibl, f_metal_brdf_ibl, metallic);
+        } // SHADING_MODEL_STANDARD
 
         // 차폐(머티리얼 AO 텍스처 + SSAO)는 간접광에만 적용한다.
         // 직접광의 차폐는 그림자가 담당하므로, 여기에 AO 를 곱하면 햇빛 받는 면까지 어두워진다.

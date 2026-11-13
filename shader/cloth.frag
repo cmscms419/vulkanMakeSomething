@@ -12,7 +12,7 @@
 //
 // 머티리얼은 엔진의 전역 머티리얼 버퍼(set 2)에서 읽는다.
 // Renderer 가 예약한 칸(clothMaterialIndex)을 데모가 setClothMaterial() 로 채운다.
-// 워크플로는 metallic-roughness 만 지원한다.
+// 셰이딩 모델은 SHADING_MODEL_CLOTH 로 기록한다 — lightdeferred 가 sheen/투과로 조명한다.
 
 layout(std140, set = 0, binding = 0) uniform SceneDataUBO {
     mat4 projection;
@@ -42,6 +42,7 @@ struct MaterialUBO {
     int occlusionTextureIndex;
     int workflow;
     int padding0;
+    vec4 clothFactor; // x = sheen 세기, y = 얇은 천 투과
 };
 
 layout(set = 2, binding = 0) restrict readonly buffer MaterialBuffer {
@@ -113,13 +114,15 @@ void main() {
         baseColor *= sampleMaterialTexture(material.baseColorTextureIndex).rgb;
     }
 
-    float metallic = material.metallicFactor;
+    // 천 셰이딩 모델은 금속성을 쓰지 않는다 (천은 유전체). MR 텍스처는 거칠기(G)만 읽는다.
+    // 거칠기는 sheen 의 거칠기로도 쓰인다 (lightdeferred 의 Charlie 분포).
     float roughness = material.roughnessFactor;
     if (hasTexture(material.metallicRoughnessTextureIndex)) {
-        vec3 metallicRoughness = sampleMaterialTexture(material.metallicRoughnessTextureIndex).rgb;
-        metallic *= metallicRoughness.b;
-        roughness *= metallicRoughness.g;
+        roughness *= sampleMaterialTexture(material.metallicRoughnessTextureIndex).g;
     }
+
+    float sheenIntensity = clamp(material.clothFactor.x, 0.0, 1.0);
+    float translucency = clamp(material.clothFactor.y, 0.0, 1.0);
 
     float ao = 1.0;
     if (hasTexture(material.occlusionTextureIndex)) {
@@ -133,10 +136,12 @@ void main() {
 
     // pbrdeferred.frag 와 같은 하한 (GGX 하이라이트가 한 점으로 모여 깜빡이는 것 방지)
     roughness = clamp(roughness, 0.045, 1.0);
-    metallic = clamp(metallic, 0.0, 1.0);
 
-    gAlbedo = vec4(baseColor, metallic);
+    // 천 셰이딩 모델의 G-buffer 해석 (materialCommon.glsl 참고)
+    //   gAlbedo.a   = sheen 세기 (STANDARD 에서는 metallic 자리)
+    //   gPosition.a = CLOTH + 얇은 천 투과
+    gAlbedo = vec4(baseColor, sheenIntensity);
     gNormal = vec4(encodeNormal(N), roughness);
-    gPosition = vec4(fragPos, gl_FragCoord.z);
+    gPosition = vec4(fragPos, packShadingModel(SHADING_MODEL_CLOTH, translucency));
     gMaterial = vec4(emissive, ao);
 }
