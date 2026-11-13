@@ -107,7 +107,7 @@ namespace vkengine
         // 렌더 그래프는 Application 생성자에서 이미 만들어졌으므로 지금 넘겨야 한다.
         this->renderer.setClothData(&this->clothData);
 
-        // Renderer 가 예약해 둔 머티리얼 칸을 채운다. 프레임 루프 전이라 동기화 없이 써도 된다.
+        // Renderer 가 예약해 둔 머티리얼 칸을 채운다. 첫 프레임의 render() 에서 GPU 로 올라간다.
         this->renderer.setClothMaterial(makeDefaultClothMaterial());
     }
 
@@ -739,6 +739,38 @@ namespace vkengine
             this->applyLiveParams();
         }
 
+        // ---- 천 머티리얼 ------------------------------------------------
+        // Renderer 의 CPU 사본을 고치면 다음 프레임에 GPU 로 올라간다 (재빌드 불필요).
+        ImGui::Separator();
+        ImGui::Text("천 머티리얼 (바로 적용된다)");
+        {
+            MaterialData material = this->renderer.getClothMaterial();
+            cBool materialChanged = false;
+
+            materialChanged = ImGui::ColorEdit3("기본 색", &material.baseColorFactor.x) || materialChanged;
+            materialChanged = ImGui::SliderFloat("거칠기", &material.roughness, 0.0f, 1.0f, "%.2f") || materialChanged;
+            materialChanged = ImGui::SliderFloat("금속성", &material.metallicFactor, 0.0f, 1.0f, "%.2f") || materialChanged;
+            materialChanged = ImGui::ColorEdit3("발광 색", &material.emissiveFactor.x,
+                                                ImGuiColorEditFlags_HDR | ImGuiColorEditFlags_Float) || materialChanged;
+
+            if (ImGui::Button("머티리얼 기본값"))
+            {
+                material = makeDefaultClothMaterial();
+                materialChanged = true;
+            }
+
+            if (materialChanged)
+            {
+                this->renderer.setClothMaterial(material);
+            }
+
+            // 텍스처 슬롯은 읽기 전용으로 보여 준다 (붙이는 기능은 아직 없다).
+            ImGui::Text("텍스처 : base %s / normal %s / MR %s",
+                        material.baseColorTextureIndex > 0 ? "O" : "-",
+                        material.normalTextureIndex > 0 ? "O" : "-",
+                        material.metallicRoughnessTextureIndex > 0 ? "O" : "-");
+        }
+
         // ---- 재빌드가 필요한 값들 --------------------------------------
         // 정점/스프링/그룹 구성이나 버퍼 내용을 바꾸므로 Apply 를 눌러야 한다.
         ImGui::Separator();
@@ -828,8 +860,7 @@ namespace vkengine
         }
 
         ImGui::Separator();
-        ImGui::Text("남은 일 : ImGui 로 천 머티리얼 조절, 정점 법선,");
-        ImGui::Text("          그림자 패스에 천 포함, 접촉을 에너지 항으로");
+        ImGui::Text("남은 일 : 그림자 패스에 천 포함, 접촉을 에너지 항으로");
 
         ImGui::End();
     }

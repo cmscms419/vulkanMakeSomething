@@ -52,6 +52,9 @@ namespace vkengine
         this->currentScissor = scissor;
         this->currentViewport = viewport;
 
+        // 렌더 패스 밖에서 해야 한다 (vkCmdUpdateBuffer 는 vkCmdBeginRendering 안에서 금지).
+        this->flushClothMaterial(cmd);
+
         this->renderGraph.execute(cmd, currentFrame, imageIndex);
 
         this->currentModels = nullptr;
@@ -59,9 +62,41 @@ namespace vkengine
 
     void Renderer::setClothMaterial(const MaterialData &material)
     {
-        // 스테이징 복사 후 submitAndWait 로 끝난다. 프레임이 아직 돌지 않는 초기화 시점에만 안전하다.
+        this->clothMaterial = material;
+        this->clothMaterialDirty = true;
+    }
+
+    void Renderer::flushClothMaterial(VkCommandBuffer cmd)
+    {
+        if (!this->clothMaterialDirty)
+        {
+            return;
+        }
+
+        // 머티리얼 버퍼는 DEVICE_LOCAL 단일 버퍼이고, 앞 프레임(아직 GPU 에서 실행 중일 수 있음)이 읽는다.
+        // CPU 에서 기다리지 않고 GPU 안에서 순서를 맞춘다.
+        //  1) 앞서 제출된 모든 프레임의 머티리얼 읽기가 끝난 뒤에 쓴다 (WAR)
+        //     — 파이프라인 배리어의 첫 범위는 같은 큐에 먼저 제출된 명령 전부를 포함한다.
+        //  2) 쓰기가 끝난 뒤에 이번 프레임의 셰이더가 읽는다 (RAW)
+        BarrierHelperFunction::insertMemoryBarrier(cmd,
+            VK_PIPELINE_STAGE_2_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT,
+            VK_ACCESS_2_SHADER_STORAGE_READ_BIT,
+            VK_PIPELINE_STAGE_2_TRANSFER_BIT,
+            VK_ACCESS_2_TRANSFER_WRITE_BIT);
+
+        // 80 바이트 — vkCmdUpdateBuffer 제한(65536 바이트, 4 의 배수)에 들어간다.
+        static_assert(sizeof(MaterialData) % 4 == 0, "vkCmdUpdateBuffer 는 4 바이트 단위만 받는다");
         const VkDeviceSize offset = sizeof(MaterialData) * this->clothMaterialIndex;
-        this->materialStorageBuffer.copyData(&material, sizeof(MaterialData), offset);
+        vkCmdUpdateBuffer(cmd, this->materialStorageBuffer.getBuffer(), offset, sizeof(MaterialData),
+                          &this->clothMaterial);
+
+        BarrierHelperFunction::insertMemoryBarrier(cmd,
+            VK_PIPELINE_STAGE_2_TRANSFER_BIT,
+            VK_ACCESS_2_TRANSFER_WRITE_BIT,
+            VK_PIPELINE_STAGE_2_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT,
+            VK_ACCESS_2_SHADER_STORAGE_READ_BIT);
+
+        this->clothMaterialDirty = false;
     }
 
     void Renderer::setClothData(ClothDataManagement *clothData)

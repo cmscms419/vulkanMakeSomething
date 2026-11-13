@@ -80,10 +80,12 @@ namespace vkengine
         // 그래프가 compile 되는 시점에는 nullptr 인 것이 정상이다 — 패스 함수가 널 검사를 한다.
         void setClothData(ClothDataManagement *clothData);
 
-        // 천 머티리얼을 전역 머티리얼 버퍼의 예약된 칸(clothMaterialIndex)에 쓴다.
-        // 초기화 중(프레임 루프 전)에만 불러야 한다 — 그리는 중인 프레임과 동기화하지 않는다.
+        // 천 머티리얼을 바꾼다. 언제 불러도 된다 (ImGui 슬라이더 드래그 중에도).
+        // CPU 사본만 바꾸고, 실제 GPU 반영은 다음 render() 의 커맨드 버퍼 맨 앞에서
+        // vkCmdUpdateBuffer + 배리어로 한다 (flushClothMaterial). CPU 는 기다리지 않는다.
         // 텍스처 인덱스는 TextureTable 의 전역 번호여야 한다 (-1 = 텍스처 없음).
         void setClothMaterial(const MaterialData &material);
+        const MaterialData &getClothMaterial() const { return this->clothMaterial; }
 
         // View frustum culling
         // 컬링 통계 정보 반환 (전체, 컬링된, 렌더링된 메시 수)
@@ -213,6 +215,11 @@ namespace vkengine
         // 전역 머티리얼 버퍼에서 천이 쓰는 칸. initModelResources() 가 모델 머티리얼 뒤에 하나 예약한다.
         // 천은 모델 로드 경로를 타지 않고 Application 생성 뒤에 만들어지므로 미리 자리를 잡아 둔다.
         cUint32_t clothMaterialIndex = 0;
+        MaterialData clothMaterial{};     // GUI 가 편집하는 CPU 사본
+        cBool clothMaterialDirty = false; // true 면 다음 render() 에서 GPU 로 올린다
+
+        // clothMaterialDirty 일 때 머티리얼 버퍼의 천 칸을 커맨드 버퍼 안에서 갱신한다.
+        void flushClothMaterial(VkCommandBuffer cmd);
 
         ViewFrustum viewFrustum{};
         cBool frustumCullingEnabled{true};
