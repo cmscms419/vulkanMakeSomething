@@ -32,6 +32,7 @@
     <ClInclude Include="..\..\include\component2\Application.h" />
     <ClInclude Include="..\..\include\component2\PhysicsSimulator.h" />
     <ClInclude Include="..\..\include\component2\ClothSimulation.h" />
+    <ClInclude Include="..\..\include\component2\Raycast.h" />
     <ClInclude Include="..\..\include\component2\DataManagement.h" />
     <ClInclude Include="..\..\include\component2\Camera2.h" />
     <ClInclude Include="..\..\include\component2\VulkanEngineWin2.h" />

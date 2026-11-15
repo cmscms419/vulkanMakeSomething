@@ -387,6 +387,8 @@ namespace vkengine
             this->updateCameraMove(deltaTime);
             camera->update();
 
+            this->updateGrabInput();
+
             this->renderer.getSceneDataUBO().projection = this->camera->getProjectionMatrix();
             this->renderer.getSceneDataUBO().view = this->camera->getViewMatrix();
             this->renderer.getSceneDataUBO().cameraPos = camera->getPos();
@@ -421,6 +423,57 @@ namespace vkengine
         }
 
         this->cxt->waitIdle();
+    }
+
+    void Cloth::updateGrabInput()
+    {
+        const platform::MouseState& mouse = this->window->getMouseState();
+        const cBool buttonDown = mouse.buttons.left;
+
+        // 마우스 좌표는 창 좌표, extent 는 프레임버퍼 크기다.
+        // DPI 배율이 있으면 둘이 달라서, 그대로 쓰면 클릭한 곳과 다른 곳이 잡힌다.
+        cInt windowWidth = 0;
+        cInt windowHeight = 0;
+        glfwGetWindowSize(this->window->getGLFWwindow(), &windowWidth, &windowHeight);
+
+        // 최소화 중에는 크기가 0 이다. 레이를 만들 수 없으므로 잡기를 놓는다.
+        if (windowWidth <= 0 || windowHeight <= 0 || this->extent.width == 0u || this->extent.height == 0u)
+        {
+            this->isGrabbing = false;
+            this->grabBeginRequested = false;
+            this->grabButtonWasDown = buttonDown;
+            return;
+        }
+
+        const cVec2 framebufferSize(static_cast<cFloat>(this->extent.width), static_cast<cFloat>(this->extent.height));
+        const cVec2 scale = framebufferSize / cVec2(static_cast<cFloat>(windowWidth), static_cast<cFloat>(windowHeight));
+        this->grabScreenPosition = mouse.position * scale;
+
+        this->grabRay = raycast::makeRayFromScreen(this->grabScreenPosition, framebufferSize,
+                                                   this->camera->getViewMatrix(),
+                                                   this->camera->getProjectionMatrix());
+
+        const cBool pressedNow = buttonDown && !this->grabButtonWasDown;
+        const cBool releasedNow = !buttonDown && this->grabButtonWasDown;
+        this->grabButtonWasDown = buttonDown;
+
+        this->grabBeginRequested = false;
+
+        if (pressedNow)
+        {
+            // ImGui 창 위에서 누른 클릭은 GUI 의 것이다.
+            // WantCaptureMouse 는 이번 프레임 NewFrame() 에서 계산되었다 (updateGui 가 먼저 불린다).
+            // 오른쪽 버튼(시점 회전)을 누른 채로는 잡지 않는다.
+            if (!ImGui::GetIO().WantCaptureMouse && !mouse.buttons.right)
+            {
+                this->isGrabbing = true;
+                this->grabBeginRequested = true;
+            }
+        }
+        else if (releasedNow)
+        {
+            this->isGrabbing = false;
+        }
     }
 
     void Cloth::updateCameraLook()
@@ -865,6 +918,32 @@ namespace vkengine
         if (ImGui::Button("기본값으로"))
         {
             this->rebuildCloth(this->cloth.getInfo());
+        }
+
+        ImGui::Separator();
+
+        // 1단계 확인용. GPU 피킹이 붙기 전에 레이가 맞는지 눈으로 본다.
+        // 천의 처음 평면(z = origin.z) 과의 교점이 클릭한 천 위치와 맞아야 한다.
+        // 예) 왼쪽 위 핀 근처를 누르면 교점이 origin 근처가 나와야 한다.
+        if (ImGui::CollapsingHeader("마우스 잡기 (입력 확인)"))
+        {
+            ImGui::Text("상태      : %s", this->isGrabbing ? "잡는 중" : "-");
+            ImGui::Text("화면 좌표 : (%.1f, %.1f)", this->grabScreenPosition.x, this->grabScreenPosition.y);
+            ImGui::Text("레이 원점 : (%.3f, %.3f, %.3f)",
+                        this->grabRay.origin.x, this->grabRay.origin.y, this->grabRay.origin.z);
+            ImGui::Text("레이 방향 : (%.3f, %.3f, %.3f)",
+                        this->grabRay.direction.x, this->grabRay.direction.y, this->grabRay.direction.z);
+
+            cFloat planeDistance = 0.0f;
+            if (raycast::intersectRayPlane(this->grabRay, active.origin, cVec3(0.0f, 0.0f, 1.0f), planeDistance))
+            {
+                const cVec3 point = raycast::makePointOnRay(this->grabRay, planeDistance);
+                ImGui::Text("z=%.2f 평면 : (%.3f, %.3f, %.3f)", active.origin.z, point.x, point.y, point.z);
+            }
+            else
+            {
+                ImGui::Text("z=%.2f 평면 : 교차 없음", active.origin.z);
+            }
         }
 
         ImGui::Separator();

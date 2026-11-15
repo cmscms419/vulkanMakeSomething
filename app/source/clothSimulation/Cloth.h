@@ -4,6 +4,7 @@
 #include "Application.h"
 #include "ClothSimulation.h"
 #include "DataManagement.h"
+#include "Raycast.h"
 
 namespace vkengine
 {
@@ -50,6 +51,11 @@ namespace vkengine
         void updateCameraLook();
         void updateCameraMove(cFloat deltaTime);
         void updateLightSpaceMatrix();
+
+        // 왼쪽 버튼으로 천 잡기 — 입력 단계.
+        // 누른 순간 / 누르고 있는 동안 / 뗀 순간을 구분하고, 매 프레임 마우스 레이를 만든다.
+        // 카메라 행렬이 이번 프레임 값이어야 하므로 camera->update() 뒤에 부른다.
+        void updateGrabInput();
 
         void renderClothControlGUI();
 
@@ -118,6 +124,15 @@ namespace vkengine
         cFloat windGustSpeed = 1.3f;    // rad/s
         cFloat windGustAmount = 0.4f;   // 0 = 일정, 1 = 0배 ~ 2배 사이로 흔들린다
         cFloat windTime = 0.0f;         // 돌풍 위상 (초)
+
+        // ---- 마우스로 잡기 (입력) -------------------------------------------
+        // CPU 는 레이만 만든다. 피킹과 목표점 계산은 GPU compute 가 한다 (다음 단계).
+        // grabBeginRequested 는 누른 프레임에만 true — 그 프레임에 피킹 dispatch 를 기록한다.
+        cBool grabButtonWasDown = false;
+        cBool isGrabbing = false;
+        cBool grabBeginRequested = false;
+        raycast::Ray grabRay{};                     // 이번 프레임의 마우스 레이 (월드 공간)
+        cVec2 grabScreenPosition = cVec2(0.0f);     // 프레임버퍼 픽셀 좌표 (디버그 표시용)
 
         // 시작 직후 한 번만 자동으로 결과를 읽어 로그에 남긴다.
         // 창을 띄우지 않고도 compute 가 돌았는지 확인할 수 있어야 한다.
