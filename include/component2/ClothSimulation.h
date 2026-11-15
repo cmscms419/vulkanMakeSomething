@@ -81,7 +81,7 @@ namespace vkengine
 
             cBool useShear = true;                          // 끄면 그룹 수가 줄어든다
             cBool useBend = true;
-            cBool pinTopCorners = true;                     // 윗변 양 끝을 집게로 고정
+            cBool pinTopCorners = true;                     // 윗변을 집게로 고정
 
             cVec3 origin = cVec3(0.0f, 2.0f, 0.0f);         // 윗변 왼쪽 끝의 위치
             cVec3 gravity = cVec3(0.0f, -9.8f, 0.0f);

@@ -83,8 +83,10 @@ namespace vkengine
 
         if (this->info.pinTopCorners)
         {
-            this->vertices[this->getVertexIndex(0u, 0u)].pinned = 1.0f;
-            this->vertices[this->getVertexIndex(this->info.gridX - 1u, 0u)].pinned = 1.0f;
+            for (cUint32_t i = 0; i < this->info.gridX; i++)
+            {
+            this->vertices[this->getVertexIndex(i, 0u)].pinned = 1.0f;
+}
         }
     }
 
