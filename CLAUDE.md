@@ -12,21 +12,21 @@ basic02
   - collectPerPipelineBindings() — descriptor/push constant/vertex input 수집
   - getShaderResourceLayout() 공개 API
   - 관련 파일: include/struct/descriptor.h, app/struct/descriptor.cpp,
-               include/engine2/VKShaderManager.h, app/engine2/VKShaderManager.cpp,
-               include/engine2/VKshader.h, app/engine2/VKshader.cpp
+               include/engine2/ShaderManager.h, app/engine2/ShaderManager.cpp,
+               include/engine2/Shader.h, app/engine2/Shader.cpp
 
-- Phase 2: VKShaderResource 인터페이스 (목표 3 일부)
-  - VKShaderResource 순수 가상 클래스 (updateBinding/updateWrite/getResourceBinding)
-  - VKBaseBuffer2, VKImage2D가 VKShaderResource 상속
-  - DescriptorSetHander::create(vector<VKShaderResource>) 오버로드 추가
-  - 관련 파일: include/engine2/VKShaderResource.h,
-               include/engine2/VKbuffer2.h, include/engine2/VKImage2D.h,
-               include/engine2/VKDescriptorSet.h
+- Phase 2: ShaderResource 인터페이스 (목표 3 일부)
+  - ShaderResource 순수 가상 클래스 (updateBinding/updateWrite/getResourceBinding)
+  - BaseBuffer2, Image2D가 ShaderResource 상속
+  - DescriptorSetHandle::create(vector<ShaderResource>) 오버로드 추가
+  - 관련 파일: include/engine2/ShaderResource.h,
+               include/engine2/BaseBuffer2.h, include/engine2/Image2D.h,
+               include/engine2/DescriptorSetHandle.h
 
 ## 다음 작업 (Phase 3)
-- VKImage2D의 updateBinding()/updateWrite() 구현 확인
-- RenderGraph 구현 시작 (include/engine2/RenderGraph.h 신규)
-- VKShadowMap → VKImage2D 교체 (Phase 3과 함께)
+- Image2D의 updateBinding()/updateWrite() 구현 확인
+- RenderGraph 구현 시작 (include/engine2/RenderGraph.h)
+- VKShadowMap → Image2D 교체 (Phase 3과 함께)
 
 ## 주요 설계 결정
 - Bindinginfo = name(cString) + VkDescriptorSetLayoutBinding (기존 VkDescriptorSetLayoutBinding 대체)
