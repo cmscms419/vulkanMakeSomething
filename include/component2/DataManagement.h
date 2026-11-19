@@ -14,11 +14,33 @@
 #include "PushConstants.h"
 
 #include "ClothSimulation.h"
+#include "Raycast.h"
 
 #include <vector>
 
 namespace vkengine
 {
+    // ---------------------------------------------------------------------
+    // 마우스로 잡기 — 한 프레임의 입력. Cloth 가 매 프레임 채워 step() 에 넘긴다.
+    //
+    // 클릭하면 레이 위에 반경 radius 의 구를 놓고, 그 순간 구 안에 있던 정점들을
+    // 놓을 때까지 구 중심 쪽으로 당긴다 (E = ½ k w |x - c|²).
+    // 구의 깊이는 GPU 가 정한다 (clothPredict 의 atomicMin) — CPU 는 레이만 안다.
+    // ---------------------------------------------------------------------
+    struct ClothGrabInfo
+    {
+        cBool isGrabbing = false;           // 버튼을 누르고 있는 동안 true
+        cBool isCaptureFrame = false;       // 누른 뒤 처음 기록되는 프레임만 true
+        raycast::Ray ray{};                 // 이번 프레임의 마우스 레이
+        cVec3 planeOrigin = cVec3(0.0f);    // 클릭한 순간의 레이 원점 — 드래그 평면의 기준점
+        cVec3 planeNormal = cVec3(0.0f, 0.0f, 1.0f);    // 클릭한 순간의 카메라 시선 — 드래그 평면의 법선
+        cFloat radius = 0.15f;              // 구 반경 R (m)
+        cFloat stiffness = 1000.0f;         // 잡기 강성 k (N/m). 관성 m/h² ≈ 36, 늘어남 5000 과 비교한다
+    };
+
+    // GLSL : GRAB_DEPTH_NONE — 레이 근처에 정점이 없었다 (허공을 눌렀다)
+    static constexpr cUint32_t kClothGrabDepthNone = 0xFFFFFFFFu;
+
     // ---------------------------------------------------------------------
     // 천 시뮬레이션의 GPU 쪽 데이터 관리.
     //
@@ -59,7 +81,8 @@ namespace vkengine
 
         // 프레임 커맨드 버퍼에 한 스텝을 기록한다.
         // 그래픽 패스보다 먼저 기록해야 한다 - Renderer 의 "cloth" 패스가 이 결과를 읽는다.
-        void step(VkCommandBuffer cmd);
+        // grab.isCaptureFrame 이면 predict 앞에 깊이 버퍼 초기화(fill)와 배리어 2 개가 더 들어간다.
+        void step(VkCommandBuffer cmd, const ClothGrabInfo& grab);
 
         cBool isReady() const { return this->ready; }
 
@@ -108,12 +131,29 @@ namespace vkengine
         struct PredictPushConstants
         {
             cUint32_t numVertices;
+            cUint32_t isCaptureFrame;           // 1 = 구의 깊이를 찾는다
+            cFloat grabRadius;
+            cFloat padding0;
+            cVec3 rayOrigin;        cFloat padding1;
+            cVec3 rayDirection;     cFloat padding2;
+            cVec3 planeNormal;      cFloat padding3;
         };
+
+        // clothSolve.comp 의 GRAB_MODE_*
+        static const cUint32_t kGrabModeNone = 0u;
+        static const cUint32_t kGrabModeHold = 1u;
+        static const cUint32_t kGrabModeCapture = 2u;      // 클릭한 프레임의 반복 0 — grabWeight 를 정한다
 
         struct SolvePushConstants
         {
             cUint32_t groupOffset;
             cUint32_t groupCount;
+            cUint32_t grabMode;
+            cFloat grabRadius;
+            cVec3 rayOrigin;        cFloat grabStiffness;
+            cVec3 rayDirection;     cFloat padding0;
+            cVec3 planeOrigin;      cFloat padding1;
+            cVec3 planeNormal;      cFloat padding2;
         };
 
         struct FinalizePushConstants
@@ -124,10 +164,10 @@ namespace vkengine
 
         // 셰이더와 어긋나면 dispatch 범위가 엉뚱한 값으로 정해진다.
         // 증상은 "천의 일부만 움직인다" 로 나타나므로 여기서 못박는다.
-        static_assert(sizeof(PredictPushConstants) == 4,
-                      "clothPredict.comp 의 push_constant 는 uint 하나다");
-        static_assert(sizeof(SolvePushConstants) == 8,
-                      "clothSolve.comp 의 push_constant 는 uint 둘이다");
+        static_assert(sizeof(PredictPushConstants) == 64,
+                      "clothPredict.comp 의 push_constant 는 16 + (vec3 + float) x 3 = 64 byte 다");
+        static_assert(sizeof(SolvePushConstants) == 80,
+                      "clothSolve.comp 의 push_constant 는 16 + (vec3 + float) x 4 = 80 byte 다");
         static_assert(sizeof(FinalizePushConstants) == 8,
                       "clothFinalize.comp 의 push_constant 는 uint + float 이다");
 
@@ -143,6 +183,14 @@ namespace vkengine
 
         // 마지막 dispatch 뒤 — 다음 프레임의 predict 와 천 그리기를 위한 것
         void insertFrameEndBarrier(VkCommandBuffer cmd);
+
+        // 클릭한 프레임에 grabDepthBuffer 를 NONE 으로 덮는다 (앞뒤 배리어 포함).
+        // 앞 배리어 : 앞 프레임의 solve 가 깊이를 다 읽은 뒤에 덮어야 한다 (compute → transfer)
+        // 뒤 배리어 : 덮은 값을 predict 의 atomicMin 이 봐야 한다 (transfer → compute)
+        void resetGrabDepth(VkCommandBuffer cmd);
+
+        // ClothGrabInfo → 푸시 상수의 잡기 칸들
+        void setGrabPushConstants(const ClothGrabInfo& grab);
 
         static cUint32_t getGroupCountX(cUint32_t threadCount);
 
@@ -161,6 +209,7 @@ namespace vkengine
         BaseBuffer2 adjacencyBuffer;        // binding 3 — adjacency[]
         BaseBuffer2 adjacencySpringBuffer;  // binding 4 — adjacencySprings[]
         BaseBuffer2 groupBuffer;            // binding 5 — groupVertices[]
+        BaseBuffer2 grabDepthBuffer;        // binding 6 — grabDepthBits (마우스 구의 깊이)
 
         // 디스크립터가 아니다 — vkCmdBindIndexBuffer 로만 쓴다.
         // 격자는 모양이 바뀌지 않으므로 한 번 올리고 그대로 둔다.

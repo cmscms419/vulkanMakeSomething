@@ -18,6 +18,7 @@ namespace vkengine
           adjacencyBuffer(ctx),
           adjacencySpringBuffer(ctx),
           groupBuffer(ctx),
+          grabDepthBuffer(ctx),
           indexBuffer(ctx),
           predictPushConstants(ctx),
           solvePushConstants(ctx),
@@ -134,6 +135,14 @@ namespace vkengine
         this->groupBuffer.createStorageBuffer(groupBufferSize, storageUsage);
         this->groupBuffer.copyData(cloth.getGroupVertices().data(), groupBufferSize);
 
+        // ---- binding 6 : grabDepthBits (마우스 구의 깊이) -----------------
+        // uint 하나지만 16 byte 로 잡는다 (vec4 하나 크기 — 정렬 걱정을 없앤다).
+        // TRANSFER_DST : 클릭할 때 vkCmdFillBuffer 로 NONE 을 쓴다 (storageUsage 에 이미 있다).
+        // 처음에는 "허공" 상태로 둔다. 재빌드하면 잡기가 풀린다.
+        const cUint32_t initialGrabDepth[4] = {kClothGrabDepthNone, 0u, 0u, 0u};
+        this->grabDepthBuffer.createStorageBuffer(sizeof(initialGrabDepth), storageUsage);
+        this->grabDepthBuffer.copyData(initialGrabDepth, sizeof(initialGrabDepth));
+
         // ---- 인덱스 버퍼 (디스크립터가 아니다) ---------------------------
         // createIndexBuffer() 를 쓰면 안 된다. 그 함수는 HOST_VISIBLE 을 요청하지만
         // BaseBuffer2::create() 는 그 인자를 무시하고 DEVICE_LOCAL 을 먼저 고른다.
@@ -158,7 +167,8 @@ namespace vkengine
                                                std::ref<ShaderResource>(this->springBuffer),
                                                std::ref<ShaderResource>(this->adjacencyBuffer),
                                                std::ref<ShaderResource>(this->adjacencySpringBuffer),
-                                               std::ref<ShaderResource>(this->groupBuffer)});
+                                               std::ref<ShaderResource>(this->groupBuffer),
+                                               std::ref<ShaderResource>(this->grabDepthBuffer)});
 
         // cloth.vert 의 set 1 — 같은 정점 버퍼를 SSBO 로 한 번 더 묶는다.
         this->renderDescriptorSet.create(this->ctx, {std::ref<ShaderResource>(this->vertexBuffer)});
@@ -174,6 +184,7 @@ namespace vkengine
         this->adjacencyBuffer.cleanup();
         this->adjacencySpringBuffer.cleanup();
         this->groupBuffer.cleanup();
+        this->grabDepthBuffer.cleanup();
         this->indexBuffer.cleanup();
     }
 
@@ -289,31 +300,92 @@ namespace vkengine
                 VK_ACCESS_2_VERTEX_ATTRIBUTE_READ_BIT);
     }
 
-    void ClothDataManagement::step(VkCommandBuffer cmd)
+    void ClothDataManagement::resetGrabDepth(VkCommandBuffer cmd)
+    {
+        BarrierHelperFunction::insertMemoryBarrier(cmd,
+            VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT,
+            VK_ACCESS_2_SHADER_STORAGE_READ_BIT | VK_ACCESS_2_SHADER_STORAGE_WRITE_BIT,
+            VK_PIPELINE_STAGE_2_TRANSFER_BIT,
+            VK_ACCESS_2_TRANSFER_WRITE_BIT);
+
+        // offset / size 는 4 의 배수여야 한다
+        vkCmdFillBuffer(cmd, this->grabDepthBuffer.getBuffer(), 0, sizeof(cUint32_t), kClothGrabDepthNone);
+
+        BarrierHelperFunction::insertMemoryBarrier(cmd,
+            VK_PIPELINE_STAGE_2_TRANSFER_BIT,
+            VK_ACCESS_2_TRANSFER_WRITE_BIT,
+            VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT,
+            VK_ACCESS_2_SHADER_STORAGE_READ_BIT | VK_ACCESS_2_SHADER_STORAGE_WRITE_BIT);
+    }
+
+    void ClothDataManagement::setGrabPushConstants(const ClothGrabInfo& grab)
+    {
+        PredictPushConstants& predict = this->predictPushConstants.getData();
+        predict.isCaptureFrame = (grab.isGrabbing && grab.isCaptureFrame) ? 1u : 0u;
+        predict.grabRadius = grab.radius;
+        predict.padding0 = 0.0f;
+        predict.rayOrigin = grab.ray.origin;
+        predict.rayDirection = grab.ray.direction;
+        predict.planeNormal = grab.planeNormal;
+        predict.padding1 = predict.padding2 = predict.padding3 = 0.0f;
+
+        // grabMode 는 반복마다 step() 이 정한다
+        SolvePushConstants& solve = this->solvePushConstants.getData();
+        solve.grabRadius = grab.radius;
+        solve.grabStiffness = grab.stiffness;
+        solve.rayOrigin = grab.ray.origin;
+        solve.rayDirection = grab.ray.direction;
+        solve.planeOrigin = grab.planeOrigin;
+        solve.planeNormal = grab.planeNormal;
+        solve.padding0 = solve.padding1 = solve.padding2 = 0.0f;
+    }
+
+    void ClothDataManagement::step(VkCommandBuffer cmd, const ClothGrabInfo& grab)
     {
         if (!this->ready || this->vertexCount == 0u || this->groupRanges.empty())
         {
             return;
         }
 
+        const cBool isCaptureFrame = grab.isGrabbing && grab.isCaptureFrame;
+
+        // ---- 0. 마우스 구의 깊이 초기화 (클릭한 프레임만) ------------------
+        if (isCaptureFrame)
+        {
+            this->resetGrabDepth(cmd);
+        }
+
+        this->setGrabPushConstants(grab);
+
         // ---- 1. 관성 예측 : y = x + h·v + h²·g ---------------------------
+        //      클릭한 프레임이면 구의 깊이도 찾는다 (atomicMin)
         this->bindPipeline(cmd, this->predictPipeline);
         this->predictPushConstants.getData().numVertices = this->vertexCount;
         this->predictPushConstants.push(cmd, this->predictPipeline.getPipelineLayout());
         vkCmdDispatch(cmd, getGroupCountX(this->vertexCount), 1u, 1u);
 
         // ---- 2. 블록 좌표 하강 : 그룹별 뉴턴 한 발짝 ---------------------
+        //      잡는 중이면 구 중심 쪽 에너지 항이 더해진다.
+        //      클릭한 프레임의 반복 0 은 정점마다 grabWeight 를 정한다 (capture).
         this->bindPipeline(cmd, this->solvePipeline);
 
         for (cUint32_t iteration = 0; iteration < this->iterations; iteration++)
         {
+            cUint32_t grabMode = kGrabModeNone;
+            if (grab.isGrabbing)
+            {
+                grabMode = (isCaptureFrame && iteration == 0u) ? kGrabModeCapture : kGrabModeHold;
+            }
+
             for (const ClothSimulation::GroupRange& range : this->groupRanges)
             {
                 // predict 또는 앞 그룹의 쓰기를 기다린다
+                // (클릭한 프레임에는 predict 의 atomicMin 결과도 이 배리어로 보인다)
                 this->insertSolveBarrier(cmd);
 
                 this->solvePushConstants.getData().groupOffset = range.offset;
                 this->solvePushConstants.getData().groupCount = range.count;
+                this->solvePushConstants.getData().grabMode = grabMode;
                 this->solvePushConstants.push(cmd, this->solvePipeline.getPipelineLayout());
 
                 vkCmdDispatch(cmd, getGroupCountX(range.count), 1u, 1u);

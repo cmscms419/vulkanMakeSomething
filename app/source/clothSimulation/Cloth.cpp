@@ -253,6 +253,39 @@ namespace vkengine
         }
 
         this->readbackCenter = sum / static_cast<cFloat>(this->readbackVertices.size());
+
+        // 마우스 구에 잡힌 정점. 클릭한 곳 둘레의 원 모양 격자 범위여야 한다.
+        // 놓은 뒤에도 grabWeight 는 남아 있으므로(다음 클릭에서 덮어쓴다) 놓고 읽어도 보인다.
+        const cUint32_t gridX = this->cloth.getInfo().gridX;
+        this->readbackGrabCount = 0;
+        for (cUint32_t i = 0; i < static_cast<cUint32_t>(this->readbackVertices.size()); i++)
+        {
+            if (this->readbackVertices[i].grabWeight <= 0.0f)
+            {
+                continue;
+            }
+
+            const cUint32_t x = i % gridX;
+            const cUint32_t y = i / gridX;
+            if (this->readbackGrabCount == 0u)
+            {
+                this->readbackGrabMinX = this->readbackGrabMaxX = x;
+                this->readbackGrabMinY = this->readbackGrabMaxY = y;
+            }
+            this->readbackGrabMinX = std::min(this->readbackGrabMinX, x);
+            this->readbackGrabMaxX = std::max(this->readbackGrabMaxX, x);
+            this->readbackGrabMinY = std::min(this->readbackGrabMinY, y);
+            this->readbackGrabMaxY = std::max(this->readbackGrabMaxY, y);
+            this->readbackGrabCount++;
+        }
+
+        if (this->readbackGrabCount > 0u)
+        {
+            Log::printToLogger("[Cloth] grabbed %u vertices / grid x %u~%u, y %u~%u",
+                               this->readbackGrabCount,
+                               this->readbackGrabMinX, this->readbackGrabMaxX,
+                               this->readbackGrabMinY, this->readbackGrabMaxY);
+        }
         this->readbackFrame = this->frameCounter;
         this->hasReadback = true;
 
@@ -319,9 +352,13 @@ namespace vkengine
 
             // ---- 천 시뮬레이션 (Vertex Block Descent) --------------------
             // 그래픽 패스보다 먼저. cloth 패스가 이 결과를 정점 버퍼로 읽는다.
+            // 잡기 입력을 함께 넘긴다. 클릭한 뒤 처음 기록되는 step() 이 구 안의 정점을 잡는다.
+            // 일시정지 중에는 기록하지 않으므로 grabCapturePending 이 남아 있다가
+            // 재생을 누르면 (버튼을 아직 누르고 있다면) 그때 잡는다.
             if (!this->simulationPaused)
             {
-                this->clothData.step(cmd.getCommandBuffer());
+                this->clothData.step(cmd.getCommandBuffer(), this->makeGrabInfo());
+                this->grabCapturePending = false;
             }
 
             this->renderer.render(cmd.getCommandBuffer(), currentFrame, imageIndex,
@@ -440,7 +477,7 @@ namespace vkengine
         if (windowWidth <= 0 || windowHeight <= 0 || this->extent.width == 0u || this->extent.height == 0u)
         {
             this->isGrabbing = false;
-            this->grabBeginRequested = false;
+            this->grabCapturePending = false;
             this->grabButtonWasDown = buttonDown;
             return;
         }
@@ -457,8 +494,6 @@ namespace vkengine
         const cBool releasedNow = !buttonDown && this->grabButtonWasDown;
         this->grabButtonWasDown = buttonDown;
 
-        this->grabBeginRequested = false;
-
         if (pressedNow)
         {
             // ImGui 창 위에서 누른 클릭은 GUI 의 것이다.
@@ -467,13 +502,45 @@ namespace vkengine
             if (!ImGui::GetIO().WantCaptureMouse && !mouse.buttons.right)
             {
                 this->isGrabbing = true;
-                this->grabBeginRequested = true;
+                this->grabCapturePending = true;
+
+                // 드래그 평면 = 누른 순간의 카메라 시선에 수직인 평면.
+                // 법선은 화면 중앙 레이로 만든다. Camera2::getDir() 는 moveForward() 가
+                // pos -= dir 로 쓰는 등 부호가 헷갈려서 행렬에서 직접 만든다 (CPU 테스트로 확인한 경로).
+                // 기준점을 저장해 두므로 드래그 중에 카메라를 움직여도 평면은 그대로다.
+                this->grabPlaneOrigin = this->grabRay.origin;
+                this->grabPlaneNormal = raycast::makeRayFromScreen(framebufferSize * 0.5f, framebufferSize,
+                                                                   this->camera->getViewMatrix(),
+                                                                   this->camera->getProjectionMatrix()).direction;
+                this->grabDragRay = this->grabRay;
             }
         }
         else if (releasedNow)
         {
             this->isGrabbing = false;
+            this->grabCapturePending = false;
         }
+
+        // 레이가 드래그 평면과 거의 평행하면 구 중심이 아주 멀리 튄다.
+        // 그럴 때는 직전 레이를 그대로 둔다 (cos 0.05 ≈ 87도). 셰이더도 같은 검사를 하지만
+        // 셰이더는 그 프레임에 당기기를 건너뛸 뿐이라, CPU 에서 막는 편이 천이 덜 출렁인다.
+        if (this->isGrabbing && glm::dot(this->grabRay.direction, this->grabPlaneNormal) > 0.05f)
+        {
+            this->grabDragRay = this->grabRay;
+        }
+    }
+
+    ClothGrabInfo Cloth::makeGrabInfo() const
+    {
+        ClothGrabInfo info{};
+        info.isGrabbing = this->isGrabbing;
+        info.isCaptureFrame = this->grabCapturePending;
+        info.ray = this->grabDragRay;
+        info.planeOrigin = this->grabPlaneOrigin;
+        info.planeNormal = this->grabPlaneNormal;
+        info.radius = this->grabRadius;
+        info.stiffness = this->grabStiffness;
+        return info;
     }
 
     void Cloth::updateCameraLook()
@@ -922,7 +989,36 @@ namespace vkengine
 
         ImGui::Separator();
 
-        // 1단계 확인용. GPU 피킹이 붙기 전에 레이가 맞는지 눈으로 본다.
+        // 왼쪽 버튼으로 천을 누르고 끈다. 누른 곳의 구(반경 R) 안 정점들이
+        // 구 중심 쪽으로 모이며 따라온다. 강성은 재빌드 없이 바로 반영된다.
+        if (ImGui::CollapsingHeader("마우스 잡기", ImGuiTreeNodeFlags_DefaultOpen))
+        {
+            ImGui::SliderFloat("구 반경 R (m)", &this->grabRadius, 0.02f, 0.5f, "%.3f");
+            ImGui::SliderFloat("잡기 강성 k (N/m)", &this->grabStiffness, 10.0f, 20000.0f, "%.0f",
+                               ImGuiSliderFlags_Logarithmic);
+
+            const cFloat inertiaStiffness = active.mass / (this->pendingInfo.timeStep * this->pendingInfo.timeStep);
+            ImGui::Text("  비교 : 관성 m/h^2 = %.1f, 늘어남 = %.0f", inertiaStiffness, active.kStretch);
+            ImGui::Text("  반경 = 격자 %.1f 칸", this->grabRadius / active.spacing);
+
+            // "정점 읽어오기" 를 눌러야 갱신된다. 놓은 뒤에 읽어도 마지막 잡기가 보인다.
+            if (this->hasReadback)
+            {
+                if (this->readbackGrabCount > 0u)
+                {
+                    ImGui::Text("  잡힌 정점 : %u 개 / 격자 x %u~%u, y %u~%u",
+                                this->readbackGrabCount,
+                                this->readbackGrabMinX, this->readbackGrabMaxX,
+                                this->readbackGrabMinY, this->readbackGrabMaxY);
+                }
+                else
+                {
+                    ImGui::Text("  잡힌 정점 : 없음");
+                }
+            }
+        }
+
+        // 입력 확인용. 레이가 맞는지 눈으로 본다.
         // 천의 처음 평면(z = origin.z) 과의 교점이 클릭한 천 위치와 맞아야 한다.
         // 예) 왼쪽 위 핀 근처를 누르면 교점이 origin 근처가 나와야 한다.
         if (ImGui::CollapsingHeader("마우스 잡기 (입력 확인)"))

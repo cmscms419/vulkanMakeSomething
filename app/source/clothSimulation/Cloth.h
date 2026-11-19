@@ -125,14 +125,33 @@ namespace vkengine
         cFloat windGustAmount = 0.4f;   // 0 = 일정, 1 = 0배 ~ 2배 사이로 흔들린다
         cFloat windTime = 0.0f;         // 돌풍 위상 (초)
 
-        // ---- 마우스로 잡기 (입력) -------------------------------------------
-        // CPU 는 레이만 만든다. 피킹과 목표점 계산은 GPU compute 가 한다 (다음 단계).
-        // grabBeginRequested 는 누른 프레임에만 true — 그 프레임에 피킹 dispatch 를 기록한다.
+        // ---- 마우스로 잡기 ---------------------------------------------------
+        // 누르면 레이 위에 반경 grabRadius 의 구를 놓고, 그 순간 구 안의 정점들을
+        // 놓을 때까지 구 중심 쪽으로 당긴다. CPU 는 레이와 평면만 넘긴다.
+        // 구의 깊이와 정점별 무게는 GPU(clothPredict / clothSolve) 가 정한다.
+        //
+        // grabCapturePending 은 step() 이 실제로 기록된 뒤에야 내린다.
+        // 스왑체인 재생성이나 일시정지로 그 프레임이 건너뛰어져도 잡기가 사라지지 않는다.
         cBool grabButtonWasDown = false;
         cBool isGrabbing = false;
-        cBool grabBeginRequested = false;
+        cBool grabCapturePending = false;
         raycast::Ray grabRay{};                     // 이번 프레임의 마우스 레이 (월드 공간)
+        raycast::Ray grabDragRay{};                 // GPU 에 넘기는 레이 — 평면과 거의 평행하면 직전 값을 유지한다
+        cVec3 grabPlaneOrigin = cVec3(0.0f);        // 누른 순간의 레이 원점 (드래그 평면의 기준점)
+        cVec3 grabPlaneNormal = cVec3(0.0f, 0.0f, 1.0f);   // 누른 순간의 카메라 시선 (드래그 평면의 법선)
         cVec2 grabScreenPosition = cVec2(0.0f);     // 프레임버퍼 픽셀 좌표 (디버그 표시용)
+
+        // 기본 반경 = 3칸 x 0.05 m. 강성은 관성 m/h² ≈ 36 보다 충분히 크고
+        // 늘어남 5000 보다 작게 — 천이 따라오되 스프링이 찢어질 듯 늘어나지는 않는다.
+        cFloat grabRadius = 0.15f;
+        cFloat grabStiffness = 1000.0f;
+
+        // 이번 프레임 step() 에 넘길 잡기 입력
+        ClothGrabInfo makeGrabInfo() const;
+
+        // 읽어 온 정점의 grabWeight 통계 (디버그 표시용)
+        cUint32_t readbackGrabCount = 0;            // grabWeight > 0 인 정점 수
+        cUint32_t readbackGrabMinX = 0, readbackGrabMaxX = 0, readbackGrabMinY = 0, readbackGrabMaxY = 0;
 
         // 시작 직후 한 번만 자동으로 결과를 읽어 로그에 남긴다.
         // 창을 띄우지 않고도 compute 가 돌았는지 확인할 수 있어야 한다.

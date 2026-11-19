@@ -18,7 +18,8 @@ namespace vkengine
     {
         cVec3 position;         cFloat mass;        // x      — 현재 후보 위치
         cVec3 prevPosition;     cFloat pinned;      // x(t)   — 프레임 시작 위치
-        cVec3 nextPosition;     cFloat padding1;    // y      — 관성 예측 위치 (반복 중 고정)
+        cVec3 nextPosition;     cFloat grabWeight;  // y      — 관성 예측 위치 (반복 중 고정)
+                                                    // grabWeight — 마우스 구에 잡힌 정도 (0..1, clothSolve 가 정한다)
         cVec3 velocity;         cFloat padding2;    // v
     };
 

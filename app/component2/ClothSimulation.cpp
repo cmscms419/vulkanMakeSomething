@@ -73,7 +73,7 @@ namespace vkengine
                 vertex.prevPosition = position;
                 vertex.pinned = 0.0f;
                 vertex.nextPosition = position;
-                vertex.padding1 = 0.0f;
+                vertex.grabWeight = 0.0f;
                 vertex.velocity = cVec3(0.0f);
                 vertex.padding2 = 0.0f;
 
@@ -85,8 +85,8 @@ namespace vkengine
         {
             for (cUint32_t i = 0; i < this->info.gridX; i++)
             {
-            this->vertices[this->getVertexIndex(i, 0u)].pinned = 1.0f;
-}
+                this->vertices[this->getVertexIndex(i, 0u)].pinned = 1.0f;
+            }
         }
     }
 

@@ -5,8 +5,15 @@
 
 layout (local_size_x = 256, local_size_y = 1, local_size_z = 1) in;
 
+// ClothDataManagement::PredictPushConstants 와 1:1 (64 byte)
 layout(push_constant) uniform PushConstants {
     uint numVertices;
+    uint isCaptureFrame;    // 1 = 이번 프레임에 클릭했다 → 구의 깊이를 찾는다
+    float grabRadius;       // 구 반경 R. 레이에서 R 안의 정점이 깊이 후보다
+    float padding0;
+    vec3 rayOrigin;     float padding1;    // 클릭한 순간의 마우스 레이 (= 평면 기준점)
+    vec3 rayDirection;  float padding2;
+    vec3 planeNormal;   float padding3;    // 클릭한 순간의 카메라 시선
 } pushConstants;
 
 void main() {
@@ -17,6 +24,25 @@ void main() {
     }
 
     clothVertex vertex = vertices[vertexIndex];
+
+    // ---- 마우스 구의 깊이 찾기 (클릭한 프레임만) ----------------------------
+    // 자기 정점의 위치만 읽으므로 다른 스레드의 쓰기와 경쟁하지 않는다.
+    // vertex.position 은 지난 프레임의 결과 = 클릭할 때 화면에 보이던 천이다.
+    // 고정된 정점도 후보다 — 화면에 보이는 천의 일부이기 때문이다.
+    // 결과는 clothSolve 가 읽는다. predict 와 첫 solve 사이에는 이미 배리어가 있다.
+    if (pushConstants.isCaptureFrame != 0u) {
+        vec3 toVertex = vertex.position - pushConstants.rayOrigin;
+        float along = dot(toVertex, pushConstants.rayDirection);
+        float perpendicularSquared = dot(toVertex, toVertex) - along * along;
+
+        if (along > 0.0 && perpendicularSquared <= pushConstants.grabRadius * pushConstants.grabRadius) {
+            float depth = dot(toVertex, pushConstants.planeNormal);
+            if (depth > 0.0) {
+                atomicMin(grabDepthBits, floatBitsToUint(depth));
+            }
+        }
+    }
+
     vertices[vertexIndex].prevPosition = vertex.position;
 
     if (vertex.pinned > 0.5) {
@@ -25,7 +51,7 @@ void main() {
     }
 
     vec3 nextPosition = vertex.position + vertex.velocity * h + h * h * gravity; //  y = x + h·v + h²·g
-    
+
     vertices[vertexIndex].nextPosition = nextPosition;
     vertices[vertexIndex].position = nextPosition;
 }
