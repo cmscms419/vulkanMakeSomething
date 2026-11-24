@@ -19,7 +19,7 @@ float random(vec2 co)
 
 // 빛이 들어오는 방향
 // 반구에서 균등하게 샘플링하기 위한 해머슬리 좌표 생성
-vec2 hammersley2d(uint i, uint N) 
+vec2 Hammersley(uint i, uint N) 
 {
     // Radical inverse based on http://holger.dammertz.org/stuff/notes_HammersleyOnHemisphere.html
     uint bits = (i << 16u) | (i >> 16u);
@@ -32,7 +32,7 @@ vec2 hammersley2d(uint i, uint N)
 }
 
 // Based on http://blog.selfshadow.com/publications/s2013-shading-course/karis/s2013_pbs_epic_slides.pdf
-vec3 importanceSample_GGX(vec2 Xi, float roughness, vec3 normal) 
+vec3 ImportanceSampleGGX(vec2 Xi, float roughness, vec3 normal) 
 {
     // Maps a 2D point to a hemisphere with spread based on roughness
     float alpha = roughness * roughness;
@@ -51,7 +51,7 @@ vec3 importanceSample_GGX(vec2 Xi, float roughness, vec3 normal)
 }
 
 // Geometric Shadowing function
-float G_SchlicksmithGGX(float dotNL, float dotNV, float roughness)
+float G_Smith(float dotNL, float dotNV, float roughness)
 {
     float k = (roughness * roughness) / 2.0;
     float GL = dotNL / (dotNL * (1.0 - k) + k);
@@ -59,7 +59,7 @@ float G_SchlicksmithGGX(float dotNL, float dotNV, float roughness)
     return GL * GV;
 }
 
-vec2 BRDF(float NoV, float roughness)
+vec2 IntegrateBRDF(float NoV, float roughness)
 {
     // Normal always points along z-axis for the 2D lookup 
     const vec3 N = vec3(0.0, 0.0, 1.0); // 법선 벡터
@@ -67,8 +67,8 @@ vec2 BRDF(float NoV, float roughness)
 
     vec2 LUT = vec2(0.0); // BRDF 값 초기화
     for(uint i = 0u; i < NUM_SAMPLES; i++) {
-        vec2 Xi = hammersley2d(i, NUM_SAMPLES); // 입사각 ?
-        vec3 H = importanceSample_GGX(Xi, roughness, N); // 반사각 ?
+        vec2 Xi = Hammersley(i, NUM_SAMPLES); // 입사각 ?
+        vec3 H = ImportanceSampleGGX(Xi, roughness, N); // 반사각 ?
         vec3 L = 2.0 * dot(V, H) * H - V; // 입사 광선의 빛 방향
 
         float dotNL = max(dot(N, L), 0.0);
@@ -77,7 +77,7 @@ vec2 BRDF(float NoV, float roughness)
         float dotNH = max(dot(H, N), 0.0);
 
         if (dotNL > 0.0) {
-            float G = G_SchlicksmithGGX(dotNL, dotNV, roughness);
+            float G = G_Smith(dotNL, dotNV, roughness);
             float G_Vis = (G * dotVH) / (dotNH * dotNV);
             float Fc = pow(1.0 - dotVH, 5.0);
             LUT += vec2((1.0 - Fc) * G_Vis, Fc * G_Vis);
@@ -88,5 +88,5 @@ vec2 BRDF(float NoV, float roughness)
 
 void main() 
 {
-    outColor = vec4(BRDF(inUV.s, inUV.t), 0.0, 1.0);
+    outColor = vec4(IntegrateBRDF(inUV.s, inUV.t), 0.0, 1.0);
 }

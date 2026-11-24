@@ -8,11 +8,10 @@
 //
 // pbrdeferred 가 G-Buffer 를 채운 뒤에 LOAD 로 이어서 그리므로,
 // 조명/그림자/SSAO 는 lightdeferred 패스가 알아서 해준다.
-// 출력 4장의 의미는 pbrdeferred.frag / physicsInstance.frag 와 똑같아야 한다.
+// 출력 4장의 의미는 pbrdeferred.frag 와 똑같아야 한다 (deferredShadingCommon.glsl 의 G-Buffer 배치).
 //
 // 머티리얼은 엔진의 전역 머티리얼 버퍼(set 2)에서 읽는다.
 // Renderer 가 예약한 칸(clothMaterialIndex)을 데모가 setClothMaterial() 로 채운다.
-// 셰이딩 모델은 SHADING_MODEL_CLOTH 로 기록한다 — lightdeferred 가 sheen/투과로 조명한다.
 
 layout(std140, set = 0, binding = 0) uniform SceneDataUBO {
     mat4 projection;
@@ -42,7 +41,7 @@ struct MaterialUBO {
     int occlusionTextureIndex;
     int workflow;
     int padding0;
-    vec4 clothFactor; // x = sheen 세기, y = 얇은 천 투과
+    vec4 clothFactor; // 쓰지 않음 (C++ 배치를 맞추려고 둔다)
 };
 
 layout(set = 2, binding = 0) restrict readonly buffer MaterialBuffer {
@@ -114,9 +113,6 @@ void main() {
         baseColor *= sampleMaterialTexture(material.baseColorTextureIndex).rgb;
     }
 
-    // 금속성: 금속 실이 섞인 천(라메, 금사 자수 등). 0 이면 보통 천(유전체).
-    // lightdeferred 가 "천(확산+투과) ↔ 금속 반사(GGX)" 를 이 값으로 섞고 그 위에 sheen 을 얹는다.
-    // 거칠기는 금속 반사와 sheen(Charlie 분포)이 같이 쓴다.
     float metallic = material.metallicFactor;
     float roughness = material.roughnessFactor;
     if (hasTexture(material.metallicRoughnessTextureIndex)) {
@@ -125,9 +121,6 @@ void main() {
         roughness *= metallicRoughness.g;
     }
     metallic = clamp(metallic, 0.0, 1.0);
-
-    float sheenIntensity = clamp(material.clothFactor.x, 0.0, 1.0);
-    float translucency = clamp(material.clothFactor.y, 0.0, 1.0);
 
     float ao = 1.0;
     if (hasTexture(material.occlusionTextureIndex)) {
@@ -142,11 +135,8 @@ void main() {
     // pbrdeferred.frag 와 같은 하한 (GGX 하이라이트가 한 점으로 모여 깜빡이는 것 방지)
     roughness = clamp(roughness, 0.045, 1.0);
 
-    // 천 셰이딩 모델의 G-buffer 해석 (materialCommon.glsl 참고)
-    //   gAlbedo.a   = sheen 세기 (STANDARD 에서는 metallic 자리)
-    //   gPosition.a = CLOTH + (얇은 천 투과, 금속성)
-    gAlbedo = vec4(baseColor, sheenIntensity);
+    gAlbedo = vec4(baseColor, metallic);
     gNormal = vec4(encodeNormal(N), roughness);
-    gPosition = vec4(fragPos, packShadingModel(SHADING_MODEL_CLOTH, translucency, metallic));
+    gPosition = vec4(fragPos, packShadingModel(SHADING_MODEL_STANDARD, 0.0, 0.0)); // = 0.0
     gMaterial = vec4(emissive, ao);
 }

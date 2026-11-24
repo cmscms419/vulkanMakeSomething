@@ -228,7 +228,7 @@ namespace vkengine
 
         pipelines.emplace("pbrdeferred",
                           PipelineHandle(ctx, shaderManager, PipelineConfig::createPbrDeferred(),
-                                           std::vector<VkFormat>{VK_FORMAT_R8G8B8A8_UNORM, VK_FORMAT_R16G16B16A16_SFLOAT,
+                                           std::vector<VkFormat>{VK_FORMAT_R8G8B8A8_SRGB, VK_FORMAT_R16G16B16A16_SFLOAT,
                                                                  VK_FORMAT_R32G32B32A32_SFLOAT, VK_FORMAT_R16G16B16A16_SFLOAT},
                                            depthFormat, VK_SAMPLE_COUNT_1_BIT));
         pipelines.emplace("sky", PipelineHandle(ctx, shaderManager, PipelineConfig::createSky(), std::vector<VkFormat>{selectedHDRFormat},
@@ -246,12 +246,12 @@ namespace vkengine
         pipelines.emplace("ssaoBlur", PipelineHandle(ctx, shaderManager, PipelineConfig::createSsaoBlur(), std::vector<VkFormat>{},
                                                        std::nullopt, VK_SAMPLE_COUNT_1_BIT));
         pipelines.emplace("instanced", PipelineHandle(ctx, shaderManager, PipelineConfig::createInstanced(),
-                                                        std::vector<VkFormat>{VK_FORMAT_R8G8B8A8_UNORM, VK_FORMAT_R16G16B16A16_SFLOAT,
+                                                        std::vector<VkFormat>{VK_FORMAT_R8G8B8A8_SRGB, VK_FORMAT_R16G16B16A16_SFLOAT,
                                                                               VK_FORMAT_R32G32B32A32_SFLOAT, VK_FORMAT_R16G16B16A16_SFLOAT},
                                                         depthFormat, VK_SAMPLE_COUNT_1_BIT));
         // 천 — G-Buffer 4장에 그리므로 포맷 목록이 pbrdeferred 와 같아야 한다.
         pipelines.emplace("cloth", PipelineHandle(ctx, shaderManager, PipelineConfig::createCloth(),
-                                                    std::vector<VkFormat>{VK_FORMAT_R8G8B8A8_UNORM, VK_FORMAT_R16G16B16A16_SFLOAT,
+                                                    std::vector<VkFormat>{VK_FORMAT_R8G8B8A8_SRGB, VK_FORMAT_R16G16B16A16_SFLOAT,
                                                                           VK_FORMAT_R32G32B32A32_SFLOAT, VK_FORMAT_R16G16B16A16_SFLOAT},
                                                     depthFormat, VK_SAMPLE_COUNT_1_BIT));
     }
@@ -317,7 +317,8 @@ namespace vkengine
         Log::printToLogger("Creating G-buffer textures for deferred rendering:");
 
         // G-Buffer format selection for optimal memory usage and precision
-        VkFormat albedoFormat = VK_FORMAT_R8G8B8A8_UNORM;        // Albedo + Metallic (4 bytes)
+        // Albedo + Metallic (4 bytes). SRGB 로 저장해야 선형 색의 어두운 영역이 8 비트에서 뭉개지지 않는다.
+        VkFormat albedoFormat = VK_FORMAT_R8G8B8A8_SRGB;
         VkFormat normalFormat = VK_FORMAT_R16G16B16A16_SFLOAT;   // Normal + Roughness (8 bytes, needs precision)
         VkFormat positionFormat = VK_FORMAT_R32G32B32A32_SFLOAT; // Position + Depth (16 bytes, needs high precision)
         VkFormat materialFormat = VK_FORMAT_R16G16B16A16_SFLOAT; // Emissive RGB + AO (HDR emissive needs float)
@@ -360,7 +361,7 @@ namespace vkengine
             VK_IMAGE_ASPECT_COLOR_BIT, 1, 1, (VkImageCreateFlagBits)0);
         images["gPosition"]->setSampler(samplerLinearClamp.getSampler());
 
-        // Create gMaterial buffer (AO R + Emissive Intensity G + Material ID B + Unused A)
+        // Create gMaterial buffer (Emissive RGB + AO A)
         images["gMaterial"]->createImage(
             swapchainWidth,
             swapchainHeight,

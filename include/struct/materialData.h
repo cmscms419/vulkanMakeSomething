@@ -28,16 +28,10 @@ struct MaterialData
     alignas(4) cInt occlusionTextureIndex = -1;
     alignas(4) cInt workflow = static_cast<cInt>(MaterialWorkflow::MetallicRoughness);
     alignas(4) cInt padding0 = 0;
-
-    // 천 셰이딩 모델 전용 (cloth.frag 만 읽는다). 다른 머티리얼은 0 으로 둔다.
-    //   x = sheen 세기 (0~1)   — sheen 색 = x * sqrt(baseColor)   (Filament cloth 기본값 방식)
-    //   y = 얇은 천 투과 (0~1) — 역광일 때 뒤에서 비쳐 들어오는 빛의 비율
-    //   z, w = 예약
     alignas(16) cVec4 clothFactor = cVec4(0.0f);
 };
 
 // std430 배열 stride 와 같아야 한다 (셰이더의 MaterialUBO 배열).
-// 이 구조체를 선언한 셰이더: pbrdeferred.frag, pbrForward.frag, physicsInstance.frag, cloth.frag
 static_assert(sizeof(MaterialData) == 96, "MaterialData must be 96 bytes (std430 stride)");
 
 #endif // !INCLUDE_MATERIAL_H_

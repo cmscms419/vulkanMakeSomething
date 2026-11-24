@@ -2,428 +2,153 @@
 #extension GL_KHR_vulkan_glsl : enable
 #extension GL_GOOGLE_include_directive : require
 
-#include "materialCommon.glsl" // SHADING_MODEL_*, unpackShadingModel()
+// Deferred 조명 (deferred 2단계). G-Buffer 를 읽어 UE4 BRDF 로 조명한다.
+// G-Buffer 는 pbrdeferred.frag / physicsInstance.frag / cloth.frag 가 채운다.
+
+#include "deferredShadingCommon.glsl" // SceneDataUBO, OptionsUBO, DecodeNormal, G-Buffer 배치
+#include "brdf.glsl"                  // DefaultLitBxDF, ApproximateSpecularIBL
 
 layout (local_size_x = 16, local_size_y = 16) in;
 
-layout(set = 0, binding = 0) uniform SceneDataUBO {
-    mat4 projection;
-    mat4 view;
-    vec3 cameraPos;
-    float padding1;
-    vec3 directionalLightDir;
-    float padding2;
-    vec3 directionalLightColor;
-    float padding3;
-    mat4 lightSpaceMatrix;
-} sceneData;
-
-layout(set = 0, binding = 1) uniform OptionsUBO {
-    int textureOn;
-    int shadowOn; 
-    int discardOn;
-    int animationOn;
-    float specularWeight;
-    float diffuseWeight;
-    float emissiveWeight;
-    float shadowOffset;
-} options;
-
-
-layout (set = 0, binding = 2, rgba16f) uniform readonly image2D inputForwardImage;
-layout (set = 0, binding = 3, rgba16f) uniform writeonly image2D outputComputeImage;
+// ---- 리소스 ---------------------------------------------------------------
+// 바인딩 이름과 번호는 C++ (Renderer.cpp, renderGraph*.json) 과 연결되므로 바꾸면 안 된다.
+layout (set = 0, binding = 2, rgba16f) uniform readonly image2D inputForwardImage;   // 하늘이 그려진 이미지
+layout (set = 0, binding = 3, rgba16f) uniform writeonly image2D outputComputeImage; // 조명 결과
 layout (set = 0, binding = 4) uniform sampler2D depthTexture;
 
-// G-buffer textures
-layout(set = 0, binding = 5) uniform sampler2D gAlbedo;    // Albedo RGB + Metallic A
-layout(set = 0, binding = 6) uniform sampler2D gNormal;   // World Normal RGB + Roughness A  
-layout(set = 0, binding = 7) uniform sampler2D gPosition; // World Position RGB + Depth A
-layout(set = 0, binding = 8) uniform sampler2D gMaterial; // RGB: emissive color, A: AO
-layout(set = 0, binding = 9) uniform sampler2DShadow shadowMap;
+layout (set = 0, binding = 5) uniform sampler2D gAlbedo;
+layout (set = 0, binding = 6) uniform sampler2D gNormal;
+layout (set = 0, binding = 7) uniform sampler2D gPosition;
+layout (set = 0, binding = 8) uniform sampler2D gMaterial;
+layout (set = 0, binding = 9) uniform sampler2DShadow shadowMap;
+layout (set = 0, binding = 10) uniform samplerCube prefilteredMap;
+layout (set = 0, binding = 11) uniform samplerCube irradianceMap;
+layout (set = 0, binding = 12) uniform sampler2D brdfLut;
 
-// IBL textures for PBR lighting
-layout(set = 0, binding = 10) uniform samplerCube prefilteredMap;
-layout(set = 0, binding = 11) uniform samplerCube irradianceMap;
-layout(set = 0, binding = 12) uniform sampler2D brdfLut;
+layout (set = 0, binding = 13, r8) uniform readonly image2D ssaoImage; // ssao.comp + ssaoBlur.comp 결과
 
-// SSAO result (computed by ssao.comp + ssaoBlur.comp passes)
-layout(set = 0, binding = 13, r8) uniform readonly image2D ssaoImage;
+// ---- 상수 -----------------------------------------------------------------
+// 그림자 맵 PCF 용 포아송 디스크 (16 샘플)
+const vec2 POISSON_DISK[16] = vec2[](
+    vec2(-0.94201624, -0.39906216),
+    vec2( 0.94558609, -0.76890725),
+    vec2(-0.09418410, -0.92938870),
+    vec2( 0.34495938,  0.29387760),
+    vec2(-0.91588581,  0.45771432),
+    vec2(-0.81544232, -0.87912464),
+    vec2(-0.38277543,  0.27676845),
+    vec2( 0.97484398,  0.75648379),
+    vec2( 0.44323325, -0.97511554),
+    vec2( 0.53742981, -0.47373420),
+    vec2(-0.26496911, -0.41893023),
+    vec2( 0.79197514,  0.19090188),
+    vec2(-0.24188840,  0.99706507),
+    vec2(-0.81409955,  0.91437590),
+    vec2( 0.19984126,  0.78641367),
+    vec2( 0.14383161, -0.14100790)
+);
+const float SHADOW_FILTER_RADIUS = 2.0; // 텍셀 단위. 클수록 그림자 경계가 부드럽다
 
-const float PI = 3.14159265359;
+// 라이트 클립 공간 [-1, 1] -> 그림자 맵 UV [0, 1] (z 는 그대로)
+const mat4 SHADOW_SCALE_BIAS = mat4(
+    0.5, 0.0, 0.0, 0.0,
+    0.0, 0.5, 0.0, 0.0,
+    0.0, 0.0, 1.0, 0.0,
+    0.5, 0.5, 0.0, 1.0
+);
 
-// Note: PBR lighting constants now come from OptionsUBO instead of being hardcoded
+// UE: SpecularColor = lerp(0.08 * Specular, BaseColor, Metallic), Specular 기본값 0.5 -> 0.04
+const vec3 DIELECTRIC_SPECULAR = vec3(0.04);
 
-// Decode normal from G-buffer
-vec3 decodeNormal(vec3 encoded) {
-    return encoded * 2.0 - 1.0;
-}
-
-float clampedDot(vec3 x, vec3 y) {
-    return clamp(dot(x, y), 0.0, 1.0);
-}
-
-// PBR BRDF functions (identical to pbrForward.frag)
-vec3 getIBLGGXFresnel(vec3 n, vec3 v, float roughness, vec3 F0, float specularWeight) {
-    float NdotV = clamp(dot(n, v), 0.0, 1.0);
-    vec2 brdfSamplePoint = clamp(vec2(NdotV, roughness), vec2(0.0, 0.0), vec2(1.0, 1.0));
-    vec2 f_ab = texture(brdfLut, brdfSamplePoint).rg;
-    vec3 Fr = max(vec3(1.0 - roughness), F0) - F0;
-    vec3 k_S = F0 + Fr * pow(1.0 - NdotV, 5.0);
-    vec3 FssEss = specularWeight * (k_S * f_ab.x + f_ab.y);
-
-    // Multiple scattering
-    float Ems = (1.0 - (f_ab.x + f_ab.y));
-    vec3 F_avg = specularWeight * (F0 + (1.0 - F0) / 21.0);
-    vec3 FmsEms = Ems * FssEss * F_avg / (1.0 - F_avg * Ems);
-
-    return FssEss + FmsEms;
-}
-
-vec3 getIBLRadianceGGX(vec3 n, vec3 v, float roughness) {
-    // 밉 수는 하드코딩하지 않고 실제 prefiltered 큐브맵에서 읽는다.
-    // v 는 표면 -> 카메라 방향이라 반사 벡터는 reflect(-v, n) 이다.
-    // reflect(v, n) 은 정확히 반대쪽을 가리켜 바닥에 하늘 대신 땅이 비친다.
-    float lastMip = float(textureQueryLevels(prefilteredMap) - 1);
-    float lod = roughness * lastMip;
-    vec3 reflection = normalize(reflect(-v, n));
-    return textureLod(prefilteredMap, reflection, lod).rgb;
-}
-
-vec3 BRDF_lambertian(vec3 diffuseColor) {
-    return (diffuseColor / PI);
-}
-
-vec3 F_Schlick(vec3 f0, vec3 f90, float VdotH) {
-    return f0 + (f90 - f0) * pow(clamp(1.0 - VdotH, 0.0, 1.0), 5.0);
-}
-
-vec3 F_Schlick(vec3 f0, float VdotH) {
-    float f90 = 1.0;
-    return F_Schlick(f0, vec3(f90), VdotH);
-}
-
-float V_GGX(float NdotL, float NdotV, float alphaRoughness) {
-    float alphaRoughnessSq = alphaRoughness * alphaRoughness;
-    float GGXV = NdotL * sqrt(NdotV * NdotV * (1.0 - alphaRoughnessSq) + alphaRoughnessSq);
-    float GGXL = NdotV * sqrt(NdotL * NdotL * (1.0 - alphaRoughnessSq) + alphaRoughnessSq);
-    float GGX = GGXV + GGXL;
-    if (GGX > 0.0) {
-        return 0.5 / GGX;
-    }
-    return 0.0;
-}
-
-float D_GGX(float NdotH, float alphaRoughness) {
-    float alphaRoughnessSq = alphaRoughness * alphaRoughness;
-    float f = (NdotH * NdotH) * (alphaRoughnessSq - 1.0) + 1.0;
-    return alphaRoughnessSq / (PI * f * f);
-}
-
-vec3 BRDF_specularGGX(float alphaRoughness, float NdotL, float NdotV, float NdotH) {
-    float Vis = V_GGX(NdotL, NdotV, alphaRoughness);
-    float D = D_GGX(NdotH, alphaRoughness);
-    return vec3(Vis * D);
-}
-
-// ---------------------------------------------------------------------------
-// 천 셰이딩 모델 (SHADING_MODEL_CLOTH)
-//
-//   직접광 = mix(wrap 확산 + 얇은 천 투과, 금속 GGX 반사, metallic) + Charlie sheen
-//   간접광 = mix(irradiance 확산 + 뒷면 irradiance 투과, 금속 IBL 반사, metallic) + sheen 환경광(근사)
-//
-// metallic 은 금속 실이 섞인 천(라메, 금사 자수)용이다. glTF 처럼 바탕(base) 을 금속/비금속으로 섞고
-// sheen 은 그 위에 얹는 층으로 둔다 — 금속 천도 비스듬히 보면 섬유 광택이 남는다.
-//
-// Charlie 분포 / 가시성: Estevez & Kulla 2017 "Production Friendly Microfacet Sheen BRDF",
-// glTF KHR_materials_sheen 참조 구현(glTF Sample Viewer)과 같은 식.
-// wrap 확산과 sheen 색 = sqrt(baseColor) 기본값은 Filament 의 cloth 모델을 따른다.
-// ---------------------------------------------------------------------------
-float D_Charlie(float sheenRoughness, float NdotH) {
-    float alphaG = max(sheenRoughness * sheenRoughness, 1e-6);
-    float invR = 1.0 / alphaG;
-    float sin2h = max(1.0 - NdotH * NdotH, 0.0);
-    return (2.0 + invR) * pow(sin2h, invR * 0.5) / (2.0 * PI);
-}
-
-float lambdaSheenNumericHelper(float x, float alphaG) {
-    float oneMinusAlphaSq = (1.0 - alphaG) * (1.0 - alphaG);
-    float a = mix(21.5473, 25.3245, oneMinusAlphaSq);
-    float b = mix(3.82987, 3.32435, oneMinusAlphaSq);
-    float c = mix(0.19823, 0.16801, oneMinusAlphaSq);
-    float d = mix(-1.97760, -1.27393, oneMinusAlphaSq);
-    float e = mix(-4.32054, -4.85967, oneMinusAlphaSq);
-    return a / (1.0 + b * pow(x, c)) + d * x + e;
-}
-
-float lambdaSheen(float cosTheta, float alphaG) {
-    if (abs(cosTheta) < 0.5) {
-        return exp(lambdaSheenNumericHelper(cosTheta, alphaG));
-    }
-    return exp(2.0 * lambdaSheenNumericHelper(0.5, alphaG) - lambdaSheenNumericHelper(1.0 - cosTheta, alphaG));
-}
-
-float V_Charlie(float NdotL, float NdotV, float sheenRoughness) {
-    float alphaG = max(sheenRoughness * sheenRoughness, 1e-6);
-    float denominator = (1.0 + lambdaSheen(NdotV, alphaG) + lambdaSheen(NdotL, alphaG)) * (4.0 * NdotV * NdotL);
-    return clamp(1.0 / max(denominator, 1e-6), 0.0, 1.0);
-}
-
-// sheen 환경광 반사율 근사.
-// 정확하게 하려면 Charlie 용 사전 적분 LUT(와 Charlie 로 prefilter 한 큐브맵)가 필요한데 아직 없다.
-// sheen 은 비스듬히 볼수록 강해지는 성질만 살린 경험식이다 — LUT 를 만들면 교체한다.
-float approximateSheenAlbedo(float NdotV) {
-    return 0.1 + 0.4 * pow(1.0 - NdotV, 3.0);
-}
-
-// 천 셰이딩 모델 결과. iblColor 는 간접광(나중에 AO/SSAO 를 곱한다), directColor 는 직접광(그림자 반영 전).
-void shadeCloth(vec3 baseColor, float sheenIntensity, float translucency, float metallic, float roughness,
-                vec3 N, vec3 V, vec3 l, vec3 lightIntensity,
-                out vec3 iblColor, out vec3 directColor)
+// ---- 그림자 -----------------------------------------------------------------
+// 1 = 빛을 받음, 0 = 그림자
+float CalculateShadow(vec3 WorldPosition)
 {
-    vec3 sheenColor = sheenIntensity * sqrt(max(baseColor, vec3(0.0)));
+    vec4 LightSpacePosition = SHADOW_SCALE_BIAS * sceneData.lightSpaceMatrix * vec4(WorldPosition, 1.0);
+    vec3 ShadowCoord = LightSpacePosition.xyz / LightSpacePosition.w;
 
-    float NdotLSigned = dot(N, l);
-    float NdotL = clamp(NdotLSigned, 0.0, 1.0);
-    float NdotV = clamp(dot(N, V), 1e-4, 1.0);
-    vec3 h = normalize(l + V);
-    float NdotH = clampedDot(N, h);
-
-    // wrap 확산: 빛이 법선과 직각을 조금 넘어가도 확산광이 부드럽게 줄어든다 (섬유 사이로 빛이 번지는 느낌).
-    // (NdotL + w) / (1 + w)^2, w = 0.5 — 코사인 항을 이미 포함한다.
-    const float wrap = 0.5;
-    vec3 diffuse = BRDF_lambertian(baseColor) * clamp((NdotLSigned + wrap) / ((1.0 + wrap) * (1.0 + wrap)), 0.0, 1.0);
-
-    // sheen: 섬유 끝에서 생기는 부드러운 광택. 비스듬히 볼 때 테두리가 밝아진다.
-    vec3 sheen = vec3(0.0);
-    if (NdotL > 0.0) {
-        sheen = sheenColor * D_Charlie(roughness, NdotH) * V_Charlie(NdotL, NdotV, roughness) * NdotL;
-    }
-
-    // 얇은 천 투과: 빛이 천의 뒤쪽(보이는 면의 반대편)에서 오면 천을 통과해 비쳐 보인다.
-    vec3 transmission = translucency * BRDF_lambertian(baseColor) * clamp(-NdotLSigned, 0.0, 1.0);
-
-    // 금속 실: baseColor 를 F0 로 쓰는 GGX 반사 (STANDARD 모델의 금속 경로와 같은 식).
-    // 금속은 빛을 통과시키지 않으므로 투과는 비금속 쪽에만 있다.
-    vec3 metalReflection = vec3(0.0);
-    if (NdotL > 0.0) {
-        vec3 metalFresnel = F_Schlick(baseColor, vec3(1.0), clampedDot(V, h));
-        metalReflection = metalFresnel * BRDF_specularGGX(roughness * roughness, NdotL, NdotV, NdotH) * NdotL;
-    }
-
-    vec3 dielectricBase = diffuse + transmission;
-    directColor = lightIntensity * (mix(dielectricBase, metalReflection, metallic) + sheen);
-
-    // 간접광
-    vec3 iblDiffuse = texture(irradianceMap, N).rgb * baseColor * options.diffuseWeight;
-    vec3 iblTransmission = texture(irradianceMap, -N).rgb * baseColor * translucency;
-    vec3 iblMetal = getIBLGGXFresnel(N, V, roughness, baseColor, 1.0) * getIBLRadianceGGX(N, V, roughness);
-    vec3 iblSheen = sheenColor * getIBLRadianceGGX(N, V, roughness) * approximateSheenAlbedo(NdotV);
-    iblColor = mix(iblDiffuse + iblTransmission, iblMetal, metallic) + iblSheen;
-}
-
-// Shadow calculation - Updated to match pbrForward.frag implementation
-float calculateShadow(vec3 worldPos) {
-    // Apply the same scaleBias transformation as in pbrForward.vert
-    const mat4 scaleBias = mat4(
-        0.5, 0.0, 0.0, 0.0, 
-        0.0, 0.5, 0.0, 0.0, 
-        0.0, 0.0, 1.0, 0.0, 
-        0.5, 0.5, 0.0, 1.0
-    );
-    
-    vec4 lightSpacePos = scaleBias * sceneData.lightSpaceMatrix * vec4(worldPos, 1.0);
-    vec3 projCoords = lightSpacePos.xyz / lightSpacePos.w;
-    
-    // Early bounds check - avoid expensive sampling if outside shadow map
-    if(projCoords.z <= -1.0 || projCoords.z >= 1.0 || 
-       projCoords.x < 0.0 || projCoords.x > 1.0 ||
-       projCoords.y < 0.0 || projCoords.y > 1.0)
-        return 1.0;
-    
-    // PCF with Poisson disk sampling (matching forward renderer)
-    const vec2 poissonDisk[16] = vec2[](
-        vec2(-0.94201624, -0.39906216),
-        vec2(0.94558609, -0.76890725),
-        vec2(-0.09418410, -0.92938870),
-        vec2(0.34495938, 0.29387760),
-        vec2(-0.91588581, 0.45771432),
-        vec2(-0.81544232, -0.87912464),
-        vec2(-0.38277543, 0.27676845),
-        vec2(0.97484398, 0.75648379),
-        vec2(0.44323325, -0.97511554),
-        vec2(0.53742981, -0.47373420),
-        vec2(-0.26496911, -0.41893023),
-        vec2(0.79197514, 0.19090188),
-        vec2(-0.24188840, 0.99706507),
-        vec2(-0.81409955, 0.91437590),
-        vec2(0.19984126, 0.78641367),
-        vec2(0.14383161, -0.14100790)
-    );
-    
-    // PCF with Poisson disk sampling
-    float shadow = 0.0;
-    vec2 texelSize = 1.0 / textureSize(shadowMap, 0);
-    float filterRadius = 2.0; // Adjust for shadow softness
-    
-    for(int i = 0; i < 16; ++i)
+    // 그림자 맵 밖이면 빛을 받는 것으로 본다
+    if (ShadowCoord.z <= -1.0 || ShadowCoord.z >= 1.0 ||
+        ShadowCoord.x < 0.0 || ShadowCoord.x > 1.0 ||
+        ShadowCoord.y < 0.0 || ShadowCoord.y > 1.0)
     {
-        vec2 offset = poissonDisk[i] * texelSize * filterRadius;
-        shadow += texture(shadowMap, vec3(projCoords.xy + offset, projCoords.z));
+        return 1.0;
     }
-    shadow /= 16.0;
-    
-    return shadow;
+
+    vec2 TexelSize = 1.0 / vec2(textureSize(shadowMap, 0));
+    float Shadow = 0.0;
+    for (int i = 0; i < 16; ++i)
+    {
+        vec2 Offset = POISSON_DISK[i] * TexelSize * SHADOW_FILTER_RADIUS;
+        Shadow += texture(shadowMap, vec3(ShadowCoord.xy + Offset, ShadowCoord.z));
+    }
+    return Shadow / 16.0;
 }
 
 void main()
 {
-    ivec2 imageCoords = ivec2(gl_GlobalInvocationID.xy);
-    ivec2 imageSize = imageSize(outputComputeImage);
-
-    if (imageCoords.x >= imageSize.x || imageCoords.y >= imageSize.y) {
+    ivec2 PixelCoord = ivec2(gl_GlobalInvocationID.xy);
+    ivec2 ViewSize = imageSize(outputComputeImage);
+    if (PixelCoord.x >= ViewSize.x || PixelCoord.y >= ViewSize.y)
+    {
         return;
     }
 
-    // G-buffer 는 출력과 해상도가 같으므로 필터링 없이 texelFetch 로 읽는다.
-    // (vec2(imageCoords) / size 로 linear 샘플하면 반 텍셀 어긋나 이웃 픽셀의 노멀/러프니스가 섞인다)
-
-    // Sample depth to distinguish sky from geometry
-    float depth = texelFetch(depthTexture, imageCoords, 0).r;
-    const float SKY_DEPTH_THRESHOLD = 0.9999;
-    const float DEPTH_TRANSITION_RANGE = 0.001;
-    
-    // Early exit for pure sky pixels to avoid unnecessary G-buffer samples
-    if (depth >= SKY_DEPTH_THRESHOLD + DEPTH_TRANSITION_RANGE) {
-        vec4 skyColor = imageLoad(inputForwardImage, imageCoords);
-        imageStore(outputComputeImage, imageCoords, skyColor);
+    // ---- 하늘 ---------------------------------------------------------------
+    // G-Buffer 패스가 아무것도 그리지 않은 픽셀은 깊이가 clear 값(1.0) 그대로다.
+    // 하늘 패스는 깊이를 쓰지 않으므로 이 픽셀은 하늘 색을 그대로 내보낸다.
+    float SceneDepth = texelFetch(depthTexture, PixelCoord, 0).r;
+    if (SceneDepth >= 1.0)
+    {
+        imageStore(outputComputeImage, PixelCoord, imageLoad(inputForwardImage, PixelCoord));
         return;
     }
-    
-    // Calculate sky blend factor for smooth transition
-    float skyBlendFactor = smoothstep(SKY_DEPTH_THRESHOLD - DEPTH_TRANSITION_RANGE, 
-                                      SKY_DEPTH_THRESHOLD, depth);
-    
-    vec4 skyColor = imageLoad(inputForwardImage, imageCoords);
-    vec4 geometryColor = vec4(0.0, 0.0, 0.0, 1.0); // Default black for geometry
-    
-    // Only calculate lighting for geometry pixels (including near-sky pixels for blending)
-    if (depth < SKY_DEPTH_THRESHOLD + DEPTH_TRANSITION_RANGE) {
-        // Sample G-buffer data
-        vec4 albedoMetallic = texelFetch(gAlbedo, imageCoords, 0);
-        vec4 normalRoughness = texelFetch(gNormal, imageCoords, 0);
-        vec4 positionDepth = texelFetch(gPosition, imageCoords, 0);
-        vec4 materialData = texelFetch(gMaterial, imageCoords, 0);
-        
-        // Extract material properties
-        vec3 baseColor = albedoMetallic.rgb;
-        float metallic = albedoMetallic.a;
-        vec3 worldNormal = decodeNormal(normalRoughness.rgb);
-        float roughness = normalRoughness.a;
-        vec3 worldPosition = positionDepth.rgb;
-        vec3 emissiveColor = materialData.rgb;
-        float ao = materialData.a;
-        
-        // Clamp material properties
-        roughness = clamp(roughness, 0.0, 1.0);
-        metallic = clamp(metallic, 0.0, 1.0);
-        
-        // Calculate view direction
-        vec3 V = normalize(sceneData.cameraPos - worldPosition);
-        vec3 N = normalize(worldNormal);
 
-        // 셰이딩 모델 (gPosition.a, materialCommon.glsl)
-        int shadingModel = unpackShadingModel(positionDepth.a);
+    // ---- G-Buffer 읽기 -------------------------------------------------------
+    // 출력과 해상도가 같으므로 필터링 없이 texelFetch 로 읽는다.
+    vec4 AlbedoMetallic = texelFetch(gAlbedo, PixelCoord, 0);
+    vec4 NormalRoughness = texelFetch(gNormal, PixelCoord, 0);
+    vec4 PositionData = texelFetch(gPosition, PixelCoord, 0);
+    vec4 MaterialData = texelFetch(gMaterial, PixelCoord, 0);
 
-        vec3 iblColor = vec3(0.0);
-        vec3 l_light = vec3(0.0);
+    vec3 BaseColor = AlbedoMetallic.rgb;
+    float Metallic = clamp(AlbedoMetallic.a, 0.0, 1.0);
+    vec3 N = normalize(DecodeNormal(NormalRoughness.rgb));
+    float Roughness = clamp(NormalRoughness.a, 0.0, 1.0);
+    vec3 WorldPosition = PositionData.rgb;
+    vec3 Emissive = MaterialData.rgb;
+    float AmbientOcclusion = MaterialData.a;
 
-        // 그림자는 두 모델이 같이 쓴다. 천은 역광(투과)에도 그림자를 적용해야 하므로
-        // STANDARD 처럼 NdotL > 0 일 때만 계산하지 않는다.
-        vec3 lightDirection = normalize(sceneData.directionalLightDir);
-        float shadowFactor = 1.0;
-        if (options.shadowOn != 0 &&
-            (shadingModel == SHADING_MODEL_CLOTH || dot(N, lightDirection) > 0.0)) {
-            shadowFactor = calculateShadow(worldPosition);
-            shadowFactor = clamp(shadowFactor + options.shadowOffset, 0.0, 1.0);
-        }
+    // ---- 재질 (UE 의 DiffuseColor / SpecularColor) ---------------------------
+    vec3 DiffuseColor = BaseColor - BaseColor * Metallic;
+    vec3 SpecularColor = mix(DIELECTRIC_SPECULAR, BaseColor, Metallic);
 
-        if (shadingModel == SHADING_MODEL_CLOTH) {
-            // gAlbedo.a = sheen 세기, gPosition.a 의 파라미터 = (얇은 천 투과, 금속성)
-            float sheenIntensity = albedoMetallic.a;
-            float translucency = unpackShadingParameter0(positionDepth.a);
-            float clothMetallic = unpackShadingParameter1(positionDepth.a);
+    vec3 V = normalize(sceneData.cameraPos - WorldPosition);
+    vec3 L = normalize(sceneData.directionalLightDir);
 
-            vec3 directColor;
-            shadeCloth(baseColor, sheenIntensity, translucency, clothMetallic, roughness,
-                       N, V, lightDirection, sceneData.directionalLightColor,
-                       iblColor, directColor);
-            l_light = directColor * shadowFactor;
-        }
-        else {
-        // ---- SHADING_MODEL_STANDARD (metallic-roughness GGX) -------------
-        // IBL lighting - Apply diffuseWeight to diffuse component only
-        vec3 f_diffuse = texture(irradianceMap, N).rgb * baseColor * options.diffuseWeight;
-        vec3 f_specular_metal = getIBLRadianceGGX(N, V, roughness);
-        vec3 f_specular_dielectric = f_specular_metal;
-        
-        // For metallic materials, don't apply specularWeight to IBL fresnel (it's already metallic)
-        vec3 f_metal_fresnel_ibl = getIBLGGXFresnel(N, V, roughness, baseColor.rgb, 1.0);
-        vec3 f_metal_brdf_ibl = f_metal_fresnel_ibl * f_specular_metal;
-        
-        vec3 f0_dielectric = vec3(0.04);
-        vec3 f90_dielectric = vec3(1.0);
-        
-        // For dielectric materials, apply specularWeight to control specular intensity
-        vec3 f_dielectric_fresnel_ibl = getIBLGGXFresnel(N, V, roughness, f0_dielectric, options.specularWeight);
-        vec3 f_dielectric_brdf_ibl = mix(f_diffuse, f_specular_dielectric, f_dielectric_fresnel_ibl);
-        
-        // Directional light - Always calculate lighting, shadow factor depends on shadowOn
-        {
-            vec3 l = lightDirection;
-            vec3 h = normalize(l + V);
-            float NdotL = clampedDot(N, l);
-            float NdotV = clampedDot(N, V);
-            float NdotH = clampedDot(N, h);
-            float VdotH = clampedDot(V, h);
-
-            // Apply specularWeight consistently to direct lighting
-            vec3 dielectric_fresnel = F_Schlick(f0_dielectric * options.specularWeight, f90_dielectric, abs(VdotH));
-            vec3 metal_fresnel = F_Schlick(baseColor.rgb, vec3(1.0), abs(VdotH));
-            // 색은 GUI 의 directionalLightColor 만 따른다 (예전 하드코딩 틴트 (1,0.9,0.7) 제거)
-            vec3 lightIntensity = sceneData.directionalLightColor;
-            vec3 l_diffuse = lightIntensity * NdotL * BRDF_lambertian(baseColor.rgb);
-            
-            vec3 l_specular_metal = lightIntensity * NdotL * BRDF_specularGGX(roughness*roughness, NdotL, NdotV, NdotH);
-            vec3 l_specular_dielectric = l_specular_metal;
-
-            vec3 l_metal_brdf = metal_fresnel * l_specular_metal;
-            vec3 l_dielectric_brdf = mix(l_diffuse, l_specular_dielectric, dielectric_fresnel);
-            
-            // shadowFactor 는 분기 앞에서 계산했다
-            l_light = mix(l_dielectric_brdf, l_metal_brdf, metallic) * shadowFactor;
-        }
-
-        // IBL (ambient) contribution - SSAO는 간접광에만 적용 (직접광은 그림자가 담당)
-        iblColor = mix(f_dielectric_brdf_ibl, f_metal_brdf_ibl, metallic);
-        } // SHADING_MODEL_STANDARD
-
-        // 차폐(머티리얼 AO 텍스처 + SSAO)는 간접광에만 적용한다.
-        // 직접광의 차폐는 그림자가 담당하므로, 여기에 AO 를 곱하면 햇빛 받는 면까지 어두워진다.
-        // pow(ssaoPower) 는 ssao.comp 에서 이미 적용되어 있다
-        float ssao = imageLoad(ssaoImage, imageCoords).r;
-        iblColor *= ao * ssao;
-
-        // Combine IBL and direct lighting
-        vec3 finalColor = iblColor + l_light;
-
-        // Add emissive
-        finalColor += emissiveColor * options.emissiveWeight;
-
-        geometryColor = vec4(finalColor, 1.0);
+    // ---- 그림자 ---------------------------------------------------------------
+    // 빛을 등진 면은 직접광이 0 이므로 그림자를 계산하지 않는다.
+    float Shadow = 1.0;
+    if (options.shadowOn != 0 && dot(N, L) > 0.0)
+    {
+        Shadow = CalculateShadow(WorldPosition);
     }
-    
-    // Blend between geometry lighting and sky color based on depth
-    vec4 color = mix(geometryColor, skyColor, skyBlendFactor);
 
-    imageStore(outputComputeImage, imageCoords, color);
+    // ---- 직접광 (방향광 1개) ----------------------------------------------------
+    vec3 LightColor = sceneData.directionalLightColor;
+    FDirectLighting DirectLighting = DefaultLitBxDF(DiffuseColor, SpecularColor, Roughness, N, V, L);
+    vec3 DirectColor = (DirectLighting.Diffuse + DirectLighting.Specular) * LightColor * Shadow;
+
+    // ---- 간접광 (IBL) -----------------------------------------------------------
+    // irradianceMap 은 E / PI 를 저장한다 (irradiancecube.frag) -> DiffuseColor 를 곱하면 Lambert 확산이 된다.
+    vec3 DiffuseIBL = texture(irradianceMap, N).rgb * DiffuseColor;
+    vec3 SpecularIBL = ApproximateSpecularIBL(prefilteredMap, brdfLut, SpecularColor, Roughness, N, V);
+
+    // 차폐(머티리얼 AO + SSAO)는 간접광에만 적용한다. 직접광의 차폐는 그림자가 담당한다.
+    float SSAO = imageLoad(ssaoImage, PixelCoord).r;
+    vec3 IndirectColor = (DiffuseIBL + SpecularIBL) * AmbientOcclusion * SSAO;
+
+    // ---- 최종 색 ----------------------------------------------------------------
+    vec3 outColor = DirectColor + IndirectColor + Emissive;
+    imageStore(outputComputeImage, PixelCoord, vec4(outColor, 1.0));
 }

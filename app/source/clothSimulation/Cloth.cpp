@@ -43,11 +43,6 @@ namespace vkengine
         material.metallicFactor = 0.0f;
         material.emissiveFactor = cVec4(0.0f);
         material.workflow = static_cast<cInt>(MaterialWorkflow::MetallicRoughness);
-
-        // 천 셰이딩 모델 (lightdeferred 의 shadeCloth)
-        //   x = sheen 세기 — 1 이면 sheen 색 = sqrt(baseColor) (Filament 기본값)
-        //   y = 얇은 천 투과 — 역광에서 비쳐 보이는 정도
-        material.clothFactor = cVec4(1.0f, 0.3f, 0.0f, 0.0f);
         return material;
     }
 
@@ -874,10 +869,7 @@ namespace vkengine
 
             materialChanged = ImGui::ColorEdit3("기본 색", &material.baseColorFactor.x) || materialChanged;
             materialChanged = ImGui::SliderFloat("거칠기", &material.roughness, 0.0f, 1.0f, "%.2f") || materialChanged;
-            // 금속성: 금속 실이 섞인 천. 바탕을 금속 반사로 바꾸고 sheen 은 그 위에 남는다.
             materialChanged = ImGui::SliderFloat("금속성", &material.metallicFactor, 0.0f, 1.0f, "%.2f") || materialChanged;
-            materialChanged = ImGui::SliderFloat("Sheen 세기", &material.clothFactor.x, 0.0f, 1.0f, "%.2f") || materialChanged;
-            materialChanged = ImGui::SliderFloat("투과 (역광)", &material.clothFactor.y, 0.0f, 1.0f, "%.2f") || materialChanged;
             materialChanged = ImGui::ColorEdit3("발광 색", &material.emissiveFactor.x,
                                                 ImGuiColorEditFlags_HDR | ImGuiColorEditFlags_Float) || materialChanged;
 

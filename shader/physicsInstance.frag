@@ -106,7 +106,7 @@ void main() {
 
     // Output to G-Buffer
     // Clamp material properties
-    roughness = clamp(roughness, 0.0, 1.0);
+    roughness = clamp(roughness, 0.045, 1.0);
     metallic = clamp(metallic, 0.0, 1.0);
 
     gAlbedo = vec4(baseColor, metallic);
