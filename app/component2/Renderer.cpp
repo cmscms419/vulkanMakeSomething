@@ -995,7 +995,10 @@ namespace vkengine
 
         vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, this->pipelines.at("shadowMap").getPipeline());
 
-        const auto descriptorSets = std::vector{this->SceneOptionsBoneDataSets[currentFrame].get()};
+        // set 0 = Scene/Options/Bone, set 1 = 전역 머티리얼 버퍼 + 바인드리스 텍스처 (pbrdeferred 의 set 1 과 같은 레이아웃)
+        // set 1 은 shadowMap.frag 의 알파 마스크 테스트(나뭇잎 등)가 쓴다.
+        const auto descriptorSets = std::vector{this->SceneOptionsBoneDataSets[currentFrame].get(),
+                                                this->materialDescriptorSet.get()};
 
         vkCmdBindDescriptorSets(
             cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, this->pipelines.at("shadowMap").getPipelineLayout(), 0,
@@ -1016,14 +1019,19 @@ namespace vkengine
                 continue;
             }
 
-            vkCmdPushConstants(cmd, this->pipelines.at("shadowMap").getPipelineLayout(),
-                               VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(this->currentModels->at(j).getModelResource().modelMatrix),
-                               &this->currentModels->at(j).getModelResource().modelMatrix);
+            // shadowMap.vert / shadowMap.frag 의 push_constant 는 pbrdeferred 와 같은 DrawModelResource 다.
+            // 메시마다 materialIndex 만 바꿔서 보낸다 (모델 쪽 값은 건드리지 않도록 복사본을 쓴다).
+            DrawModelResource shadowDrawResource = this->currentModels->at(j).getModelResource();
 
             // Render all meshes in this model
             for (size_t i = 0; i < this->currentModels->at(j).getMeshes().size(); i++)
             {
                 auto &mesh = this->currentModels->at(j).getMeshes()[i];
+
+                shadowDrawResource.materialIndex = mesh.materialIndex;
+                vkCmdPushConstants(cmd, this->pipelines.at("shadowMap").getPipelineLayout(),
+                                   VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0,
+                                   sizeof(shadowDrawResource), &shadowDrawResource);
 
                 // mesh culled 삭제 
                 // 이유 : 그림자를 생성하는데, mesh 정보다 필요하다. 추후 GPU 혹은 다른 방법으로 cullined 해야한다

@@ -40,7 +40,7 @@ struct MaterialUBO {
     int metallicRoughnessTextureIndex;
     int occlusionTextureIndex;
     int workflow;
-    int padding0;
+    int alphaMode;                     // MATERIAL_ALPHA_MODE_* (materialCommon.glsl)
     vec4 clothFactor; // 쓰지 않음 (C++ 배치를 맞추려고 둔다)
 };
 

@@ -11,6 +11,7 @@
 #define STB_IMAGE_IMPLEMENTATION
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 
+#include <assimp/GltfMaterial.h> // AI_MATKEY_GLTF_ALPHAMODE / ALPHACUTOFF
 #include <chrono>
 #include <stb_image.h>
 #include <stb_image_write.h>
@@ -22,7 +23,8 @@ namespace vkengine
 {
     // 캐시 포맷 버전. 머티리얼 필드나 텍스처 sRGB 판정이 바뀌면 올린다.
     // 2: MaterialData::workflow 추가, Bistro map_Ks/emissive sRGB, Ka 제거, Ns -> roughness
-    static constexpr uint32_t kCacheFileVersion = 2;
+    // 3: MaterialData::alphaMode 추가, glTF alphaMode/alphaCutoff 읽기
+    static constexpr uint32_t kCacheFileVersion = 3;
 
     ModelLoader::ModelLoader(Model &model) : model(model)
     {
@@ -434,6 +436,8 @@ namespace vkengine
                         sizeof(model.materials[i].ubo.occlusionTextureIndex));
             stream.read(reinterpret_cast<char *>(&model.materials[i].ubo.workflow),
                         sizeof(model.materials[i].ubo.workflow));
+            stream.read(reinterpret_cast<char *>(&model.materials[i].ubo.alphaMode),
+                        sizeof(model.materials[i].ubo.alphaMode));
 
             // Read flags
             stream.read(reinterpret_cast<char *>(&model.materials[i].flags),
@@ -565,6 +569,8 @@ namespace vkengine
                          sizeof(material.ubo.occlusionTextureIndex));
             stream.write(reinterpret_cast<const char *>(&material.ubo.workflow),
                          sizeof(material.ubo.workflow));
+            stream.write(reinterpret_cast<const char *>(&material.ubo.alphaMode),
+                         sizeof(material.ubo.alphaMode));
 
             // Write flags
             stream.write(reinterpret_cast<const char *>(&material.flags), sizeof(material.flags));
@@ -793,6 +799,32 @@ namespace vkengine
             mat.ubo.roughness = roughness;
         }
 
+        // Base color alpha (glTF baseColorFactor.a). 위의 AI_MATKEY_COLOR_DIFFUSE 는 aiColor3D 라 a 가 빠진다.
+        aiColor4D baseColor4;
+        if (material->Get(AI_MATKEY_BASE_COLOR, baseColor4) == AI_SUCCESS)
+        {
+            mat.ubo.baseColorFactor.w = baseColor4.a;
+        }
+
+        // Alpha mode (glTF alphaMode / alphaCutoff).
+        // MASK 는 baseColor 텍스처의 a 로 잘라내야 한다 (나뭇잎, 쇠사슬 등).
+        aiString alphaMode;
+        if (material->Get(AI_MATKEY_GLTF_ALPHAMODE, alphaMode) == AI_SUCCESS)
+        {
+            const cString mode = alphaMode.C_Str();
+            if (mode == "MASK")
+            {
+                cFloat alphaCutoff = 0.5f; // glTF 기본값
+                material->Get(AI_MATKEY_GLTF_ALPHACUTOFF, alphaCutoff);
+                mat.ubo.alphaMode = static_cast<cInt>(MaterialAlphaMode::Mask);
+                mat.ubo.discardAlpha = alphaCutoff;
+            }
+            else if (mode == "BLEND")
+            {
+                mat.ubo.alphaMode = static_cast<cInt>(MaterialAlphaMode::Blend);
+            }
+        }
+
         // Emissive factor
         aiColor3D emissive;
         if (material->Get(AI_MATKEY_COLOR_EMISSIVE, emissive) == AI_SUCCESS)
@@ -853,6 +885,7 @@ namespace vkengine
         Log::printToLogger("  Base color: %f, %f, %f, %f", mat.ubo.baseColorFactor.x, mat.ubo.baseColorFactor.y, mat.ubo.baseColorFactor.z, mat.ubo.baseColorFactor.w);
         Log::printToLogger("  Metallic factor: %f ", mat.ubo.metallicFactor);
         Log::printToLogger("  Roughness factor: %f ", mat.ubo.roughness);
+        Log::printToLogger("  Alpha mode: %d, cutoff: %f", mat.ubo.alphaMode, mat.ubo.discardAlpha);
         Log::printToLogger("  Emissive factor: %f, %f, %f, %f", mat.ubo.emissiveFactor.x, mat.ubo.emissiveFactor.y, mat.ubo.emissiveFactor.z, mat.ubo.emissiveFactor.w);
         Log::printToLogger("  Base color texture: %s", mat.ubo.baseColorTextureIndex != -1 ? "Loaded" : "None");
         Log::printToLogger("  MetallicRoughness texture: %s", mat.ubo.metallicRoughnessTextureIndex != -1 ? "Loaded" : "None");

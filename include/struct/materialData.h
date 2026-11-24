@@ -12,6 +12,15 @@ enum class MaterialWorkflow : cInt
                             //   RGB = F0 반사색(sRGB), A = smoothness(glossiness)
 };
 
+// 알파 처리 방식 (glTF alphaMode).
+// shader/materialCommon.glsl 의 MATERIAL_ALPHA_MODE_* define 과 값이 반드시 일치해야 한다.
+enum class MaterialAlphaMode : cInt
+{
+    Opaque = 0, // 알파 무시
+    Mask = 1,   // baseColorFactor.a * baseColor 텍스처 a < discardAlpha(alphaCutoff) 이면 discard
+    Blend = 2,  // 반투명 (아직 별도 처리 없음, Opaque 처럼 그려진다)
+};
+
 struct MaterialData
 {
     alignas(16) cVec4 emissiveFactor = cVec4(0.0f);
@@ -27,7 +36,7 @@ struct MaterialData
     alignas(4) cInt metallicRoughnessTextureIndex = -1;
     alignas(4) cInt occlusionTextureIndex = -1;
     alignas(4) cInt workflow = static_cast<cInt>(MaterialWorkflow::MetallicRoughness);
-    alignas(4) cInt padding0 = 0;
+    alignas(4) cInt alphaMode = static_cast<cInt>(MaterialAlphaMode::Opaque);
     alignas(16) cVec4 clothFactor = cVec4(0.0f);
 };
 

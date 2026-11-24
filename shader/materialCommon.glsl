@@ -19,6 +19,11 @@
 #define MATERIAL_WORKFLOW_METALLIC_ROUGHNESS 0
 #define MATERIAL_WORKFLOW_SPECULAR_GLOSSINESS 1
 
+// include/struct/materialData.h 의 enum class MaterialAlphaMode 와 값이 같아야 한다.
+#define MATERIAL_ALPHA_MODE_OPAQUE 0
+#define MATERIAL_ALPHA_MODE_MASK 1
+#define MATERIAL_ALPHA_MODE_BLEND 2
+
 // ---------------------------------------------------------------------------
 // 셰이딩 모델 — G-buffer 를 쓰는 셰이더가 gPosition.a 에 기록하고 lightdeferred 가 읽는다.
 //   gPosition.a = 모델 번호 + (파라미터0 8비트, 파라미터1 8비트) / 65536

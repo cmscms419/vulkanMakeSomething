@@ -40,7 +40,7 @@ struct MaterialUBO {
     int metallicRoughnessTextureIndex;
     int occlusionTextureIndex;
     int workflow;
-    int padding0;
+    int alphaMode;                     // MATERIAL_ALPHA_MODE_* (materialCommon.glsl)
     vec4 clothFactor;
 };
 
@@ -114,6 +114,17 @@ void main()
     {
         float Opacity = SampleMaterialTexture(Material.opacityTextureIndex).r;
         if (Opacity < OPACITY_DISCARD_THRESHOLD)
+            discard;
+    }
+
+    // glTF alphaMode == MASK: 알파는 baseColorFactor.a * baseColor 텍스처 a 에 있고,
+    // discardAlpha 에 alphaCutoff 가 들어 있다 (ModelLoader::processMaterial).
+    if (options.discardOn != 0 && Material.alphaMode == MATERIAL_ALPHA_MODE_MASK)
+    {
+        float Alpha = Material.baseColorFactor.a;
+        if (Material.baseColorTextureIndex > DUMMY_TEXTURE_INDEX)
+            Alpha *= SampleMaterialTexture(Material.baseColorTextureIndex).a;
+        if (Alpha < Material.discardAlpha)
             discard;
     }
 

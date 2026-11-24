@@ -3,7 +3,7 @@
 // Vertex input attributes matching the updated Vertex class layout
 layout(location = 0) in vec3 inPosition;
 layout(location = 1) in vec3 inNormal;     // normal (not used for shadow mapping)
-layout(location = 2) in vec2 inTexCoord;   // texCoord (not used for shadow mapping)
+layout(location = 2) in vec2 inTexCoord;   // texCoord (alpha mask in shadowMap.frag)
 layout(location = 3) in vec3 inTangent;    // tangent (not used for shadow mapping)
 layout(location = 4) in vec3 inBitangent;  // bitangent (not used for shadow mapping)
 layout(location = 5) in vec4 inBoneWeights;   // NEW: Bone weights for skeletal animation
@@ -37,10 +37,16 @@ layout(set = 0, binding = 2) uniform BoneDataUBO {
     vec4 animationData;      // x = hasAnimation (0.0/1.0), y,z,w = future use
 } boneData;
 
-// Push constants for light space matrix
-layout(push_constant) uniform ShadowPushConstants {
+// Push constants: pbrdeferred 와 같은 DrawModelResource (C++ include/struct/ubo.h, 128 바이트).
+// materialIndex 는 shadowMap.frag 의 알파 마스크 테스트가 쓴다.
+layout(push_constant) uniform PushConstants {
     mat4 model;
+    float coeffs[15];
+    uint materialIndex;
 } pushConstants;
+
+// 알파 마스크(나뭇잎 등) 판정용 UV
+layout(location = 0) out vec2 fragTexCoord;
 
 void main() {
     vec3 position = inPosition;
@@ -79,4 +85,5 @@ void main() {
     
     // Transform world position to light space (light's view-projection)
     gl_Position = sceneData.lightSpaceMatrix * worldPos;
+    fragTexCoord = inTexCoord;
 }

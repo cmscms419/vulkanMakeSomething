@@ -32,7 +32,7 @@ struct MaterialUBO {
     int metallicRoughnessTextureIndex;
     int occlusionTextureIndex;
     int workflow;      // 이하 C++ MaterialData(96 byte)와 배열 stride 를 맞추려고 둔다
-    int padding0;
+    int alphaMode;                     // MATERIAL_ALPHA_MODE_* (materialCommon.glsl)
     vec4 clothFactor;
 };
 
